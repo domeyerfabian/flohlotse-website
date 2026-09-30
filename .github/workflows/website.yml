@@ -1,0 +1,112 @@
+name: Website bauen
+
+# Baut die Website jede Nacht neu aus der Google-Tabelle.
+# Sofort neu bauen: Reiter "Actions" > "Website bauen" > "Run workflow".
+on:
+  schedule:
+    - cron: "15 23 * * *"   # jede Nacht, 0:15 Uhr Winterzeit bzw. 1:15 Uhr Sommerzeit
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+# Grundsätzlich nur Lesen. Jeder Schritt bekommt unten nur die Rechte, die er wirklich braucht.
+# Die Bausteine (uses:) sind auf feste Versionen gepinnt, damit sich fremder Code nicht unbemerkt ändert.
+permissions:
+  contents: read
+
+concurrency:
+  group: website
+  cancel-in-progress: true
+
+jobs:
+  bauen:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write   # nur für den täglichen Bericht (bericht.md)
+      pages: read
+    outputs:
+      pages: ${{ steps.modus.outputs.pages }}
+    env:
+      HAT_FTP: ${{ secrets.FTP_SERVER != '' }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 20
+
+      # Schlägt fehl, solange GitHub Pages noch nicht eingeschaltet ist. Das ist in Ordnung:
+      # Die Website wird dann gebaut, aber noch nicht veröffentlicht.
+      - name: GitHub Pages prüfen
+        id: pages
+        if: env.HAT_FTP != 'true'
+        continue-on-error: true
+        uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5.0.0
+
+      - name: Veröffentlichungsweg festlegen
+        id: modus
+        env:
+          PAGES_OK: ${{ steps.pages.outcome }}
+        run: |
+          if [ "$HAT_FTP" != "true" ] && [ "$PAGES_OK" = "success" ]; then
+            echo "pages=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "pages=false" >> "$GITHUB_OUTPUT"
+            if [ "$HAT_FTP" != "true" ]; then
+              echo "::warning::GitHub Pages ist noch nicht eingeschaltet (Settings > Pages > Source: GitHub Actions, Schritt 3 der Anleitung). Die Website wurde gebaut, aber noch nicht veröffentlicht."
+            fi
+          fi
+
+      - name: Website aus der Tabelle bauen
+        run: node build.mjs
+        env:
+          SHEET_ID: ${{ vars.SHEET_ID }}
+          CNAME: ${{ vars.DOMAIN }}
+          BASE_PATH: ${{ steps.pages.outputs.base_path }}
+
+      - name: Bericht speichern
+        continue-on-error: true
+        run: |
+          git config user.name "Flohlotse Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add bericht.md
+          if ! git diff --cached --quiet; then
+            git commit -m "Bericht vom $(date +%d.%m.%Y)"
+            git pull --rebase --autostash
+            git push
+          fi
+
+      - name: Für GitHub Pages bereitstellen
+        if: steps.modus.outputs.pages == 'true'
+        uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3.0.1
+        with:
+          path: dist
+
+      # Optional: statt GitHub Pages auf eigenen Webspace (z. B. bei einem deutschen Hoster) hochladen.
+      # Dafür unter Settings > Secrets and variables > Actions > Secrets die Werte
+      # FTP_SERVER, FTP_BENUTZER und FTP_PASSWORT anlegen.
+      - name: Per FTP auf eigenen Webspace hochladen
+        if: env.HAT_FTP == 'true'
+        uses: SamKirkland/FTP-Deploy-Action@8e83cea8672e3fbcbb9fdafff34debf6ae4c5f65 # v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_BENUTZER }}
+          password: ${{ secrets.FTP_PASSWORT }}
+          local-dir: ./dist/
+          protocol: ftps
+
+  veroeffentlichen:
+    needs: bauen
+    if: needs.bauen.outputs.pages == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4.0.5

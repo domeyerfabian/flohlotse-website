@@ -1,0 +1,12 @@
+Markt,Rhythmus,Wochentag,Beginn,Ende,Gültig ab,Gültig bis,Nur Monate,Ausnahmen
+flohdom-bahrenfeld,jede Woche,Mittwoch,07:00,16:00,01.01.2026,,,
+flohdom-bahrenfeld,jede Woche,Samstag,07:00,16:00,01.01.2026,,,"03.10.2026, 31.10.2026"
+flohdom-horner-rennbahn,jede Woche,Samstag,06:00,14:00,01.01.2026,,,
+flohschanze,jede Woche,Samstag,08:00,16:00,01.01.2026,,,
+nachtflohmarkt-rindermarkthalle,jede Woche,Mittwoch,18:00,22:00,01.01.2026,31.12.2026,4-10,
+nachtflohmarkt-rindermarkthalle,jede Woche,Donnerstag,18:00,22:00,01.01.2026,31.12.2026,4-10,
+langschlaefer-flohmarkt,1. im Monat,Samstag,11:00,17:00,01.01.2026,31.12.2026,4-10,
+flohmarkt-barmbek-basch,1. im Monat,Sonntag,10:00,15:00,01.01.2026,31.12.2026,4-9,
+flohmarkt-hausdrei-altona,2. im Monat,Sonntag,10:00,16:00,01.01.2026,31.12.2026,3-10,
+flohmarkt-else-rauch-platz,letzter im Monat,Sonntag,10:00,16:00,01.01.2026,30.11.2026,,
+flohmarkt-telekom-gelaende-wandsbek,jede Woche,Samstag,06:00,15:00,01.01.2026,,,

@@ -1,0 +1,20 @@
+Einstellung,Wert,Erklärung
+Website-Adresse,https://www.flohlotse.de,"Die spätere Domain, ohne Schrägstrich am Ende"
+Name,Flohlotse,
+Für Google freigeben,Nein,"Erst auf Ja stellen, wenn Domain, Impressum und Datenschutz fertig sind"
+Region,Hamburg + 30 km,
+Formular-Link,,"Link zum Google-Formular, über das Veranstalter Termine einreichen"
+Tage im Voraus,120,So weit in die Zukunft werden Termine angezeigt
+Impressum: Name oder Firma,,
+Impressum: Straße,,
+Impressum: PLZ und Ort,,
+Impressum: Vertreten durch,,
+Impressum: E-Mail,,
+Impressum: Telefon,,
+Impressum: Register,,Nur falls eingetragen
+Impressum: USt-IdNr.,,Nur falls vorhanden
+Impressum: Verantwortlich nach § 18 MStV,,Name und Anschrift
+Datenschutz: Hoster,,Name und Sitz des Hosters
+Datenschutz: Löschfrist Logdateien (Tage),,
+Datenschutz: Löschfrist Formular,,
+Datenschutz: Stand,,

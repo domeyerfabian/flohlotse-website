@@ -57,7 +57,9 @@ async function fetchSheet(url, name) {
 }
 async function loadTab(name) {
   let text;
-  const id = process.env.SHEET_ID;
+  // Nimmt die reine ID oder den ganzen Tabellen-Link; Leerzeichen und Zeilenumbrüche beim Kopieren werden ignoriert
+  const rawId = (process.env.SHEET_ID || "").replace(/\s+/g, "");
+  const id = (rawId.match(/\/d\/([A-Za-z0-9_-]+)/) || [])[1] || rawId;
   if (id) {
     if (!/^[A-Za-z0-9_-]+$/.test(id)) throw new Error("SHEET_ID enthält ungültige Zeichen. Bitte nur die ID aus dem Tabellen-Link eintragen.");
     const url = `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:csv&headers=1&sheet=${encodeURIComponent(name)}`;
@@ -99,8 +101,16 @@ function parseDate(v, ctx) {
   warn("Datum", `„${v}“ ist kein gültiges Datum (${ctx}). Bitte im Format TT.MM.JJJJ eintragen.`); return null;
   function mk(y, mo, d) { const dt = new Date(Date.UTC(y, mo - 1, d)); if (dt.getUTCMonth() !== mo - 1) { warn("Datum", `„${v}“ gibt es nicht (${ctx}).`); return null; } return dt; }
 }
+// Uhrzeit als "08:30"; unsichere Zeiten als Rahmen "14:00/15:00" (geschrieben 14/15, 14-15 oder 14 oder 15)
 function parseTime(v, ctx) {
   v = String(v || "").trim().replace(/\s*uhr$/i, ""); if (!v) return "";
+  const range = v.split(/\s*(?:\/|–|-|oder|bis)\s*/i);
+  if (range.length === 2) {
+    const a = parseTime(range[0], ctx), b = parseTime(range[1], ctx);
+    if (!a || !b) return a || b;
+    if (b <= a) { warn("Uhrzeit", `„${v}“ (${ctx}): Die zweite Uhrzeit muss später sein als die erste. Es wird nur ${a.replace(/^0/, "")} verwendet.`); return a; }
+    return a + "/" + b;
+  }
   const m = /^(\d{1,2})(?:[:.](\d{2}))?(?::\d{2})?$/.exec(v);
   if (!m || +m[1] > 24 || +(m[2] || 0) > 59 || (+m[1] === 24 && +(m[2] || 0) > 0)) { warn("Uhrzeit", `„${v}“ ist keine gültige Uhrzeit (${ctx}). Bitte als 08:30 eintragen.`); return ""; }
   return pad(+m[1]) + ":" + (m[2] || "00");
@@ -109,7 +119,8 @@ const key = d => d.toISOString().slice(0, 10);
 const addDays = (d, n) => new Date(d.getTime() + n * 864e5);
 const fmtDate = d => `${WDL[d.getUTCDay()]}, ${d.getUTCDate()}. ${MON[d.getUTCMonth()]}`;
 const fmtShort = d => `${WD[d.getUTCDay()]} ${pad(d.getUTCDate())}.${pad(d.getUTCMonth() + 1)}.`;
-const hmText = t => t.replace(/^0(\d)/, "$1").replace(/:00$/, "");
+const hmText = t => t.split("/").map(x => x.replace(/^0(\d)/, "$1").replace(/:00$/, "")).join("/");
+const tFirst = t => t.split("/")[0], tLast = t => t.split("/").pop();
 function timeText(e) {
   if (!e.start) return "Uhrzeit folgt";
   return e.end ? `${hmText(e.start)} bis ${hmText(e.end)} Uhr` : `ab ${hmText(e.start)} Uhr`;
@@ -133,7 +144,7 @@ function safeHref(v, ctx) {
 }
 // Zeiten prüfen: Ende muss nach Beginn liegen
 function checkEnd(start, end, ctx) {
-  if (start && end && end <= start) { warn("Uhrzeit", `${ctx}: Ende ${end} liegt nicht nach Beginn ${start}. Das Ende wurde ignoriert, bitte prüfen.`); return ""; }
+  if (start && end && tFirst(end) <= tLast(start)) { warn("Uhrzeit", `${ctx}: Ende ${end} liegt nicht nach Beginn ${start}. Das Ende wurde ignoriert, bitte prüfen.`); return ""; }
   return end;
 }
 
@@ -151,7 +162,11 @@ const REGION = S["Region"] || "Hamburg + 30 km";
 const horizonRaw = parseInt(S["Tage im Voraus"], 10) || 120;
 const HORIZON = Math.min(400, Math.max(14, horizonRaw));
 if (horizonRaw !== HORIZON) warn("Einstellungen", `„Tage im Voraus“ = ${horizonRaw} liegt außerhalb von 14 bis 400. Es werden ${HORIZON} Tage verwendet.`);
-const FORM = safeHref(S["Formular-Link"], "Einstellungen, Formular-Link");
+const FORM_LINK = safeHref(S["Formular-Link"], "Einstellungen, Formular-Link");
+// Ohne eigenes Formular reichen Veranstalter Termine per E-Mail an die Impressum-Adresse ein
+const IMP_MAIL = (S["Impressum: E-Mail"] || "").trim();
+const FORM = FORM_LINK || (/^[^\s@<>"]+@[^\s@<>"]+\.[a-z]{2,}$/i.test(IMP_MAIL) ? `mailto:${IMP_MAIL}?subject=${encodeURIComponent("Flohmarkt eintragen")}` : "");
+const FORM_MAIL = /^mailto:/i.test(FORM);
 const PUBLIC = yes(S["Für Google freigeben"]);
 const BASE = (process.env.BASE_PATH || "").replace(/\/+$/, "");
 
@@ -257,6 +272,20 @@ const fontsFound = FONT_RULES.map(([re, fam, w]) => { const f = fontFilesAll.fil
 const fontCSS = fontsFound.map(x => `@font-face{font-family:"${x.fam}";src:url("/fonts/${encodeURIComponent(x.f)}") format("${x.f.endsWith("woff2") ? "woff2" : "truetype"}");font-weight:${x.w};font-style:normal;font-display:swap}`).join("\n");
 if (fontsFound.length < 4) warn("Schriften", `Im Ordner fonts fehlen ${4 - fontsFound.length} von 4 Schriftdateien. Die Seite nutzt so lange Systemschriften.`);
 
+/* ---------------------------------------------------------------- Symbolfotos */
+// Fotos liegen im Ordner bilder (nur .webp/.jpg mit einfachen Namen). Fehlt ein Foto, wird die Stelle einfach ohne Bild gebaut.
+const imgDir = path.join(ROOT, "bilder");
+const IMGS = new Set(fs.existsSync(imgDir) ? fs.readdirSync(imgDir).filter(x => /^[a-z0-9-]+\.(webp|jpg)$/.test(x)) : []);
+const START_IMGS = [1, 2, 3, 4].map(i => `start-${i}.webp`).filter(x => IMGS.has(x));
+const OG_IMG = IMGS.has("teilen.jpg") ? "/assets/img/teilen.jpg" : "";
+const PHOTO_ALT = "Symbolfoto: Stöbern an Flohmarktständen";
+const clusterImg = (c, cls = "kb-photo", lazy = false) => {
+  const big = `ratgeber-${c}.webp`, small = `ratgeber-${c}-klein.webp`;
+  if (!IMGS.has(big) && !IMGS.has(small)) return "";
+  const s1 = IMGS.has(small) ? small : big, set = [IMGS.has(small) && `/assets/img/${small} 760w`, IMGS.has(big) && `/assets/img/${big} 1520w`].filter(Boolean).join(", ");
+  return `<figure class="${cls}"><img src="/assets/img/${s1}" srcset="${set}" sizes="(max-width: 800px) 100vw, 760px" width="760" height="333" alt="${PHOTO_ALT}"${lazy ? ' loading="lazy"' : ""} decoding="async"><figcaption>Symbolfoto</figcaption></figure>`;
+};
+
 /* ---------------------------------------------------------------- Seitenrahmen */
 const pages = new Map();
 const TAGS_ALL = [...new Set(MARKETS.flatMap(m => m.tags))];
@@ -273,7 +302,7 @@ function menuHTML() {
 </nav></div></details>`;
 }
 const MENU = () => menuHTML();
-function layout({ p, title, desc, body, ld, noindex, nav, extraHead = "" }) {
+function layout({ p, title, desc, body, ld, noindex, nav, extraHead = "", img = OG_IMG }) {
   const url = SITE + p;
   const navItems = [["/termine/", "Termine", "termine"], ["/flohmaerkte/", "Märkte", "maerkte"], ["/ratgeber/", "Ratgeber", "ratgeber"], ["/veranstalter/", "Für Veranstalter", "org"]];
   const html = `<!doctype html>
@@ -286,7 +315,7 @@ function layout({ p, title, desc, body, ld, noindex, nav, extraHead = "" }) {
 <meta name="robots" content="${noindex || !PUBLIC ? "noindex,follow" : "index,follow"}">
 <link rel="canonical" href="${esc(url)}">
 <meta property="og:type" content="website"><meta property="og:locale" content="de_DE"><meta property="og:site_name" content="${esc(NAME)}">
-<meta property="og:title" content="${esc(title)}"><meta property="og:description" content="${esc(desc)}"><meta property="og:url" content="${esc(url)}">
+<meta property="og:title" content="${esc(title)}"><meta property="og:description" content="${esc(desc)}"><meta property="og:url" content="${esc(url)}">${img ? `\n<meta property="og:image" content="${esc(SITE + img)}"><meta name="twitter:card" content="summary_large_image">` : ""}
 <link rel="stylesheet" href="/assets/style.css">
 <link rel="icon" href="/assets/icon.svg" type="image/svg+xml">
 ${ld ? `<script type="application/ld+json">${JSON.stringify(ld).replace(/</g, "\\u003c")}</script>` : ""}${extraHead}
@@ -320,18 +349,18 @@ function eventLD(e) {
   const m = e.m, parts = m.addr.split(", "), pm = /(\d{5})\s+(.+)/.exec(parts[parts.length - 1] || "");
   const ev = {
     "@type": "Event", name: m.name, url: `${SITE}/flohmarkt/${m.slug}/`,
-    startDate: e.start ? `${e.k}T${e.start}:00${berlinOff(e.date)}` : e.k,
+    startDate: e.start ? `${e.k}T${tFirst(e.start)}:00${berlinOff(e.date)}` : e.k,
     eventStatus: e.cancelled ? "https://schema.org/EventCancelled" : "https://schema.org/EventScheduled",
     eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode", description: m.note || m.name,
     location: { "@type": "Place", name: m.place, address: { "@type": "PostalAddress", streetAddress: parts[0], addressLocality: pm ? pm[2] : (parts.length > 1 ? parts[parts.length - 1] : (m.area || "Hamburg")), addressCountry: "DE", ...(pm ? { postalCode: pm[1] } : {}) } }
   };
-  if (e.start && e.end) ev.endDate = `${e.k}T${e.end}:00${berlinOff(e.date)}`;
+  if (e.start && e.end) ev.endDate = `${e.k}T${tLast(e.end)}:00${berlinOff(e.date)}`;
   if (m.org) ev.organizer = { "@type": "Organization", name: m.org };
   return ev;
 }
 function evHTML(e) {
   const m = e.m, q = encodeURIComponent(m.name + ", " + m.addr);
-  const t = e.cancelled ? "<small>Termin</small>fällt aus" : !e.start ? "<small>Uhrzeit</small>folgt" : e.end ? `<small>${e.start}</small>bis<br>${e.end}` : `<small>Beginn</small>${e.start}`;
+  const t = e.cancelled ? "<small>Termin</small>fällt aus" : !e.start ? "<small>Uhrzeit</small>folgt" : e.end ? `<small>${e.start.includes("/") ? hmText(e.start) : e.start}</small>bis<br>${e.end.includes("/") ? hmText(e.end) : e.end}` : `<small>Beginn</small>${e.start.includes("/") ? hmText(e.start) : e.start}`;
   return `<article class="ev${e.cancelled ? " off" : ""}" data-tags="${esc(m.tags.join("|"))}"><div class="time" aria-label="${esc(e.cancelled ? "Abgesagt" : timeText(e))}">${t}</div><div class="ev-body">
 <h3><a href="/flohmarkt/${m.slug}/">${esc(m.name)}</a></h3><div class="meta">${esc(m.area)} · ${esc(m.addr)}</div>
 ${e.cancelled ? `<p class="note warn-text">Dieser Termin fällt aus.${e.note ? " " + esc(e.note) : ""}</p>` : m.note ? `<p class="note">${esc(m.note)}${e.note ? " " + esc(e.note) : ""}</p>` : ""}
@@ -382,6 +411,7 @@ const upcoming = (days, filter = () => true) => EVENTS.filter(e => (e.date - TOD
 <p>Wann, wo und wie lange. Ohne Werbebanner, ohne alte Termine.</p>
 <div class="quick"><a class="chip" href="/heute/">Heute</a><a class="chip" href="/wochenende/">Wochenende</a><a class="chip" href="/sonntag/">Sonntag</a><a class="chip" href="/flohmaerkte/">Märkte nach Bezirk</a><a class="chip" href="/ratgeber/">Ratgeber</a></div>
 </div><a class="big-sticker" href="/wochenende/"><b>${weN}</b><span>${weLabel}</span></a></section>
+${START_IMGS.length ? `<figure class="strip-wrap"><div class="strip">${START_IMGS.map((x, i) => `<img src="/assets/img/${x}" width="400" height="500" alt="${i ? "" : PHOTO_ALT}"${i > 1 ? ' loading="lazy"' : ""} decoding="async">`).join("")}</div><figcaption class="strip-note">Symbolfotos</figcaption></figure>` : ""}
 <section class="sec"><div class="sec-head"><h2>Die nächsten Flohmärkte</h2><a href="/termine/">Alle Termine</a></div>
 ${groupList(next) || '<div class="empty">Gerade stehen keine Termine im Kalender.</div>'}
 ${all14 > next.length ? `<a class="more" href="/termine/">Alle ${all14} Termine der nächsten 14 Tage anzeigen</a>` : ""}</section>
@@ -418,7 +448,7 @@ for (const m of MARKETS) {
   const when = whenOf(m);
   const timeVariants = new Set(m.events.filter(e => !e.cancelled).map(timeText));
   const mixed = timeVariants.size > 1;
-  const answer = when ? `${esc(m.satz)} findet ${esc(when)}${first && first.start && !mixed ? (first.end ? ` von ${hmText(first.start)} bis ${hmText(first.end)} Uhr` : ` ab ${hmText(first.start)} Uhr`) : ""} statt. Adresse: ${esc(m.addr)}. ${first ? (singleDates ? "" : "Nächster Termin: " + fmtDate(first.date) + (mixed && first.start ? ", " + (first.end ? `${hmText(first.start)} bis ${hmText(first.end)} Uhr` : `ab ${hmText(first.start)} Uhr`) : "") + ".") : ""}`
+  const answer = when ? `${esc(m.satz)} findet ${esc(when)}${first && first.start && !mixed && /^am [A-Za-zä]+, /.test(when) ? "," : ""}${first && first.start && !mixed ? (first.end ? ` von ${hmText(first.start)} bis ${hmText(first.end)} Uhr` : ` ab ${hmText(first.start)} Uhr`) : ""} statt. Adresse: ${esc(m.addr)}. ${first ? (singleDates ? "" : "Nächster Termin: " + fmtDate(first.date) + (mixed && first.start ? ", " + (first.end ? `${hmText(first.start)} bis ${hmText(first.end)} Uhr` : `ab ${hmText(first.start)} Uhr`) : "") + ".") : ""}`
     : `${esc(m.satz)} hat derzeit keinen angekündigten Termin. Adresse: ${esc(m.addr)}.`;
   const body = crumbs([[NAME, "/"], [r.umland ? "Umland" : "Flohmärkte Hamburg", "/flohmaerkte/"], [r.name, `/flohmarkt-hamburg/${r.k}/`], [m.short]]) + `<article class="kb">
 <h1>${esc(m.name)}: Öffnungszeiten und Termine</h1>
@@ -491,11 +521,11 @@ ${r.intro ? `<section class="block kb-body"><p>${rich(r.intro)}</p></section>` :
 /* ---------------------------------------------------------------- Ratgeber */
 {
   const body = crumbs([[NAME, "/"], ["Ratgeber"]]) + `<section class="hub-head"><h1>Flohmarkt-Ratgeber: Antworten auf die häufigsten Fragen</h1>
-<p>Kaufen, verkaufen, handeln, Knigge, Steuern und Genehmigungen. Jeder Artikel beginnt mit einer kurzen Antwort, danach folgen die Details.</p>
+<p>Unsere Empfehlungen zum Kaufen, Verkaufen, Handeln und Organisieren. Jeder Artikel beginnt mit einer kurzen Antwort, danach folgen die Details.</p>
 <div class="search"><label for="kbSearch" class="kicker">Frage suchen</label><input id="kbSearch" type="search" placeholder="z. B. handeln, Steuern, Standgebühr" autocomplete="off"></div></section>
-${Object.entries(CLUSTERS).map(([c, info]) => { const items = KB.filter(a => a.c === c); return items.length ? `<section class="cluster" id="${c}"><h2>${esc(info.t)}</h2><p>${esc(info.p)}</p><div class="qlist">${items.map(a => `<a href="/ratgeber/${a.s}/" data-q="${esc((a.h + " " + a.kw + " " + plain(a.a)).toLowerCase())}"><span>${esc(a.h)}</span><span aria-hidden="true">›</span></a>`).join("")}</div></section>` : ""; }).join("")}
+${Object.entries(CLUSTERS).map(([c, info]) => { const items = KB.filter(a => a.c === c); return items.length ? `<section class="cluster" id="${c}">${clusterImg(c, "kb-photo slim", true)}<h2>${esc(info.t)}</h2><p>${esc(info.p)}</p><div class="qlist">${items.map(a => `<a href="/ratgeber/${a.s}/" data-q="${esc((a.h + " " + a.kw + " " + plain(a.a)).toLowerCase())}"><span>${esc(a.h)}</span><span aria-hidden="true">›</span></a>`).join("")}</div></section>` : ""; }).join("")}
 <div class="empty" id="kbLeer" hidden>Dazu gibt es noch keinen Artikel. Versuch einen anderen Begriff, etwa „Steuern“ oder „Stand“.</div>`;
-  layout({ p: "/ratgeber/", title: `Flohmarkt-Ratgeber: Die wichtigsten Fragen | ${NAME}`, desc: "Kaufen, verkaufen, handeln, Steuern, Genehmigungen: Der Ratgeber beantwortet die häufigsten Fragen rund um den Flohmarkt, kurz und verständlich.", body, nav: "ratgeber", ld: G([crumbLD([[NAME, "/"], ["Ratgeber"]]), { "@type": "CollectionPage", name: "Flohmarkt-Ratgeber", hasPart: KB.map(a => ({ "@type": "Article", headline: a.h, url: `${SITE}/ratgeber/${a.s}/` })) }]) });
+  layout({ p: "/ratgeber/", title: `Flohmarkt-Ratgeber: Die wichtigsten Fragen | ${NAME}`, desc: "Kaufen, verkaufen, handeln, Knigge und Tipps für Veranstalter: Der Ratgeber beantwortet die häufigsten Fragen rund um den Flohmarkt, kurz und verständlich.", body, nav: "ratgeber", ld: G([crumbLD([[NAME, "/"], ["Ratgeber"]]), { "@type": "CollectionPage", name: "Flohmarkt-Ratgeber", hasPart: KB.map(a => ({ "@type": "Article", headline: a.h, url: `${SITE}/ratgeber/${a.s}/` })) }]) });
 }
 for (const a of KB) {
   const cl = CLUSTERS[a.c] || { t: a.c };
@@ -503,9 +533,9 @@ for (const a of KB) {
   const body = crumbs([[NAME, "/"], ["Ratgeber", "/ratgeber/"], [cl.t, `/ratgeber/#${a.c}`]]) + `<article class="kb"><h1>${esc(a.h)}</h1>
 <div class="byline"><span>${esc(NAME)} Ratgeber</span><span>Stand: ${STAND}</span><span>${Math.max(2, Math.round(words / 200))} Min. Lesezeit</span></div>
 <div class="answer"><span class="kicker">Kurz gesagt</span><p>${rich(a.a)}</p></div>
-<div class="kb-body">${a.b.map(([h, p]) => `<h2>${esc(h)}</h2><p>${rich(p)}</p>`).join("")}</div>
+${clusterImg(a.c)}<div class="kb-body">${a.b.map(([h, p]) => `<h2>${esc(h)}</h2><p>${rich(p)}</p>`).join("")}</div>
 ${a.f.length ? `<section class="faq"><h2>Häufige Fragen</h2>${a.f.map(([q, x]) => `<details><summary>${esc(q)}</summary><p>${rich(x)}</p></details>`).join("")}</section>` : ""}
-${a.x ? '<p class="hint">Dieser Artikel gibt einen allgemeinen Überblick und ersetzt keine Rechts- oder Steuerberatung. Im Einzelfall helfen eine Steuerberatung, eine Anwaltskanzlei oder das zuständige Amt.</p>' : ""}
+${a.x ? '<p class="hint">Unser Tipp: Verbindliche Auskünfte für deinen Fall bekommst du bei den zuständigen Stellen, zum Beispiel beim Finanzamt, beim Bezirksamt oder beim Veranstalter des Markts.</p>' : ""}
 <section class="related"><div class="sec-head"><h2>Das könnte dich auch interessieren</h2></div>${grid(a.r.map(kbCard))}</section></article>`;
   layout({ p: `/ratgeber/${a.s}/`, title: `${a.t} | ${NAME}`, desc: a.d, body, nav: "ratgeber", ld: G([
     { "@type": "Article", headline: a.h, description: a.d, dateModified: key(TODAY), author: { "@type": "Organization", name: NAME }, publisher: { "@type": "Organization", name: NAME }, mainEntityOfPage: `${SITE}/ratgeber/${a.s}/` },
@@ -517,10 +547,10 @@ ${a.x ? '<p class="hint">Dieser Artikel gibt einen allgemeinen Überblick und er
 {
   const body = crumbs([[NAME, "/"], ["Für Veranstalter"]]) + `<article class="kb"><h1>Flohmarkt eintragen: kostenlos für Veranstalter</h1>
 <div class="answer"><span class="kicker">Kurz gesagt</span><p>Du veranstaltest einen Flohmarkt in Hamburg oder im Umland bis 30 Kilometer? Trag deine Termine kostenlos ein. Wir prüfen jeden Eintrag, bevor er erscheint, und verlinken auf deine Website.</p></div>
-<div class="kb-body"><h2>So funktioniert es</h2><ul class="tips"><li>Du füllst ein kurzes Formular aus: Name des Markts, Datum, Uhrzeit, Adresse und eine E-Mail-Adresse für Rückfragen.</li><li>Wir prüfen die Angaben und veröffentlichen den Termin im Kalender, auf der Seite deines Bezirks und auf einer eigenen Seite für deinen Markt.</li><li>Regelmäßige Märkte tragen wir als Serie ein. Du musst nicht jeden Termin einzeln melden.</li><li>Ändert sich etwas oder fällt ein Termin aus, gib uns kurz Bescheid. Wir kennzeichnen den Termin dann als abgesagt.</li></ul>
-<h2>Was wir veröffentlichen</h2><p>Name und Adresse des Markts, Termine, Uhrzeiten und den Namen des Veranstalters. Deine E-Mail-Adresse veröffentlichen wir nicht. Mehr dazu in den <a href="/datenschutz/">Datenschutzhinweisen</a>. Du planst einen neuen Markt? Lies vorher, <a href="/ratgeber/flohmarkt-organisieren-genehmigung/">welche Genehmigungen du in Hamburg brauchst</a>.</p></div>
-<div class="org block"><h2>Termin eintragen</h2><p>Mit dem Absenden bestätigst du, dass du den Markt veranstaltest oder dazu beauftragt bist und wir die Angaben veröffentlichen dürfen.</p>${FORM ? `<a class="btn" href="${esc(FORM)}" rel="noopener">Zum Formular</a><p class="small">Das Formular wird von Google Formulare bereitgestellt.</p>` : `<p class="small">Das Formular ist bald verfügbar.</p>`}</div></article>`;
-  if (!FORM) warn("Einstellungen", "Formular-Link fehlt. Auf der Seite Für Veranstalter steht so lange „bald verfügbar“.");
+<div class="kb-body"><h2>So funktioniert es</h2><ul class="tips"><li>${FORM_MAIL ? "Du schickst uns eine kurze E-Mail mit Name des Markts, Datum, Uhrzeit, Adresse und, falls vorhanden, dem Link zu deiner Website." : "Du füllst ein kurzes Formular aus: Name des Markts, Datum, Uhrzeit, Adresse und eine E-Mail-Adresse für Rückfragen."}</li><li>Wir prüfen die Angaben und veröffentlichen den Termin im Kalender, auf der Seite deines Bezirks und auf einer eigenen Seite für deinen Markt.</li><li>Regelmäßige Märkte tragen wir als Serie ein. Du musst nicht jeden Termin einzeln melden.</li><li>Ändert sich etwas oder fällt ein Termin aus, gib uns kurz Bescheid. Wir kennzeichnen den Termin dann als abgesagt.</li></ul>
+<h2>Was wir veröffentlichen</h2><p>Name und Adresse des Markts, Termine, Uhrzeiten und den Namen des Veranstalters. Deine E-Mail-Adresse veröffentlichen wir nicht. Mehr dazu in den <a href="/datenschutz/">Datenschutzhinweisen</a>. Du planst einen neuen Markt? Lies vorher, <a href="/ratgeber/flohmarkt-organisieren-genehmigung/">wo du in Hamburg nachfragst</a>.</p></div>
+<div class="org block"><h2>Termin eintragen</h2><p>Mit ${FORM_MAIL ? "deiner E-Mail" : "dem Absenden"} bestätigst du, dass du den Markt veranstaltest oder dazu beauftragt bist und wir die Angaben veröffentlichen dürfen.</p>${!FORM ? `<p class="small">Das Formular ist bald verfügbar.</p>` : FORM_MAIL ? `<a class="btn" href="${esc(FORM)}">E-Mail schreiben</a><p class="small">An ${esc(decodeURIComponent(FORM.slice(7).split("?")[0]))}</p>` : `<a class="btn" href="${esc(FORM)}" rel="noopener">Zum Formular</a>${/docs\.google\.com\/forms|forms\.gle/i.test(FORM) ? `<p class="small">Das Formular wird von Google Formulare bereitgestellt.</p>` : ""}`}</div></article>`;
+  if (!FORM) warn("Einstellungen", "Weder Formular-Link noch Impressum-E-Mail eingetragen. Auf der Seite Für Veranstalter steht so lange „bald verfügbar“.");
   layout({ p: "/veranstalter/", title: `Flohmarkt eintragen: kostenlos für Veranstalter | ${NAME}`, desc: "Veranstaltest du einen Flohmarkt in Hamburg oder im Umland? Trag deine Termine kostenlos ein. Wir prüfen jeden Eintrag und verlinken auf deine Seite.", body, nav: "org", ld: G([crumbLD([[NAME, "/"], ["Für Veranstalter"]])]) });
 }
 
@@ -538,17 +568,23 @@ ${f("Impressum: Vertreten durch") ? `<p>Vertreten durch: ${esc(f("Impressum: Ver
 <h2>Kontakt</h2><p>E-Mail: ${ph("Impressum: E-Mail", "E-Mail-Adresse")}<br>Telefon: ${ph("Impressum: Telefon", "Telefonnummer")}</p>
 ${f("Impressum: Register") || f("Impressum: USt-IdNr.") ? `<h2>Register und Umsatzsteuer</h2><p>${esc(f("Impressum: Register"))}${f("Impressum: Register") && f("Impressum: USt-IdNr.") ? "<br>" : ""}${f("Impressum: USt-IdNr.") ? "USt-IdNr.: " + esc(f("Impressum: USt-IdNr.")) : ""}</p>` : ""}
 <h2>Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV</h2><p>${ph("Impressum: Verantwortlich nach § 18 MStV", "Name und Anschrift der verantwortlichen Person")}</p>
+${IMGS.size ? `<h2>Bildnachweis</h2><p>Die Fotos auf dieser Website sind Symbolfotos und zeigen keinen der hier gelisteten Flohmärkte.${f("Bildnachweis") ? " " + esc(f("Bildnachweis")) : ""}</p>` : ""}
 <h2>Verbraucherstreitbeilegung</h2><p>Wir sind nicht bereit und nicht verpflichtet, an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen.</p>
 <h2>Hinweis zu Termindaten</h2><p>Alle Termine beruhen auf öffentlichen Angaben der jeweiligen Veranstalter. Wir prüfen sie sorgfältig, können aber nicht garantieren, dass ein Markt wie angegeben stattfindet. Maßgeblich sind die Angaben des Veranstalters.</p></div></article>`;
   layout({ p: "/impressum/", title: `Impressum | ${NAME}`, desc: `Impressum von ${NAME}.`, body: imp, noindex: true });
-  const dsMissing = ["Datenschutz: Hoster", "Datenschutz: Löschfrist Logdateien (Tage)", "Datenschutz: Löschfrist Formular", "Datenschutz: Stand"].filter(k => !f(k));
+  const isGitHub = /github/i.test(f("Datenschutz: Hoster"));
+  const formKind = !FORM ? "mail" : /^mailto:/i.test(FORM) ? "mail" : /docs\.google\.com\/forms|forms\.gle/i.test(FORM) ? "google" : "other";
+  const formHost = formKind === "other" ? (() => { try { return new URL(FORM).hostname; } catch { return "einem externen Anbieter"; } })() : "";
+  const dsMissing = ["Datenschutz: Hoster", ...(isGitHub ? [] : ["Datenschutz: Löschfrist Logdateien (Tage)"]), "Datenschutz: Löschfrist Formular", "Datenschutz: Stand"].filter(k => !f(k));
   if (dsMissing.length) warn("Datenschutz", `Noch nicht ausgefüllt: ${dsMissing.map(k => k.replace("Datenschutz: ", "")).join(", ")}.`);
   const ds = crumbs([[NAME, "/"], ["Datenschutz"]]) + `<article class="kb"><h1>Datenschutzerklärung</h1>${missing.length || dsMissing.length ? '<div class="legal-note"><b>Vorlage, noch nicht vollständig.</b> Gelb markierte Angaben im Blatt Einstellungen ergänzen und die Erklärung vor dem Livegang fachlich prüfen lassen.</div>' : ""}<div class="kb-body legal">
 <h2>1. Verantwortlicher</h2><p>Verantwortlich für die Datenverarbeitung auf dieser Website ist ${ph("Impressum: Name oder Firma", "Name oder Firma")}, erreichbar über die Angaben im <a href="/impressum/">Impressum</a>.</p>
-<h2>2. Hosting und Server-Logdateien</h2><p>Die Website wird bei ${ph("Datenschutz: Hoster", "Name und Sitz des Hosters")} betrieben. Beim Aufruf speichert der Server automatisch technische Daten wie IP-Adresse, Datum und Uhrzeit, aufgerufene Seite und Browser. Das ist nötig, um die Website sicher auszuliefern (Art. 6 Abs. 1 lit. f DSGVO). Die Daten werden nach ${ph("Datenschutz: Löschfrist Logdateien (Tage)", "Anzahl")} Tagen gelöscht, soweit der Hoster sie nicht länger zur Abwehr von Angriffen benötigt.</p>
+${isGitHub
+  ? `<h2>2. Hosting und Server-Logdateien</h2><p>Die Website wird über GitHub Pages bereitgestellt, einen Dienst der GitHub, Inc., 88 Colin P. Kelly Jr. Street, San Francisco, CA 94107, USA. Beim Aufruf einer Seite speichert GitHub die IP-Adresse der Besucher zu Sicherheitszwecken, außerdem technische Daten wie Datum, Uhrzeit und aufgerufene Seite. Wir haben auf diese Daten keinen Zugriff. Wie lange GitHub sie speichert, legt GitHub fest (<a href="https://docs.github.com/de/site-policy/privacy-policies/github-general-privacy-statement" rel="noopener">Datenschutzerklärung von GitHub</a>). Rechtsgrundlage ist unser berechtigtes Interesse, die Website sicher und zuverlässig auszuliefern (Art. 6 Abs. 1 lit. f DSGVO). Dabei können Daten in die USA übermittelt werden. GitHub ist nach dem EU-U.S. Data Privacy Framework zertifiziert, für das die EU-Kommission einen Angemessenheitsbeschluss erlassen hat (Art. 45 DSGVO).</p>`
+  : `<h2>2. Hosting und Server-Logdateien</h2><p>Die Website wird bei ${ph("Datenschutz: Hoster", "Name und Sitz des Hosters")} betrieben. Beim Aufruf speichert der Server automatisch technische Daten wie IP-Adresse, Datum und Uhrzeit, aufgerufene Seite und Browser. Das ist nötig, um die Website sicher auszuliefern (Art. 6 Abs. 1 lit. f DSGVO). Die Daten werden nach ${ph("Datenschutz: Löschfrist Logdateien (Tage)", "Anzahl")} Tagen gelöscht, soweit der Hoster sie nicht länger zur Abwehr von Angriffen benötigt.</p>`}
 <h2>3. Schriftarten</h2><p>Die Website lädt keine Schriftarten von fremden Servern. Beim Aufruf wird keine Verbindung zu Google oder anderen Schriftanbietern aufgebaut.</p>
 <h2>4. Cookies und Reichweitenmessung</h2><p>Diese Website setzt keine Cookies und nutzt keine Analyse- oder Werbedienste.</p>
-<h2>5. Termine eintragen</h2><p>Veranstalter können Termine über ein Formular von Google Formulare (Google Ireland Limited, Gordon House, Barrow Street, Dublin 4, Irland) einreichen. Das Formular öffnet sich erst, wenn du den Link anklickst. Dabei gelten zusätzlich die Datenschutzbestimmungen von Google. Wir verarbeiten die Angaben zum Markt und deine E-Mail-Adresse. Die Marktdaten veröffentlichen wir nach Prüfung. Die E-Mail-Adresse nutzen wir nur für Rückfragen zu deinem Eintrag und veröffentlichen sie nicht. Rechtsgrundlage ist Art. 6 Abs. 1 lit. b und f DSGVO. Wir löschen die E-Mail-Adresse ${ph("Datenschutz: Löschfrist Formular", "Frist, z. B. zwölf Monate nach dem letzten Termin")}.</p>
+<h2>5. Termine eintragen</h2><p>${formKind === "google" ? "Veranstalter können Termine über ein Formular von Google Formulare (Google Ireland Limited, Gordon House, Barrow Street, Dublin 4, Irland) einreichen. Das Formular öffnet sich erst, wenn du den Link anklickst. Dabei gelten zusätzlich die Datenschutzbestimmungen von Google." : formKind === "other" ? `Veranstalter können Termine über ein Formular bei ${esc(formHost)} einreichen. Das Formular öffnet sich erst, wenn du den Link anklickst. Dabei gelten zusätzlich die Datenschutzbestimmungen dieses Anbieters.` : "Veranstalter können uns Termine per E-Mail schicken."} Wir verarbeiten die Angaben zum Markt und deine E-Mail-Adresse. Die Marktdaten veröffentlichen wir nach Prüfung. Die E-Mail-Adresse nutzen wir nur für Rückfragen zu deinem Eintrag und veröffentlichen sie nicht. Rechtsgrundlage ist Art. 6 Abs. 1 lit. b und f DSGVO. Wir löschen die E-Mail-Adresse ${ph("Datenschutz: Löschfrist Formular", "Frist, z. B. zwölf Monate nach dem letzten Termin")}.</p>
 <h2>6. Kontakt per E-Mail</h2><p>Schreibst du uns eine E-Mail, verarbeiten wir deine Angaben, um die Anfrage zu beantworten (Art. 6 Abs. 1 lit. b oder f DSGVO), und löschen sie, wenn sie nicht mehr benötigt werden.</p>
 <h2>7. Links zu anderen Websites</h2><p>Links wie „Route planen“ führen zu Google Maps oder zu Websites der Veranstalter. Erst wenn du einen solchen Link anklickst, werden Daten an den jeweiligen Anbieter übertragen.</p>
 <h2>8. Deine Rechte</h2><p>Du hast das Recht auf Auskunft, Berichtigung, Löschung, Einschränkung der Verarbeitung, Datenübertragbarkeit und Widerspruch. Außerdem kannst du dich bei einer Datenschutz-Aufsichtsbehörde beschweren, zum Beispiel beim Hamburgischen Beauftragten für Datenschutz und Informationsfreiheit.</p>
@@ -576,7 +612,7 @@ for (const [p, pg] of pages) {
 
 /* ---------------------------------------------------------------- Schreiben */
 fs.rmSync(OUT, { recursive: true, force: true });
-const withBase = t => BASE ? t.replace(/(href|src)="\/(?!\/)/g, `$1="${BASE}/`).replace(/url\("\/fonts\//g, `url("${BASE}/fonts/`) : t;
+const withBase = t => BASE ? t.replace(/srcset="([^"]*)"/g, (m, v) => `srcset="${v.replace(/(^|,\s*)\/(?!\/)/g, `$1${BASE}/`)}"`).replace(/(href|src)="\/(?!\/)/g, `$1="${BASE}/`).replace(/url\("\/fonts\//g, `url("${BASE}/fonts/`) : t;
 for (const [p, pg] of pages) {
   const file = p.endsWith("/") ? path.join(OUT, p, "index.html") : path.join(OUT, p);
   if (!path.resolve(file).startsWith(path.resolve(OUT) + path.sep)) throw new Error(`Ungültiger Seitenpfad „${p}“. Es wurde nichts außerhalb des Ausgabeordners geschrieben.`);
@@ -587,6 +623,7 @@ fs.mkdirSync(path.join(OUT, "assets"), { recursive: true });
 fs.writeFileSync(path.join(OUT, "assets/style.css"), withBase(fontCSS) + "\n" + fs.readFileSync(path.join(ROOT, "src/style.css"), "utf8"));
 fs.copyFileSync(path.join(ROOT, "src/site.js"), path.join(OUT, "assets/site.js"));
 fs.copyFileSync(path.join(ROOT, "src/icon.svg"), path.join(OUT, "assets/icon.svg"));
+if (IMGS.size) { fs.mkdirSync(path.join(OUT, "assets/img"), { recursive: true }); for (const x of IMGS) fs.copyFileSync(path.join(imgDir, x), path.join(OUT, "assets/img", x)); }
 if (fontsFound.length) { fs.mkdirSync(path.join(OUT, "fonts"), { recursive: true }); for (const x of fontsFound) fs.copyFileSync(path.join(fontDir, x.f), path.join(OUT, "fonts", x.f)); }
 const indexable = [...pages].filter(([p, pg]) => !pg.noindex && p !== "/404.html").map(([p]) => p);
 fs.writeFileSync(path.join(OUT, "sitemap.xml"), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${indexable.map(p => `  <url><loc>${esc(SITE + p)}</loc><lastmod>${key(TODAY)}</lastmod></url>`).join("\n")}\n</urlset>\n`);

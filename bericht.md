@@ -1,12 +1,14 @@
 # Flohlotse: Website gebaut
 
-Stand 01.10.2026 · 105 Seiten (noch nicht für Google freigegeben) · 43 Märkte · 159 Termine in den nächsten 120 Tagen · 42 Ratgeber-Artikel · 276 Event-Auszeichnungen
+Stand 01.10.2026 · 152 Seiten (noch nicht für Google freigegeben) · 65 Märkte · 188 Termine in den nächsten 120 Tagen · 42 Ratgeber-Artikel · 752 Event-Auszeichnungen
 
-## 6 Hinweise zum Prüfen
+## 8 Hinweise zum Prüfen
 
 | Bereich | Hinweis |
 |---|---|
+| Uhrzeit fehlt | Flohmarkt Marktkauf-Center Prisdorf am Samstag, 3. Oktober |
 | Uhrzeit fehlt | Schrødelmarkt im Schrødingers am Sonntag, 4. Oktober |
+| Uhrzeit fehlt | Flohmarkt famila Wedel am Sonntag, 4. Oktober |
 | Uhrzeit fehlt | Flohmarkt im Parkhaus REWE-Center Wandsbek am Sonntag, 18. Oktober |
 | Keine Termine | Flohmarkt im Barmbek°Basch hat in den nächsten 120 Tagen keinen Termin. |
 | Einstellungen | Weder Formular-Link noch Impressum-E-Mail eingetragen. Auf der Seite Für Veranstalter steht so lange „bald verfügbar“. |

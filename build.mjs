@@ -184,6 +184,7 @@ const MARKETS = data["Märkte"].filter(r => yes(r["Aktiv"]) && r["Kennung"] && v
   area: r["Stadtteil"], addr: r["Adresse"], bez: r["Bezirk"], org: r["Veranstalter"], tags: list(r["Kategorien"]), rhythm: r["Rhythmus kurz"],
   when: r["Rhythmus im Satz"], note: r["Kurzbeschreibung"], intro: r["Einleitung"], tips: lines(r["Tipps"]), hint: r["Hinweis"], oepnv: r["Haltestelle"],
   kw: r["Suchbegriff"], t: r["SEO-Titel"], d: r["SEO-Beschreibung"], kb: list(r["Ratgeber-Artikel"]), events: [],
+  geo: r["Koordinaten"] || "",
   web: /^https?:\/\/[^\s"<>]+$/i.test(String(r["Veranstalter-Website"] || "").trim()) ? String(r["Veranstalter-Website"]).trim() : ""
 }));
 if (!MARKETS.length) throw new Error("Keine aktiven Märkte gefunden (Blatt „Märkte“, Spalte „Aktiv“). Die Website wurde nicht veröffentlicht, damit keine leere Seite online geht.");
@@ -359,7 +360,7 @@ function layout({ p, title, desc, body, ld, noindex, nav, extraHead = "", img = 
 <html lang="de">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>${esc(title)}</title>
 <meta name="description" content="${esc(desc)}">
 <meta name="robots" content="${noindex || !PUBLIC ? "noindex,follow" : "index,follow"}">
@@ -415,7 +416,7 @@ function evHTML(e, h = 3) {
   const hm = x => x.includes("/") ? hmText(x) : x;
   // Handy: gelbe Zeile „08:00 bis 16:00“ über dem Namen. Ab Tablet: der runde Zeit-Sticker links.
   const t = ic("clock") + (e.cancelled ? '<span class="t-lab">Termin</span><span class="t-main">fällt aus</span>' : !e.start ? '<span class="t-lab">Uhrzeit</span><span class="t-main">folgt</span>' : e.end ? `<span class="t-a">${hm(e.start)}</span><span class="t-bis">bis</span><span class="t-b">${hm(e.end)}</span>` : `<span class="t-lab">ab</span><span class="t-main">${hm(e.start)}</span>`);
-  return `<article class="ev${e.cancelled ? " off" : ""}" data-tags="${esc(m.tags.join("|"))}"${!e.cancelled && e.start ? ` data-s="${tFirst(e.start)}"${e.end ? ` data-e="${tLast(e.end)}"` : ""}` : ""}><div class="time" aria-label="${esc(e.cancelled ? "Abgesagt" : timeText(e))}">${t}</div><div class="ev-body">
+  return `<article class="ev${e.cancelled ? " off" : ""}" data-tags="${esc(m.tags.join("|"))}"${llAttr(m)}${!e.cancelled && e.start ? ` data-s="${tFirst(e.start)}"${e.end ? ` data-e="${tLast(e.end)}"` : ""}` : ""}><div class="time" aria-label="${esc(e.cancelled ? "Abgesagt" : timeText(e))}">${t}</div><div class="ev-body">
 <h${h}><a href="/flohmarkt/${m.slug}/">${esc(m.name)}</a></h${h}><p class="meta ln">${ic("pin")}<span><b>${esc(m.area)}</b> · ${addrNb(m.addr)}</span></p>
 ${e.cancelled ? `<p class="note warn-text">Dieser Termin fällt aus.${e.note ? " " + esc(e.note) : ""}</p>` : m.note ? `<p class="note">${esc(m.note)}${e.note ? " " + esc(e.note) : ""}</p>` : ""}
 ${m.tags.length ? `<div class="row">${m.tags.map(t => CAT_BY_TAG[t] ? `<a class="tag" href="/${CAT_BY_TAG[t].s}/">${tagIc(t)}${esc(t)}</a>` : `<span class="tag">${tagIc(t)}${esc(t)}</span>`).join("")}</div>` : ""}
@@ -579,6 +580,32 @@ const catCta = c => { const nx = nextOf(c.evs); return `<a class="cta-box" href=
 const catLink = (s, t) => CAT_BY_S[s] ? `[${t}](/${s}/)` : t;
 const extUrl = u => /^https?:\/\/[^\s"<>]+$/i.test(String(u || "").trim()) ? String(u).trim() : "";
 
+
+/* ---------------------------------------------------------------- Umkreis (Postleitzahl) und Karte
+   Postleitzahlen aus src/plz-hamburg.csv (GeoNames, CC BY 4.0). Die Lage eines Markts ergibt sich aus
+   der freiwilligen Spalte „Koordinaten“ (z. B. „53.5602, 9.9667“) oder aus Postleitzahl und Stadtteil der Adresse. */
+const PLZ_ROWS = (() => { try { return fs.readFileSync(path.join(ROOT, "src/plz-hamburg.csv"), "utf8").split(/\r?\n/).filter(l => l && !l.startsWith("#") && !l.startsWith("plz,")).map(l => { const [plz, ort, lat, lng] = l.split(","); return { plz, ort: ort || "", lat: +lat, lng: +lng }; }).filter(r => /^\d{5}$/.test(r.plz) && isFinite(r.lat) && isFinite(r.lng)); } catch { return []; } })();
+const avgLL = rs => [rs.reduce((a, r) => a + r.lat, 0) / rs.length, rs.reduce((a, r) => a + r.lng, 0) / rs.length];
+const PLZ_C = {}; { const g = {}; for (const r of PLZ_ROWS) (g[r.plz] = g[r.plz] || []).push(r); for (const [k, rs] of Object.entries(g)) PLZ_C[k] = avgLL(rs).map(x => +x.toFixed(4)); }
+const normO = s => String(s || "").toLowerCase().replace(/[^a-zäöüß]/g, "");
+function coordOf(m) {
+  const k = String(m.geo || "").match(/(-?\d{1,2}(?:\.\d+)?)\s*[,;]\s*(-?\d{1,3}(?:\.\d+)?)/);
+  if (k && Math.abs(+k[1]) <= 90 && Math.abs(+k[2]) <= 180) return [+k[1], +k[2]];
+  if (!PLZ_ROWS.length) return null;
+  const plz = (m.addr.match(/\b(\d{5})\b/) || [])[1], a = normO(m.area), same = r => normO(r.ort) === "hamburg" + a || normO(r.ort) === a;
+  if (plz) { const hit = PLZ_ROWS.find(r => r.plz === plz && same(r)); if (hit) return [hit.lat, hit.lng]; if (PLZ_C[plz]) return PLZ_C[plz]; }
+  const byName = PLZ_ROWS.filter(same); return byName.length ? avgLL(byName).map(x => +x.toFixed(4)) : null;
+}
+for (const m of MARKETS) { m.ll = coordOf(m); if (!m.ll && PLZ_ROWS.length) warn("Karte", `${m.name}: Lage unbekannt. Postleitzahl in die Adresse schreiben oder die Spalte „Koordinaten“ füllen.`); }
+const llAttr = m => m.ll ? ` data-ll="${m.ll[0].toFixed(4)},${m.ll[1].toFixed(4)}"` : "";
+// Umkreis-Suche (funktioniert nur mit JavaScript, Postleitzahl und Standort bleiben im Browser)
+const nearBox = (what = "Termine") => PLZ_ROWS.length ? `<div class="near" id="near" hidden><p class="near-h">${ic("pin")}${what} in deiner Nähe</p><div class="near-form">
+<label class="near-plz"><span>Postleitzahl</span><input id="nearPlz" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="5" placeholder="z. B. 22765" autocomplete="postal-code" enterkeyhint="search"></label>
+<label class="near-km"><span>Umkreis</span><select id="nearKm"><option value="3">3 km</option><option value="5">5 km</option><option value="10" selected>10 km</option><option value="20">20 km</option><option value="30">30 km</option></select></label>
+<button type="button" class="chip near-geo" id="nearGeo">${ic("route")}Mein Standort</button><button type="button" class="chip" id="nearClear" hidden>Zurücksetzen</button></div>
+<p class="near-msg" id="nearMsg" aria-live="polite">Entfernungen sind ungefähr, gerechnet ab der Mitte der Postleitzahl. Deine Eingabe bleibt auf deinem Gerät.</p></div>` : "";
+const HAS_MAP = fs.existsSync(path.join(ROOT, "src/leaflet.js")) && fs.existsSync(path.join(ROOT, "src/leaflet.css"));
+
 /* ---------------------------------------------------------------- Startseite */
 {
   const { sat, sun, sunOnly } = weekendDays();
@@ -612,7 +639,7 @@ const extUrl = u => /^https?:\/\/[^\s"<>]+$/i.test(String(u || "").trim()) ? Str
 <span class="proto">${esc(REGION)}</span>
 <h1>Flohmarkt Hamburg: alle Termine, aufgeräumt.</h1>
 <p>Wann, wo und wie lange. Ohne Werbebanner, ohne alte Termine.</p>
-<div class="quick"><a class="chip" href="/heute/">${ic("sun")}Heute</a><a class="chip" href="/wochenende/">${ic("cal")}Wochenende</a><a class="chip" href="/sonntag/">${ic("cal")}Sonntag</a><a class="chip" href="/flohmaerkte/">${ic("map")}Märkte nach Bezirk</a><a class="chip" href="/ratgeber/">${ic("book")}Ratgeber</a><a class="chip" href="/flohmarkt-schilder/">${ic("printer")}Schilder drucken</a></div>
+<div class="quick"><a class="chip" href="/heute/">${ic("sun")}Heute</a><a class="chip" href="/wochenende/">${ic("cal")}Wochenende</a><a class="chip" href="/sonntag/">${ic("cal")}Sonntag</a><a class="chip" href="/flohmaerkte/">${ic("map")}Märkte nach Bezirk</a>${HAS_MAP ? `<a class="chip" href="/flohmaerkte/#karte">${ic("pin")}Karte</a>` : ""}<a class="chip" href="/ratgeber/">${ic("book")}Ratgeber</a><a class="chip" href="/flohmarkt-schilder/">${ic("printer")}Schilder drucken</a></div>
 </div><a class="big-sticker" href="/wochenende/"><b>${weN}</b><span>${weLabel}</span></a></section>
 ${START_IMGS.length ? `<figure class="strip-wrap"><div class="strip">${START_IMGS.map((x, i) => `<div class="tile"><img src="/assets/img/${x.f}" width="400" height="500" alt="${altFor(x.ki)}"${i > 1 ? ' loading="lazy"' : ""} decoding="async"><span class="ki">${x.ki ? "KI-generiert" : "Symbolfoto"}</span></div>`).join("")}</div></figure>` : ""}
 <section class="sec"><div class="sec-head"><h2>Die nächsten Flohmärkte</h2>${more("/termine/", "Alle")}</div>
@@ -636,7 +663,7 @@ ${faqBlock(homeFaq, "Häufige Fragen zu Flohmärkten in Hamburg")}
 {
   const evs = upcoming(60);
   const body = crumbs([[NAME, "/"], ["Termine"]]) + `<section class="hub-head"><h1>Flohmarkt-Termine in Hamburg und Umgebung</h1><p>Alle Termine der nächsten 60 Tage in Hamburg und im Umland bis 30 Kilometer, nach Tagen sortiert.</p>
-<div class="chips" id="filter" role="group" aria-label="Art des Markts"><button class="chip" type="button" data-t="" aria-pressed="true">Alle Arten</button>${TAGS_ALL.map(t => `<button class="chip" type="button" data-t="${esc(t)}" aria-pressed="false">${tagIc(t)}${esc(t)}</button>`).join("")}</div></section>
+<div class="chips" id="filter" role="group" aria-label="Art des Markts"><button class="chip" type="button" data-t="" aria-pressed="true">Alle Arten</button>${TAGS_ALL.map(t => `<button class="chip" type="button" data-t="${esc(t)}" aria-pressed="false">${tagIc(t)}${esc(t)}</button>`).join("")}</div>${nearBox()}</section>
 <div id="liste">${groupList(evs)}</div><div class="empty" id="leer" hidden>Keine Märkte dieser Art in den nächsten 60 Tagen.</div>
 ${MONTHS.length ? `<section class="related"><div class="sec-head"><h2>Termine nach Monat</h2></div>${monthChips()}</section>` : ""}
 <section class="related"><div class="sec-head"><h2>Nach Art des Markts</h2></div>${catChips()}</section>
@@ -647,8 +674,11 @@ ${MONTHS.length ? `<section class="related"><div class="sec-head"><h2>Termine na
 
 /* ---------------------------------------------------------------- Alle Märkte */
 {
-  const body = crumbs([[NAME, "/"], ["Alle Märkte"]]) + `<section class="hub-head"><h1>Alle Flohmärkte in Hamburg und Umgebung</h1><p>${MARKETS.length} Märkte in Hamburg und im Umland bis 30 Kilometer, sortiert nach Bezirk und Region.</p>${catChips()}</section>
-${REGIONS.map(r => { const ms = MARKETS.filter(m => m.bez === r.k); return ms.length ? `<section class="cluster"><div class="sec-head"><h2>${esc(r.name)}</h2>${more(`/flohmarkt-hamburg/${r.k}/`, r.umland ? "Zur Region" : "Zum Bezirk", "Seite " + r.name)}</div><div class="qlist">${ms.map(m => `<a href="/flohmarkt/${m.slug}/"><span>${esc(m.name)}<small class="meta">${esc(m.area)} · ${esc(m.rhythm)}</small></span>${ic("chev")}</a>`).join("")}</div></section>` : ""; }).join("")}`;
+  const body = crumbs([[NAME, "/"], ["Alle Märkte"]]) + `<section class="hub-head"><h1>Alle Flohmärkte in Hamburg und Umgebung</h1><p>${MARKETS.length} Märkte in Hamburg und im Umland bis 30 Kilometer, sortiert nach Bezirk und Region.</p>${catChips()}${nearBox("Märkte")}</section>
+${HAS_MAP ? `<section class="map-sec" id="karte"><div class="sec-head"><h2>Alle Märkte auf der Karte</h2></div><div class="map-box" id="mapBox"><div class="map-consent"><p><b>Karte laden?</b> Die Karte zeigt alle Märkte mit Kartenbildern von OpenStreetMap. Erst beim Laden wird deine IP-Adresse an die OpenStreetMap Foundation übertragen. Mehr dazu in den <a href="/datenschutz/">Datenschutzhinweisen</a>.</p><button class="btn" id="mapLoad" type="button">${ic("map")}Karte laden</button></div></div>
+<script type="application/json" id="mapData">${JSON.stringify(MARKETS.filter(m => m.ll).map(m => { const n = m.events.find(e => !e.cancelled); return [m.name, m.slug, m.area, m.ll[0], m.ll[1], n ? fmtShort(n.date) + (n.start ? ", " + timeText(n) : "") : "", m.rhythm]; })).replace(/</g, "\\u003c")}</script>
+<p class="small meta">Die Punkte zeigen die ungefähre Lage. Die genaue Adresse steht auf der Seite des Markts.</p></section>` : ""}
+${REGIONS.map(r => { const ms = MARKETS.filter(m => m.bez === r.k); return ms.length ? `<section class="cluster"><div class="sec-head"><h2>${esc(r.name)}</h2>${more(`/flohmarkt-hamburg/${r.k}/`, r.umland ? "Zur Region" : "Zum Bezirk", "Seite " + r.name)}</div><div class="qlist">${ms.map(m => `<a href="/flohmarkt/${m.slug}/"${llAttr(m)}><span>${esc(m.name)}<small class="meta">${esc(m.area)} · ${esc(m.rhythm)}</small></span>${ic("chev")}</a>`).join("")}</div></section>` : ""; }).join("")}`;
   layout({ p: "/flohmaerkte/", title: `Flohmärkte in Hamburg und Umgebung: alle ${MARKETS.length} Märkte | ${NAME}`, desc: `Alle ${MARKETS.length} Flohmärkte in Hamburg und im Umland bis 30 Kilometer auf einen Blick, sortiert nach Bezirk und Region, mit Rhythmus und Terminen.`, body, nav: "maerkte", ld: G([crumbLD([[NAME, "/"], ["Alle Märkte"]]), { "@type": "ItemList", itemListElement: MARKETS.map((m, i) => ({ "@type": "ListItem", position: i + 1, name: m.name, url: `${SITE}/flohmarkt/${m.slug}/` })) }]) });
 }
 
@@ -784,7 +814,7 @@ ${CATS_ON.some(c => c.ms.some(m => m.bez === r.k)) ? `<section class="related"><
   for (const [k, fn] of Object.entries(Z)) {
     const z = fn();
     const body = crumbs([[NAME, "/"], ["Termine", "/termine/"], [z.h.replace("Flohmarkt Hamburg ", "")]]) + `<article class="kb"><h1>${z.h}</h1><div class="byline"><span>${ic("cal")}${esc(z.sub)}</span><span>${ic("update")}Stand: ${STAND}</span></div>
-<div class="answer"><span class="kicker">Kurz gesagt</span><p>${esc(z.ans)}</p></div><section class="block">${groupList(z.evs) || '<p class="meta">Keine Termine im Kalender.</p>'}</section>${z.next ? `<a class="more" href="${z.next[0]}">${z.next[1]}</a>` : ""}
+<div class="answer"><span class="kicker">Kurz gesagt</span><p>${esc(z.ans)}</p></div>${nearBox()}<section class="block">${groupList(z.evs) || '<p class="meta">Keine Termine im Kalender.</p>'}</section>${z.next ? `<a class="more" href="${z.next[0]}">${z.next[1]}</a>` : ""}
 <section class="related"><div class="sec-head"><h2>Weitere Zeiträume und Bezirke</h2></div>${regionChips(`/${k}/`)}</section>
 <section class="related"><div class="sec-head"><h2>Vor dem Besuch lesen</h2></div>${grid(["beste-uhrzeit-flohmarkt", "was-mitnehmen-flohmarkt", "flohmarkt-knigge"].filter(s => KBY[s]).map(kbCard))}</section></article>`;
     layout({ p: `/${k}/`, title: `${z.t} | ${NAME}`, desc: z.d, body, nav: "termine", ld: G([crumbLD([[NAME, "/"], ["Termine", "/termine/"], [z.h]])].concat(z.evs.map(eventLD))) });
@@ -806,7 +836,7 @@ for (const c of CATS_ON) {
     `Alle ${c.pl} in Hamburg: ${c.ms.length} Märkte mit Terminen ${Y}, Uhrzeiten und Adressen.`);
   const body = crumbs(cr) + `<article class="kb"><h1>${esc(c.h1)}</h1>
 <div class="byline"><span>${ic("pin")}${c.ms.length} Märkte</span><span>${ic("cal")}${c.evs.filter(e => !e.cancelled).length} Termine</span><span>${ic("update")}Stand: ${STAND}</span></div>
-<div class="answer"><span class="kicker">Kurz gesagt</span><p>${esc(ans)}</p></div>
+<div class="answer"><span class="kicker">Kurz gesagt</span><p>${esc(ans)}</p></div>${nearBox()}
 <section class="related"><div class="sec-head"><h2>Nächste Termine</h2><small>nächste 60 Tage</small></div>${groupList(ev60, 3) || '<p class="meta">In den nächsten 60 Tagen keine Termine. Die Märkte unten melden neue Termine meist rechtzeitig vorher.</p>'}</section>
 <section class="related"><div class="sec-head"><h2>Alle Märkte im Überblick</h2></div>${grid(ms.map(mCard))}</section>
 <div class="kb-body"><p class="intro">${esc(c.lead)}</p>${c.b().map(([h, x]) => `<h2>${esc(h)}</h2><p>${rich(x)}</p>`).join("")}</div>
@@ -830,7 +860,7 @@ for (const mo of MONTHS) {
     `Flohmarkt Hamburg im ${label}: alle ${live.length} Termine mit Uhrzeit und Adresse.`);
   const body = crumbs(cr) + `<article class="kb"><h1>Flohmarkt Hamburg im ${esc(label)}</h1>
 <div class="byline"><span>${ic("cal")}${live.length} Termine</span><span>${ic("pin")}${mkts.length} Märkte</span><span>${ic("update")}Stand: ${STAND}</span></div>
-<div class="answer"><span class="kicker">Kurz gesagt</span><p>${esc(ans)}</p></div>
+<div class="answer"><span class="kicker">Kurz gesagt</span><p>${esc(ans)}</p></div>${nearBox()}
 <section class="block">${groupList(mo.evs)}</section>
 <section class="related"><div class="sec-head"><h2>Andere Monate</h2></div>${monthChips(mo.s) || '<p class="meta">Weitere Monate folgen.</p>'}</section>
 <section class="related"><div class="sec-head"><h2>Nach Art des Markts</h2></div>${catChips()}</section>
@@ -1085,6 +1115,7 @@ ${f("Impressum: Vertreten durch") ? `<p>Vertreten durch: ${esc(f("Impressum: Ver
 ${f("Impressum: Register") || f("Impressum: USt-IdNr.") ? `<h2>Register und Umsatzsteuer</h2><p>${esc(f("Impressum: Register"))}${f("Impressum: Register") && f("Impressum: USt-IdNr.") ? "<br>" : ""}${f("Impressum: USt-IdNr.") ? "USt-IdNr.: " + esc(f("Impressum: USt-IdNr.")) : ""}</p>` : ""}
 <h2>Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV</h2><p>${ph("Impressum: Verantwortlich nach § 18 MStV", "Name und Anschrift der verantwortlichen Person")}</p>
 ${IMGS.size ? `<h2>Bildnachweis</h2><p>Die Bilder auf dieser Website sind Symbolbilder und zeigen keinen der hier gelisteten Flohmärkte.${ANY_KI ? " Einige wurden mit künstlicher Intelligenz erzeugt und sind am Bild als „KI-generiert“ gekennzeichnet." : ""}${f("Bildnachweis") ? " " + esc(f("Bildnachweis")) : ""}</p>` : ""}
+${PLZ_ROWS.length ? `<h2>Karten- und Postleitzahl-Daten</h2><p>Postleitzahlen und ihre Lage: <a href="https://www.geonames.org" rel="noopener">GeoNames</a>, Lizenz <a href="https://creativecommons.org/licenses/by/4.0/deed.de" rel="noopener">CC BY 4.0</a>.${HAS_MAP ? ` Karte: <a href="https://leafletjs.com" rel="noopener">Leaflet</a> (BSD-2-Clause), Kartendaten © <a href="https://www.openstreetmap.org/copyright" rel="noopener">OpenStreetMap-Mitwirkende</a>.` : ""}</p>` : ""}
 <h2>Icons</h2><p>Die Icons stammen von <a href="https://phosphoricons.com" rel="noopener">Phosphor Icons</a> und stehen unter der MIT-Lizenz (<a href="/assets/icons-lizenz.txt">Lizenztext</a>).</p>
 <h2>Verbraucherstreitbeilegung</h2><p>Wir sind nicht bereit und nicht verpflichtet, an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen.</p>
 <h2>Hinweis zu Termindaten</h2><p>Alle Termine beruhen auf öffentlichen Angaben der jeweiligen Veranstalter. Wir prüfen sie sorgfältig, können aber nicht garantieren, dass ein Markt wie angegeben stattfindet. Maßgeblich sind die Angaben des Veranstalters.</p></div></article>`;
@@ -1104,7 +1135,8 @@ ${isGitHub
 <h2>5. Termine eintragen</h2><p>${formKind === "google" ? "Veranstalter können Termine über ein Formular von Google Formulare (Google Ireland Limited, Gordon House, Barrow Street, Dublin 4, Irland) einreichen. Das Formular öffnet sich erst, wenn du den Link anklickst. Dabei gelten zusätzlich die Datenschutzbestimmungen von Google." : formKind === "other" ? `Veranstalter können Termine über ein Formular bei ${esc(formHost)} einreichen. Das Formular öffnet sich erst, wenn du den Link anklickst. Dabei gelten zusätzlich die Datenschutzbestimmungen dieses Anbieters.` : "Veranstalter können uns Termine per E-Mail schicken."} Wir verarbeiten die Angaben zum Markt und deine E-Mail-Adresse. Die Marktdaten veröffentlichen wir nach Prüfung. Die E-Mail-Adresse nutzen wir nur für Rückfragen zu deinem Eintrag und veröffentlichen sie nicht. Rechtsgrundlage ist Art. 6 Abs. 1 lit. b und f DSGVO. Wir löschen die E-Mail-Adresse ${ph("Datenschutz: Löschfrist Formular", "Frist, z. B. zwölf Monate nach dem letzten Termin")}.</p>
 <h2>6. Kontakt per E-Mail</h2><p>Schreibst du uns eine E-Mail, verarbeiten wir deine Angaben, um die Anfrage zu beantworten (Art. 6 Abs. 1 lit. b oder f DSGVO), und löschen sie, wenn sie nicht mehr benötigt werden.</p>
 <h2>7. Links zu anderen Websites</h2><p>Links wie „Route planen“ führen zu Google Maps oder zu Websites der Veranstalter. Erst wenn du einen solchen Link anklickst, werden Daten an den jeweiligen Anbieter übertragen.</p>
-<h2>8. Deine Rechte</h2><p>Du hast das Recht auf Auskunft, Berichtigung, Löschung, Einschränkung der Verarbeitung, Datenübertragbarkeit und Widerspruch. Außerdem kannst du dich bei einer Datenschutz-Aufsichtsbehörde beschweren, zum Beispiel beim Hamburgischen Beauftragten für Datenschutz und Informationsfreiheit.</p>
+<h2>8. Umkreissuche und Karte</h2><p>Die Umkreissuche nach Postleitzahl oder Standort läuft vollständig in deinem Browser. Postleitzahl und Standort werden nicht an uns oder Dritte übertragen und nicht gespeichert. Deinen Standort fragt der Browser nur ab, wenn du auf „Mein Standort“ tippst und zustimmst.</p>${HAS_MAP ? `<p>Die Karte auf der Seite „Alle Märkte“ lädt erst, wenn du auf „Karte laden“ tippst. Dann werden Kartenbilder von Servern der OpenStreetMap Foundation (St John’s Innovation Centre, Cowley Road, Cambridge, CB4 0WS, Vereinigtes Königreich) geladen, dabei wird deine IP-Adresse übertragen. Rechtsgrundlage ist deine Einwilligung durch den Klick (Art. 6 Abs. 1 lit. a DSGVO). Die Kartensoftware (Leaflet) liegt auf unserem Server. Mehr dazu in der <a href="https://osmfoundation.org/wiki/Privacy_Policy" rel="noopener">Datenschutzerklärung der OpenStreetMap Foundation</a>.</p>` : ""}
+<h2>9. Deine Rechte</h2><p>Du hast das Recht auf Auskunft, Berichtigung, Löschung, Einschränkung der Verarbeitung, Datenübertragbarkeit und Widerspruch. Außerdem kannst du dich bei einer Datenschutz-Aufsichtsbehörde beschweren, zum Beispiel beim Hamburgischen Beauftragten für Datenschutz und Informationsfreiheit.</p>
 <p>Stand: ${ph("Datenschutz: Stand", "Datum")}</p></div></article>`;
   layout({ p: "/datenschutz/", title: `Datenschutz | ${NAME}`, desc: `Datenschutzerklärung von ${NAME}.`, body: ds, noindex: true });
 }
@@ -1140,6 +1172,8 @@ fs.mkdirSync(path.join(OUT, "assets"), { recursive: true });
 fs.writeFileSync(path.join(OUT, "assets/style.css"), withBase(fontCSS) + "\n" + fs.readFileSync(path.join(ROOT, "src/style.css"), "utf8"));
 fs.copyFileSync(path.join(ROOT, "src/site.js"), path.join(OUT, "assets/site.js"));
 fs.copyFileSync(path.join(ROOT, "src/icon.svg"), path.join(OUT, "assets/icon.svg"));
+if (PLZ_ROWS.length) fs.writeFileSync(path.join(OUT, "assets/plz.json"), JSON.stringify(PLZ_C));
+if (HAS_MAP) for (const f of ["leaflet.js", "leaflet.css"]) fs.copyFileSync(path.join(ROOT, "src", f), path.join(OUT, "assets", f));
 fs.writeFileSync(path.join(OUT, "assets/icons-lizenz.txt"), ICON_LICENSE);
 fs.mkdirSync(path.join(OUT, "assets/schilder"), { recursive: true });
 for (const t of SIGNS) fs.writeFileSync(path.join(OUT, signImg(t).slice(1)), signPreviewSVG(t));

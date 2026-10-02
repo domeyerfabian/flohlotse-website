@@ -29,7 +29,7 @@
     if (qs.length) document.querySelectorAll("main .cluster").forEach(function (c) { if (c.querySelector(".qlist")) c.hidden = !c.querySelector(".qlist a:not([hidden])"); });
     var leer = document.getElementById("leer"); if (leer) leer.hidden = shown > 0;
     var msg = document.getElementById("nearMsg");
-    if (msg && F.origin) msg.textContent = shown ? shown + (shown === 1 ? " Treffer" : " Treffer") + " im Umkreis von " + F.km + " km um " + F.label + ". Entfernungen sind ungefähr." : "Im Umkreis von " + F.km + " km um " + F.label + " ist gerade nichts im Kalender. Wähl einen größeren Umkreis.";
+    if (msg && F.origin) msg.classList.add("on"); if (msg && F.origin) msg.textContent = shown ? shown + (shown === 1 ? " Treffer" : " Treffer") + " im Umkreis von " + F.km + " km um " + F.label + ". Entfernungen sind ungefähr." : "Im Umkreis von " + F.km + " km um " + F.label + " ist gerade nichts im Kalender. Wähl einen größeren Umkreis.";
     if (window.flMapNear) window.flMapNear(F);
   };
   if (filter) {
@@ -43,18 +43,21 @@
   if (near) {
     near.hidden = false;
     var plzIn = document.getElementById("nearPlz"), kmSel = document.getElementById("nearKm"), geo = document.getElementById("nearGeo"), clr = document.getElementById("nearClear"), msg0 = document.getElementById("nearMsg").textContent, plzData = null;
-    var sync = function () { try { var u = new URL(location.href); if (F.origin && F.label.indexOf("PLZ") === 0) { u.searchParams.set("plz", plzIn.value); u.searchParams.set("km", F.km); } else { u.searchParams.delete("plz"); u.searchParams.delete("km"); } history.replaceState(null, "", u); } catch (e) {} };
+    // Postleitzahl steht hinter dem # in der Adresse: dieser Teil wird nie an den Server gesendet
+    var sync = function () { try { var h = F.origin && F.label.indexOf("PLZ") === 0 ? "#plz=" + plzIn.value + "&km=" + F.km : " "; history.replaceState(null, "", h === " " ? location.pathname + location.search : h); } catch (e) {} };
     var loadPlz = function (cb) { if (plzData) return cb(plzData); fetch(ROOT + "/assets/plz.json").then(function (r) { return r.json(); }).then(function (j) { plzData = j; cb(j); }).catch(function () { document.getElementById("nearMsg").textContent = "Die Postleitzahlen konnten gerade nicht geladen werden."; }); };
+    var say = function (t, on) { var m = document.getElementById("nearMsg"); m.textContent = t; m.classList.toggle("on", !!on); };
     var byPlz = function () {
-      var v = plzIn.value.replace(/\D/g, "").slice(0, 5); if (plzIn.value !== v) plzIn.value = v;
-      if (v.length < 5) { if (!v && F.origin && F.label.indexOf("PLZ") === 0) reset(); return; }
+      var v = plzIn.value.replace(/\D/g, "").slice(0, 5); plzIn.value = v;
+      if (v.length < 5) { say("Bitte gib eine Postleitzahl mit fünf Ziffern ein.", true); plzIn.focus(); return; }
       loadPlz(function (j) {
-        if (!j[v]) { document.getElementById("nearMsg").textContent = "Die Postleitzahl " + v + " liegt außerhalb unseres Gebiets (Hamburg und 30 km Umland)."; return; }
-        F.origin = j[v]; F.label = "PLZ " + v; clr.hidden = false; apply(); sync();
+        if (!j[v]) { say("Die Postleitzahl " + v + " liegt außerhalb unseres Gebiets (Hamburg und 30 km Umland).", true); return; }
+        F.origin = j[v]; F.label = "PLZ " + v; clr.hidden = false; apply(); sync(); plzIn.blur();
       });
     };
-    var reset = function () { F.origin = null; F.label = ""; plzIn.value = ""; clr.hidden = true; document.getElementById("nearMsg").textContent = msg0; apply(); sync(); };
-    plzIn.addEventListener("input", byPlz);
+    var reset = function () { F.origin = null; F.label = ""; plzIn.value = ""; clr.hidden = true; say(msg0, false); apply(); sync(); };
+    plzIn.addEventListener("input", function () { var v = plzIn.value.replace(/\D/g, "").slice(0, 5); if (plzIn.value !== v) plzIn.value = v; });
+    document.getElementById("nearForm").addEventListener("submit", function (e) { e.preventDefault(); byPlz(); });
     kmSel.addEventListener("change", function () { F.km = +kmSel.value; if (F.origin) { apply(); sync(); } });
     clr.addEventListener("click", reset);
     geo.addEventListener("click", function () {
@@ -63,7 +66,7 @@
       navigator.geolocation.getCurrentPosition(function (p) { F.origin = [p.coords.latitude, p.coords.longitude]; F.label = "deinen Standort"; plzIn.value = ""; clr.hidden = false; apply(); sync(); },
         function () { document.getElementById("nearMsg").textContent = "Standort nicht verfügbar. Gib stattdessen deine Postleitzahl ein."; }, { timeout: 10000, maximumAge: 600000 });
     });
-    try { var u0 = new URL(location.href), p0 = u0.searchParams.get("plz"), k0 = u0.searchParams.get("km"); if (k0 && kmSel.querySelector('option[value="' + k0 + '"]')) { kmSel.value = k0; F.km = +k0; } if (p0) { plzIn.value = p0; byPlz(); } } catch (e) {}
+    try { var hp = new URLSearchParams(location.hash.slice(1)), qp = new URLSearchParams(location.search), p0 = hp.get("plz") || qp.get("plz"), k0 = hp.get("km") || qp.get("km"); if (k0 && kmSel.querySelector('option[value="' + k0 + '"]')) { kmSel.value = k0; F.km = +k0; } if (p0) { plzIn.value = p0; byPlz(); } } catch (e) {}
   }
   // Karte (erst nach Klick: Kartenbilder von OpenStreetMap, Leaflet liegt auf unserem Server)
   var mapLoad = document.getElementById("mapLoad");

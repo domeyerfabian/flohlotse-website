@@ -523,3 +523,17 @@ button.share.copied,.share-row .btn.copied{background:var(--ink);color:var(--pap
 .leaflet-container a{color:var(--ink)}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) :is(.wx .i,.live.on::before){color:inherit}}
 :root[data-theme="dark"] .wx .i{color:inherit}
+
+/* Umkreis: Bestätigen-Knopf (so groß wie die anderen Knöpfe der Maske) und deutliche Rückmeldung */
+.near-go{grid-column:auto;justify-self:stretch;display:inline-flex;align-items:center;justify-content:center;min-height:36px;padding:6px 12px;font-size:14px;font-weight:600}
+.near-geo{grid-column:auto}
+.near-msg.on{color:var(--ink);font-weight:700;font-size:14px}
+@media (min-width:560px){.near-form{grid-template-columns:1fr 1fr auto auto}.near-go,.near-geo{align-self:end;min-height:44px;padding-inline:16px}#nearClear{grid-column:1/-1;justify-self:start}}
+
+/* Karte: Häufigkeit in eigener Zeile, darunter „Zum Markt“ links, Teilen und Route rechts */
+.ev .row.foot{flex-wrap:wrap;gap:10px 12px}
+.ev .foot .rhythm{flex:1 0 100%}
+.ev .foot .acts{display:flex;width:100%;margin-left:0}
+.acts a.go{margin-right:auto;gap:2px;padding-right:8px}
+.acts a.go .i{width:17px;height:17px}
+.share-row a.route{margin-left:0;min-height:44px;padding:10px 18px;font-size:16px;font-weight:700}

@@ -26,6 +26,18 @@ Ihr pflegt nur die Tabelle. Die ausführliche Einrichtungsanleitung liegt als Do
 - **Tipp des Tages** auf der Startseite wird jede Nacht aus den Terminen berechnet.
 - Auf /veranstalter/ können Veranstalter einen **Link-Code** für ihre eigene Website kopieren. Jeder eingebaute Link hilft beim Ranking.
 
+## Impressum und Datenschutz
+
+- Beide Seiten entstehen aus dem Blatt **Einstellungen**. Pflicht sind: Name, Straße, PLZ und Ort, E-Mail, Telefon. Solange eine Angabe fehlt, ist die Seite als Vorlage markiert und die Website bleibt für Google gesperrt, auch wenn „Für Google freigeben“ auf Ja steht.
+- „Verantwortlich nach § 18 MStV“ darf leer bleiben, dann steht dort dein Name mit „Anschrift wie oben“.
+- Optional: Zeile „Datenschutz: E-Mail-Anbieter“ (z. B. „IONOS SE, Montabaur“), dann wird der Anbieter des Postfachs genannt.
+- Im Impressum steht „keine bezahlten Einträge, keine Werbung“. Sobald sich das ändert, muss der Satz raus (in `build.mjs` nach „Kostenlos und unabhängig“ suchen).
+- Die Datenschutzerklärung erklärt, warum es keinen Cookie-Banner gibt. Das stimmt nur, solange nichts eingebaut wird, das Cookies setzt, etwas auf dem Gerät speichert oder Inhalte von fremden Servern lädt.
+- **Regel für die Tabelle:** Keine E-Mail-Adressen, Telefonnummern oder Notizen über Personen eintragen, nur was auch auf der Website erscheinen soll.
+- **Neue Filter:** „Frühaufsteher“ (Beginn bis 7 Uhr) und „Langschläfer“ (Beginn 10 bis 15 Uhr) entstehen automatisch aus der Uhrzeit, in der Tabelle ist nichts einzutragen.
+- **Bildnachweis:** Im Blatt Einstellungen bei „Bildnachweis“ steht „Fotos: Pexels (kostenlose Pexels-Lizenz).“
+- **Umkreissuche:** Die Postleitzahl wird erst nach Tippen auf „Anzeigen“ angewandt und steht nur hinter dem `#` in der Adresse, sie wird also nie an den Server geschickt.
+
 ## Gestaltung: ein festes System
 
 - **Farben:** nur Schwarz, Gelb und Weiß (plus Grau für Nebentext und Linien). Kein Blau, kein Rot, kein Grün.

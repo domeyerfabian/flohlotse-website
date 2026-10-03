@@ -2,7 +2,7 @@
 
 Stand 03.10.2026 · 189 Seiten (186 für Google) · 102 Märkte · 196 Termine in den nächsten 120 Tagen · 42 Ratgeber-Artikel · 792 Event-Auszeichnungen
 
-## 39 Hinweise zum Prüfen
+## 34 Hinweise zum Prüfen
 
 | Bereich | Hinweis |
 |---|---|
@@ -18,8 +18,6 @@ Stand 03.10.2026 · 189 Seiten (186 für Google) · 102 Märkte · 196 Termine i
 | Keine Termine | Flohmarkt GLOBUS Lurup hat in den nächsten 120 Tagen keinen Termin. |
 | Keine Termine | altonale Flohmarkt an der Museumstraße hat in den nächsten 120 Tagen keinen Termin. |
 | Keine Termine | Flohmarkt IKEA Altona hat in den nächsten 120 Tagen keinen Termin. |
-| Keine Termine | Antik- und Flohmarkt Waitzstraße hat in den nächsten 120 Tagen keinen Termin. |
-| Keine Termine | Antik- und Flohmarkt Blankenese hat in den nächsten 120 Tagen keinen Termin. |
 | Keine Termine | Kinderflohmarkt im kulturtreff Bergedorf Süd hat in den nächsten 120 Tagen keinen Termin. |
 | Keine Termine | Flohmarkt Eppendorfer Weg hat in den nächsten 120 Tagen keinen Termin. |
 | Keine Termine | Flohmarkt Hoheluftchaussee hat in den nächsten 120 Tagen keinen Termin. |
@@ -29,11 +27,8 @@ Stand 03.10.2026 · 189 Seiten (186 für Google) · 102 Märkte · 196 Termine i
 | Keine Termine | Turmweg-Flohmarkt hat in den nächsten 120 Tagen keinen Termin. |
 | Keine Termine | Flohmarkt Metro Harburg hat in den nächsten 120 Tagen keinen Termin. |
 | Keine Termine | FlohZinn in den Wilhelmsburger Zinnwerken hat in den nächsten 120 Tagen keinen Termin. |
-| Keine Termine | Flohmarkt Großneumarkt hat in den nächsten 120 Tagen keinen Termin. |
-| Keine Termine | Flohmarkt Heiligengeistfeld hat in den nächsten 120 Tagen keinen Termin. |
 | Keine Termine | Nachbarschaftsflohmarkt Wilhelmsburg hat in den nächsten 120 Tagen keinen Termin. |
 | Keine Termine | Langschläfer Flohmarkt Überseeboulevard hat in den nächsten 120 Tagen keinen Termin. |
-| Keine Termine | Flohmarkt Immenhof hat in den nächsten 120 Tagen keinen Termin. |
 | Keine Termine | Flohmarkt Langenhorner Markt hat in den nächsten 120 Tagen keinen Termin. |
 | Keine Termine | Flohmarkt Lehmweg hat in den nächsten 120 Tagen keinen Termin. |
 | Keine Termine | Flohmarkt EDEKA Center Struve Bramfeld hat in den nächsten 120 Tagen keinen Termin. |

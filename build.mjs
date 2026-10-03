@@ -284,21 +284,35 @@ if (fontsFound.length < 2) warn("Schriften", `Im Ordner fonts fehlen ${2 - fonts
 // und wird als „KI-generiert“ gekennzeichnet. Fehlt ein Bild, wird die Stelle einfach ohne Bild gebaut.
 const imgDir = path.join(ROOT, "bilder");
 const IMGS = new Set(fs.existsSync(imgDir) ? fs.readdirSync(imgDir).filter(x => /^[a-z0-9-]+\.(webp|jpg)$/.test(x)) : []);
-const pickImg = (base, ext = "webp") => IMGS.has(`${base}-ki.${ext}`) ? { f: `${base}-ki.${ext}`, ki: true } : IMGS.has(`${base}.${ext}`) ? { f: `${base}.${ext}`, ki: false } : null;
-const START_IMGS = [1, 2, 3, 4].map(i => pickImg(`start-${i}`)).filter(Boolean);
+// Ein echtes Foto (start-1.webp) hat Vorrang vor dem KI-Bild (start-1-ki.webp).
+const pickImg = (base, ext = "webp") => IMGS.has(`${base}.${ext}`) ? { f: `${base}.${ext}`, ki: false } : IMGS.has(`${base}-ki.${ext}`) ? { f: `${base}-ki.${ext}`, ki: true } : null;
+// Bildnachweis je Foto: bilder/nachweis.json (Quelle mit Pflichttext und Link, Bildbeschreibung, Urheber).
+const CREDITS = (() => { try { return JSON.parse(fs.readFileSync(path.join(imgDir, "nachweis.json"), "utf8")); } catch { return {}; } })();
+const CRED_SRC = CREDITS.quelle && /^https:\/\//.test(CREDITS.quelle.url || "") && CREDITS.quelle.text ? CREDITS.quelle : null;
+const credOf = f => (CREDITS.bilder || {})[f] || (CREDITS.bilder || {})[String(f).replace(/(-klein)?\.(webp|jpg)$/, "")] || null;
+const credLink = () => `<a href="${esc(CRED_SRC.url)}" rel="noopener nofollow">${esc(CRED_SRC.text)}</a>`;
+// Dateiname auf der Website: sprechender Name aus nachweis.json (gut für die Google-Bildersuche), sonst der Dateiname aus dem Ordner.
+const imgOut = f => { const c = credOf(f), m = /^(.*?)(-klein)?\.(webp|jpg)$/.exec(f); return c && /^[a-z0-9-]+$/.test(c.name || "") ? `${c.name}${m[2] || ""}.${m[3]}` : f; };
+const imgUrl = f => `/assets/img/${imgOut(f)}`;
+const IMG_BY_URL = Object.fromEntries([...IMGS].map(f => [imgUrl(f), f]));
 const OG = pickImg("teilen", "jpg");
-const OG_IMG = OG ? `/assets/img/${OG.f}` : "";
-const REAL_PHOTOS = [...IMGS].filter(x => !/-ki\.(webp|jpg)$/.test(x) && !/-klein\./.test(x));
+const OG_IMG = OG ? imgUrl(OG.f) : "";
+const REAL_PHOTOS = [...IMGS].filter(x => !/-ki\.(webp|jpg)$/.test(x) && !/-klein\./.test(x) && !(CRED_SRC && credOf(x)));
 if (REAL_PHOTOS.length && !S["Bildnachweis"]) warn("Bilder", `Für ${REAL_PHOTOS.length === 1 ? "das Foto" : "die Fotos"} ${REAL_PHOTOS.join(", ")} fehlt der Bildnachweis. Quelle und Lizenz im Blatt Einstellungen unter „Bildnachweis“ eintragen, z. B. „Fotos: Unsplash (Unsplash-Lizenz)“, und einen Screenshot der Lizenzseite aufbewahren.`);
 const ANY_KI = [...IMGS].some(x => /-ki\.(webp|jpg)$/.test(x));
+const altOf = x => (!x.ki && credOf(x.f) && credOf(x.f).alt) || altFor(x.ki);
+// Kleines Foto neben dem Text: hoch (4:5) oder quer (4:3). Der Nachweis steht darunter.
+// Formen (form): "" hochkant, "quer", "rund", "kante", "links" – auch kombiniert. So sieht nicht jede Seite gleich aus.
+const sideImg = (base, form = "") => { const x = pickImg(base), quer = /quer/.test(form); return x ? `<figure class="side-photo${form ? " " + form : ""}"><img src="${imgUrl(x.f)}" width="${quer ? 800 : 480}" height="600" alt="${esc(altOf(x))}" loading="lazy" decoding="async"><figcaption>${capOf(x)}</figcaption></figure>` : ""; };
+const capOf = x => x.ki ? labelFor(true) : CRED_SRC && credOf(x.f) ? `Symbolfoto · ${credLink()}` : labelFor(false);
 const altFor = ki => ki ? "KI-generiertes Symbolbild: Flohmarkt in einer Stadt" : "Symbolfoto: Stöbern an Flohmarktständen";
 const labelFor = ki => ki ? "Symbolbild, KI-generiert" : "Symbolfoto";
-const clusterImg = (c, cls = "kb-photo", lazy = false) => {
-  const big = pickImg(`ratgeber-${c}`), small = pickImg(`ratgeber-${c}-klein`);
+const clusterImg = (c, cls = "kb-photo", lazy = false, base = `ratgeber-${c}`) => {
+  const big = pickImg(base), small = pickImg(`${base}-klein`);
   if (!big && !small) return "";
-  const ki = (big || small).ki, s1 = (small || big).f;
-  const set = [small && `/assets/img/${small.f} 760w`, big && `/assets/img/${big.f} 1520w`].filter(Boolean).join(", ");
-  return `<figure class="${cls}"><img src="/assets/img/${s1}" srcset="${set}" sizes="(max-width: 800px) 100vw, 760px" width="760" height="333" alt="${altFor(ki)}"${lazy ? ' loading="lazy"' : ""} decoding="async"><figcaption>${labelFor(ki)}</figcaption></figure>`;
+  const ki = (big || small).ki, s1 = (small || big).f, x = big || small;
+  const set = [small && `${imgUrl(small.f)} 760w`, big && `${imgUrl(big.f)} 1520w`].filter(Boolean).join(", ");
+  return `<figure class="${cls}"><img src="${imgUrl(s1)}" srcset="${set}" sizes="(max-width: 800px) 100vw, 760px" width="760" height="333" alt="${esc(altOf(x))}"${lazy ? ' loading="lazy"' : ""} decoding="async"><figcaption>${capOf(x)}</figcaption></figure>`;
 };
 
 /* ---------------------------------------------------------------- Seitenrahmen */
@@ -371,6 +385,16 @@ function menuHTML() {
 </nav></div></details>`;
 }
 const MENU = () => menuHTML();
+// Fotos einer Seite: Angaben für Google (Urheber, Lizenz) und Einträge für die Bild-Sitemap. Die große Fassung zählt.
+const PAGE_PHOTOS = new Map();
+function imgLD(p, body) {
+  const fs_ = [...new Set([...body.matchAll(/(?:src|srcset)="([^"]*\/assets\/img\/[^"]+)"/g)].flatMap(m => m[1].split(",").map(x => x.trim().split(" ")[0])))]
+    .map(u => IMG_BY_URL[u]).filter(f => f && CRED_SRC && credOf(f) && !/-klein\./.test(f));
+  if (!fs_.length) return "";
+  PAGE_PHOTOS.set(p, fs_.map(f => imgUrl(f)));
+  const ldImg = fs_.map(f => { const c = credOf(f); return { "@context": "https://schema.org", "@type": "ImageObject", contentUrl: SITE + imgUrl(f), caption: String(c.alt || "").replace(/^Symbolfoto: /, ""), creditText: `${c.autor || CRED_SRC.name} / ${CRED_SRC.name}`, creator: { "@type": "Organization", name: c.autor || CRED_SRC.name }, copyrightNotice: `${c.autor || CRED_SRC.name} / ${CRED_SRC.name}`, ...(CRED_SRC.lizenz ? { license: CRED_SRC.lizenz, acquireLicensePage: CRED_SRC.url } : {}) }; });
+  return `<script type="application/ld+json">${JSON.stringify(ldImg).replace(/</g, "\\u003c")}</script>`;
+}
 function layout({ p, title, desc, body, ld, noindex, nav, extraHead = "", img = OG_IMG }) {
   const url = SITE + p;
   // Google zeigt rund 60 Zeichen. Ist der Titel länger, fällt der angehängte Markenname weg (Google ergänzt den Seitennamen selbst).
@@ -390,7 +414,7 @@ ${FONT_PRELOAD}
 <meta property="og:title" content="${esc(title)}"><meta property="og:description" content="${esc(desc)}"><meta property="og:url" content="${esc(url)}">${img ? `\n<meta property="og:image" content="${esc(SITE + img)}"><meta name="twitter:card" content="summary_large_image">` : ""}
 <link rel="stylesheet" href="/assets/style.css">
 <link rel="icon" href="/assets/icon.svg" type="image/svg+xml">
-${ld ? `<script type="application/ld+json">${JSON.stringify(ld).replace(/</g, "\\u003c")}</script>` : ""}${extraHead}
+${ld ? `<script type="application/ld+json">${JSON.stringify(ld).replace(/</g, "\\u003c")}</script>` : ""}${imgLD(p, body)}${extraHead}
 </head>
 <body>
 <a class="skip" href="#inhalt">Zum Inhalt springen</a>
@@ -406,7 +430,7 @@ ${body.replace(/<h1>([^<]{3,80}?): ([^<]+)<\/h1>/, '<h1>$1:<span class="h1-sub">
 <div>Termine nach öffentlichen Angaben der Veranstalter, Stand ${STAND}. Bitte vor dem Besuch beim Veranstalter prüfen, Märkte können kurzfristig ausfallen. Ratgeber-Artikel ersetzen keine Rechts- oder Steuerberatung.${WX_OK ? ` Wettervorhersage: Deutscher Wetterdienst, Stand ${STAND}.` : ""}</div>
 <nav class="foot-links" aria-label="Flohmarkt Hamburg"><b>Flohmarkt Hamburg</b><a href="/heute/">Heute</a><a href="/morgen/">Morgen</a><a href="/wochenende/">Wochenende</a><a href="/samstag/">Samstag</a><a href="/sonntag/">Sonntag</a>${REGIONS.map(r => `<a href="/flohmarkt-hamburg/${r.k}/">${esc(r.name)}</a>`).join("")}</nav>
 <nav class="foot-links" aria-label="Nach Art und Monat"><b>Nach Art und Monat</b>${CATS_ON.map(c => `<a href="/${c.s}/">${esc(c.chip)}</a>`).join("")}${MONTHS.map(x => `<a href="/${x.s}/">${x.name} ${x.y}</a>`).join("")}</nav>
-<nav class="foot-links" aria-label="${esc(NAME)}"><b>${esc(NAME)}</b><a href="/ratgeber/">Ratgeber</a><a href="/flohmarkt-schilder/">Schilder drucken</a><a href="/veranstalter/">Für Veranstalter</a><a href="/impressum/">Impressum</a><a href="/datenschutz/">Datenschutz</a></nav>
+<nav class="foot-links" aria-label="${esc(NAME)}"><b>${esc(NAME)}</b><a href="/ratgeber/">Ratgeber</a><a href="/flohmarkt-schilder/">Schilder-Designer</a><a href="/veranstalter/">Für Veranstalter</a><a href="/impressum/">Impressum</a><a href="/datenschutz/">Datenschutz</a></nav>
 </footer>
 <script src="/assets/site.js" defer></script>
 </body>
@@ -560,7 +584,7 @@ const CATS = [
     h1: "Frauenflohmärkte und Mädelsflohmärkte in Hamburg", t: Y => `Frauenflohmarkt Hamburg ${Y}: Mode & Accessoires`,
     lead: "Kleidung, Schuhe und Accessoires von Frauen für Frauen: Hier stehen alle Frauen- und Mädelsflohmärkte in Hamburg mit Terminen.",
     b: () => [["Mode aus zweiter Hand", `Auf Frauenflohmärkten findest du vor allem Kleidung, Schuhe, Taschen und Schmuck. Kleiderständer statt Wühltisch machen das Stöbern leichter. Wie du gute Qualität erkennst, steht im Ratgeber ${kbL("vintage-kleidung-flohmarkt", "Vintage-Kleidung auf dem Flohmarkt kaufen")}.`],
-      ["Selbst verkaufen", "Bügel, ein Spiegel und gut lesbare Preise helfen beim Verkaufen. Passende Schilder druckst du kostenlos mit unserem [Schildgenerator](/flohmarkt-schilder/)."]],
+      ["Selbst verkaufen", "Bügel, ein Spiegel und gut lesbare Preise helfen beim Verkaufen. Passende Schilder druckst du kostenlos mit unserem [Schilder-Designer](/flohmarkt-schilder/)."]],
     f: [],
     kb: ["vintage-kleidung-flohmarkt", "handeln-auf-dem-flohmarkt", "flohmarkt-knigge"] },
   { s: "flohmarkt-hamburg-umgebung", tag: "Umland", icon: "tree", chip: "Umland bis 30 km", pl: "Flohmärkte im Hamburger Umland",
@@ -804,7 +828,7 @@ const shareBtn = (m, e, cls = "share") => `<button type="button" class="${cls}" 
   const homeText = [
     `In Hamburg und im Umland bis 30 Kilometer stehen aktuell ${MARKETS.length} Flohmärkte im ${NAME}-Kalender, in den nächsten 30 Tagen sind es ${n30} Termine.${weShare >= 0.5 ? " Die meisten Termine liegen am Wochenende" + (earlyShare >= 0.3 ? ", viele Märkte öffnen schon vor 9 Uhr." : ".") : ""}${fsm ? ` Ein Klassiker ist die ${mk(fsm)} in St. Pauli.` : ""}${bigC ? ` Zu den ${catLink("groesste-flohmaerkte-hamburg", "größten Märkten")} zählen ${listNames(bigC.ms.map(mk), 3)}.` : ""}`,
     `Bei Regen und im Winter lohnen sich ${catLink("hallenflohmarkt-hamburg", "Hallenflohmärkte und überdachte Märkte")}, abends öffnen die ${catLink("nachtflohmarkt-hamburg", "Nachtflohmärkte")}. Familien finden auf ${catLink("kinderflohmarkt-hamburg", "Kinderflohmärkten")} gebrauchte Kleidung und Spielzeug, Sammler auf ${catLink("antikmarkt-hamburg", "Antikmärkten und Plattenbörsen")}.`,
-    `Ob Flohmarkt, Trödelmarkt oder Antikmarkt: Den Unterschied erklärt der Ratgeber ${kbL("flohmarkt-troedelmarkt-antikmarkt", "Flohmarkt, Trödelmarkt, Antikmarkt")}. Wer selbst verkaufen will, findet Tipps im Ratgeber ${kbL("flohmarktstand-anmelden", "Flohmarktstand anmelden")} und kostenlose Schilder im [Schildgenerator](/flohmarkt-schilder/).`];
+    `Ob Flohmarkt, Trödelmarkt oder Antikmarkt: Den Unterschied erklärt der Ratgeber ${kbL("flohmarkt-troedelmarkt-antikmarkt", "Flohmarkt, Trödelmarkt, Antikmarkt")}. Wer selbst verkaufen will, findet Tipps im Ratgeber ${kbL("flohmarktstand-anmelden", "Flohmarktstand anmelden")} und kostenlose Schilder im [Schilder-Designer](/flohmarkt-schilder/).`];
   const lt = liveAll.filter(e => e.k === key(TODAY)), nkDay = liveAll.find(e => e.k > key(TODAY));
   const satL = liveAll.filter(e => e.k === key(sat)), sunL = liveAll.filter(e => e.k === key(sun));
   const nNight = nightC && nextOf(nightC.evs), coverNext = coverC ? coverC.ms.filter(m => m.events.some(e => !e.cancelled)) : [];
@@ -814,7 +838,7 @@ const shareBtn = (m, e, cls = "share") => `<button type="button" class="${cls}" 
     ...(bigC ? [["Welcher ist der größte Flohmarkt in Hamburg?", `Zu den größten und bekanntesten Märkten zählen ${listNames(bigC.ms.map(mk), 4)}. Mehr dazu unter ${catLink("groesste-flohmaerkte-hamburg", "die größten Flohmärkte in Hamburg")}.`]] : []),
     ...(coverC ? [["Gibt es überdachte Flohmärkte in Hamburg?", `Ja. ${coverC.ms.length} Märkte im Kalender finden drinnen oder überdacht statt${coverNext.length ? `, zum Beispiel ${listNames(coverNext.map(mk), 3)}` : ""}. Alle stehen unter ${catLink("hallenflohmarkt-hamburg", "Hallenflohmarkt Hamburg")}.`]] : []),
     ...(nNight ? [["Wann ist der nächste Nachtflohmarkt in Hamburg?", `Der nächste Termin: ${mk(nNight.m)} am ${fmtDate(nNight.date)}${nNight.start ? ", " + timeText(nNight) : ""}. Alle Termine stehen unter ${catLink("nachtflohmarkt-hamburg", "Nachtflohmarkt Hamburg")}.`]] : []),
-    ["Wie bekomme ich einen Stand auf einem Flohmarkt in Hamburg?", `Standplätze vergeben die Veranstalter der einzelnen Märkte, oft mit Anmeldung im Voraus. Wie du am besten vorgehst, steht im Ratgeber ${kbL("flohmarktstand-anmelden", "Flohmarktstand anmelden")}. Schilder und Preisschilder für deinen Stand druckst du kostenlos mit dem [Schildgenerator](/flohmarkt-schilder/).`]
+    ["Wie bekomme ich einen Stand auf einem Flohmarkt in Hamburg?", `Standplätze vergeben die Veranstalter der einzelnen Märkte, oft mit Anmeldung im Voraus. Wie du am besten vorgehst, steht im Ratgeber ${kbL("flohmarktstand-anmelden", "Flohmarktstand anmelden")}. Schilder und Preisschilder für deinen Stand druckst du kostenlos mit dem [Schilder-Designer](/flohmarkt-schilder/).`]
   ];
   // Tipp des Tages: wird jede Nacht aus den Terminen berechnet (nur Zahlen und Fakten aus dem Kalender)
   const tip = (() => {
@@ -838,13 +862,20 @@ const shareBtn = (m, e, cls = "share") => `<button type="button" class="${cls}" 
     const evs = on(nd.date), lab = WDL[nd.date.getUTCDay()];
     return cluster(evs, lab) || [lab, `Am ${dDate(nd.date)} ${evs.length === 1 ? "hat ein Flohmarkt" : "haben " + evs.length + " Flohmärkte"} geöffnet.`, "/termine/"];
   })();
+  // Slider: ein großes Symbolfoto, dazu bis zu zwei große Märkte der nächsten Tage als „Wochen-Highlight“.
+  const hlEvs = []; for (const e of upcoming(8, e => !e.cancelled && e.m.tags.includes("Groß & bekannt"))) if (hlEvs.length < 2 && !hlEvs.some(x => x.m === e.m)) hlEvs.push(e);
+  const sImg = pickImg("start"), sSmall = pickImg("start-klein");
+  const slides = [
+    sImg ? `<figure class="hl-slide hl-photo"><img src="${imgUrl((sSmall || sImg).f)}" srcset="${[sSmall && `${imgUrl(sSmall.f)} 760w`, `${imgUrl(sImg.f)} 1520w`].filter(Boolean).join(", ")}" sizes="(max-width: 800px) 100vw, 760px" width="760" height="507" alt="${esc(altOf(sImg))}" fetchpriority="high" decoding="async"><figcaption>${capOf(sImg)}</figcaption></figure>` : "",
+    ...hlEvs.map(e => `<a class="hl-slide hl-card" href="/flohmarkt/${e.m.slug}/"><span class="kicker">${ic("star")}Wochen-Highlight</span><b>${esc(e.m.short)}</b><span class="hl-when">${esc(fmtDate(e.date))}${e.start ? " · " + esc(timeText(e)) : ""}</span><span class="hl-where">${ic("pin")}${esc(e.m.area || e.m.place)}</span><span class="promo-go">Zum Markt${ic("chev")}</span></a>`)].filter(Boolean);
+  const slider = slides.length ? `<section class="hl" aria-label="Highlights"><div class="hl-track" id="hlTrack">${slides.join("")}</div>${slides.length > 1 ? `<div class="hl-dots" id="hlDots">${slides.map((_, i) => `<button type="button" aria-label="Bild ${i + 1} von ${slides.length}"${i ? "" : ' aria-current="true"'}></button>`).join("")}</div>` : ""}</section>` : "";
   const body = `<section class="hero"><div>
 <span class="proto">${esc(REGION)}</span>
 <h1>Flohmarkt Hamburg: alle Termine, aufgeräumt.</h1>
 <p>Wann, wo und wie lange. Ohne Werbebanner, ohne alte Termine.</p>
-<div class="quick"><a class="chip" href="/heute/">${ic("sun")}Heute</a><a class="chip" href="/wochenende/">${ic("cal")}Wochenende</a><a class="chip" href="/sonntag/">${ic("cal")}Sonntag</a><a class="chip" href="/flohmaerkte/">${ic("map")}Märkte nach Bezirk</a>${HAS_MAP ? `<a class="chip" href="/flohmaerkte/#karte">${ic("pin")}Karte</a>` : ""}<a class="chip" href="/ratgeber/">${ic("book")}Ratgeber</a><a class="chip" href="/flohmarkt-schilder/">${ic("printer")}Schilder drucken</a></div>
+<div class="quick"><a class="chip" href="/heute/">${ic("sun")}Heute</a><a class="chip" href="/wochenende/">${ic("cal")}Wochenende</a><a class="chip" href="/sonntag/">${ic("cal")}Sonntag</a><a class="chip" href="/flohmaerkte/">${ic("map")}Märkte nach Bezirk</a>${HAS_MAP ? `<a class="chip" href="/flohmaerkte/#karte">${ic("pin")}Karte</a>` : ""}<a class="chip" href="/ratgeber/">${ic("book")}Ratgeber</a><a class="chip" href="/flohmarkt-schilder/">${ic("printer")}Schilder gestalten</a></div>
 </div><a class="big-sticker" href="/wochenende/"><b>${weN}</b><span>${weLabel}</span></a></section>
-${START_IMGS.length ? `<figure class="strip-wrap"><div class="strip">${START_IMGS.map((x, i) => `<div class="tile"><img src="/assets/img/${x.f}" width="400" height="500" alt="${altFor(x.ki)}"${i > 1 ? ' loading="lazy"' : ""} decoding="async"><span class="ki">${x.ki ? "KI-generiert" : "Symbolfoto"}</span></div>`).join("")}</div></figure>` : ""}
+${slider}
 ${rainBox(upcoming(4)) || frogLine(upcoming(5))}
 ${tip ? `<a class="cta-box tip" href="${tip[2]}">${ic("star")}<span><b>${esc(tip[0])}: ${esc(tip[1])}</b>Tipp des Tages, jede Nacht neu aus dem Kalender.</span>${ic("chev")}</a>` : ""}
 <section class="sec"><div class="sec-head"><h2>Die nächsten Flohmärkte</h2>${more("/termine/", "Alle")}</div>
@@ -857,7 +888,7 @@ ${NEWS.length ? `<section class="sec"><div class="sec-head"><h2>Neuigkeiten</h2>
 <section class="sec kb-body home-seo"><h2>Flohmarkt in Hamburg: das Wichtigste</h2>${homeText.map(x => `<p>${rich(x)}</p>`).join("")}</section>
 ${faqBlock(homeFaq, "Häufige Fragen zu Flohmärkten in Hamburg")}
 <section class="sec"><div class="sec-head"><h2>Aus dem Ratgeber</h2>${more("/ratgeber/", "Alle", "Alle Ratgeber-Artikel")}</div>${grid(KB.filter(a => a.top).map(a => `<a class="card" href="/ratgeber/${a.s}/"><span class="kicker">${esc(CLUSTERS[a.c]?.t || "")}</span><h3>${brColon(esc(a.h))}</h3></a>`))}</section>
-<section class="sec"><a class="promo" href="/flohmarkt-schilder/"><span class="promo-txt"><span class="kicker">Neu für Verkäufer</span><b>Schilder für deinen Stand, gratis</b><span>Preisschilder, „Alles 1 €“, „Handeln erwünscht“ und mehr. Text eintippen, drucken, fertig.</span><span class="promo-go">Schild gestalten${ic("chev")}</span></span><img src="/assets/schilder/flohmarkt-alles-1-euro-vorlage.svg" width="297" height="210" alt="Vorlage: Alles-1-Euro-Schild für den Flohmarkt" loading="lazy" decoding="async"></a></section>
+<section class="sec"><a class="promo" href="/flohmarkt-schilder/"><span class="promo-txt"><span class="kicker">Schilder-Designer, gratis</span><b>Gestalte deine Verkaufsschilder</b><span>Preisschilder, „Alles 1 €“, „Handeln erwünscht“ und mehr. Vorlage wählen, Text eintippen, ausdrucken.</span><span class="promo-go">Zum Schilder-Designer${ic("chev")}</span></span><img src="/assets/schilder/flohmarkt-alles-1-euro-vorlage.svg" width="297" height="210" alt="Vorlage: Alles-1-Euro-Schild für den Flohmarkt" loading="lazy" decoding="async"></a></section>
 <section class="sec" id="veranstalter"><div class="org"><h2>Du veranstaltest einen Flohmarkt?</h2><p>Trag deinen Termin kostenlos ein. Wir prüfen jeden Eintrag, bevor er erscheint.</p><a class="btn" href="/veranstalter/">Termin eintragen${ic("chev")}</a></div></section>`;
   layout({ p: "/", title: `Flohmarkt Hamburg: Alle Flohmärkte & Termine ${YEAR} | ${NAME}`,
     desc: pickDesc(`Alle ${MARKETS.length} Flohmärkte in Hamburg und Umgebung mit Terminen, Uhrzeiten und Adressen.${weN ? ` ${sunOnly ? "Heute" : "Am Wochenende"}: ${weN} Märkte.` : ""} Täglich aktualisiert, ohne Werbung.`, "Alle Flohmärkte in Hamburg und Umgebung, aufgeräumt: Termine, Zeiten, Adressen und ein Ratgeber mit Antworten auf die wichtigsten Flohmarkt-Fragen."),
@@ -1028,6 +1059,7 @@ ${CATS_ON.some(c => c.ms.some(m => m.bez === r.k)) ? `<section class="related"><
 }
 
 /* ---------------------------------------------------------------- Seiten nach Art des Markts */
+const CAT_FORM = { "antikmarkt-hamburg": "", "frauenflohmarkt-hamburg": "links", "nachbarschaftsflohmarkt-hamburg": "rund", "groesste-flohmaerkte-hamburg": "rund links" };
 for (const c of CATS_ON) {
   const p = `/${c.s}/`, ms = [...c.ms].sort((a, b) => ((a.events.find(e => !e.cancelled) || {}).k || "9").localeCompare((b.events.find(e => !e.cancelled) || {}).k || "9"));
   const ev60 = upcoming(60, e => c.ms.includes(e.m)), nx = nextOf(c.evs), Y = yearSpan(ev60.filter(e => !e.cancelled).length ? ev60.filter(e => !e.cancelled) : c.evs);
@@ -1045,7 +1077,7 @@ for (const c of CATS_ON) {
 <div class="answer"><span class="kicker">Kurz gesagt</span><p>${esc(ans)}</p></div>${nearBox()}
 <section class="related"><div class="sec-head"><h2>Nächste Termine</h2><small>nächste 60 Tage</small></div>${groupList(ev60, 3) || '<p class="meta">In den nächsten 60 Tagen keine Termine. Die Märkte unten melden neue Termine meist rechtzeitig vorher.</p>'}</section>
 <section class="related"><div class="sec-head"><h2>Alle Märkte im Überblick</h2></div>${grid(ms.map(mCard))}</section>
-<div class="kb-body"><p class="intro">${esc(c.lead)}</p>${c.b().map(([h, x]) => `<h2>${esc(h)}</h2><p>${rich(x)}</p>`).join("")}</div>
+<div class="kb-body">${sideImg(`seite-${c.s}`, CAT_FORM[c.s] ?? ["", "rund", "links", "rund links"][CATS_ON.indexOf(c) % 4])}<p class="intro">${esc(c.lead)}</p>${c.b().map(([h, x]) => `<h2>${esc(h)}</h2><p>${rich(x)}</p>`).join("")}</div>
 ${faqBlock(faq)}
 <section class="related"><div class="sec-head"><h2>Weitere Arten von Flohmärkten</h2></div>${catChips(c.s)}</section>
 <section class="related"><div class="sec-head"><h2>Aus dem Ratgeber</h2></div>${grid(c.kb.filter(s => KBY[s]).map(kbCard))}</section></article>`;
@@ -1191,7 +1223,7 @@ ${presets.length > 1 ? `<div class="chips gen-presets" role="group" aria-label="
 </div>
 <button class="btn gen-print" id="doPrint" type="button">${ic("printer")}Drucken oder als PDF speichern</button>
 <p class="gen-hint">Kein Drucker? Wähl im Druckfenster „Als PDF speichern“ und lass das PDF im Copyshop drucken. Deine Texte bleiben auf deinem Gerät.</p>
-<noscript><p class="gen-hint">Der Schildgenerator braucht JavaScript. Die Vorlagen unten kannst du dir trotzdem ansehen.</p></noscript>
+<noscript><p class="gen-hint">Der Schilder-Designer braucht JavaScript. Die Vorlagen unten kannst du dir trotzdem ansehen.</p></noscript>
 <template id="tplSign">${SG_UNIT}</template><template id="tplTag">${TG_UNIT}</template>
 </section>`;
 }
@@ -1221,7 +1253,7 @@ function signPreviewSVG(t) {
 const signAlt = t => t.kind === "tags" ? "Vorlage: Preisschilder für den Flohmarkt zum Ausdrucken" : `Vorlage: „${t.chip}“-Schild für den Flohmarkt`;
 const signCard = t => `<a class="card sg-card" href="${signUrl(t)}"><img src="${signImg(t)}" width="297" height="210" alt="${esc(signAlt(t))}" loading="lazy" decoding="async"><h3>${esc(t.chip)}</h3><p>${esc(t.short)}</p></a>`;
 const signLD = (p, crumbsArr, faq) => G([crumbLD(crumbsArr),
-  { "@type": "WebApplication", name: `${NAME} Schildgenerator`, url: SITE + p, applicationCategory: "DesignApplication", operatingSystem: "Web", inLanguage: "de", isAccessibleForFree: true, offers: { "@type": "Offer", price: "0", priceCurrency: "EUR" } },
+  { "@type": "WebApplication", name: `${NAME} Schilder-Designer`, url: SITE + p, applicationCategory: "DesignApplication", operatingSystem: "Web", inLanguage: "de", isAccessibleForFree: true, offers: { "@type": "Offer", price: "0", priceCurrency: "EUR" } },
   { "@type": "FAQPage", mainEntity: faq.map(([q, x]) => ({ "@type": "Question", name: q, acceptedAnswer: { "@type": "Answer", text: plain(x.replace(/<[^>]+>/g, "")) } })) }]);
 const signByline = `<div class="byline"><span>${ic("tag")}Kostenlos</span><span>${ic("user")}Ohne Anmeldung</span><span>${ic("printer")}Drucken oder PDF</span></div>`;
 const faqHTML = f => `<section class="faq"><h2>Häufige Fragen</h2>${f.map(([q, x]) => `<details><summary>${esc(q)}</summary><p>${x}</p></details>`).join("")}</section>`;
@@ -1230,16 +1262,16 @@ const faqHTML = f => `<section class="faq"><h2>Häufige Fragen</h2>${f.map(([q, 
   const p = SIGN_BASE, cr = [[NAME, "/"], ["Schilder"]];
   const presets = SIGNS.map(t => ({ l: t.chip, set: signState(t) })).concat([{ l: "Eigener Text", set: { kind: "sign", fmt: "quer", top: "", main: "Dein Text", bot: "" } }]);
   const first = SIGN_BY["alles-1-euro"]; presets.sort((a, b) => (b.l === first.chip) - (a.l === first.chip));
-  const faq = [["Kostet der Schildgenerator etwas?", "Nein. Du kannst so viele Schilder gestalten und drucken, wie du möchtest, ohne Anmeldung."],
+  const faq = [["Kostet der Schilder-Designer etwas?", "Nein. Du kannst so viele Schilder gestalten und drucken, wie du möchtest, ohne Anmeldung."],
     ["Werden meine Texte gespeichert?", "Nein. Das Schild entsteht direkt in deinem Browser. Wir sehen nicht, was du eintippst."],
     ["Kann ich auf Etiketten drucken?", `Ja. Die <a href="${signUrl(SIGN_BY.preisschilder)}">Preisschilder-Vorlage</a> hat 24 Felder im Format 70 × 37 mm und passt auf gängige Etikettenbögen mit diesem Maß. Stell beim Drucken die Größe auf 100 %.`],
     ["Warum steht unten flohlotse.de?", "Damit deine Kundschaft weitere Flohmärkte in Hamburg findet. Der Hinweis ist klein und stört das Schild nicht."]];
   const body = crumbs(cr) + `<article class="kb"><h1>Flohmarkt-Schilder und Preisschilder zum Ausdrucken</h1>${signByline}
-<p class="lead">Vorlage wählen, Text eintippen, drucken. Ohne Drucker speicherst du das Schild als PDF und druckst es im Copyshop.</p>
+<p class="lead">Der Schilder-Designer für deinen Stand: Vorlage wählen, Text eintippen, drucken. Ohne Drucker speicherst du das Schild als PDF und druckst es im Copyshop.</p>
 ${genHTML(signState(first), presets, "Schild gestalten und drucken")}
 <section class="related"><div class="sec-head"><h2>Alle Vorlagen</h2></div>${grid(SIGNS.map(signCard))}</section>
 <div class="kb-body"><h2>Welche Schilder lohnen sich am Stand?</h2><p>Ein großes Schild für die Wühlkiste wie <a href="${signUrl(first)}">„Alles 1 €“</a> erspart dir an einem vollen Markttag Dutzende Fragen. Ein <a href="${signUrl(SIGN_BY["bar-und-paypal"])}">Zahlungsschild</a> verhindert peinliche Momente an der Kasse, und <a href="${signUrl(SIGN_BY["handeln-erwuenscht"])}">„Handeln erwünscht“</a> holt Leute ins Gespräch, die sonst nur gucken. Für einzelne Stücke nimmst du <a href="${signUrl(SIGN_BY.preisschilder)}">kleine Preisschilder</a>.</p>
-<h2>So hält dein Schild den ganzen Tag</h2><p>Steck das Blatt in eine Klarsichthülle, dann übersteht es Nieselregen und Kaffeeflecken. Mit Wäscheklammern oder Kreppband hält es an Kisten und Tischkanten, bei Wind hilft ein Stück Pappe dahinter. Was sonst noch in die Tasche gehört, steht in der ${kl("checkliste-flohmarktstand", "Checkliste für deinen Flohmarktstand")}.</p>
+${sideImg("seite-schilder", "quer kante")}<h2>So hält dein Schild den ganzen Tag</h2><p>Steck das Blatt in eine Klarsichthülle, dann übersteht es Nieselregen und Kaffeeflecken. Mit Wäscheklammern oder Kreppband hält es an Kisten und Tischkanten, bei Wind hilft ein Stück Pappe dahinter. Was sonst noch in die Tasche gehört, steht in der ${kl("checkliste-flohmarktstand", "Checkliste für deinen Flohmarktstand")}.</p>
 <h2>Drucken ohne eigenen Drucker</h2><p>Tipp auf „Drucken oder als PDF speichern“ und wähl im Druckfenster „Als PDF speichern“. Das PDF druckst du im Copyshop oder bei Freunden aus. Für die gelbe Fläche reicht ein normaler Farbdrucker, im Sparmodus genügt Schwarzweiß.</p></div>
 ${faqHTML(faq)}
 <section class="related"><div class="sec-head"><h2>Aus dem Ratgeber</h2>${more("/ratgeber/#verkaufen", "Verkaufen")}</div>${grid(["checkliste-flohmarktstand", "preise-festlegen-flohmarkt", "flohmarktstand-anmelden"].filter(s => KBY[s]).map(kbCard))}</section></article>`;
@@ -1264,11 +1296,16 @@ const SIGN_CTA = { "preise-festlegen-flohmarkt": "preisschilder", "checkliste-fl
 const signCta = t => `<a class="cta-box" href="${t ? signUrl(t) : SIGN_BASE}">${ic("printer")}<span><b>${!t ? "Gratis: Schilder für deinen Stand" : t.kind === "tags" ? "Gratis: Preisschilder zum Ausdrucken" : `Gratis-Vorlage: „${esc(t.chip)}“-Schild`}</b>${t ? esc(t.short) : "Preisschilder, „Alles 1 €“ und mehr, direkt drucken."}</span>${ic("chev")}</a>`;
 
 /* ---------------------------------------------------------------- Ratgeber */
+// Bildform je Bereich im Artikel: Banner (leer), „kante“ (schwarze Kante), „rund“ oder „rund links“ (Kreis neben dem Text).
+const KB_FORM = { verkaufen: "kante", knigge: "rund links", grundwissen: "rund" };
+const THUMB_FORM = ["", "rund"];
+const clusterThumb = (c, i) => { const x = pickImg(`ratgeber-${c}-klein`) || pickImg(`ratgeber-${c}`); return x ? `<img class="cl-thumb ${THUMB_FORM[i % 2]}" src="${imgUrl(x.f)}" width="760" height="332" alt="${esc(altOf(x))}"${i ? ' loading="lazy"' : ""} decoding="async">` : ""; };
 {
   const body = crumbs([[NAME, "/"], ["Ratgeber"]]) + `<section class="hub-head"><h1>Flohmarkt-Ratgeber: Antworten auf die häufigsten Fragen</h1>
 <p>Unsere Empfehlungen zum Kaufen, Verkaufen, Handeln und Organisieren. Jeder Artikel beginnt mit einer kurzen Antwort, danach folgen die Details.</p>
 <div class="search"><label for="kbSearch" class="kicker">Frage suchen</label><input id="kbSearch" type="search" placeholder="z. B. handeln, Steuern, Standgebühr" autocomplete="off"></div></section>
-${Object.entries(CLUSTERS).map(([c, info]) => { const items = KB.filter(a => a.c === c); return items.length ? `<section class="cluster" id="${c}">${clusterImg(c, "kb-photo slim", true)}<h2>${esc(info.t)}</h2><p>${esc(info.p)}</p><div class="qlist">${items.map(a => `<a href="/ratgeber/${a.s}/" data-q="${esc((a.h + " " + a.kw + " " + plain(a.a)).toLowerCase())}"><span>${brColon(esc(a.h))}</span>${ic("chev")}</a>`).join("")}</div></section>` : ""; }).join("")}
+${Object.entries(CLUSTERS).map(([c, info], i) => { const items = KB.filter(a => a.c === c); return items.length ? `<section class="cluster" id="${c}"><div class="cl-head${i % 2 ? " flip" : ""}"><div><h2>${esc(info.t)}</h2><p>${esc(info.p)}</p></div>${clusterThumb(c, i)}</div><div class="qlist">${items.map(a => `<a href="/ratgeber/${a.s}/" data-q="${esc((a.h + " " + a.kw + " " + plain(a.a)).toLowerCase())}"><span>${brColon(esc(a.h))}</span>${ic("chev")}</a>`).join("")}</div></section>` : ""; }).join("")}
+${CRED_SRC ? `<p class="meta cl-cred">Symbolfotos: ${credLink()}${S["Bildnachweis"] ? " · " + esc(String(S["Bildnachweis"]).replace(/^Fotos:\s*/, "").replace(/\.$/, "")) : ""}</p>` : ""}
 <div class="empty" id="kbLeer" hidden>Dazu gibt es noch keinen Artikel. Versuch einen anderen Begriff, etwa „Steuern“ oder „Stand“.</div>`;
   layout({ p: "/ratgeber/", title: `Flohmarkt-Ratgeber: Die wichtigsten Fragen | ${NAME}`, desc: "Kaufen, verkaufen, handeln, Knigge und Tipps für Veranstalter: Der Ratgeber beantwortet die häufigsten Fragen rund um den Flohmarkt, kurz und verständlich.", body, nav: "ratgeber", ld: G([crumbLD([[NAME, "/"], ["Ratgeber"]]), { "@type": "CollectionPage", name: "Flohmarkt-Ratgeber", hasPart: KB.map(a => ({ "@type": "Article", headline: a.h, url: `${SITE}/ratgeber/${a.s}/` })) }]) });
 }
@@ -1278,7 +1315,7 @@ for (const a of KB) {
   const body = crumbs([[NAME, "/"], ["Ratgeber", "/ratgeber/"], [cl.t, `/ratgeber/#${a.c}`]]) + `<article class="kb"><h1>${esc(a.h)}</h1>
 <div class="byline"><span>${ic("book")}${esc(NAME)} Ratgeber</span><span>${ic("update")}Stand: ${STAND}</span><span>${ic("clock")}${Math.max(2, Math.round(words / 200))} Min. Lesezeit</span></div>
 <div class="answer"><span class="kicker">Kurz gesagt</span><p>${rich(a.a)}</p></div>
-${clusterImg(a.c)}<div class="kb-body">${a.b.map(([h, p]) => `<h2>${esc(h)}</h2><p>${rich(p)}</p>`).join("")}</div>
+${/rund/.test(KB_FORM[a.c]) ? "" : clusterImg(a.c, `kb-photo${KB_FORM[a.c] ? " " + KB_FORM[a.c] : ""}`)}<div class="kb-body">${/rund/.test(KB_FORM[a.c]) ? sideImg(`ratgeber-${a.c}-klein`, KB_FORM[a.c]) : ""}${a.b.map(([h, p]) => `<h2>${esc(h)}</h2><p>${rich(p)}</p>`).join("")}</div>
 ${a.s in SIGN_CTA || a.c === "verkaufen" ? signCta(SIGN_BY[SIGN_CTA[a.s]]) : ""}
 ${CAT_BY_S[ART_CTA[a.s]] ? catCta(CAT_BY_S[ART_CTA[a.s]]) : ""}
 ${a.f.length ? `<section class="faq"><h2>Häufige Fragen</h2>${a.f.map(([q, x]) => `<details><summary>${esc(q)}</summary><p>${rich(x)}</p></details>`).join("")}</section>` : ""}
@@ -1323,7 +1360,7 @@ ${a.x ? '<p class="hint">Unser Tipp: Verbindliche Auskünfte für deinen Fall be
   const addrHTML = `${ph("Impressum: Name oder Firma", "Vor- und Nachname oder Firma mit Rechtsform")}<br>${ph("Impressum: Straße", "Straße und Hausnummer")}<br>${ph("Impressum: PLZ und Ort", "PLZ und Ort")}<br>Deutschland`;
   const respHTML = f("Impressum: Verantwortlich nach § 18 MStV") ? esc(f("Impressum: Verantwortlich nach § 18 MStV")) : `${ph("Impressum: Name oder Firma", "Vor- und Nachname")}, Anschrift wie oben`;
   const lic = [
-    IMGS.size ? `<h3>Bilder</h3><p>Die Bilder auf dieser Website sind Symbolbilder und zeigen keinen der hier gelisteten Flohmärkte.${ANY_KI ? " Einige wurden mit künstlicher Intelligenz erzeugt und sind am Bild als „KI-generiert“ gekennzeichnet." : ""}${f("Bildnachweis") ? " " + esc(f("Bildnachweis")) : ""}</p>` : "",
+    IMGS.size ? `<h3>Bilder</h3><p>Die Bilder auf dieser Website sind Symbolbilder und zeigen keinen der hier gelisteten Flohmärkte.${ANY_KI ? " Einige wurden mit künstlicher Intelligenz erzeugt und sind am Bild als „KI-generiert“ gekennzeichnet." : ""}${f("Bildnachweis") ? " " + esc(f("Bildnachweis")) : ""}</p>${CRED_SRC && (CREDITS.werke || []).length ? `<p>Fotos von ${esc(CRED_SRC.name)}, kostenlose Lizenz mit Namensnennung: ${credLink()}. Verwendet werden Ausschnitte dieser Fotos:</p><ul>${CREDITS.werke.filter(w => /^https:\/\//.test(w[2] || "")).map(w => `<li>„${esc(w[0])}“, Urheber: ${esc(w[1])}, <a href="${esc(w[2])}" rel="noopener nofollow">zum Foto bei ${esc(CRED_SRC.name)}</a></li>`).join("")}</ul>` : ""}` : "",
     `<h3>Texte</h3><p>Texte auf dieser Website entstehen mit Unterstützung von künstlicher Intelligenz.</p>`,
     PLZ_ROWS.length ? `<h3>Postleitzahlen und Karte</h3><p>Postleitzahlen und ihre Lage: <a href="https://www.geonames.org" rel="noopener">GeoNames</a>, Lizenz <a href="https://creativecommons.org/licenses/by/4.0/deed.de" rel="noopener">CC BY 4.0</a>.${HAS_MAP ? ` Karte: <a href="https://leafletjs.com" rel="noopener">Leaflet</a> (BSD-2-Clause), Kartendaten © <a href="https://www.openstreetmap.org/copyright" rel="noopener">OpenStreetMap-Mitwirkende</a>, Lizenz ODbL.` : ""}</p>` : "",
     `<h3>Wetter</h3><p>Quelle der Wettervorhersage: <a href="https://www.dwd.de" rel="noopener">Deutscher Wetterdienst</a> (DWD), Lizenz <a href="https://creativecommons.org/licenses/by/4.0/deed.de" rel="noopener">CC BY 4.0</a>, abgerufen über <a href="https://brightsky.dev" rel="noopener">Bright Sky</a>. Die Daten wurden zu kurzen Hinweisen zusammengefasst. Die Vorhersage wird einmal pro Aktualisierung der Website geladen und kann sich kurzfristig ändern.</p>`,
@@ -1405,7 +1442,7 @@ fs.writeFileSync(path.join(OUT, "assets/icons.svg"), SPRITE_FILE);
 if (WATCH_ON) fs.writeFileSync(path.join(OUT, "assets/waechter.json"), JSON.stringify(WATCH));
 fs.mkdirSync(path.join(OUT, "assets/schilder"), { recursive: true });
 for (const t of SIGNS) fs.writeFileSync(path.join(OUT, signImg(t).slice(1)), signPreviewSVG(t));
-if (IMGS.size) { fs.mkdirSync(path.join(OUT, "assets/img"), { recursive: true }); for (const x of IMGS) fs.copyFileSync(path.join(imgDir, x), path.join(OUT, "assets/img", x)); }
+if (IMGS.size) { fs.mkdirSync(path.join(OUT, "assets/img"), { recursive: true }); for (const x of IMGS) fs.copyFileSync(path.join(imgDir, x), path.join(OUT, "assets/img", imgOut(x))); }
 if (fontsFound.length) {
   fs.mkdirSync(path.join(OUT, "fonts"), { recursive: true }); for (const x of fontsFound) fs.copyFileSync(path.join(fontDir, x.f), path.join(OUT, "fonts", x.f));
   // Die Open Font License verlangt, dass Urhebervermerk und Lizenztext mit den Schriften ausgeliefert werden
@@ -1429,7 +1466,7 @@ const LASTMOD = {}, PAGE_STATE = {};
   }
 }
 fs.writeFileSync(path.join(OUT, "assets/seiten-stand.json"), JSON.stringify(PAGE_STATE));
-const smImgs = p => (SIGN_PAGE_IMGS.get(p) || []).map(([u, t]) => `<image:image><image:loc>${esc(SITE + u)}</image:loc></image:image>`).join("");
+const smImgs = p => [...(PAGE_PHOTOS.get(p) || []).map(u => [u]), ...(SIGN_PAGE_IMGS.get(p) || [])].map(([u, t]) => `<image:image><image:loc>${esc(SITE + u)}</image:loc></image:image>`).join("");
 fs.writeFileSync(path.join(OUT, "sitemap.xml"), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n${indexable.map(p => `  <url><loc>${esc(SITE + p)}</loc><lastmod>${LASTMOD[p] || key(TODAY)}</lastmod>${smImgs(p)}</url>`).join("\n")}\n</urlset>\n`);
 fs.writeFileSync(path.join(OUT, "robots.txt"), PUBLIC ? `User-agent: *\nAllow: /\n\nSitemap: ${SITE}/sitemap.xml\n` : "User-agent: *\nDisallow: /\n");
 if (!PUBLIC) warn("Google", "Die Website ist noch nicht für Google freigegeben (Einstellung „Für Google freigeben“ = Nein). Das ist richtig, solange ihr testet.");

@@ -89,3 +89,23 @@ Dann steht oben in der Zusammenfassung des Laufs in einem Satz, was in der Tabel
 ## Lokal testen (nur für Technik-Interessierte)
     node build.mjs
 Danach liegt die fertige Website im Ordner `dist/`.
+
+## Fotos und Bildnachweis
+
+Im Ordner `bilder` liegen die Symbolfotos. Ein echtes Foto (`start.webp`) hat Vorrang vor einem KI-Bild (`start-ki.webp`). Fehlt eine Datei, wird die Stelle ohne Bild gebaut.
+
+| Datei | Wo | Format |
+|---|---|---|
+| `start.webp`, `start-klein.webp` | Startseite, erstes Bild im Slider | quer 3:2 (1520 × 1013, 760 × 507) |
+| `ratgeber-<bereich>.webp`, `…-klein.webp` | Kopfbild je Ratgeber-Bereich | Banner (1520 × 665, 760 × 332) |
+| `seite-<kennung-der-themenseite>.webp` | Themenseite, z. B. `seite-antikmarkt-hamburg.webp` | hoch 4:5 (480 × 600), neben dem Text |
+| `seite-schilder.webp` | Schilder-Designer | quer 4:3 (800 × 600) |
+| `teilen-ki.jpg` | Vorschaubild beim Teilen | 1200 × 630 |
+
+`nachweis.json` enthält je Foto: `name` (Dateiname auf der Website, sprechend für die Google-Bildersuche), `alt` (Bildbeschreibung), `autor`, dazu die Quelle mit Pflichttext („Designed by Magnific“ mit Link) und die Liste der Fotos fürs Impressum. Daraus entstehen automatisch: der Nachweis am Bild, der Abschnitt im Impressum, die Bildbeschreibung, die Angaben für Google (Urheber, Lizenz) und die Einträge in der Sitemap.
+
+Damit nicht jede Seite gleich aussieht, hat jede Stelle eine eigene Bildform: Banner, schwarze Kante („kante“), rund („rund“) oder abgerundet eckig, links oder rechts neben dem Text. Keine weißen Ränder, keine Rundbögen. Die Zuordnung steht in `build.mjs` bei `KB_FORM` (Ratgeber-Artikel), `THUMB_FORM` (Ratgeber-Übersicht) und `CAT_FORM` (Themenseiten).
+
+Der Slider auf der Startseite zeigt nach dem Foto bis zu zwei „Wochen-Highlights“: die nächsten Termine von Märkten mit der Kategorie „Groß & bekannt“ in den kommenden acht Tagen.
+
+Die Lizenz-Zertifikate (PDF) nicht ins Repository legen, sondern privat aufbewahren. Die Fotos zeigen keinen gelisteten Markt und stehen deshalb auf keiner Marktseite.

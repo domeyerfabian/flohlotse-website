@@ -537,3 +537,6 @@ button.share.copied,.share-row .btn.copied{background:var(--ink);color:var(--pap
 .acts a.go{margin-right:auto;gap:2px;padding-right:8px}
 .acts a.go .i{width:17px;height:17px}
 .share-row a.route{margin-left:0;min-height:44px;padding:10px 18px;font-size:16px;font-weight:700}
+
+/* Lange Terminlisten: Karten außerhalb des Bildschirms werden erst beim Scrollen gezeichnet (schnellerer Seitenaufbau am Handy) */
+.list > .ev{content-visibility:auto;contain-intrinsic-block-size:auto 340px}

@@ -162,6 +162,8 @@ const SITE = /^https?:\/\/[a-z0-9.-]+(?::\d+)?$/i.test(siteRaw) ? siteRaw : "htt
 if (!siteRaw) warn("Einstellungen", "Website-Adresse fehlt. Links für Google zeigen so lange auf www.example.org.");
 else if (SITE !== siteRaw) warn("Einstellungen", `Website-Adresse „${siteRaw}“ ist ungültig. Bitte nur die Domain eintragen, z. B. https://www.flohlotse.de.`);
 const NAME = S["Name"] || "Flohlotse";
+// Der Markenname wird überall so geschrieben wie in der Einstellung „Name“ – auch in Texten aus der Tabelle, in denen noch „Flohlotse“ steht.
+if (NAME !== "Flohlotse") for (const t of TABS) if (t !== "Einstellungen") for (const r of data[t] || []) for (const k of Object.keys(r)) if (typeof r[k] === "string" && r[k].includes("Flohlotse")) r[k] = r[k].replace(/Flohlotse(?![A-Za-zäöüß])/g, NAME);
 // Instagram-Profil: Einstellung „Instagram“ (Adresse des Profils). Ohne Eintrag gilt das Flohlotse-Profil, mit „Nein“ entfällt der Link.
 const INSTA_RAW = String(S["Instagram"] ?? "https://www.instagram.com/flohlotse/").trim();
 const INSTA = /^https:\/\/(www\.)?instagram\.com\/[A-Za-z0-9._]+\/?$/.test(INSTA_RAW) ? INSTA_RAW.replace(/\/?$/, "/") : "";
@@ -882,7 +884,10 @@ const shareBtn = (m, e, cls = "share") => `<button type="button" class="${cls}" 
     sImg ? `<figure class="hl-slide hl-photo"><img src="${imgUrl((sSmall || sImg).f)}" srcset="${[sSmall && `${imgUrl(sSmall.f)} 760w`, `${imgUrl(sImg.f)} 1520w`].filter(Boolean).join(", ")}" sizes="(max-width: 800px) 100vw, 760px" width="760" height="507" alt="${esc(altOf(sImg))}" fetchpriority="high" decoding="async"><figcaption>${capOf(sImg)}</figcaption></figure>` : "",
     ...hlEvs.map(e => `<a class="hl-slide hl-card" href="/flohmarkt/${e.m.slug}/"><span class="kicker">${ic("star")}Wochen-Highlight</span><b>${esc(e.m.short)}</b><span class="hl-when">${esc(fmtDate(e.date))}${e.start ? " · " + esc(timeText(e)) : ""}</span><span class="hl-where">${ic("pin")}${esc(e.m.area || e.m.place)}</span><span class="promo-go">Zum Markt${ic("chev")}</span></a>`)].filter(Boolean);
   const slider = slides.length ? `<section class="hl" aria-label="Highlights"><div class="hl-track" id="hlTrack">${slides.join("")}</div>${slides.length > 1 ? `<div class="hl-dots" id="hlDots">${slides.map((_, i) => `<button type="button" aria-label="Bild ${i + 1} von ${slides.length}"${i ? "" : ' aria-current="true"'}></button>`).join("")}</div>` : ""}</section>` : "";
-  const body = `<section class="hero"><div>
+  // Laufband über der Startseite mit dem Instagram-Hinweis. Bei „Bewegung reduzieren“ steht es still.
+  const tickItems = INSTA ? Array(4).fill(`<a href="${INSTA}" rel="noopener me"><i aria-hidden="true">+++</i>${esc(NAME)} gibt’s jetzt auch bei Insta</a>`) : [];
+  const ticker = tickItems.length ? `<div class="ticker" role="region" aria-label="Neuigkeiten"><div class="ticker-view"><div class="ticker-run"><div class="ticker-set">${tickItems[0]}${tickItems.slice(1).join("").replace(/<a /g, '<a tabindex="-1" aria-hidden="true" ')}</div><div class="ticker-set" aria-hidden="true">${tickItems.join("").replace(/<a /g, '<a tabindex="-1" ')}</div></div></div>${INSTA ? `<a class="ticker-cta" href="${INSTA}" rel="noopener me" aria-label="${esc(NAME)} auf Instagram folgen">Folgen${ic("chev")}</a>` : ""}</div>` : "";
+  const body = ticker + `<section class="hero"><div>
 <span class="proto">${esc(REGION)}</span>
 <h1>Flohmarkt Hamburg: alle Termine, aufgeräumt.</h1>
 <p>Alle Flohmärkte in Hamburg und Umgebung: wann, wo und wie lange. Ohne Werbebanner, ohne alte Termine.</p>

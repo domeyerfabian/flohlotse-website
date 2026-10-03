@@ -4,9 +4,13 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { createHash as hashOf } from "node:crypto";
 
 const ROOT = path.dirname(fileURLToPath(import.meta.url));
 const OUT = path.join(ROOT, "dist");
+// Versionskürzel für Stil und Skript: Ändert sich die Datei, ändert sich die Adresse, und Browser laden sofort die neue Fassung statt der gespeicherten.
+const ver = f => { try { return "?v=" + hashOf("sha1").update(fs.readFileSync(path.join(ROOT, f))).digest("hex").slice(0, 8); } catch { return ""; } };
+const CSS_V = ver("src/style.css"), JS_V = ver("src/site.js");
 const TABS = ["Einstellungen", "Bezirke", "Märkte", "Serien", "Termine", "Bereiche", "Ratgeber", "Neuigkeiten"];
 // Fehler in der Tabelle ohne technischen Ballast melden (in GitHub als rote Meldung und in der Zusammenfassung)
 process.on("uncaughtException", e => {
@@ -412,7 +416,7 @@ function layout({ p, title, desc, body, ld, noindex, nav, extraHead = "", img = 
 ${FONT_PRELOAD}
 <meta property="og:type" content="website"><meta property="og:locale" content="de_DE"><meta property="og:site_name" content="${esc(NAME)}">
 <meta property="og:title" content="${esc(title)}"><meta property="og:description" content="${esc(desc)}"><meta property="og:url" content="${esc(url)}">${img ? `\n<meta property="og:image" content="${esc(SITE + img)}"><meta name="twitter:card" content="summary_large_image">` : ""}
-<link rel="stylesheet" href="/assets/style.css">
+<link rel="stylesheet" href="/assets/style.css${CSS_V}">
 <link rel="icon" href="/assets/icon.svg" type="image/svg+xml">
 ${ld ? `<script type="application/ld+json">${JSON.stringify(ld).replace(/</g, "\\u003c")}</script>` : ""}${imgLD(p, body)}${extraHead}
 </head>
@@ -432,7 +436,7 @@ ${body.replace(/<h1>([^<]{3,80}?): ([^<]+)<\/h1>/, '<h1>$1:<span class="h1-sub">
 <nav class="foot-links" aria-label="Nach Art und Monat"><b>Nach Art und Monat</b>${CATS_ON.map(c => `<a href="/${c.s}/">${esc(c.chip)}</a>`).join("")}${MONTHS.map(x => `<a href="/${x.s}/">${x.name} ${x.y}</a>`).join("")}</nav>
 <nav class="foot-links" aria-label="${esc(NAME)}"><b>${esc(NAME)}</b><a href="/ratgeber/">Ratgeber</a><a href="/flohmarkt-schilder/">Schilder-Designer</a><a href="/veranstalter/">Für Veranstalter</a><a href="/impressum/">Impressum</a><a href="/datenschutz/">Datenschutz</a></nav>
 </footer>
-<script src="/assets/site.js" defer></script>
+<script src="/assets/site.js${JS_V}" defer></script>
 </body>
 </html>`;
   pages.set(p, { html, noindex, title, desc });

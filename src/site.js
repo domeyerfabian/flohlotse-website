@@ -130,6 +130,14 @@
       var body = ev.querySelector(".ev-body"); if (body) body.insertBefore(b, body.firstChild);
     });
   }
+  // Slider auf der Startseite: Punkte zeigen die Position und springen zum Bild
+  var hlT = document.getElementById("hlTrack"), hlD = document.getElementById("hlDots");
+  if (hlT && hlD) {
+    var hlB = hlD.querySelectorAll("button"), hlS = hlT.children, hlW;
+    var hlAt = function () { var x = hlT.scrollLeft, best = 0, d = 1e9; for (var i = 0; i < hlS.length; i++) { var q = Math.abs(hlS[i].offsetLeft - hlS[0].offsetLeft - x); if (q < d) { d = q; best = i; } } return best; };
+    hlT.addEventListener("scroll", function () { clearTimeout(hlW); hlW = setTimeout(function () { var n = hlAt(); for (var i = 0; i < hlB.length; i++) { if (i === n) hlB[i].setAttribute("aria-current", "true"); else hlB[i].removeAttribute("aria-current"); } }, 60); }, { passive: true });
+    hlD.addEventListener("click", function (e) { var b = e.target.closest("button"); if (!b) return; var i = Array.prototype.indexOf.call(hlB, b); hlT.scrollTo({ left: hlS[i].offsetLeft - hlS[0].offsetLeft, behavior: "smooth" }); });
+  }
   // Teilen: vorformulierte Nachricht über die Teilen-Funktion des Geräts, sonst in die Zwischenablage
   document.querySelectorAll("button[data-share]").forEach(function (b) {
     b.hidden = false;

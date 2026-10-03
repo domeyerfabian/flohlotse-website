@@ -233,21 +233,63 @@ h1,h2,h3,h4{overflow-wrap:break-word;hyphens:auto}
 .skip:focus{left:16px}
 
 /* Symbolfotos */
-.strip-wrap{position:relative;margin:4px 0 6px}
-.strip{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch}
-.strip::-webkit-scrollbar{display:none}
-.strip .tile{position:relative;flex:0 0 auto;scroll-snap-align:start}
-.strip img{display:block;height:210px;width:auto;aspect-ratio:4/5;object-fit:cover;border-radius:var(--r);background:var(--line)}
-.strip .ki{position:absolute;left:8px;bottom:8px;font-size:10px;letter-spacing:.02em;color:#fff;background:rgba(0,0,0,.45);padding:2px 6px;border-radius:999px}
-.strip-note{position:absolute;right:8px;bottom:8px;font-size:11px;letter-spacing:.02em;color:#fff;background:rgba(0,0,0,.45);padding:2px 7px;border-radius:999px;pointer-events:none}
-@media (max-width:520px){.strip{margin-inline:-16px;padding-inline:16px;scroll-padding-inline:16px}.strip img{height:150px}.strip-note{right:24px}}
-@media (min-width:700px){.strip .tile{flex:1 1 0;min-width:0}.strip img{width:100%;height:auto}}
+/* Slider auf der Startseite: Foto und Wochen-Highlights */
+.hl{margin:4px 0 6px}
+.hl-track{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch;border-radius:var(--r)}
+.hl-track::-webkit-scrollbar{display:none}
+.hl-slide{position:relative;flex:0 0 100%;min-width:0;margin:0;scroll-snap-align:start;border-radius:var(--r);overflow:hidden;aspect-ratio:21/9}
+.hl-photo{background:var(--line)}
+.hl-photo img{display:block;width:100%;height:100%;object-fit:cover;object-position:50% 22%}
+.hl-photo figcaption{position:absolute;left:10px;bottom:10px;font-size:11px;letter-spacing:.02em;color:#fff;background:rgba(0,0,0,.45);padding:2px 7px;border-radius:999px}
+.hl-photo figcaption a{color:inherit;text-decoration:underline;text-underline-offset:2px}
+.hl-card{display:flex;flex-direction:column;justify-content:center;gap:6px;padding:20px 26px;background:var(--sticker);color:var(--sticker-ink);text-decoration:none}
+.hl-card .kicker{display:inline-flex;align-items:center;gap:6px;color:var(--sticker-ink)}
+.hl-card .kicker svg{width:16px;height:16px}
+.hl-card b{font-family:var(--f-display);font-weight:800;font-size:clamp(28px,6vw,46px);line-height:1.02;letter-spacing:-.03em;text-wrap:balance}
+.hl-when{font-weight:700;font-size:17px}
+.hl-where{display:inline-flex;align-items:center;gap:6px;font-weight:600}
+.hl-where svg{width:16px;height:16px}
+.hl-card .promo-go{margin-top:6px}
+.hl-dots{display:flex;justify-content:center;gap:2px;margin-top:4px}
+.hl-dots button{width:28px;height:28px;padding:0;border:0;background:none;cursor:pointer;display:grid;place-items:center}
+.hl-dots button::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--line);border:1px solid var(--muted)}
+.hl-dots button[aria-current]::before{background:var(--ink);border-color:var(--ink)}
+@media (max-width:640px){.hl-track{margin-inline:-16px;padding-inline:16px;scroll-padding-inline:16px;border-radius:0}.hl-slide{flex-basis:92%;aspect-ratio:3/2}.hl-card{padding:16px 18px;gap:4px}.hl-when{font-size:15px}}
+/* Kleines Foto neben dem Text */
+.side-photo{float:right;width:min(40%,220px);margin:4px 0 12px 18px}
+.side-photo img{display:block;width:100%;height:auto;aspect-ratio:4/5;object-fit:cover;border-radius:var(--r);background:var(--line)}
+.side-photo.quer{width:min(46%,340px)}
+.side-photo.quer img{aspect-ratio:4/3}
+.side-photo figcaption{margin-top:5px;font-size:11px;line-height:1.35;color:var(--muted)}
+.side-photo figcaption a{color:inherit}
+.kb-body::after{content:"";display:block;clear:both}
+/* Formen, damit nicht jedes Foto gleich aussieht */
+.side-photo.links{float:left;margin:4px 18px 12px 0}
+.side-photo.rund img{aspect-ratio:1;border-radius:50%}
+.side-photo.rund figcaption{text-align:center}
+.side-photo.kante{padding:0 8px 8px 0}
+.side-photo.kante img{box-shadow:8px 8px 0 var(--ink)}
+.side-photo.kante figcaption{margin-top:14px}
+.kb-photo.kante{overflow:visible;background:none;margin-right:8px;margin-bottom:8px}
+.kb-photo.kante img{border-radius:var(--r);box-shadow:8px 8px 0 var(--ink)}
+.cl-head{display:grid;grid-template-columns:1fr auto;gap:16px;align-items:center;margin-bottom:12px}
+.cl-head.flip{grid-template-columns:auto 1fr}
+.cl-head.flip .cl-thumb{order:-1}
+.cl-head h2{margin-top:0}
+.cl-head p{margin-bottom:0}
+.cl-thumb{display:block;width:104px;height:104px;object-fit:cover;border-radius:var(--r);background:var(--line)}
+.cl-thumb.rund{border-radius:50%}
+.cl-cred{margin-top:18px}
+.cl-cred a{color:inherit}
+@media (min-width:700px){.cl-thumb{width:150px;height:150px}}
+@media (max-width:520px){.side-photo.quer{float:none;width:100%;margin:18px 0 6px}}
 .kb-photo{position:relative;margin:22px 0 0;border-radius:var(--r);overflow:hidden;background:var(--line)}
 .kb-photo img{display:block;width:100%;height:auto;aspect-ratio:16/7;object-fit:cover}
 .kb-photo figcaption{position:absolute;left:10px;bottom:10px;font-size:11px;letter-spacing:.02em;color:#fff;background:rgba(0,0,0,.45);padding:2px 7px;border-radius:999px}
+.kb-photo figcaption a{color:inherit;text-decoration:underline;text-underline-offset:2px}
 .kb-photo.slim{margin:0 0 14px}
-.kb-photo.slim img{aspect-ratio:16/5}
-@media (prefers-reduced-motion:no-preference){a.card,.strip img{transition:border-color .15s}}
+.kb-photo.slim img{aspect-ratio:16/5;object-position:50% 25%}
+@media (prefers-reduced-motion:no-preference){a.card{transition:border-color .15s}}
 /* ---------- Mobile first: Icons, Umbrüche, Lesefluss ---------- */
 .i{width:1em;height:1em;flex:none;vertical-align:-.125em}
 h2,h3,h4{line-height:1.2}

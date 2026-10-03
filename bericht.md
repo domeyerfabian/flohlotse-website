@@ -2,7 +2,7 @@
 
 Stand 03.10.2026 · 189 Seiten (186 für Google) · 102 Märkte · 196 Termine in den nächsten 120 Tagen · 42 Ratgeber-Artikel · 792 Event-Auszeichnungen
 
-## 49 Hinweise zum Prüfen
+## 39 Hinweise zum Prüfen
 
 | Bereich | Hinweis |
 |---|---|
@@ -45,13 +45,3 @@ Stand 03.10.2026 · 189 Seiten (186 für Google) · 102 Märkte · 196 Termine i
 | Keine Termine | Flohmarkt Moorwegsiedlung Wedel hat in den nächsten 120 Tagen keinen Termin. |
 | Keine Termine | Flohmarkt Heidesiedlung Neu Wulmstorf hat in den nächsten 120 Tagen keinen Termin. |
 | Keine Termine | Flohmarkt famila Buchholz hat in den nächsten 120 Tagen keinen Termin. |
-| Termin-Wächter | Flohmarkt Hansaplatz: Die Website des Veranstalters möchte nicht automatisch abgerufen werden (robots.txt). Diese Seite bitte weiter von Hand prüfen: https://www.marktlust.de/en/pages/hansaplatz-new |
-| Termin-Wächter | Flohmarkt Lange Reihe: Die Website des Veranstalters möchte nicht automatisch abgerufen werden (robots.txt). Diese Seite bitte weiter von Hand prüfen: https://www.marktlust.de/en/pages/lange-reihe-flohmarkt |
-| Termin-Wächter | Spielzeugflohmarkt Oberhafen: Die Website des Veranstalters möchte nicht automatisch abgerufen werden (robots.txt). Diese Seite bitte weiter von Hand prüfen: https://www.marktlust.de/en/pages/spielzeugflohmarkt |
-| Termin-Wächter | Flohmarkt Flugplatz Heist: Die Website des Veranstalters möchte nicht automatisch abgerufen werden (robots.txt). Diese Seite bitte weiter von Hand prüfen: https://www.marktlust.de/en/pages/flugplatz-heist-new |
-| Termin-Wächter | Flohmarkt Isestraße: Die Website des Veranstalters möchte nicht automatisch abgerufen werden (robots.txt). Diese Seite bitte weiter von Hand prüfen: https://www.marktlust.de/en/pages/flohmarkt-isestrasse |
-| Termin-Wächter | Flohmarkt Heiligengeistfeld: Die Website des Veranstalters möchte nicht automatisch abgerufen werden (robots.txt). Diese Seite bitte weiter von Hand prüfen: https://heiligengeistfeld-flohmarkt.de/ |
-| Termin-Wächter | Nachbarschaftsflohmarkt Wilhelmsburg: Die Website des Veranstalters möchte nicht automatisch abgerufen werden (robots.txt). Diese Seite bitte weiter von Hand prüfen: https://www.marktlust.de/en/pages/nachbarschaftsflohmarkt-wilhelmsburg-1 |
-| Termin-Wächter | Flohmarkt Langenhorner Markt: Die Website des Veranstalters möchte nicht automatisch abgerufen werden (robots.txt). Diese Seite bitte weiter von Hand prüfen: https://hmf24.eu/hamburg-langenhorn |
-| Termin-Wächter | Flohmarkt Uetersen bei Lüchau Baustoffe: Die Website des Veranstalters möchte nicht automatisch abgerufen werden (robots.txt). Diese Seite bitte weiter von Hand prüfen: https://hmf24.eu/uetersen |
-| Termin-Wächter | Flohmarkt Uetersen City: Die Website des Veranstalters möchte nicht automatisch abgerufen werden (robots.txt). Diese Seite bitte weiter von Hand prüfen: https://hmf24.eu/uetersen-city |

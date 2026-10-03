@@ -46,6 +46,23 @@ Ihr pflegt nur die Tabelle. Die ausführliche Einrichtungsanleitung liegt als Do
 - **Weiß mit Rand** = alles zum Antippen: Filter, Art des Markts, Route, Teilen.
 - **Schriften:** Bricolage Grotesque für Überschriften, Figtree für alles andere. DM Mono wird nicht mehr gebraucht; die Dateien im Ordner `fonts` können bleiben oder gelöscht werden.
 
+## Technik für Google (Stand 3. Oktober)
+
+- **Schriften:** Im Ordner `fonts` liegen zwei kompakte Dateien (`Figtree-Variable.woff2`, `BricolageGrotesque-Variable.woff2`, zusammen rund 105 KB statt 470 KB). Sie werden vorgeladen, damit Überschriften sofort in der richtigen Schrift erscheinen. Alte `.ttf`-Dateien können gelöscht werden.
+- **Icons:** liegen in einer eigenen Datei `/assets/icons.svg`, die der Browser einmal lädt und dann merkt. Jede Seite ist dadurch rund ein Drittel leichter.
+- **Seitentitel:** Wäre ein Titel mit „ | Flohlotse“ länger als 60 Zeichen, fällt der Zusatz automatisch weg, damit Google nichts abschneidet.
+- **Sitemap:** Das Änderungsdatum einer Seite ändert sich nur, wenn sich ihr Inhalt geändert hat. Der Merkzettel dafür liegt unter `/assets/seiten-stand.json`.
+- **Lange Listen:** Terminkarten außerhalb des Bildschirms werden erst beim Scrollen gezeichnet.
+
+## Termin-Wächter
+
+- Jede Nacht ruft der Bau die Adresse aus der Spalte „Veranstalter-Website“ ab und merkt sich, welche Datumsangaben dort stehen. Ändern sie sich, steht im Bericht unter „Termin-Wächter“, was neu ist und was fehlt, zusammen mit dem Link. Der Hinweis bleibt sieben Tage stehen.
+- Es wird **nichts automatisch übernommen**. Für neue Tage liefert der Bericht aber fertige Zeilen („Vorschläge zum Einfügen“): auf der Veranstalterseite prüfen, Zeilen kopieren, im Blatt „Termine“ einfügen. Eingesetzt ist die übliche Uhrzeit des Markts. Verschwindet ein Tag von der Veranstalterseite, der noch im Kalender steht, warnt der Bericht ausdrücklich.
+- Am genauesten arbeitet der Wächter, wenn in „Veranstalter-Website“ die Seite steht, auf der die Termine wirklich stehen (nicht nur die Startseite).
+- Der erste Lauf merkt sich nur den Stand und meldet nichts. Termine in Bildern, PDFs oder auf Facebook und Instagram erkennt der Wächter nicht.
+- Sperrt ein Veranstalter automatische Abrufe (robots.txt), wird seine Seite nicht abgerufen und einmalig im Bericht genannt.
+- Der Merkzettel liegt unter `/assets/waechter.json` auf der Website. Abschalten: im Workflow die Variable `WAECHTER` auf `aus` setzen.
+
 ## Wetter und Teilen
 
 - **Wetter:** Beim nächtlichen Bau lädt die Website einmal die Vorhersage des Deutschen Wetterdienstes (über Bright Sky, kostenlos, ohne Anmeldung). Für die nächsten fünf Tage sagt dann der Wetterfrosch auf gelbem Schild das Wetter voraus („Regen wahrscheinlich ab ca. 10 Uhr, bis 15°“). Wird es an einem Markttag nass, erscheint oben ein Kasten mit den überdachten Märkten dieses Tages. Besucher laden dabei nichts von fremden Servern.

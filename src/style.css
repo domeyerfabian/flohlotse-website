@@ -446,12 +446,14 @@ a.route .i{width:17px;height:17px}
 }
 /* Vorlagen-Karten, Startseiten-Hinweis, Kasten im Ratgeber */
 .sg-card img{display:block;width:100%;height:auto;border-radius:8px;margin-bottom:6px;background:#fff}
-.promo{display:grid;gap:14px;align-items:center;background:var(--sticker);color:var(--sticker-ink);border-radius:20px;padding:20px;text-decoration:none}
+.promo{display:grid;gap:18px;align-items:center;background:var(--surface);border:1px solid var(--line);color:var(--ink);border-radius:20px;padding:20px;text-decoration:none}
 .promo-txt{display:grid;gap:6px}
-.promo .kicker{color:var(--sticker-ink);opacity:.75}
+.promo .kicker{color:var(--muted)}
+.promo-txt > span:not(.kicker):not(.btn){color:var(--muted)}
+.promo .btn{margin-top:8px}
 .promo b{font-family:var(--f-display);font-size:23px;line-height:1.15;letter-spacing:-.02em}
 .promo-go{display:inline-flex;align-items:center;gap:4px;font-weight:700;margin-top:4px}
-.promo img{width:100%;height:auto;border-radius:10px;transform:rotate(2deg);box-shadow:0 8px 20px rgba(0,0,0,.12)}
+.promo img{width:100%;height:auto;border-radius:10px;transform:rotate(2deg);border:1px solid var(--line);box-shadow:0 8px 20px rgba(0,0,0,.10)}
 @media (min-width:640px){.promo{grid-template-columns:1.3fr 1fr;padding:26px}}
 .cta-box{display:flex;align-items:center;gap:14px;margin-top:26px;max-width:65ch;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px;color:var(--ink);text-decoration:none}
 .cta-box:hover{border-color:var(--ink)}
@@ -590,3 +592,14 @@ button.share.copied,.share-row .btn.copied{background:var(--ink);color:var(--pap
 .zahlen tbody tr:last-child td{border-bottom:0}
 .zahlen th{font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);font-weight:600}
 .zahlen .num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+
+/* Knöpfe auf schwarzer Fläche: gelb, damit sie als Knopf erkennbar sind */
+.org .btn{display:inline-flex;align-items:center;gap:8px;background:var(--sticker);color:var(--sticker-ink);text-decoration:none}
+/* Instagram-Hinweis: gelbe Fläche, großes @ als Sticker, schwarzer Knopf */
+.follow{position:relative;display:grid;gap:16px;align-items:center;background:var(--sticker);color:var(--sticker-ink);border-radius:20px;padding:22px 20px;text-decoration:none;overflow:hidden}
+.follow-at{display:grid;place-items:center;width:76px;height:76px;border-radius:50%;background:var(--sticker-ink);color:var(--sticker);font-family:var(--f-display);font-weight:800;font-size:44px;line-height:1;transform:rotate(-8deg)}
+.follow-txt{display:grid;gap:6px}
+.follow .kicker{color:var(--sticker-ink);opacity:.75}
+.follow b{font-family:var(--f-display);font-size:23px;line-height:1.15;letter-spacing:-.02em;text-wrap:balance}
+.follow .btn{background:var(--sticker-ink);color:var(--sticker);justify-self:start}
+@media (min-width:640px){.follow{grid-template-columns:auto 1fr auto;padding:26px;gap:22px}.follow-at{width:92px;height:92px;font-size:54px}}

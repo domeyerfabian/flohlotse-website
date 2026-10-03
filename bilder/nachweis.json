@@ -1,0 +1,30 @@
+{
+  "hinweis": "Bildnachweis für Fotos von Magnific (früher Freepik), kostenlose Lizenz mit Namensnennung. name = Dateiname auf der Website (für Google), alt = Bildbeschreibung. Lizenz-Zertifikate (PDF) privat aufbewahren.",
+  "quelle": { "name": "Magnific", "url": "https://www.magnific.com", "text": "Designed by Magnific", "lizenz": "https://www.magnific.com/ai/docs/licenses-attribution" },
+  "bilder": {
+    "start": { "name": "flohmarkt-stoebern-vintage-mantel", "alt": "Symbolfoto: Frau freut sich auf dem Flohmarkt über einen Vintage-Lammfellmantel, daneben stöbert ein Mann an der Kleiderstange", "autor": "Freepik" },
+    "ratgeber-kaufen": { "name": "flohmarkt-kaufen-troedeltisch", "alt": "Symbolfoto: Frau stöbert auf dem Flohmarkt an einem Trödeltisch mit Flaschen, Kameras und Kleinkram", "autor": "krakenimages.com" },
+    "ratgeber-verkaufen": { "name": "flohmarkt-verkaufen-uebergabe-am-stand", "alt": "Symbolfoto: Verkäuferin übergibt am Flohmarktstand einen Schmuckständer an eine Käuferin", "autor": "Freepik" },
+    "ratgeber-knigge": { "name": "flohmarkt-knigge-gemeinsam-stoebern", "alt": "Symbolfoto: Drei Leute sehen auf dem Flohmarkt gemeinsam eine Kleiderstange mit Jacken durch", "autor": "Freepik" },
+    "ratgeber-grundwissen": { "name": "flohmarkt-kleiderstand-secondhand", "alt": "Symbolfoto: Mann sucht an einem Flohmarktstand zwischen Secondhand-Jacken", "autor": "Freepik" },
+    "ratgeber-organisieren": { "name": "hofflohmarkt-organisieren", "alt": "Symbolfoto: Hofflohmarkt vor einem Holzhaus mit Kleiderstange, Büchern und Trödel, ein Mann zeigt eine Gitarre", "autor": "Freepik" },
+    "seite-antikmarkt-hamburg": { "name": "antikmarkt-troedel-stand", "alt": "Symbolfoto: Zwei Besucher beugen sich auf einem Antik- und Trödelmarkt über einen Tisch mit alten Stücken", "autor": "Freepik" },
+    "seite-frauenflohmarkt-hamburg": { "name": "frauenflohmarkt-jeansjacke-anprobieren", "alt": "Symbolfoto: Frau hält sich an einem Kleiderstand vor dem Spiegel eine Jeansjacke an", "autor": "Freepik" },
+    "seite-nachbarschaftsflohmarkt-hamburg": { "name": "hofflohmarkt-nachbarschaft-kleiderstange", "alt": "Symbolfoto: Mann sieht sich auf einem Hofflohmarkt ein Sakko an der Kleiderstange an", "autor": "Freepik" },
+    "seite-groesste-flohmaerkte-hamburg": { "name": "grosser-flohmarkt-stand-stoebern", "alt": "Symbolfoto: Zwei Leute begutachten lachend einen Schal mit Leopardenmuster auf einem großen Flohmarkt", "autor": "Freepik" },
+    "seite-schilder": { "name": "flohmarktstand-aufbauen-kleidung", "alt": "Symbolfoto: Verkäuferin hängt Kleidung an ihrem Flohmarktstand auf", "autor": "Freepik" }
+  },
+  "werke": [
+    ["friends having fun and shopping together", "Freepik", "https://www.magnific.com/free-photo/friends-having-fun-shopping-together_22633239.htm"],
+    ["medium shot woman holding shirt", "Freepik", "https://www.magnific.com/free-photo/medium-shot-woman-holding-shirt_24238987.htm"],
+    ["medium shot man at garage sale", "Freepik", "https://www.magnific.com/free-photo/medium-shot-man-garage-sale_49632130.htm"],
+    ["side view people at garage sale", "Freepik", "https://www.magnific.com/free-photo/side-view-people-garage-sale_49631942.htm"],
+    ["medium shot young people at flea market", "Freepik", "https://www.magnific.com/free-photo/medium-shot-young-people-flea-market_29609169.htm"],
+    ["side view people looking at clothes", "Freepik", "https://www.magnific.com/free-photo/side-view-people-looking-clothes_29609202.htm"],
+    ["medium shot people looking at clothes", "Freepik", "https://www.magnific.com/free-photo/medium-shot-people-looking-clothes_29609241.htm"],
+    ["front view man looking at clothes", "Freepik", "https://www.magnific.com/free-photo/front-view-man-looking-clothes_29609198.htm"],
+    ["people meeting at a barter event to exchange goods", "Freepik", "https://www.magnific.com/free-photo/people-meeting-barter-event-exchange-goods_38673380.htm"],
+    ["full shot people at garage sale", "Freepik", "https://www.magnific.com/free-photo/full-shot-people-garage-sale_58396935.htm"],
+    ["young beautiful woman smiling happy and confident. standing with smile on face looking a jumble sale at the town street", "krakenimages.com", "https://www.magnific.com/free-photo/young-beautiful-woman-smiling-happy-confident-standing-with-smile-face-looking-jumble-sale-town-street_42513081.htm"]
+  ]
+}

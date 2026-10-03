@@ -1353,7 +1353,7 @@ ${f("Impressum: Register") || f("Impressum: USt-IdNr.") ? `<h2>Register und Umsa
 <h2>1. Verantwortlicher</h2><p>Verantwortlich für die Datenverarbeitung auf dieser Website im Sinne der Datenschutz-Grundverordnung (DSGVO) ist:</p><p>${addrHTML}<br>E-Mail: ${mailHTML}</p><p>Einen Datenschutzbeauftragten haben wir nicht benannt, weil wir dazu gesetzlich nicht verpflichtet sind. Fragen zum Datenschutz beantworten wir unter der genannten E-Mail-Adresse.</p>
 ${isGitHub
   ? `<h2>2. Hosting und Server-Logdateien</h2><p>Die Website wird über GitHub Pages bereitgestellt, einen Dienst der GitHub, Inc., 88 Colin P. Kelly Jr. Street, San Francisco, CA 94107, USA. Beim Aufruf einer Seite speichert GitHub die IP-Adresse der Besucher zu Sicherheitszwecken, außerdem technische Daten wie Datum, Uhrzeit und aufgerufene Seite. Wir haben auf diese Daten keinen Zugriff. Wie lange GitHub sie speichert, legt GitHub fest (<a href="https://docs.github.com/de/site-policy/privacy-policies/github-general-privacy-statement" rel="noopener">Datenschutzerklärung von GitHub</a>). Rechtsgrundlage ist unser berechtigtes Interesse, die Website sicher und zuverlässig auszuliefern (Art. 6 Abs. 1 lit. f DSGVO). Dabei können Daten in die USA übermittelt werden. GitHub ist nach dem EU-U.S. Data Privacy Framework zertifiziert, für das die EU-Kommission einen Angemessenheitsbeschluss erlassen hat (Art. 45 DSGVO).</p>`
-  : `<h2>2. Hosting und Server-Logdateien</h2><p>Die Website wird bei ${ph("Datenschutz: Hoster", "Name und Sitz des Hosters")} betrieben. Beim Aufruf speichert der Server automatisch technische Daten wie IP-Adresse, Datum und Uhrzeit, aufgerufene Seite und Browser. Das ist nötig, um die Website sicher auszuliefern (Art. 6 Abs. 1 lit. f DSGVO). Die Daten werden nach ${ph("Datenschutz: Löschfrist Logdateien (Tage)", "Anzahl")} Tagen gelöscht, soweit der Hoster sie nicht länger zur Abwehr von Angriffen benötigt.</p>`}
+  : `<h2>2. Hosting und Server-Logdateien</h2><p>Die Website wird bei ${ph("Datenschutz: Hoster", "Name und Sitz des Hosters")} betrieben. Beim Aufruf speichert der Server automatisch technische Daten wie IP-Adresse, Datum und Uhrzeit, aufgerufene Seite und Browser. Das ist nötig, um die Website sicher auszuliefern (Art. 6 Abs. 1 lit. f DSGVO). Die Daten werden nach ${ph("Datenschutz: Löschfrist Logdateien (Tage)", "Anzahl")} Tagen gelöscht, soweit der Hoster sie nicht länger zur Abwehr von Angriffen benötigt.${yes(f("Datenschutz: Vertrag mit Hoster")) ? " Mit dem Hoster haben wir einen Vertrag zur Auftragsverarbeitung geschlossen (Art. 28 DSGVO). Die Daten werden in Deutschland verarbeitet." : ""}</p>`}
 <h2>3. Keine Inhalte von fremden Servern</h2><p>Schriften, Icons, Bilder, Skripte und die Kartensoftware gehören zur Website selbst und werden von unserem Hoster (Abschnitt 2) mit ausgeliefert. Beim Aufruf einer Seite wird keine Verbindung zu Google, zu sozialen Netzwerken oder zu anderen Drittanbietern aufgebaut. Auch die Wettervorhersage laden nicht die Besucher: Wir rufen sie einmal bei der Aktualisierung der Website ab und liefern sie als festen Text mit aus.</p>
 <h2>4. Cookies, Tracking und warum es hier keinen Cookie-Banner gibt</h2><p>Diese Website setzt keine Cookies. Sie speichert nichts auf deinem Gerät (auch nicht im sogenannten Local Storage) und liest dort nichts aus. Es gibt keine Reichweitenmessung, keine Werbung, keine Social-Media-Plugins, keine eingebetteten Videos und kein Nutzerprofil.</p><p>Eine Einwilligung ist nach § 25 Abs. 1 TDDDG nur nötig, wenn eine Website Informationen auf dem Gerät speichert oder von dort ausliest und das nicht unbedingt erforderlich ist. Beides passiert hier nicht. Es gibt also nichts, in das du einwilligen müsstest, und deshalb keinen Cookie-Banner.</p><p>Zwei Funktionen brauchen deine ausdrückliche Handlung und starten erst dann: die Karte („Karte laden“) und die Standortabfrage („Mein Standort“). Beide sind in Abschnitt 9 beschrieben.</p>
 <h2>5. Termine eintragen</h2><p>${formKind === "google" ? "Veranstalter können Termine über ein Formular von Google Formulare (Google Ireland Limited, Gordon House, Barrow Street, Dublin 4, Irland) einreichen. Das Formular öffnet sich erst, wenn du den Link anklickst. Dabei gelten zusätzlich die Datenschutzbestimmungen von Google." : formKind === "other" ? `Veranstalter können Termine über ein Formular bei ${esc(formHost)} einreichen. Das Formular öffnet sich erst, wenn du den Link anklickst. Dabei gelten zusätzlich die Datenschutzbestimmungen dieses Anbieters.` : "Veranstalter können uns Termine per E-Mail schicken."} Wir verarbeiten die Angaben zum Markt und deine E-Mail-Adresse. Die Marktdaten veröffentlichen wir nach Prüfung. Die E-Mail-Adresse nutzen wir nur für Rückfragen zu deinem Eintrag und veröffentlichen sie nicht. Rechtsgrundlage ist Art. 6 Abs. 1 lit. b und f DSGVO. Wir löschen die E-Mail-Adresse ${ph("Datenschutz: Löschfrist Formular", "Frist, z. B. zwölf Monate nach dem letzten Termin")}.</p>
@@ -1434,6 +1434,56 @@ fs.writeFileSync(path.join(OUT, "sitemap.xml"), `<?xml version="1.0" encoding="U
 fs.writeFileSync(path.join(OUT, "robots.txt"), PUBLIC ? `User-agent: *\nAllow: /\n\nSitemap: ${SITE}/sitemap.xml\n` : "User-agent: *\nDisallow: /\n");
 if (!PUBLIC) warn("Google", "Die Website ist noch nicht für Google freigegeben (Einstellung „Für Google freigeben“ = Nein). Das ist richtig, solange ihr testet.");
 if (process.env.CNAME) fs.writeFileSync(path.join(OUT, "CNAME"), process.env.CNAME + "\n");
+// Einstellungen für Webspace mit Apache (z. B. Hetzner). GitHub Pages beachtet die Datei nicht.
+{
+  const host = new URL(SITE).hostname, bare = host.replace(/^www\./, ""), rx = bare.replace(/\./g, "\\.");
+  fs.writeFileSync(path.join(OUT, ".htaccess"), `# Automatisch erzeugt von build.mjs. Änderungen hier gehen beim nächsten Bau verloren.
+Options -Indexes
+ErrorDocument 404 /404.html
+AddDefaultCharset utf-8
+
+<IfModule mod_rewrite.c>
+RewriteEngine On
+# Immer https://${host} (gilt nur für die eigene Domain, nicht für die Test-Adresse des Hosters)
+RewriteCond %{HTTP_HOST} ^${rx}$ [NC]
+RewriteRule ^ https://${host}%{REQUEST_URI} [R=301,L]
+RewriteCond %{HTTP_HOST} ^www\\.${rx}$ [NC]
+RewriteCond %{HTTPS} !=on
+RewriteCond %{HTTP:X-Forwarded-Proto} !=https
+RewriteRule ^ https://${host}%{REQUEST_URI} [R=301,L]
+</IfModule>
+
+<IfModule mod_mime.c>
+AddType font/woff2 .woff2
+AddType image/webp .webp
+AddType image/svg+xml .svg
+</IfModule>
+
+<IfModule mod_deflate.c>
+AddOutputFilterByType DEFLATE text/html text/css text/plain application/javascript text/javascript image/svg+xml application/json application/xml text/xml
+</IfModule>
+
+<IfModule mod_expires.c>
+ExpiresActive On
+ExpiresDefault "access plus 1 hour"
+ExpiresByType text/html "access plus 10 minutes"
+ExpiresByType application/json "access plus 10 minutes"
+ExpiresByType application/xml "access plus 1 hour"
+ExpiresByType text/css "access plus 1 day"
+ExpiresByType application/javascript "access plus 1 day"
+ExpiresByType text/javascript "access plus 1 day"
+ExpiresByType image/svg+xml "access plus 1 week"
+ExpiresByType image/webp "access plus 1 month"
+ExpiresByType image/jpeg "access plus 1 month"
+ExpiresByType font/woff2 "access plus 1 year"
+</IfModule>
+
+<IfModule mod_headers.c>
+Header set X-Content-Type-Options "nosniff"
+Header set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
+`);
+}
 
 /* ---------------------------------------------------------------- Bericht */
 const evCount = [...pages.values()].reduce((n, pg) => n + (pg.html.match(/"@type":"Event"/g) || []).length, 0);

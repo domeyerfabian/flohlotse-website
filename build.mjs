@@ -232,7 +232,9 @@ for (const r of data.Serien) {
 for (const r of data.Termine) {
   const m = MBY[r["Markt"]]; if (!m) { if (r["Markt"]) warn("Termine", `Markt „${r["Markt"]}“ ist unbekannt oder nicht aktiv.`); continue; }
   if (!r["Datum"]) { warn("Termine", `${m.name}: Zeile ohne Datum. Falls ein Datum eingetragen ist, die Spalte als „Nur Text“ formatieren und das Datum neu eintippen.`); continue; }
-  const d = parseDate(r["Datum"], m.name); if (!d || d < TODAY || d > END) continue;
+  const d = parseDate(r["Datum"], m.name); if (!d || d < TODAY) continue;
+  // Termine jenseits der Vorschau („Tage im Voraus“) stehen nicht im Kalender, aber auf der Marktseite als nächster bekannter Termin.
+  if (d > END) { if (!/abgesagt|fällt aus|entfällt/i.test(r["Status"] || "")) (m.later = m.later || []).push({ date: d, start: parseTime(r["Beginn"], m.name) || "", end: parseTime(r["Ende"], m.name) || "" }); continue; }
   const k = key(d), ex = evMap.get(m.slug + k);
   const e = ex || { m, date: d, k, start: "", end: "", cancelled: false, note: "" };
   const st = parseTime(r["Beginn"], m.name), en = parseTime(r["Ende"], m.name);
@@ -245,7 +247,9 @@ for (const r of data.Termine) {
 const EVENTS = [...evMap.values()].sort((a, b) => a.k === b.k ? (a.start || "99").localeCompare(b.start || "99") : a.k.localeCompare(b.k));
 for (const e of EVENTS) e.m.events.push(e);
 for (const e of EVENTS) if (!e.start && !e.cancelled && (e.date - TODAY) / 864e5 < 21) warn("Uhrzeit fehlt", `${e.m.name} am ${fmtDate(e.date)}`);
-for (const m of MARKETS) if (!m.events.length) warn("Keine Termine", `${m.name} hat in den nächsten ${HORIZON} Tagen keinen Termin.`);
+for (const m of MARKETS) if (m.later) m.later.sort((a, b) => a.date - b.date);
+const fmtDateY = d => `${fmtDate(d)} ${d.getUTCFullYear()}`;
+for (const m of MARKETS) if (!m.events.length && !m.later) warn("Keine Termine", `${m.name} hat in den nächsten ${HORIZON} Tagen keinen Termin.`);
 
 const KB = data.Ratgeber.filter(r => yes(r["Aktiv"]) && r["Kennung"] && validSlug(r["Kennung"], "Ratgeber", r["Überschrift"])).map(r => ({
   s: r["Kennung"], c: r["Bereich"], kw: r["Suchbegriff"], i: r["Suchabsicht"], t: r["SEO-Titel"], d: r["SEO-Beschreibung"], h: r["Überschrift"], a: r["Kurz gesagt"],
@@ -930,9 +934,11 @@ for (const m of MARKETS) {
   const others = MARKETS.filter(x => x.bez === m.bez && x !== m);
   const singleDates = !m.when && m.events.filter(e => !e.cancelled).length === 1;
   const when = whenOf(m);
+  const far = !first && m.later ? m.later[0] : null;
   const timeVariants = new Set(m.events.filter(e => !e.cancelled).map(timeText));
   const mixed = timeVariants.size > 1;
   const answer = when ? `${esc(m.satz)} findet ${esc(when)}${first && first.start && !mixed && /^am [A-Za-zä]+, /.test(when) ? "," : ""}${first && first.start && !mixed ? (first.end ? ` von ${hmText(first.start)} bis ${hmText(first.end)} Uhr` : ` ab ${hmText(first.start)} Uhr`) : ""} statt. Adresse: ${esc(m.addr)}. ${first ? (singleDates ? "" : "Nächster Termin: " + fmtDate(first.date) + (mixed && first.start ? ", " + (first.end ? `${hmText(first.start)} bis ${hmText(first.end)} Uhr` : `ab ${hmText(first.start)} Uhr`) : "") + ".") : ""}`
+    : far ? `${esc(m.satz)} findet das nächste Mal am ${fmtDateY(far.date)}${far.start ? (far.end ? ` von ${hmText(far.start)} bis ${hmText(far.end)} Uhr` : ` ab ${hmText(far.start)} Uhr`) : ""} statt.${m.later.length > 1 ? ` Danach: ${m.later.slice(1, 4).map(x => fmtDateY(x.date)).join("; ")}.` : ""} Adresse: ${esc(m.addr)}.`
     : `${esc(m.satz)} hat derzeit keinen angekündigten Termin. Adresse: ${esc(m.addr)}.`;
   // Häufige Fragen aus den Daten (nur Fakten, die im Kalender stehen)
   const nom = m.satz.replace(/^(Der|Die|Das) /, a => a.toLowerCase());
@@ -958,7 +964,7 @@ for (const m of MARKETS) {
 <h1>${esc(m.name)}: Öffnungszeiten und Termine</h1>
 <div class="byline"><span>${ic("pin")}${esc(m.area)}</span><span>${ic("map")}${esc(regionLabel(r))}</span><span>${ic("update")}Stand: ${STAND}</span></div>
 <div class="answer"><span class="kicker">Kurz gesagt</span><p>${answer}</p></div>
-<dl class="facts"><div><dt>${ic("cal")}Wann</dt><dd>${esc(cap(when) || "Derzeit kein Termin")}</dd></div><div><dt>${ic("clock")}Uhrzeit</dt><dd>${!first ? "–" : mixed ? "je nach Termin, siehe unten" : timeText(first)}</dd></div>
+<dl class="facts"><div><dt>${ic("cal")}Wann</dt><dd>${esc(cap(when) || (far ? m.later.slice(0, 4).map(x => fmtDateY(x.date)).join(" · ") : "Derzeit kein Termin"))}</dd></div><div><dt>${ic("clock")}Uhrzeit</dt><dd>${!first ? (far && far.start ? timeText(far) : "–") : mixed ? "je nach Termin, siehe unten" : timeText(first)}</dd></div>
 <div><dt>${ic("pin")}Adresse</dt><dd>${addrNb(m.addr)}<br><a class="route" href="${route}" rel="noopener">${ic("route")}Route planen</a></dd></div>
 ${m.oepnv ? `<div><dt>${ic("tram")}Nächste Haltestelle</dt><dd>${esc(m.oepnv)}</dd></div>` : ""}${m.org || m.web ? `<div><dt>${ic("user")}Veranstalter</dt><dd>${esc(m.org)}${m.web ? `${m.org ? "<br>" : ""}<a href="${esc(m.web)}" rel="noopener">Website des Veranstalters</a>` : ""}</dd></div>` : ""}${m.tags.length ? `<div><dt>${ic("tag")}Art des Markts</dt><dd class="tags-dd">${m.tags.map(t => CAT_BY_TAG[t] ? `<a class="tag" href="/${CAT_BY_TAG[t].s}/">${tagIc(t)}${esc(t)}</a>` : `<span class="tag">${tagIc(t)}${esc(t)}</span>`).join(" ")}</dd></div>` : ""}</dl>
 <div class="share-row">${shareBtn(m, first, "btn share-big")}<a class="route" href="${route}" rel="noopener">${ic("route")}Route planen</a></div>${first ? wxSay(wxEv(first), "für " + (first.k === key(TODAY) ? "heute" : first.k === key(addDays(TODAY, 1)) ? "morgen" : WDL[first.date.getUTCDay()])) : ""}

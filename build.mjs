@@ -162,6 +162,11 @@ const SITE = /^https?:\/\/[a-z0-9.-]+(?::\d+)?$/i.test(siteRaw) ? siteRaw : "htt
 if (!siteRaw) warn("Einstellungen", "Website-Adresse fehlt. Links für Google zeigen so lange auf www.example.org.");
 else if (SITE !== siteRaw) warn("Einstellungen", `Website-Adresse „${siteRaw}“ ist ungültig. Bitte nur die Domain eintragen, z. B. https://www.flohlotse.de.`);
 const NAME = S["Name"] || "Flohlotse";
+// Instagram-Profil: Einstellung „Instagram“ (Adresse des Profils). Ohne Eintrag gilt das Flohlotse-Profil, mit „Nein“ entfällt der Link.
+const INSTA_RAW = String(S["Instagram"] ?? "https://www.instagram.com/flohlotse/").trim();
+const INSTA = /^https:\/\/(www\.)?instagram\.com\/[A-Za-z0-9._]+\/?$/.test(INSTA_RAW) ? INSTA_RAW.replace(/\/?$/, "/") : "";
+const INSTA_AT = INSTA ? "@" + INSTA.split("/").filter(Boolean).pop() : "";
+const instaA = label => `<a href="${INSTA}" rel="noopener me">${label}</a>`;
 const REGION = S["Region"] || "Hamburg + 30 km";
 const horizonRaw = parseInt(S["Tage im Voraus"], 10) || 120;
 const HORIZON = Math.min(400, Math.max(14, horizonRaw));
@@ -389,7 +394,7 @@ function menuHTML() {
 <div><p class="menu-h">Hamburg</p><ul>${REGIONS.filter(r => !r.umland).map(r => li(`/flohmarkt-hamburg/${r.k}/`, `${esc(r.name)} <small>${cnt(r.k)}</small>`)).join("")}</ul></div>
 <div><p class="menu-h">Umland bis 30 km</p><ul>${REGIONS.filter(r => r.umland).map(r => li(`/flohmarkt-hamburg/${r.k}/`, `${esc(r.name)} <small>${cnt(r.k)}</small>`)).join("")}</ul></div>
 <div><p class="menu-h">Ratgeber</p><ul>${li("/flohmarkt-schilder/", "Schilder &amp; Preisschilder drucken")}${Object.entries(CLUSTERS).map(([c, v]) => li(`/ratgeber/#${c}`, esc(v.t))).join("")}${li("/ratgeber/", "Alle Artikel")}</ul></div>
-<div><p class="menu-h">${esc(NAME)}</p><ul>${li("/veranstalter/", "Für Veranstalter")}${li("/impressum/", "Impressum")}${li("/datenschutz/", "Datenschutz")}</ul></div>
+<div><p class="menu-h">${esc(NAME)}</p><ul>${li("/veranstalter/", "Für Veranstalter")}${INSTA ? `<li>${instaA("Instagram")}</li>` : ""}${li("/impressum/", "Impressum")}${li("/datenschutz/", "Datenschutz")}</ul></div>
 </nav></div></details>`;
 }
 const MENU = () => menuHTML();
@@ -438,7 +443,7 @@ ${body.replace(/<h1>([^<]{3,80}?): ([^<]+)<\/h1>/, '<h1>$1:<span class="h1-sub">
 <div>Termine nach öffentlichen Angaben der Veranstalter, Stand ${STAND}. Bitte vor dem Besuch beim Veranstalter prüfen, Märkte können kurzfristig ausfallen. Ratgeber-Artikel ersetzen keine Rechts- oder Steuerberatung.${WX_OK ? ` Wettervorhersage: Deutscher Wetterdienst, Stand ${STAND}.` : ""}</div>
 <nav class="foot-links" aria-label="Flohmarkt Hamburg"><b>Flohmarkt Hamburg</b><a href="/heute/">Heute</a><a href="/morgen/">Morgen</a><a href="/wochenende/">Wochenende</a><a href="/samstag/">Samstag</a><a href="/sonntag/">Sonntag</a>${REGIONS.map(r => `<a href="/flohmarkt-hamburg/${r.k}/">${esc(r.name)}</a>`).join("")}</nav>
 <nav class="foot-links" aria-label="Nach Art und Monat"><b>Nach Art und Monat</b>${CATS_ON.map(c => `<a href="/${c.s}/">${esc(c.chip)}</a>`).join("")}${MONTHS.map(x => `<a href="/${x.s}/">${x.name} ${x.y}</a>`).join("")}</nav>
-<nav class="foot-links" aria-label="${esc(NAME)}"><b>${esc(NAME)}</b><a href="/ratgeber/">Ratgeber</a><a href="/flohmarkt-schilder/">Schilder-Designer</a><a href="/flohmarkt-hamburg-statistik/">Flohmärkte in Zahlen</a><a href="/veranstalter/">Für Veranstalter</a><a href="/impressum/">Impressum</a><a href="/datenschutz/">Datenschutz</a></nav>
+<nav class="foot-links" aria-label="${esc(NAME)}"><b>${esc(NAME)}</b><a href="/ratgeber/">Ratgeber</a><a href="/flohmarkt-schilder/">Schilder-Designer</a><a href="/flohmarkt-hamburg-statistik/">Flohmärkte in Zahlen</a><a href="/veranstalter/">Für Veranstalter</a>${INSTA ? instaA("Instagram") : ""}<a href="/impressum/">Impressum</a><a href="/datenschutz/">Datenschutz</a></nav>
 </footer>
 <script src="/assets/site.js${JS_V}" defer></script>
 </body>
@@ -880,7 +885,7 @@ const shareBtn = (m, e, cls = "share") => `<button type="button" class="${cls}" 
   const body = `<section class="hero"><div>
 <span class="proto">${esc(REGION)}</span>
 <h1>Flohmarkt Hamburg: alle Termine, aufgeräumt.</h1>
-<p>Wann, wo und wie lange. Ohne Werbebanner, ohne alte Termine.</p>
+<p>Alle Flohmärkte in Hamburg und Umgebung: wann, wo und wie lange. Ohne Werbebanner, ohne alte Termine.</p>
 <div class="quick"><a class="chip" href="/heute/">${ic("sun")}Heute</a><a class="chip" href="/wochenende/">${ic("cal")}Wochenende</a><a class="chip" href="/sonntag/">${ic("cal")}Sonntag</a><a class="chip" href="/flohmaerkte/">${ic("map")}Märkte nach Bezirk</a>${HAS_MAP ? `<a class="chip" href="/flohmaerkte/#karte">${ic("pin")}Karte</a>` : ""}<a class="chip" href="/ratgeber/">${ic("book")}Ratgeber</a><a class="chip" href="/flohmarkt-schilder/">${ic("printer")}Schilder gestalten</a></div>
 </div><a class="big-sticker" href="/wochenende/"><b>${weN}</b><span>${weLabel}</span></a></section>
 ${slider}
@@ -897,10 +902,11 @@ ${NEWS.length ? `<section class="sec"><div class="sec-head"><h2>Neuigkeiten</h2>
 ${faqBlock(homeFaq, "Häufige Fragen zu Flohmärkten in Hamburg")}
 <section class="sec"><div class="sec-head"><h2>Aus dem Ratgeber</h2>${more("/ratgeber/", "Alle", "Alle Ratgeber-Artikel")}</div>${grid(KB.filter(a => a.top).map(a => `<a class="card" href="/ratgeber/${a.s}/"><span class="kicker">${esc(CLUSTERS[a.c]?.t || "")}</span><h3>${brColon(esc(a.h))}</h3></a>`))}</section>
 <section class="sec"><a class="promo" href="/flohmarkt-schilder/"><span class="promo-txt"><span class="kicker">Schilder-Designer, gratis</span><b>Gestalte deine Verkaufsschilder</b><span>Preisschilder, „Alles 1 €“, „Handeln erwünscht“ und mehr. Vorlage wählen, Text eintippen, ausdrucken.</span><span class="promo-go">Zum Schilder-Designer${ic("chev")}</span></span><img src="/assets/schilder/flohmarkt-alles-1-euro-vorlage.svg" width="297" height="210" alt="Vorlage: Alles-1-Euro-Schild für den Flohmarkt" loading="lazy" decoding="async"></a></section>
+${INSTA ? `<section class="sec"><a class="cta-box insta" href="${INSTA}" rel="noopener me">${ic("share")}<span><b>Jeden Donnerstag: dein Flohmarkt-Wochenende auf Instagram</b>${esc(INSTA_AT)} folgen und nichts verpassen.</span>${ic("chev")}</a></section>` : ""}
 <section class="sec" id="veranstalter"><div class="org"><h2>Du veranstaltest einen Flohmarkt?</h2><p>Trag deinen Termin kostenlos ein. Wir prüfen jeden Eintrag, bevor er erscheint.</p><a class="btn" href="/veranstalter/">Termin eintragen${ic("chev")}</a></div></section>`;
   layout({ p: "/", title: `Flohmarkt Hamburg: Alle Flohmärkte & Termine ${YEAR} | ${NAME}`,
     desc: pickDesc(`Alle ${MARKETS.length} Flohmärkte in Hamburg und Umgebung mit Terminen, Uhrzeiten und Adressen.${weN ? ` ${sunOnly ? "Heute" : "Am Wochenende"}: ${weN} Märkte.` : ""} Täglich aktualisiert, ohne Werbung.`, "Alle Flohmärkte in Hamburg und Umgebung, aufgeräumt: Termine, Zeiten, Adressen und ein Ratgeber mit Antworten auf die wichtigsten Flohmarkt-Fragen."),
-    body, nav: "", ld: G([{ "@type": "WebSite", "@id": SITE + "/#website", name: NAME, url: SITE + "/", inLanguage: "de", publisher: { "@id": SITE + "/#org" } }, { "@type": "Organization", "@id": SITE + "/#org", name: NAME, url: SITE + "/", logo: SITE + "/assets/icon.svg" }, faqLD(homeFaq)]) });
+    body, nav: "", ld: G([{ "@type": "WebSite", "@id": SITE + "/#website", name: NAME, url: SITE + "/", inLanguage: "de", publisher: { "@id": SITE + "/#org" } }, { "@type": "Organization", "@id": SITE + "/#org", name: NAME, url: SITE + "/", logo: SITE + "/assets/icon.svg", ...(INSTA ? { sameAs: [INSTA] } : {}) }, faqLD(homeFaq)]) });
 }
 
 /* ---------------------------------------------------------------- Alle Termine */
@@ -1401,7 +1407,7 @@ ${f("Impressum: Register") || f("Impressum: USt-IdNr.") ? `<h2>Register und Umsa
 ${isGitHub
   ? `<h2>2. Hosting und Server-Logdateien</h2><p>Die Website wird über GitHub Pages bereitgestellt, einen Dienst der GitHub, Inc., 88 Colin P. Kelly Jr. Street, San Francisco, CA 94107, USA. Beim Aufruf einer Seite speichert GitHub die IP-Adresse der Besucher zu Sicherheitszwecken, außerdem technische Daten wie Datum, Uhrzeit und aufgerufene Seite. Wir haben auf diese Daten keinen Zugriff. Wie lange GitHub sie speichert, legt GitHub fest (<a href="https://docs.github.com/de/site-policy/privacy-policies/github-general-privacy-statement" rel="noopener">Datenschutzerklärung von GitHub</a>). Rechtsgrundlage ist unser berechtigtes Interesse, die Website sicher und zuverlässig auszuliefern (Art. 6 Abs. 1 lit. f DSGVO). Dabei können Daten in die USA übermittelt werden. GitHub ist nach dem EU-U.S. Data Privacy Framework zertifiziert, für das die EU-Kommission einen Angemessenheitsbeschluss erlassen hat (Art. 45 DSGVO).</p>`
   : `<h2>2. Hosting und Server-Logdateien</h2><p>Die Website wird bei ${ph("Datenschutz: Hoster", "Name und Sitz des Hosters")} betrieben. Beim Aufruf speichert der Server automatisch technische Daten wie IP-Adresse, Datum und Uhrzeit, aufgerufene Seite und Browser. Das ist nötig, um die Website sicher auszuliefern (Art. 6 Abs. 1 lit. f DSGVO). Die Daten werden nach ${ph("Datenschutz: Löschfrist Logdateien (Tage)", "Anzahl")} Tagen gelöscht, soweit der Hoster sie nicht länger zur Abwehr von Angriffen benötigt.${yes(f("Datenschutz: Vertrag mit Hoster")) ? " Mit dem Hoster haben wir einen Vertrag zur Auftragsverarbeitung geschlossen (Art. 28 DSGVO). Die Daten werden in Deutschland verarbeitet." : ""}</p>`}
-<h2>3. Keine Inhalte von fremden Servern</h2><p>Schriften, Icons, Bilder, Skripte und die Kartensoftware gehören zur Website selbst und werden von unserem Hoster (Abschnitt 2) mit ausgeliefert. Beim Aufruf einer Seite wird keine Verbindung zu Google, zu sozialen Netzwerken oder zu anderen Drittanbietern aufgebaut. Auch die Wettervorhersage laden nicht die Besucher: Wir rufen sie einmal bei der Aktualisierung der Website ab und liefern sie als festen Text mit aus.</p>
+<h2>3. Keine Inhalte von fremden Servern</h2>${INSTA ? `<p>Unser Instagram-Profil ist nur als gewöhnlicher Link eingebunden. Es werden keine Inhalte, Schaltflächen oder Skripte von Instagram geladen. Erst wenn du den Link antippst, wechselst du zu Instagram; ab dann gelten die Datenschutzhinweise von Meta Platforms Ireland Limited.</p>` : ""}<p>Schriften, Icons, Bilder, Skripte und die Kartensoftware gehören zur Website selbst und werden von unserem Hoster (Abschnitt 2) mit ausgeliefert. Beim Aufruf einer Seite wird keine Verbindung zu Google, zu sozialen Netzwerken oder zu anderen Drittanbietern aufgebaut. Auch die Wettervorhersage laden nicht die Besucher: Wir rufen sie einmal bei der Aktualisierung der Website ab und liefern sie als festen Text mit aus.</p>
 <h2>4. Cookies, Tracking und warum es hier keinen Cookie-Banner gibt</h2><p>Diese Website setzt keine Cookies. Sie speichert nichts auf deinem Gerät (auch nicht im sogenannten Local Storage) und liest dort nichts aus. Es gibt keine Reichweitenmessung, keine Werbung, keine Social-Media-Plugins, keine eingebetteten Videos und kein Nutzerprofil.</p><p>Eine Einwilligung ist nach § 25 Abs. 1 TDDDG nur nötig, wenn eine Website Informationen auf dem Gerät speichert oder von dort ausliest und das nicht unbedingt erforderlich ist. Beides passiert hier nicht. Es gibt also nichts, in das du einwilligen müsstest, und deshalb keinen Cookie-Banner.</p><p>Zwei Funktionen brauchen deine ausdrückliche Handlung und starten erst dann: die Karte („Karte laden“) und die Standortabfrage („Mein Standort“). Beide sind in Abschnitt 9 beschrieben.</p>
 <h2>5. Termine eintragen</h2><p>${formKind === "google" ? "Veranstalter können Termine über ein Formular von Google Formulare (Google Ireland Limited, Gordon House, Barrow Street, Dublin 4, Irland) einreichen. Das Formular öffnet sich erst, wenn du den Link anklickst. Dabei gelten zusätzlich die Datenschutzbestimmungen von Google." : formKind === "other" ? `Veranstalter können Termine über ein Formular bei ${esc(formHost)} einreichen. Das Formular öffnet sich erst, wenn du den Link anklickst. Dabei gelten zusätzlich die Datenschutzbestimmungen dieses Anbieters.` : "Veranstalter können uns Termine per E-Mail schicken."} Wir verarbeiten die Angaben zum Markt und deine E-Mail-Adresse. Die Marktdaten veröffentlichen wir nach Prüfung. Die E-Mail-Adresse nutzen wir nur für Rückfragen zu deinem Eintrag und veröffentlichen sie nicht. Rechtsgrundlage ist Art. 6 Abs. 1 lit. b und f DSGVO. Wir löschen die E-Mail-Adresse ${ph("Datenschutz: Löschfrist Formular", "Frist, z. B. zwölf Monate nach dem letzten Termin")}.</p>
 <h2>6. Kontakt per E-Mail</h2><p>Schreibst du uns eine E-Mail, verarbeiten wir deine Angaben, um die Anfrage zu beantworten (Art. 6 Abs. 1 lit. b oder f DSGVO), und löschen sie, sobald die Anfrage erledigt ist und keine gesetzlichen Aufbewahrungspflichten entgegenstehen.${f("Datenschutz: E-Mail-Anbieter") ? ` Unser E-Mail-Postfach liegt bei ${esc(f("Datenschutz: E-Mail-Anbieter"))}.` : ""}</p>
@@ -1551,7 +1557,7 @@ ${CATS_ON.map(c => `- [${c.chip}](${SITE}/${c.s}/): ${c.ms.length} Märkte`).joi
 - [Für Veranstalter](${SITE}/veranstalter/): Markt kostenlos eintragen
 
 ## Rechtliches
-- [Impressum](${SITE}/impressum/)
+${INSTA ? `- [Instagram](${INSTA}): jede Woche die Flohmärkte am Wochenende\n` : ""}- [Impressum](${SITE}/impressum/)
 - [Datenschutz](${SITE}/datenschutz/)
 `);
 if (!PUBLIC) warn("Google", "Die Website ist noch nicht für Google freigegeben (Einstellung „Für Google freigeben“ = Nein). Das ist richtig, solange ihr testet.");

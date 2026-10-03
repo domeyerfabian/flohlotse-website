@@ -117,3 +117,7 @@ Die Lizenz-Zertifikate (PDF) nicht ins Repository legen, sondern privat aufbewah
 - `llms.txt` beschreibt die Website und ihre wichtigsten Seiten für KI-Dienste. Sie entsteht nur, wenn die Website für Google freigegeben ist und KI-Crawler erlaubt sind.
 
 Marktseiten zeigen den nächsten bekannten Termin auch dann, wenn er weiter entfernt liegt als die Vorschau („Tage im Voraus“). In den Terminlisten bleibt es bei der Vorschau.
+
+## Instagram
+
+Das Profil ist im Menü, im Footer und in einem Kasten auf der Startseite verlinkt (nur als Link, ohne eingebettete Inhalte). Die Adresse lässt sich im Blatt Einstellungen mit der Zeile `Instagram` ändern, mit dem Wert `Nein` verschwindet der Link.

@@ -107,7 +107,7 @@ jobs:
             set net:reconnect-interval-base 5;
             set net:timeout 30;
             set cmd:fail-exit true;
-            mirror --reverse --delete --only-newer --parallel=2 --verbose=1 ./dist/ $FTP_ORDNER;
+            mirror --reverse --delete --parallel=2 --verbose=1 ./dist/ $FTP_ORDNER;
             bye"
 
   veroeffentlichen:

@@ -123,3 +123,5 @@ Marktseiten zeigen den nächsten bekannten Termin auch dann, wenn er weiter entf
 Das Profil ist im Menü, im Footer und in einem Kasten auf der Startseite verlinkt (nur als Link, ohne eingebettete Inhalte). Die Adresse lässt sich im Blatt Einstellungen mit der Zeile `Instagram` ändern, mit dem Wert `Nein` verschwindet der Link.
 
 Auf der Startseite läuft oben ein Laufband mit dem Instagram-Hinweis („+++ Flohlotse gibt’s jetzt auch bei Insta +++“) und einem festen Knopf „Folgen“. Beim Drüberfahren hält es an; ist am Gerät „Bewegung reduzieren“ eingestellt, steht es still. Ohne Instagram-Adresse entfällt es.
+
+Ratgeber-Artikel: Je Bereich wechseln sich mehrere Fotos und Formen ab (`KB_POOL` in `build.mjs`), damit nicht jeder Artikel dasselbe Bild zeigt. Zusätzliche Banner heißen `banner-<name>.webp` und `banner-<name>-klein.webp`. Ein Foto nur für einen Artikel: `artikel-<kennung>.webp` (und `-klein.webp`) in den Ordner `bilder` legen, es hat Vorrang.

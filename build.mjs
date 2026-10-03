@@ -1318,7 +1318,21 @@ const signCta = t => `<a class="cta-box" href="${t ? signUrl(t) : SIGN_BASE}">${
 
 /* ---------------------------------------------------------------- Ratgeber */
 // Bildform je Bereich im Artikel: Banner (leer), „kante“ (schwarze Kante), „rund“ oder „rund links“ (Kreis neben dem Text).
-const KB_FORM = { verkaufen: "kante", knigge: "rund links", grundwissen: "rund" };
+// Damit nicht jeder Artikel eines Bereichs dasselbe Foto zeigt, wechseln sich je Bereich mehrere Fotos und Formen ab (Bild, Form).
+// Formen: "" Banner, "kante" schwarze Kante, "rund" / "rund links" Kreis neben dem Text.
+// Ein eigenes Foto für einen Artikel hat Vorrang: bilder/artikel-<kennung>.webp (und -klein.webp).
+const KB_POOL = {
+  kaufen: [["ratgeber-kaufen", ""], ["banner-mantel", "kante"], ["banner-antik", ""], ["ratgeber-grundwissen", "rund"], ["banner-spiegel", "kante"], ["ratgeber-knigge", ""]],
+  verkaufen: [["ratgeber-verkaufen", "kante"], ["banner-aufbau", ""], ["ratgeber-organisieren", ""], ["ratgeber-recht", "kante"], ["banner-mantel", ""]],
+  knigge: [["ratgeber-knigge", "rund links"], ["banner-antik", ""], ["banner-mantel", "kante"], ["ratgeber-kaufen", ""]],
+  grundwissen: [["ratgeber-grundwissen", "rund"], ["ratgeber-knigge", ""], ["banner-spiegel", "kante"], ["ratgeber-organisieren", ""]],
+  organisieren: [["ratgeber-organisieren", ""], ["banner-aufbau", "kante"], ["ratgeber-knigge", "rund"]],
+  recht: [["ratgeber-recht", ""], ["ratgeber-verkaufen", "kante"], ["banner-antik", ""]] };
+const kbPhoto = a => {
+  if (pickImg(`artikel-${a.s}`) || pickImg(`artikel-${a.s}-klein`)) return [`artikel-${a.s}`, ""];
+  const pool = (KB_POOL[a.c] || [[`ratgeber-${a.c}`, ""]]).filter(x => pickImg(x[0]) || pickImg(x[0] + "-klein"));
+  return pool.length ? pool[KB.filter(x => x.c === a.c).indexOf(a) % pool.length] : [`ratgeber-${a.c}`, ""];
+};
 const THUMB_FORM = ["", "rund"];
 const clusterThumb = (c, i) => { const x = pickImg(`ratgeber-${c}-klein`) || pickImg(`ratgeber-${c}`); return x ? `<img class="cl-thumb ${THUMB_FORM[i % 2]}" src="${imgUrl(x.f)}" width="760" height="332" alt="${esc(altOf(x))}"${i ? ' loading="lazy"' : ""} decoding="async">` : ""; };
 {
@@ -1331,12 +1345,12 @@ ${CRED_SRC ? `<p class="meta cl-cred">Symbolfotos: ${credLink()}${S["Bildnachwei
   layout({ p: "/ratgeber/", title: `Flohmarkt-Ratgeber: Die wichtigsten Fragen | ${NAME}`, desc: "Kaufen, verkaufen, handeln, Knigge und Tipps für Veranstalter: Der Ratgeber beantwortet die häufigsten Fragen rund um den Flohmarkt, kurz und verständlich.", body, nav: "ratgeber", ld: G([crumbLD([[NAME, "/"], ["Ratgeber"]]), { "@type": "CollectionPage", name: "Flohmarkt-Ratgeber", hasPart: KB.map(a => ({ "@type": "Article", headline: a.h, url: `${SITE}/ratgeber/${a.s}/` })) }]) });
 }
 for (const a of KB) {
-  const cl = CLUSTERS[a.c] || { t: a.c };
+  const cl = CLUSTERS[a.c] || { t: a.c }, ph = kbPhoto(a);
   const words = (plain(a.a) + " " + a.b.map(x => x.join(" ")).join(" ")).split(/\s+/).length;
   const body = crumbs([[NAME, "/"], ["Ratgeber", "/ratgeber/"], [cl.t, `/ratgeber/#${a.c}`]]) + `<article class="kb"><h1>${esc(a.h)}</h1>
 <div class="byline"><span>${ic("book")}${esc(NAME)} Ratgeber</span><span>${ic("update")}Stand: ${STAND}</span><span>${ic("clock")}${Math.max(2, Math.round(words / 200))} Min. Lesezeit</span></div>
 <div class="answer"><span class="kicker">Kurz gesagt</span><p>${rich(a.a)}</p></div>
-${/rund/.test(KB_FORM[a.c]) ? "" : clusterImg(a.c, `kb-photo${KB_FORM[a.c] ? " " + KB_FORM[a.c] : ""}`)}<div class="kb-body">${/rund/.test(KB_FORM[a.c]) ? sideImg(`ratgeber-${a.c}-klein`, KB_FORM[a.c]) : ""}${a.b.map(([h, p]) => `<h2>${esc(h)}</h2><p>${rich(p)}</p>`).join("")}</div>
+${/rund/.test(ph[1]) ? "" : clusterImg(a.c, `kb-photo${ph[1] ? " " + ph[1] : ""}`, false, ph[0])}<div class="kb-body">${/rund/.test(ph[1]) ? sideImg(pickImg(ph[0] + "-klein") ? ph[0] + "-klein" : ph[0], ph[1]) : ""}${a.b.map(([h, p]) => `<h2>${esc(h)}</h2><p>${rich(p)}</p>`).join("")}</div>
 ${a.s in SIGN_CTA || a.c === "verkaufen" ? signCta(SIGN_BY[SIGN_CTA[a.s]]) : ""}
 ${CAT_BY_S[ART_CTA[a.s]] ? catCta(CAT_BY_S[ART_CTA[a.s]]) : ""}
 ${a.f.length ? `<section class="faq"><h2>Häufige Fragen</h2>${a.f.map(([q, x]) => `<details><summary>${esc(q)}</summary><p>${rich(x)}</p></details>`).join("")}</section>` : ""}

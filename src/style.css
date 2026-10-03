@@ -582,3 +582,11 @@ button.share.copied,.share-row .btn.copied{background:var(--ink);color:var(--pap
 
 /* Lange Terminlisten: Karten außerhalb des Bildschirms werden erst beim Scrollen gezeichnet (schnellerer Seitenaufbau am Handy) */
 .list > .ev{content-visibility:auto;contain-intrinsic-block-size:auto 340px}
+
+/* Flohmärkte in Zahlen */
+.zahlen .tbl{margin:12px 0 6px}
+.zahlen table{min-width:0;width:100%;font-size:15px}
+.zahlen th,.zahlen td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--line)}
+.zahlen tbody tr:last-child td{border-bottom:0}
+.zahlen th{font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.zahlen .num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}

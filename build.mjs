@@ -912,13 +912,13 @@ for (const m of MARKETS) {
   ];
   const Ym = yearSpan(m.events.filter(e => !e.cancelled).slice(0, 1).length ? [first] : []);
   const baseT = m.t || `${m.name}: Termine & Öffnungszeiten`;
-  const mTitle = /20\d\d/.test(baseT) || (baseT + " " + Ym).length > 60 ? baseT : /\bTermine?\b/.test(baseT) ? baseT.replace(/\bTermine?\b/, x => `${x} ${Ym}`) : `${baseT} ${Ym}`;
+  const mTitle = !first || /20\d\d/.test(baseT) || (baseT + " " + Ym).length > 60 ? baseT : /\bTermine?\b/.test(baseT) ? baseT.replace(/\bTermine?\b/, x => `${x} ${Ym}`) : `${baseT} ${Ym}`;
   const mDesc = first ? pickDesc(
       fresh(m.d) && `Nächster Termin: ${dDate(first.date)}${first.start ? ", " + timeText(first) : ""}. ${m.d}`,
       `${m.name}${m.name.includes(m.area) ? "" : ` (${m.area})`}: nächster Termin ${dDate(first.date)}${first.start ? ", " + timeText(first) : ""}. ${m.note || ""} Adresse und Anfahrt.`,
       `${m.name}${m.name.includes(m.area) ? "" : ` in ${m.area}`}: nächster Termin ${dDate(first.date)}${first.start ? ", " + timeText(first) : ""}. Alle Termine ${Ym}, Adresse, Anfahrt und Tipps für deinen Besuch.`,
       `${m.name}: nächster Termin ${dDate(first.date)}. Alle Termine ${Ym}, Uhrzeiten, Adresse und Anfahrt.`)
-    : pickDesc(fresh(m.d), `${m.name} in ${m.area}: ${m.note || ""} Neue Termine folgen, sobald der Veranstalter sie veröffentlicht. Adresse und Anfahrt.`);
+    : pickDesc(fresh(m.d), `${m.name} in ${m.area}: ${m.note || ""} Neue Termine folgen, sobald der Veranstalter sie veröffentlicht. Adresse und Anfahrt.`, `${m.name}: ${m.note || ""} Adresse, Anfahrt und neue Termine, sobald der Veranstalter sie veröffentlicht.`, `${m.name}: Adresse, Anfahrt und alle Termine, sobald der Veranstalter sie veröffentlicht. Täglich aktualisiert.`, `${m.short}: Adresse, Anfahrt und neue Termine, sobald der Veranstalter sie veröffentlicht.`);
   const body = crumbs([[NAME, "/"], [r.umland ? "Umland" : "Flohmärkte Hamburg", "/flohmaerkte/"], [r.name, `/flohmarkt-hamburg/${r.k}/`], [m.short]]) + `<article class="kb">
 <h1>${esc(m.name)}: Öffnungszeiten und Termine</h1>
 <div class="byline"><span>${ic("pin")}${esc(m.area)}</span><span>${ic("map")}${esc(regionLabel(r))}</span><span>${ic("update")}Stand: ${STAND}</span></div>

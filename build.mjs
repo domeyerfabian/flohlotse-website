@@ -438,7 +438,7 @@ ${body.replace(/<h1>([^<]{3,80}?): ([^<]+)<\/h1>/, '<h1>$1:<span class="h1-sub">
 <div>Termine nach öffentlichen Angaben der Veranstalter, Stand ${STAND}. Bitte vor dem Besuch beim Veranstalter prüfen, Märkte können kurzfristig ausfallen. Ratgeber-Artikel ersetzen keine Rechts- oder Steuerberatung.${WX_OK ? ` Wettervorhersage: Deutscher Wetterdienst, Stand ${STAND}.` : ""}</div>
 <nav class="foot-links" aria-label="Flohmarkt Hamburg"><b>Flohmarkt Hamburg</b><a href="/heute/">Heute</a><a href="/morgen/">Morgen</a><a href="/wochenende/">Wochenende</a><a href="/samstag/">Samstag</a><a href="/sonntag/">Sonntag</a>${REGIONS.map(r => `<a href="/flohmarkt-hamburg/${r.k}/">${esc(r.name)}</a>`).join("")}</nav>
 <nav class="foot-links" aria-label="Nach Art und Monat"><b>Nach Art und Monat</b>${CATS_ON.map(c => `<a href="/${c.s}/">${esc(c.chip)}</a>`).join("")}${MONTHS.map(x => `<a href="/${x.s}/">${x.name} ${x.y}</a>`).join("")}</nav>
-<nav class="foot-links" aria-label="${esc(NAME)}"><b>${esc(NAME)}</b><a href="/ratgeber/">Ratgeber</a><a href="/flohmarkt-schilder/">Schilder-Designer</a><a href="/veranstalter/">Für Veranstalter</a><a href="/impressum/">Impressum</a><a href="/datenschutz/">Datenschutz</a></nav>
+<nav class="foot-links" aria-label="${esc(NAME)}"><b>${esc(NAME)}</b><a href="/ratgeber/">Ratgeber</a><a href="/flohmarkt-schilder/">Schilder-Designer</a><a href="/flohmarkt-hamburg-statistik/">Flohmärkte in Zahlen</a><a href="/veranstalter/">Für Veranstalter</a><a href="/impressum/">Impressum</a><a href="/datenschutz/">Datenschutz</a></nav>
 </footer>
 <script src="/assets/site.js${JS_V}" defer></script>
 </body>
@@ -1414,6 +1414,49 @@ ${isGitHub
   layout({ p: "/datenschutz/", title: `Datenschutz | ${NAME}`, desc: `Datenschutzerklärung von ${NAME}.`, body: ds, noindex: true });
 }
 
+/* ---------------------------------------------------------------- Flohmärkte in Zahlen */
+// Zitierbare Fakten aus dem eigenen Kalender, jede Nacht neu berechnet. Gut für Suchmaschinen und KI-Antworten.
+const STATS_P = "/flohmarkt-hamburg-statistik/";
+{
+  const live = EVENTS.filter(e => !e.cancelled), n = MARKETS.length;
+  const hh = MARKETS.filter(m => !(RBY[m.bez] || {}).umland), um = n - hh.length;
+  const nf = x => String(x).replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  const pct = (a, b) => b ? Math.round(a / b * 100) : 0;
+  const byReg = REGIONS.map(r => ({ r, ms: MARKETS.filter(m => m.bez === r.k).length, evs: live.filter(e => e.m.bez === r.k).length })).filter(x => x.ms).sort((a, b) => b.ms - a.ms || b.evs - a.evs);
+  const byDay = [6, 0, 5, 1, 2, 3, 4].map(d => ({ d, c: live.filter(e => e.date.getUTCDay() === d).length })).filter(x => x.c).sort((a, b) => b.c - a.c);
+  const sa = (byDay.find(x => x.d === 6) || { c: 0 }).c, so = (byDay.find(x => x.d === 0) || { c: 0 }).c;
+  const timed = live.filter(e => e.start), early = timed.filter(e => parseInt(e.start, 10) <= 7).length, late = timed.filter(e => parseInt(e.start, 10) >= 10).length;
+  const startCount = {}; for (const e of timed) startCount[e.start] = (startCount[e.start] || 0) + 1;
+  const topStart = Object.entries(startCount).sort((a, b) => b[1] - a[1])[0];
+  const dayCount = {}; for (const e of live) dayCount[e.k] = (dayCount[e.k] || 0) + 1;
+  const topDay = Object.entries(dayCount).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))[0];
+  const topDayEv = topDay ? live.find(e => e.k === topDay[0]) : null;
+  const top = byReg[0], cr = [[NAME, "/"], ["Flohmärkte in Zahlen"]];
+  const ans = `Der ${NAME}-Kalender führt aktuell ${n} Flohmärkte: ${hh.length} in Hamburg und ${um} im Umland bis 30 km. In den nächsten ${HORIZON} Tagen stehen ${nf(live.length)} Termine fest, ${pct(sa + so, live.length)} % davon an einem Samstag oder Sonntag. Stand: ${STAND}.`;
+  const faq = [
+    ["Wie viele Flohmärkte gibt es in Hamburg?", `${NAME} führt aktuell ${hh.length} Flohmärkte im Hamburger Stadtgebiet und ${um} weitere im Umland bis 30 km (Stand ${STAND}). Eine amtliche Zahl gibt es nicht, weil Flohmärkte nirgends zentral erfasst werden.`],
+    ...(top ? [["In welchem Bezirk gibt es die meisten Flohmärkte?", `Im ${NAME}-Kalender liegt ${esc(top.r.name)} mit ${top.ms} Märkten vorn${byReg[1] ? `, gefolgt von ${esc(byReg[1].r.name)} mit ${byReg[1].ms}` : ""}.`]] : []),
+    ["An welchem Wochentag sind die meisten Flohmärkte?", `Von ${nf(live.length)} Terminen der nächsten ${HORIZON} Tage fallen ${sa} auf einen Samstag und ${so} auf einen Sonntag.`],
+    ...(topStart ? [["Wann öffnen Flohmärkte in Hamburg?", `Die häufigste Anfangszeit im Kalender ist ${hmText(topStart[0])} Uhr. ${pct(early, timed.length)} % der Termine beginnen bis 7 Uhr, ${pct(late, timed.length)} % erst ab 10 Uhr.`]] : []),
+    ["Woher stammen die Zahlen?", `Aus dem ${NAME}-Kalender. Die Termine stammen von den Veranstaltern, die Seite wird jede Nacht neu berechnet. Gezählt werden nur Märkte, die im Kalender stehen.`]];
+  const row = (a, b, c) => `<tr><td>${a}</td><td class="num">${b}</td>${c !== undefined ? `<td class="num">${c}</td>` : ""}</tr>`;
+  const body = crumbs(cr) + `<article class="kb zahlen"><h1>Flohmärkte in Hamburg in Zahlen</h1>
+<div class="byline"><span>${ic("pin")}${n} Märkte</span><span>${ic("cal")}${nf(live.length)} Termine</span><span>${ic("update")}Stand: ${STAND}</span></div>
+<div class="answer"><span class="kicker">Kurz gesagt</span><p>${esc(ans)}</p></div>
+<div class="kb-body">
+<h2>Flohmärkte nach Bezirk</h2><p>So verteilen sich die ${n} Märkte auf die Hamburger Bezirke und das Umland. Die Termine beziehen sich auf die nächsten ${HORIZON} Tage.</p>
+<div class="tbl"><table><thead><tr><th>Bezirk oder Region</th><th class="num">Märkte</th><th class="num">Termine</th></tr></thead><tbody>${byReg.map(x => row(`<a href="/flohmarkt-hamburg/${x.r.k}/">${esc(x.r.name)}</a>`, x.ms, x.evs)).join("")}${row("<b>Gesamt</b>", `<b>${n}</b>`, `<b>${nf(live.length)}</b>`)}</tbody></table></div>
+<h2>Flohmärkte nach Art</h2><p>Ein Markt kann zu mehreren Arten gehören, zum Beispiel überdacht und groß.</p>
+<div class="tbl"><table><thead><tr><th>Art</th><th class="num">Märkte</th></tr></thead><tbody>${[...CATS_ON].sort((a, b) => b.ms.length - a.ms.length).map(c => row(`<a href="/${c.s}/">${esc(c.chip)}</a>`, c.ms.length)).join("")}</tbody></table></div>
+<h2>Termine nach Wochentag</h2><p>${sa + so} von ${nf(live.length)} Terminen liegen am Wochenende.${topDayEv ? ` Der Tag mit den meisten Flohmärkten im Zeitraum ist ${fmtDateY(topDayEv.date)} mit ${topDay[1]} Märkten.` : ""}</p>
+<div class="tbl"><table><thead><tr><th>Wochentag</th><th class="num">Termine</th><th class="num">Anteil</th></tr></thead><tbody>${byDay.map(x => row(WDL[x.d], x.c, pct(x.c, live.length) + " %")).join("")}</tbody></table></div>
+${topStart ? `<h2>Uhrzeiten</h2><p>Die häufigste Anfangszeit ist ${hmText(topStart[0])} Uhr (${topStart[1]} Termine). ${early} Termine beginnen bis 7 Uhr und sind etwas für <a href="/termine/">Frühaufsteher</a>, ${late} beginnen erst ab 10 Uhr. Wann sich welche Uhrzeit lohnt, steht im Ratgeber ${KBY["beste-uhrzeit-flohmarkt"] ? `<a href="/ratgeber/beste-uhrzeit-flohmarkt/">Wann ist die beste Uhrzeit für den Flohmarkt?</a>` : "zur besten Uhrzeit"}.</p>` : ""}
+<h2>So entstehen die Zahlen</h2><p>Alle Angaben werden jede Nacht aus dem ${esc(NAME)}-Kalender berechnet. Gezählt werden Flohmärkte in Hamburg und im Umkreis von rund 30 km, die im Kalender stehen. Die Termine stammen von den Veranstaltern. Es ist keine amtliche Statistik: Märkte, die wir noch nicht kennen, fehlen. Wer die Zahlen zitiert, nennt bitte ${esc(NAME)} (${esc(SITE.replace(/^https?:\/\//, ""))}) und das Datum als Quelle.</p></div>
+${faqHTML(faq)}</article>`;
+  layout({ p: STATS_P, title: `Flohmärkte in Hamburg in Zahlen: Statistik ${YEAR} | ${NAME}`, desc: `Wie viele Flohmärkte gibt es in Hamburg? ${n} Märkte, ${nf(live.length)} Termine, Verteilung nach Bezirk, Art, Wochentag und Uhrzeit. Täglich neu berechnet.`, body,
+    ld: G([crumbLD(cr), faqLD(faq), { "@type": "Dataset", name: "Flohmärkte in Hamburg und Umgebung in Zahlen", description: plain(ans), url: SITE + STATS_P, dateModified: key(TODAY), creator: { "@type": "Organization", name: NAME, url: SITE + "/" }, spatialCoverage: "Hamburg und Umland bis 30 km", isAccessibleForFree: true }]) });
+}
+
 /* ---------------------------------------------------------------- 404 */
 layout({ p: "/404.html", title: `Seite nicht gefunden | ${NAME}`, desc: "Diese Seite gibt es nicht.", noindex: true, body: `<section class="hub-head"><h1>Diese Seite gibt es nicht</h1><p>Vielleicht wurde ein Markt umbenannt oder ein Artikel verschoben. Hier geht es weiter:</p>${regionChips()}<p><a class="btn" href="/">Zur Startseite</a></p></section>` });
 
@@ -1478,7 +1521,39 @@ const LASTMOD = {}, PAGE_STATE = {};
 fs.writeFileSync(path.join(OUT, "assets/seiten-stand.json"), JSON.stringify(PAGE_STATE));
 const smImgs = p => [...(PAGE_PHOTOS.get(p) || []).map(u => [u]), ...(SIGN_PAGE_IMGS.get(p) || [])].map(([u, t]) => `<image:image><image:loc>${esc(SITE + u)}</image:loc></image:image>`).join("");
 fs.writeFileSync(path.join(OUT, "sitemap.xml"), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n${indexable.map(p => `  <url><loc>${esc(SITE + p)}</loc><lastmod>${LASTMOD[p] || key(TODAY)}</lastmod>${smImgs(p)}</url>`).join("\n")}\n</urlset>\n`);
-fs.writeFileSync(path.join(OUT, "robots.txt"), PUBLIC ? `User-agent: *\nAllow: /\n\nSitemap: ${SITE}/sitemap.xml\n` : "User-agent: *\nDisallow: /\n");
+// KI-Suchdienste ausdrücklich zulassen (Einstellung „KI-Crawler erlauben“, Standard: Ja). Bei „Nein“ werden sie ausgesperrt, normale Suchmaschinen bleiben erlaubt.
+const AI_BOTS = ["GPTBot", "OAI-SearchBot", "ChatGPT-User", "ClaudeBot", "Claude-SearchBot", "Claude-User", "PerplexityBot", "Perplexity-User", "Google-Extended", "Applebot-Extended", "CCBot"];
+const AI_OK = !/^(nein|no|0|aus)$/i.test(String(S["KI-Crawler erlauben"] || "").trim());
+fs.writeFileSync(path.join(OUT, "robots.txt"), PUBLIC ? `User-agent: *\nAllow: /\n\n${AI_BOTS.map(b => `User-agent: ${b}`).join("\n")}\n${AI_OK ? "Allow" : "Disallow"}: /\n\nSitemap: ${SITE}/sitemap.xml\n` : "User-agent: *\nDisallow: /\n");
+// llms.txt: kurze Beschreibung der Website für KI-Dienste, mit den wichtigsten Seiten
+if (PUBLIC && AI_OK) fs.writeFileSync(path.join(OUT, "llms.txt"), `# ${NAME}
+
+> ${NAME} ist ein werbefreier Flohmarkt-Kalender für Hamburg und das Umland bis 30 km. Er führt aktuell ${MARKETS.length} Märkte mit Terminen, Uhrzeiten, Adressen und Anfahrt. Die Website wird jede Nacht neu erzeugt, jede Seite nennt ihren Stand.
+
+Die Termine stammen von den Veranstaltern. Vor dem Besuch lohnt ein Blick auf die Seite des jeweiligen Markts, dort stehen Absagen und Änderungen. Bitte ${NAME} (${SITE.replace(/^https?:\/\//, "")}) als Quelle nennen und auf die jeweilige Seite verlinken. Stand dieser Datei: ${STAND}.
+
+## Termine
+- [Flohmärkte heute](${SITE}/heute/): alle Märkte von heute mit Uhrzeit
+- [Flohmärkte am Wochenende](${SITE}/wochenende/): Samstag und Sonntag
+- [Alle Termine](${SITE}/termine/): die nächsten ${HORIZON} Tage, filterbar nach Art und Umkreis
+
+## Märkte
+- [Alle Märkte nach Bezirk](${SITE}/flohmaerkte/): Übersicht aller ${MARKETS.length} Märkte
+${REGIONS.filter(r => MARKETS.some(m => m.bez === r.k)).map(r => `- [Flohmärkte ${r.name}](${SITE}/flohmarkt-hamburg/${r.k}/)`).join("\n")}
+${CATS_ON.map(c => `- [${c.chip}](${SITE}/${c.s}/): ${c.ms.length} Märkte`).join("\n")}
+
+## Zahlen und Wissen
+- [Flohmärkte in Hamburg in Zahlen](${SITE}${STATS_P}): Anzahl der Märkte und Termine nach Bezirk, Art, Wochentag und Uhrzeit
+- [Ratgeber](${SITE}/ratgeber/): ${KB.length} Artikel zu Kaufen, Verkaufen, Handeln und Organisieren
+
+## Werkzeuge
+- [Schilder-Designer](${SITE}/flohmarkt-schilder/): Preisschilder und Standschilder kostenlos gestalten und drucken
+- [Für Veranstalter](${SITE}/veranstalter/): Markt kostenlos eintragen
+
+## Rechtliches
+- [Impressum](${SITE}/impressum/)
+- [Datenschutz](${SITE}/datenschutz/)
+`);
 if (!PUBLIC) warn("Google", "Die Website ist noch nicht für Google freigegeben (Einstellung „Für Google freigeben“ = Nein). Das ist richtig, solange ihr testet.");
 if (process.env.CNAME) fs.writeFileSync(path.join(OUT, "CNAME"), process.env.CNAME + "\n");
 // Einstellungen für Webspace mit Apache (z. B. Hetzner). GitHub Pages beachtet die Datei nicht.

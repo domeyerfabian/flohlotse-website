@@ -109,3 +109,11 @@ Damit nicht jede Seite gleich aussieht, hat jede Stelle eine eigene Bildform: Ba
 Der Slider auf der Startseite zeigt nach dem Foto bis zu zwei „Wochen-Highlights“: die nächsten Termine von Märkten mit der Kategorie „Groß & bekannt“ in den kommenden acht Tagen.
 
 Die Lizenz-Zertifikate (PDF) nicht ins Repository legen, sondern privat aufbewahren. Die Fotos zeigen keinen gelisteten Markt und stehen deshalb auf keiner Marktseite.
+
+## Für KI-Suchdienste (GEO)
+
+- `/flohmarkt-hamburg-statistik/` („Flohmärkte in Hamburg in Zahlen“) wird jede Nacht aus dem Kalender berechnet: Märkte und Termine nach Bezirk, Art, Wochentag und Uhrzeit. Solche Zahlen mit Quelle und Datum werden gern zitiert.
+- `robots.txt` erlaubt KI-Suchdienste ausdrücklich (GPTBot, OAI-SearchBot, ClaudeBot, PerplexityBot, Google-Extended und weitere). Wer das nicht möchte, trägt im Blatt Einstellungen `KI-Crawler erlauben` = `Nein` ein. Dann werden diese Dienste ausgesperrt, normale Suchmaschinen bleiben erlaubt.
+- `llms.txt` beschreibt die Website und ihre wichtigsten Seiten für KI-Dienste. Sie entsteht nur, wenn die Website für Google freigegeben ist und KI-Crawler erlaubt sind.
+
+Marktseiten zeigen den nächsten bekannten Termin auch dann, wenn er weiter entfernt liegt als die Vorschau („Tage im Voraus“). In den Terminlisten bleibt es bei der Vorschau.

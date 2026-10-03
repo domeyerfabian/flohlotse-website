@@ -85,7 +85,8 @@ jobs:
 
       # Optional: statt GitHub Pages auf eigenen Webspace (z. B. bei einem deutschen Hoster) hochladen.
       # Dafür unter Settings > Secrets and variables > Actions > Secrets die Werte
-      # FTP_SERVER, FTP_BENUTZER und FTP_PASSWORT anlegen.
+      # FTP_SERVER, FTP_BENUTZER und FTP_PASSWORT anlegen, dazu unter Variables den Wert FTP_ORDNER.
+      # Sobald FTP_SERVER gesetzt ist, wird nicht mehr über GitHub Pages veröffentlicht.
       - name: Per FTP auf eigenen Webspace hochladen
         if: env.HAT_FTP == 'true'
         uses: SamKirkland/FTP-Deploy-Action@8e83cea8672e3fbcbb9fdafff34debf6ae4c5f65 # v4.3.5
@@ -94,6 +95,8 @@ jobs:
           username: ${{ secrets.FTP_BENUTZER }}
           password: ${{ secrets.FTP_PASSWORT }}
           local-dir: ./dist/
+          # Zielordner auf dem Webspace. Bei Hetzner: public_html/ (als Variable FTP_ORDNER anlegen, mit / am Ende)
+          server-dir: ${{ vars.FTP_ORDNER || './' }}
           protocol: ftps
 
   veroeffentlichen:

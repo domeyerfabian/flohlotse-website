@@ -603,3 +603,19 @@ button.share.copied,.share-row .btn.copied{background:var(--ink);color:var(--pap
 .follow b{font-family:var(--f-display);font-size:23px;line-height:1.15;letter-spacing:-.02em;text-wrap:balance}
 .follow .btn{background:var(--sticker-ink);color:var(--sticker);justify-self:start}
 @media (min-width:640px){.follow{grid-template-columns:auto 1fr auto;padding:26px;gap:22px}.follow-at{width:92px;height:92px;font-size:54px}}
+
+/* Laufband mit Neuigkeiten auf der Startseite */
+.ticker{margin-top:16px;background:var(--ink);color:var(--paper);border-radius:999px;overflow:hidden;white-space:nowrap;font-size:13px;font-weight:600;display:flex;align-items:center}
+.ticker-view{flex:1;min-width:0;overflow:hidden}
+.ticker .ticker-cta{flex:none;margin:3px;padding:5px 10px 5px 14px;gap:2px;background:var(--sticker);color:var(--sticker-ink);border-radius:999px;font-weight:700}
+.ticker .ticker-cta::after{content:none}
+.ticker-cta .i{width:14px;height:14px}
+.ticker-run{display:inline-flex;animation:ticker 32s linear infinite;will-change:transform}
+.ticker:hover .ticker-run,.ticker:focus-within .ticker-run{animation-play-state:paused}
+.ticker-set{display:inline-flex}
+.ticker a{display:inline-flex;align-items:center;gap:8px;padding:7px 0 7px 14px;color:inherit;text-decoration:none}
+.ticker a i{font-style:normal;color:var(--sticker);font-weight:800;letter-spacing:.04em}
+.ticker b{background:var(--sticker);color:var(--sticker-ink);border-radius:999px;padding:1px 8px;font-weight:700;font-size:11px;letter-spacing:.02em}
+@keyframes ticker{to{transform:translateX(-50%)}}
+@media (prefers-reduced-motion:reduce){.ticker{white-space:normal;border-radius:var(--r);-webkit-mask-image:none;mask-image:none}.ticker-run{animation:none;display:block}.ticker{align-items:flex-end}.ticker-set{display:flex;flex-wrap:wrap;padding:0 6px}.ticker-set a[aria-hidden]{display:none}.ticker-set[aria-hidden]{display:none}}
+.ticker + .hero{padding-top:22px}

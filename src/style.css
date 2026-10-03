@@ -46,7 +46,7 @@ a{color:var(--ink)}
 /* Hero */
 .hero{padding-block:36px 20px;display:grid;grid-template-columns:1fr auto;gap:20px;align-items:end}
 h1{font-family:var(--f-display);font-weight:800;font-size:clamp(32px,7vw,54px);line-height:1.04;letter-spacing:-.035em;margin:0;text-wrap:balance}
-.hero p{margin:12px 0 0;color:var(--muted);max-width:44ch}
+.hero p{margin:12px 0 0;color:var(--muted);max-width:48ch;text-wrap:balance}
 .big-sticker{width:128px;height:128px;border-radius:50%;background:var(--sticker);color:var(--sticker-ink);display:grid;place-content:center;text-align:center;transform:rotate(6deg)}
 .big-sticker b{font-family:var(--f-display);font-size:44px;line-height:1;font-weight:800}
 .big-sticker span{font-size:12px;font-weight:600;line-height:1.2;padding-inline:14px}

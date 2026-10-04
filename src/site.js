@@ -7,6 +7,24 @@
     document.addEventListener("keydown", function (e) { if (e.key === "Escape" && menu.open) { menu.open = false; menu.querySelector("summary").focus(); } });
     document.addEventListener("click", function (e) { if (menu.open && (!menu.contains(e.target) || e.target.closest(".menu a"))) menu.open = false; });
   }
+  // Heute in Hamburg (unabhängig von der Uhr-Einstellung des Geräts)
+  var berlin = function () { try { var o = {}; new Intl.DateTimeFormat("de-DE", { timeZone: "Europe/Berlin", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).formatToParts(new Date()).forEach(function (x) { o[x.type] = x.value; }); return { day: o.year + "-" + o.month + "-" + o.day, hm: o.hour + ":" + o.minute }; } catch (e) { return null; } };
+  var NOW = berlin();
+  // Die Seite wird jede Nacht neu gebaut. Zwischen Mitternacht und dem Neubau (oder wenn ein Neubau ausfällt) ist sie von gestern:
+  // Dann verschwinden die vergangenen Tage, und ein Hinweis sagt, von wann der Stand ist.
+  var stand = document.documentElement.getAttribute("data-stand"), me0 = document.querySelector('script[src*="/assets/site.js"]'), ROOT0 = me0 ? me0.getAttribute("src").replace(/\/assets\/site\.js.*$/, "") : "";
+  if (NOW && stand && stand < NOW.day) {
+    var dated = document.querySelectorAll("main [data-day]"), old = 0;
+    dated.forEach(function (el) { if (el.getAttribute("data-day") < NOW.day) { el.remove(); old++; } });
+    document.querySelectorAll("main ul.dates").forEach(function (l) { if (!l.children.length) { var p = document.createElement("p"); p.className = "meta"; p.textContent = "Die nächsten Termine werden gerade aktualisiert."; l.parentNode.replaceChild(p, l); } });
+    if (dated.length || document.documentElement.hasAttribute("data-rel")) {
+      var main = document.querySelector("main"), d = stand.split("-"), note = document.createElement("p");
+      note.className = "stale"; note.setAttribute("role", "status"); note.setAttribute("data-nosnippet", "");
+      note.textContent = "Stand dieser Seite: " + (+d[2]) + "." + (+d[1]) + "." + d[0] + ". Sie wird gerade aktualisiert" + (old ? ", vergangene Termine sind ausgeblendet" : "") + ". Angaben wie „heute“ und „morgen“ beziehen sich auf den Stand. ";
+      if (location.pathname.slice(-9) !== "/termine/") { var more = document.createElement("a"); more.href = ROOT0 + "/termine/"; more.textContent = "Zu den kommenden Terminen"; note.appendChild(more); }
+      if (main) main.insertBefore(note, main.firstChild);
+    }
+  }
   // Pfad der Website (falls sie in einem Unterordner liegt), abgeleitet aus dem Pfad dieses Skripts
   var me = document.querySelector('script[src*="/assets/site.js"]'), ROOT = me ? me.getAttribute("src").replace(/\/assets\/site\.js.*$/, "") : "";
   // Filter: Art des Markts (Termine-Seite) und Umkreis nach Postleitzahl oder Standort. Alles passiert im Browser.
@@ -73,8 +91,8 @@
   if (mapLoad) {
     mapLoad.addEventListener("click", function () {
       var box = document.getElementById("mapBox"); box.innerHTML = '<p class="map-wait">Karte wird geladen …</p>';
-      var css = document.createElement("link"); css.rel = "stylesheet"; css.href = ROOT + "/assets/leaflet.css"; document.head.appendChild(css);
-      var js = document.createElement("script"); js.src = ROOT + "/assets/leaflet.js";
+      var css = document.createElement("link"); css.rel = "stylesheet"; css.href = ROOT + "/assets/leaflet.css?v=1.9.4"; document.head.appendChild(css);
+      var js = document.createElement("script"); js.src = ROOT + "/assets/leaflet.js?v=1.9.4";
       js.onload = function () {
         box.innerHTML = ""; var L = window.L, data = JSON.parse(document.getElementById("mapData").textContent);
         var map = L.map(box, { scrollWheelZoom: false, tap: true }).setView([53.55, 10.0], 10);
@@ -114,10 +132,8 @@
   }
   // Live-Status für heutige Termine: „Jetzt geöffnet“, „Öffnet heute um …“, „Heute schon vorbei“ (Hamburger Uhrzeit)
   var liveEvs = document.querySelectorAll(".group .ev[data-s]");
-  if (liveEvs.length && window.Intl && Intl.DateTimeFormat.prototype.formatToParts) {
-    var pt = {};
-    new Intl.DateTimeFormat("de-DE", { timeZone: "Europe/Berlin", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).formatToParts(new Date()).forEach(function (x) { pt[x.type] = x.value; });
-    var today = pt.year + "-" + pt.month + "-" + pt.day, hm = pt.hour + ":" + pt.minute;
+  if (liveEvs.length && NOW) {
+    var today = NOW.day, hm = NOW.hm;
     var uhr = function (t) { var h = parseInt(t.slice(0, 2), 10), m = t.slice(3, 5); return h + (m === "00" ? "" : ":" + m) + " Uhr"; };
     liveEvs.forEach(function (ev) {
       var g = ev.closest(".group"); if (!g || g.getAttribute("data-day") !== today) return;
@@ -144,7 +160,7 @@
     b.addEventListener("click", function () {
       var text = b.getAttribute("data-share");
       if (navigator.share) { navigator.share({ text: text }).catch(function () {}); return; }
-      var done = function () { var o = b.innerHTML; b.classList.add("copied"); b.setAttribute("aria-label", "Nachricht kopiert"); if (b.classList.contains("share-big")) b.lastChild.textContent = "Nachricht kopiert"; setTimeout(function () { b.innerHTML = o; b.classList.remove("copied"); }, 2000); };
+      var done = function () { if (b.classList.contains("copied")) return; var o = b.innerHTML, al = b.getAttribute("aria-label"); b.classList.add("copied"); b.setAttribute("aria-label", "Nachricht kopiert"); if (b.classList.contains("share-big")) b.lastChild.textContent = "Nachricht kopiert"; setTimeout(function () { b.innerHTML = o; b.classList.remove("copied"); if (al) b.setAttribute("aria-label", al); }, 2000); };
       if (navigator.clipboard) navigator.clipboard.writeText(text).then(done, function () {}); else { var t = document.createElement("textarea"); t.value = text; document.body.appendChild(t); t.select(); try { document.execCommand("copy"); done(); } catch (e) {} t.remove(); }
     });
   });

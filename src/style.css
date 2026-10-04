@@ -38,7 +38,7 @@ a{color:var(--ink)}
 .brand{display:flex;align-items:center;gap:8px;font-family:var(--f-display);font-weight:800;font-size:22px;letter-spacing:-.02em;color:var(--ink);text-decoration:none}
 .brand i{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--sticker);color:var(--sticker-ink);font-style:normal;font-size:15px;transform:rotate(-8deg)}
 .nav{display:flex;gap:16px;font-size:14px;font-weight:600}
-.nav a{color:var(--muted);text-decoration:none;white-space:nowrap}
+.nav a{color:var(--muted);text-decoration:none;white-space:nowrap;padding:4px 0}
 .nav a:hover,.nav a[aria-current="page"]{color:var(--ink)}
 .region{font-size:13px;font-weight:600;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 12px;white-space:nowrap}
 @media (max-width:680px){.nav{display:none}}
@@ -117,8 +117,8 @@ input,select{font:inherit;font-size:15px;padding:10px 12px;border-radius:10px;bo
 .ok{background:var(--sticker);color:var(--sticker-ink);border-radius:12px;padding:12px 14px;font-weight:600}
 
 /* Knowledge hub */
-.crumbs{font-size:13px;color:var(--muted);padding-top:22px;display:flex;flex-wrap:wrap;gap:6px}
-.crumbs a{color:var(--muted)}
+.crumbs{font-size:13px;color:var(--muted);padding-top:20px;display:flex;flex-wrap:wrap;align-items:center;gap:0 6px}
+.crumbs a{color:var(--muted);display:inline-flex;align-items:center;min-height:24px}
 .hub-head{padding-block:14px 8px}
 .hub-head p{color:var(--muted);max-width:56ch;margin:10px 0 0}
 .search{margin-top:18px;position:relative}
@@ -341,7 +341,7 @@ a.route .i{width:17px;height:17px}
   .ev{grid-template-columns:auto 1fr;gap:16px;padding:16px}
   .time{width:78px;height:78px;border-radius:50%;display:grid;place-content:center;justify-items:center;gap:0;padding:0;font-size:13px;line-height:1.25}
   .time .i{display:none}
-  .time .t-lab,.time .t-a{font-size:10px;letter-spacing:.06em;text-transform:uppercase;font-family:var(--f-body);font-weight:600}
+  .time .t-lab,.time .t-a{font-size:11px;letter-spacing:.05em;text-transform:uppercase;font-family:var(--f-body);font-weight:600}
   .time .t-a{font-family:var(--f-body);font-size:13px;letter-spacing:0;text-transform:none;font-weight:500}
   .time .t-bis{font-size:11px}
 }
@@ -395,7 +395,7 @@ a.route .i{width:17px;height:17px}
 .gen-opts{display:grid;gap:10px}
 .seg{display:flex;flex-wrap:wrap;gap:8px}
 .switch{display:flex!important;align-items:center;gap:10px;font-weight:500!important;cursor:pointer}
-.switch input{width:22px;height:22px;flex:none;accent-color:var(--ink)}
+.switch input{width:24px;height:24px;flex:none;accent-color:var(--ink)}
 .gen[data-kind="tags"] .only-sign,.gen[data-kind="sign"] .only-tags{display:none!important}
 .gen-print{justify-self:stretch;justify-content:center;font-size:17px;padding:15px 20px}
 .gen-hint{margin:0;font-size:13px;color:var(--muted)}
@@ -621,3 +621,9 @@ button.share.copied,.share-row .btn.copied{background:var(--ink);color:var(--pap
 @keyframes ticker{to{transform:translateX(-50%)}}
 @media (prefers-reduced-motion:reduce){.ticker{white-space:normal;border-radius:var(--r);-webkit-mask-image:none;mask-image:none}.ticker-run{animation:none;display:block}.ticker{align-items:flex-end}.ticker-set{display:flex;flex-wrap:wrap;padding:0 6px}.ticker-set a[aria-hidden]{display:none}.ticker-set[aria-hidden]{display:none}}
 .ticker + .hero{padding-top:22px}
+/* Dunkelmodus: Das Band bleibt dunkel (sonst stünde das gelbe +++ auf hellem Grund und wäre kaum zu lesen) */
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .ticker{background:var(--surface);color:var(--ink);box-shadow:inset 0 0 0 1px var(--line)}}
+:root[data-theme="dark"] .ticker{background:var(--surface);color:var(--ink);box-shadow:inset 0 0 0 1px var(--line)}
+/* Hinweis, wenn die Seite beim Aufruf von gestern ist (kurz nach Mitternacht oder nach einem ausgefallenen Neubau) */
+.stale{margin:16px 0 0;padding:10px 14px;border-radius:12px;background:var(--ink);color:var(--paper);font-size:14px;line-height:1.4}
+.stale a{color:inherit;font-weight:600;text-decoration:underline;text-decoration-color:var(--sticker);text-decoration-thickness:2px;text-underline-offset:2px;white-space:nowrap}

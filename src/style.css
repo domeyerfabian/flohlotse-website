@@ -627,3 +627,10 @@ button.share.copied,.share-row .btn.copied{background:var(--ink);color:var(--pap
 /* Hinweis, wenn die Seite beim Aufruf von gestern ist (kurz nach Mitternacht oder nach einem ausgefallenen Neubau) */
 .stale{margin:16px 0 0;padding:10px 14px;border-radius:12px;background:var(--ink);color:var(--paper);font-size:14px;line-height:1.4}
 .stale a{color:inherit;font-weight:600;text-decoration:underline;text-decoration-color:var(--sticker);text-decoration-thickness:2px;text-underline-offset:2px;white-space:nowrap}
+
+/* „Neu“-Schild für frisch eingetragene Märkte (schwarz = Hinweis) und die Zeile „Der Kalender wächst“ auf der Startseite */
+.neu{display:inline-block;vertical-align:middle;background:var(--ink);color:var(--paper);border-radius:999px;padding:2px 9px;font:700 11px/1.4 var(--f-body);letter-spacing:.04em;text-transform:uppercase;white-space:nowrap}
+h3 .neu,h4 .neu{margin-left:4px;position:relative;top:-2px}
+.wachst{display:flex;gap:8px;align-items:flex-start;font-size:14px;color:var(--muted);margin-top:10px}
+.wachst .i{flex:none;margin-top:.2em}
+.wachst a{color:var(--ink);font-weight:600}

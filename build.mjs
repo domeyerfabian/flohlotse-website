@@ -273,6 +273,16 @@ const fmtDateY = d => `${fmtDate(d)} ${d.getUTCFullYear()}`;
 const nextEv = m => m.events.find(e => !e.cancelled) || (m.later ? m.later[0] : null);
 const fmtShortY = e => fmtShort(e.date) + (e.far ? e.date.getUTCFullYear() : "");
 const NO_DATES = MARKETS.filter(m => !m.events.length && !m.later);
+// Merkzettel der letzten Nacht (wird weiter unten für Sitemap und Notbremse gebraucht, hier schon für die „Neu“-Kennzeichnung)
+let OLD_STATE = {};
+if (process.env.SHEET_ID || process.env.SEITENSTAND === "an") { try { const r = await fetch(SITE + "/assets/seiten-stand.json", { signal: AbortSignal.timeout(8000) }); if (r.ok) { const j = await r.json(); if (j && typeof j === "object") OLD_STATE = j; } } catch { /* erster Lauf: alle Seiten bekommen das heutige Datum */ } }
+/* „Neu“: Ein Markt, den es beim letzten Bau noch nicht gab, trägt drei Tage lang ein „Neu“-Schild (Tag des Eintragens und die zwei folgenden).
+   Der Tag des ersten Erscheinens steht im Merkzettel unter _neu. Beim allerersten Bau ohne Merkzettel gilt nichts als neu. */
+const NEU = {};
+{ const alt = OLD_STATE._neu && typeof OLD_STATE._neu === "object" ? OLD_STATE._neu : {}, hatStand = Object.keys(OLD_STATE).some(p => p.startsWith("/flohmarkt/")), heute = key(TODAY);
+  for (const m of MARKETS) { const seit = /^\d{4}-\d{2}-\d{2}$/.test(String(alt[m.slug])) ? alt[m.slug] : hatStand && !(`/flohmarkt/${m.slug}/` in OLD_STATE) ? heute : ""; if (seit && (TODAY - new Date(seit + "T00:00:00Z")) / 864e5 < 3) NEU[m.slug] = seit; } }
+const NEU_MS = MARKETS.filter(m => NEU[m.slug]);
+const neuPill = m => NEU[m.slug] ? ' <span class="neu">Neu</span>' : "";
 
 const KB = data.Ratgeber.filter(r => yes(r["Aktiv"]) && r["Kennung"] && validSlug(r["Kennung"], "Ratgeber", r["Überschrift"])).map(r => ({
   s: r["Kennung"], c: r["Bereich"], kw: r["Suchbegriff"], i: r["Suchabsicht"], t: r["SEO-Titel"], d: r["SEO-Beschreibung"], h: r["Überschrift"], a: r["Kurz gesagt"],
@@ -502,7 +512,7 @@ function evHTML(e, h = 3) {
   // Handy: gelbe Zeile „08:00 bis 16:00“ über dem Namen. Ab Tablet: der runde Zeit-Sticker links.
   const t = ic("clock") + (e.cancelled ? '<span class="t-lab">Termin</span><span class="t-main">fällt aus</span>' : !e.start ? '<span class="t-lab">Uhrzeit</span><span class="t-main">folgt</span>' : e.end ? `<span class="t-a">${hm(e.start)}</span><span class="t-bis">bis</span><span class="t-b">${hm(e.end)}</span>` : `<span class="t-lab">ab</span><span class="t-main">${hm(e.start)}</span>`);
   return `<article class="ev${e.cancelled ? " off" : ""}" data-tags="${esc([...m.tags, ...timeTags(e)].join("|"))}"${llAttr(m)}${!e.cancelled && e.start ? ` data-s="${tFirst(e.start)}"${e.end ? ` data-e="${tLast(e.end)}"` : ""}` : ""}><div class="time" aria-label="${esc(e.cancelled ? "Abgesagt" : timeText(e))}">${t}</div><div class="ev-body">
-<h${h}><a href="/flohmarkt/${m.slug}/">${esc(m.name)}</a></h${h}><p class="meta ln">${ic("pin")}<span><b>${esc(m.area)}</b> · ${addrNb(m.addr)}</span></p>
+<h${h}><a href="/flohmarkt/${m.slug}/">${esc(m.name)}</a>${neuPill(m)}</h${h}><p class="meta ln">${ic("pin")}<span><b>${esc(m.area)}</b> · ${addrNb(m.addr)}</span></p>
 ${e.cancelled ? `<p class="note warn-text">Dieser Termin fällt aus.${e.note ? " " + esc(e.note) : ""}</p>` : m.note ? `<p class="note">${esc(m.note)}${e.note ? " " + esc(e.note) : ""}</p>` : ""}
 ${m.tags.length ? `<div class="row">${m.tags.map(t => CAT_BY_TAG[t] ? `<a class="tag" href="/${CAT_BY_TAG[t].s}/">${tagIc(t)}${esc(t)}</a>` : `<span class="tag">${tagIc(t)}${esc(t)}</span>`).join("")}</div>` : ""}
 <div class="row foot"><span class="rhythm ln">${ic("repeat")}<span>${esc(m.rhythm)}</span></span><span class="acts"><a class="route go" href="/flohmarkt/${m.slug}/" aria-label="Zum Markt: ${esc(m.name)}">Zum Markt${ic("chev")}</a>${e.cancelled ? "" : shareBtn(m, e)}<a class="route" href="https://www.google.com/maps/search/?api=1&amp;query=${q}" rel="noopener" aria-label="Route zu ${esc(m.name)} planen">${ic("route")}Route</a></span></div>
@@ -515,7 +525,7 @@ function groupList(evs, lvl = 2) {
 }
 const kbCard = s => { const r = KBY[s]; if (!r) { warn("Ratgeber", `Verweis auf unbekannten Artikel „${s}“`); return ""; } return `<a class="card" href="/ratgeber/${r.s}/"><span class="kicker">Ratgeber · ${esc(CLUSTERS[r.c]?.t || "")}</span><h3>${brColon(esc(r.h))}</h3><p>${esc(short(plain(r.a), 110))}</p></a>`; };
 function short(t, n) { t = String(t || ""); if (t.length <= n) return t; const cut = t.slice(0, n); return (cut.lastIndexOf(" ") > n * 0.6 ? cut.slice(0, cut.lastIndexOf(" ")) : cut).replace(/[\s,.;:–-]+$/, "") + " …"; }
-const mCard = m => { const n = nextEv(m); return `<a class="card" href="/flohmarkt/${m.slug}/"><span class="kicker">${esc(m.area)}</span><h3>${esc(m.name)}</h3><p class="ln">${ic("repeat")}<span>${esc(m.rhythm)}</span></p>${n ? `<p class="ln" data-day="${n.k}">${ic("cal")}<span>Nächster Termin ${fmtShortY(n)}</span></p>` : ""}</a>`; };
+const mCard = m => { const n = nextEv(m); return `<a class="card" href="/flohmarkt/${m.slug}/"><span class="kicker">${esc(m.area)}${neuPill(m)}</span><h3>${esc(m.name)}</h3><p class="ln">${ic("repeat")}<span>${esc(m.rhythm)}</span></p>${n ? `<p class="ln" data-day="${n.k}">${ic("cal")}<span>Nächster Termin ${fmtShortY(n)}</span></p>` : ""}</a>`; };
 const grid = cards => { cards = cards.filter(Boolean); const n = cards.length; return `<div class="news ${n % 3 === 0 ? "cols3" : n % 2 === 0 ? "cols2" : "fit"}">${cards.join("")}</div>`; };
 const regionChips = skip => `<div class="chips">${[["/heute/", "Heute"], ["/morgen/", "Morgen"], ["/wochenende/", "Wochenende"], ["/samstag/", "Samstag"], ["/sonntag/", "Sonntag"]].filter(x => x[0] !== skip).map(([h, l]) => `<a class="chip" href="${h}">${ic(h === "/heute/" ? "sun" : "cal")}${l}</a>`).join("")}${REGIONS.filter(r => `/flohmarkt-hamburg/${r.k}/` !== skip).map(r => `<a class="chip" href="/flohmarkt-hamburg/${r.k}/">${esc(r.name)}</a>`).join("")}</div>`;
 const KBMAP = { "Überdacht": ["flohmarkt-bei-regen", "beste-uhrzeit-flohmarkt", "handeln-auf-dem-flohmarkt"], "Umland": ["was-mitnehmen-flohmarkt", "beste-uhrzeit-flohmarkt", "handeln-auf-dem-flohmarkt"], "Kinder & Spielzeug": ["flohmarkt-mit-kindern", "kinderflohmarkt-verkaufen", "handeln-auf-dem-flohmarkt"], "Sammler & Vinyl": ["antiquitaeten-erkennen-flohmarkt", "faelschungen-erkennen-flohmarkt", "handeln-auf-dem-flohmarkt"], "Nachbarschaft": ["flohmarkt-knigge", "flohmarkt-mit-kindern", "handeln-auf-dem-flohmarkt"], "Abends": ["nachtflohmarkt", "bezahlen-auf-dem-flohmarkt", "handeln-auf-dem-flohmarkt"] };
@@ -1062,6 +1072,7 @@ const shareBtn = (m, e, cls = "share") => `<button type="button" class="${cls}" 
 <span class="proto">${esc(REGION)}</span>
 <h1>Flohmarkt Hamburg: alle Termine, aufgeräumt.</h1>
 <p>Alle Flohmärkte in Hamburg und Umgebung: wann, wo und wie lange. Ohne Werbebanner, ohne alte Termine.</p>
+<p class="wachst">${ic("update")}<span>${NEU_MS.length ? `<b>Neu im Kalender:</b> ${NEU_MS.slice(0, 4).map(m => `<a href="/flohmarkt/${m.slug}/">${esc(m.short)}</a>`).join(", ")}${NEU_MS.length > 4 ? ` und ${NEU_MS.length - 4} weitere` : ""}. ` : ""}Der Kalender wächst ständig: Neue Märkte und Termine kommen laufend dazu. Schau gern wieder rein.</span></p>
 <div class="quick"><a class="chip" href="/heute/">${ic("sun")}Heute</a><a class="chip" href="/wochenende/">${ic("cal")}Wochenende</a><a class="chip" href="/sonntag/">${ic("cal")}Sonntag</a><a class="chip" href="/flohmaerkte/">${ic("map")}Märkte nach Bezirk</a>${HAS_MAP ? `<a class="chip" href="/flohmaerkte/#karte">${ic("pin")}Karte</a>` : ""}<a class="chip" href="/ratgeber/">${ic("book")}Ratgeber</a><a class="chip" href="/flohmarkt-schilder/">${ic("printer")}Schilder gestalten</a></div>
 </div><a class="big-sticker" href="/wochenende/"><b>${weN}</b><span>${weLabel}</span></a></section>
 ${slider}
@@ -1150,7 +1161,7 @@ for (const m of MARKETS) {
     : pickDesc(fresh(m.d), `${m.name} in ${m.area}: ${m.note || ""} Neue Termine folgen, sobald der Veranstalter sie veröffentlicht. Adresse und Anfahrt.`, `${m.name}: ${m.note || ""} Adresse, Anfahrt und neue Termine, sobald der Veranstalter sie veröffentlicht.`, `${m.name}: Adresse, Anfahrt und alle Termine, sobald der Veranstalter sie veröffentlicht. Täglich aktualisiert.`, `${m.short}: Adresse, Anfahrt und neue Termine, sobald der Veranstalter sie veröffentlicht.`);
   const body = crumbs([[NAME, "/"], [r.umland ? "Umland" : "Flohmärkte Hamburg", "/flohmaerkte/"], [r.name, `/flohmarkt-hamburg/${r.k}/`], [m.short]]) + `<article class="kb">
 <h1>${esc(m.name)}: Öffnungszeiten und Termine</h1>
-<div class="byline"><span>${ic("pin")}${esc(m.area)}</span><span>${ic("map")}${esc(regionLabel(r))}</span><span>${ic("update")}Stand: ${STAND}</span></div>
+<div class="byline">${NEU[m.slug] ? '<span class="neu">Neu im Kalender</span>' : ""}<span>${ic("pin")}${esc(m.area)}</span><span>${ic("map")}${esc(regionLabel(r))}</span><span>${ic("update")}Stand: ${STAND}</span></div>
 <div class="answer"><span class="kicker">Kurz gesagt</span><p>${answer}</p></div>
 <dl class="facts"><div><dt>${ic("cal")}Wann</dt><dd>${esc(cap(when) || (far ? m.later.slice(0, 4).map(x => fmtDateY(x.date)).join(" · ") : "Derzeit kein Termin"))}</dd></div><div><dt>${ic("clock")}Uhrzeit</dt><dd>${!first ? (far && far.start ? timeText(far) : "–") : mixed ? "je nach Termin, siehe unten" : timeText(first)}</dd></div>
 <div><dt>${ic("pin")}Adresse</dt><dd>${addrNb(m.addr)}<br><a class="route" href="${route}" rel="noopener">${ic("route")}Route planen</a></dd></div>
@@ -1681,8 +1692,6 @@ for (const [p, pg] of pages) {
 /* ---------------------------------------------------------------- Merkzettel der letzten Nacht und Notbremse
    Der Merkzettel liegt unter /assets/seiten-stand.json auf der Website und wird beim nächsten Bau von dort gelesen.
    Er merkt sich je Seite, wann sich ihr Inhalt zuletzt geändert hat (für Google), und wie viele Märkte und Termine es gab. */
-let OLD_STATE = {};
-if (process.env.SHEET_ID || process.env.SEITENSTAND === "an") { try { const r = await fetch(SITE + "/assets/seiten-stand.json", { signal: AbortSignal.timeout(8000) }); if (r.ok) { const j = await r.json(); if (j && typeof j === "object") OLD_STATE = j; } } catch { /* erster Lauf: alle Seiten bekommen das heutige Datum */ } }
 {
   // Notbremse: Fehlt plötzlich mehr als die Hälfte der Märkte oder Termine, ist fast immer in der Tabelle etwas verrutscht
   // (Zeilen gelöscht, Spalte überschrieben, falsch sortiert). Dann lieber nichts veröffentlichen: Die bisherige Website bleibt online.
@@ -1752,6 +1761,7 @@ const LASTMOD = {}, PAGE_STATE = {};
     LASTMOD[p] = d; PAGE_STATE[p] = [sig, d];
   }
 }
+PAGE_STATE._neu = NEU;
 PAGE_STATE._zahlen = [MARKETS.length, EVENTS.length, MARKETS.length - NO_DATES.length, HORIZON, key(TODAY)]; // Märkte, Termine, Märkte mit Termin, Tage im Voraus, Datum: für die Notbremse im nächsten Bau
 fs.writeFileSync(path.join(OUT, "assets/seiten-stand.json"), JSON.stringify(PAGE_STATE));
 const smImgs = p => [...(PAGE_PHOTOS.get(p) || []).map(u => [u]), ...(SIGN_PAGE_IMGS.get(p) || [])].map(([u, t]) => `<image:image><image:loc>${esc(SITE + u)}</image:loc></image:image>`).join("");

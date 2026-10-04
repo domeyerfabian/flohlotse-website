@@ -320,6 +320,8 @@ const FONT_PRELOAD = fontsFound.filter(x => x.f.endsWith("woff2")).map(x => `<li
 const fontCSS = fontsFound.map(x => `@font-face{font-family:"${x.fam}";src:url("/fonts/${encodeURIComponent(x.f)}") format("${x.f.endsWith("woff2") ? "woff2" : "truetype"}");font-weight:${x.w};font-style:normal;font-display:swap}`).join("\n");
 // Stil der Website: der Schriften-Teil (hängt von den Dateien im Ordner fonts ab) plus src/style.css. Das Versionskürzel entsteht aus beidem.
 const CSS_SRC = fontCSS + "\n" + fs.readFileSync(path.join(ROOT, "src/style.css"), "utf8");
+// Der Stil steht direkt in jeder Seite: So muss der Browser vor dem ersten Bild keine zweite Datei laden.
+const CSS_INLINE = CSS_SRC.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\s*\n\s*/g, "").replace(/<\/style/gi, "");
 const CSS_V = "?v=" + hashOf("sha1").update(CSS_SRC).digest("hex").slice(0, 8);
 if (fontsFound.length < 2) warn("Schriften", `Im Ordner fonts fehlen ${2 - fontsFound.length} von 2 Schriftdateien. Die Seite nutzt so lange Systemschriften.`);
 
@@ -333,15 +335,15 @@ const pickImg = (base, ext = "webp") => IMGS.has(`${base}.${ext}`) ? { f: `${bas
 // Bildnachweis je Foto: bilder/nachweis.json (Quelle mit Pflichttext und Link, Bildbeschreibung, Urheber).
 const CREDITS = (() => { try { return JSON.parse(fs.readFileSync(path.join(imgDir, "nachweis.json"), "utf8")); } catch { return {}; } })();
 const CRED_SRC = CREDITS.quelle && /^https:\/\//.test(CREDITS.quelle.url || "") && CREDITS.quelle.text ? CREDITS.quelle : null;
-const credOf = f => (CREDITS.bilder || {})[f] || (CREDITS.bilder || {})[String(f).replace(/(-klein)?\.(webp|jpg)$/, "")] || null;
+const credOf = f => (CREDITS.bilder || {})[f] || (CREDITS.bilder || {})[String(f).replace(/(-klein|-mini)?\.(webp|jpg)$/, "")] || null;
 const credLink = () => `<a href="${esc(CRED_SRC.url)}" rel="noopener nofollow">${esc(CRED_SRC.text)}</a>`;
 // Dateiname auf der Website: sprechender Name aus nachweis.json (gut für die Google-Bildersuche), sonst der Dateiname aus dem Ordner.
-const imgOut = f => { const c = credOf(f), m = /^(.*?)(-klein)?\.(webp|jpg)$/.exec(f); return c && /^[a-z0-9-]+$/.test(c.name || "") ? `${c.name}${m[2] || ""}.${m[3]}` : f; };
+const imgOut = f => { const c = credOf(f), m = /^(.*?)(-klein|-mini)?\.(webp|jpg)$/.exec(f); return c && /^[a-z0-9-]+$/.test(c.name || "") ? `${c.name}${m[2] || ""}.${m[3]}` : f; };
 const imgUrl = f => `/assets/img/${imgOut(f)}`;
 const IMG_BY_URL = Object.fromEntries([...IMGS].map(f => [imgUrl(f), f]));
 const OG = pickImg("teilen", "jpg");
 const OG_IMG = OG ? imgUrl(OG.f) : "";
-const REAL_PHOTOS = [...IMGS].filter(x => !/-ki\.(webp|jpg)$/.test(x) && !/-klein\./.test(x) && !(CRED_SRC && credOf(x)));
+const REAL_PHOTOS = [...IMGS].filter(x => !/-ki\.(webp|jpg)$/.test(x) && !/-(klein|mini)\./.test(x) && !(CRED_SRC && credOf(x)));
 if (REAL_PHOTOS.length && !S["Bildnachweis"]) warn("Bilder", `Für ${REAL_PHOTOS.length === 1 ? "das Foto" : "die Fotos"} ${REAL_PHOTOS.join(", ")} fehlt der Bildnachweis. Quelle und Lizenz im Blatt Einstellungen unter „Bildnachweis“ eintragen, z. B. „Fotos: Unsplash (Unsplash-Lizenz)“, und einen Screenshot der Lizenzseite aufbewahren.`);
 const ANY_KI = [...IMGS].some(x => /-ki\.(webp|jpg)$/.test(x));
 const altOf = x => (!x.ki && credOf(x.f) && credOf(x.f).alt) || altFor(x.ki);
@@ -435,7 +437,7 @@ const MENU = () => menuHTML();
 const PAGE_PHOTOS = new Map();
 function imgLD(p, body) {
   const fs_ = [...new Set([...body.matchAll(/(?:src|srcset)="([^"]*\/assets\/img\/[^"]+)"/g)].flatMap(m => m[1].split(",").map(x => x.trim().split(" ")[0])))]
-    .map(u => IMG_BY_URL[u]).filter(f => f && CRED_SRC && credOf(f) && !/-klein\./.test(f));
+    .map(u => IMG_BY_URL[u]).filter(f => f && CRED_SRC && credOf(f) && !/-(klein|mini)\./.test(f));
   if (!fs_.length) return "";
   PAGE_PHOTOS.set(p, fs_.map(f => imgUrl(f)));
   const ldImg = fs_.map(f => { const c = credOf(f); return { "@context": "https://schema.org", "@type": "ImageObject", contentUrl: SITE + imgUrl(f), caption: String(c.alt || "").replace(/^Symbolfoto: /, ""), creditText: `${c.autor || CRED_SRC.name} / ${CRED_SRC.name}`, creator: { "@type": "Organization", name: c.autor || CRED_SRC.name }, copyrightNotice: `${c.autor || CRED_SRC.name} / ${CRED_SRC.name}`, ...(CRED_SRC.lizenz ? { license: CRED_SRC.lizenz, acquireLicensePage: CRED_SRC.url } : {}) }; });
@@ -453,7 +455,7 @@ function layout({ p, title, desc, body, ld, noindex, nav, extraHead = "", img = 
 <html lang="de" data-stand="${key(TODAY)}"${REL_PAGES.has(p) ? " data-rel" : ""}>
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>${esc(title)}</title>
 <meta name="description" content="${esc(desc)}">
 <meta name="robots" content="${noindex || !PUBLIC ? "noindex,follow" : "index,follow"}">
@@ -461,7 +463,7 @@ function layout({ p, title, desc, body, ld, noindex, nav, extraHead = "", img = 
 ${FONT_PRELOAD}
 <meta property="og:type" content="website"><meta property="og:locale" content="de_DE"><meta property="og:site_name" content="${esc(NAME)}">
 <meta property="og:title" content="${esc(title)}"><meta property="og:description" content="${esc(desc)}"><meta property="og:url" content="${esc(url)}">${img ? `\n<meta property="og:image" content="${esc(SITE + img)}"><meta name="twitter:card" content="summary_large_image">` : ""}
-<link rel="stylesheet" href="/assets/style.css${CSS_V}">
+<style>${CSS_INLINE}</style>
 ${HAS_ICONS ? `<link rel="icon" href="/favicon.ico" sizes="32x32">\n` : ""}<link rel="icon" href="/assets/icon.svg${ICON_V}" type="image/svg+xml">${HAS_ICONS ? `\n<link rel="apple-touch-icon" href="/apple-touch-icon.png">\n<link rel="manifest" href="/manifest.webmanifest">` : ""}
 <meta name="theme-color" content="#F2F4F0" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#0F1411" media="(prefers-color-scheme: dark)">
 <noscript><style>.js-only{display:none!important}</style></noscript>
@@ -483,7 +485,7 @@ ${body.replace(/<h1>([^<]{3,80}?): ([^<]+)<\/h1>/, '<h1>$1:<span class="h1-sub">
 <nav class="foot-links" aria-label="Nach Art und Monat"><b>Nach Art und Monat</b>${CATS_ON.map(c => `<a href="/${c.s}/">${esc(c.chip)}</a>`).join("")}${MONTHS.map(x => `<a href="/${x.s}/">${x.name} ${x.y}</a>`).join("")}</nav>
 <nav class="foot-links" aria-label="${esc(NAME)}"><b>${esc(NAME)}</b><a href="/ratgeber/">Ratgeber</a><a href="/flohmarkt-schilder/">Schilder-Designer</a><a href="/flohmarkt-hamburg-statistik/">Flohmärkte in Zahlen</a><a href="/veranstalter/">Für Veranstalter</a>${INSTA ? instaA("Instagram") : ""}<a href="/impressum/">Impressum</a><a href="/datenschutz/">Datenschutz</a></nav>
 </footer>
-<script src="/assets/site.js${JS_V}" defer></script>
+<script src="/assets/site${JS_V ? "." + JS_V.slice(3) : ""}.js" defer></script>
 </body>
 </html>`;
   pages.set(p, { html, noindex, title, desc });
@@ -1060,9 +1062,9 @@ const shareBtn = (m, e, cls = "share") => `<button type="button" class="${cls}" 
   })();
   // Slider: ein großes Symbolfoto, dazu bis zu zwei große Märkte der nächsten Tage als „Wochen-Highlight“.
   const hlEvs = []; for (const e of upcoming(8, e => !e.cancelled && e.m.tags.includes("Groß & bekannt"))) if (hlEvs.length < 2 && !hlEvs.some(x => x.m === e.m)) hlEvs.push(e);
-  const sImg = pickImg("start"), sSmall = pickImg("start-klein");
+  const sImg = pickImg("start"), sSmall = pickImg("start-klein"), sMini = pickImg("start-mini");
   const slides = [
-    sImg ? `<figure class="hl-slide hl-photo"><img src="${imgUrl((sSmall || sImg).f)}" srcset="${[sSmall && `${imgUrl(sSmall.f)} 760w`, `${imgUrl(sImg.f)} 1520w`].filter(Boolean).join(", ")}" sizes="(max-width: 800px) 100vw, 760px" width="760" height="507" alt="${esc(altOf(sImg))}" fetchpriority="high" decoding="async"><figcaption>${capOf(sImg)}</figcaption></figure>` : "",
+    sImg ? `<figure class="hl-slide hl-photo"><img src="${imgUrl((sSmall || sImg).f)}" srcset="${[sMini && `${imgUrl(sMini.f)} 640w`, sSmall && `${imgUrl(sSmall.f)} 760w`, `${imgUrl(sImg.f)} 1520w`].filter(Boolean).join(", ")}" sizes="(max-width: 640px) 86vw, (max-width: 800px) 100vw, 760px" width="760" height="507" alt="${esc(altOf(sImg))}" fetchpriority="high" decoding="async"><figcaption>${capOf(sImg)}</figcaption></figure>` : "",
     ...hlEvs.map(e => `<a class="hl-slide hl-card" href="/flohmarkt/${e.m.slug}/"><span class="kicker">${ic("star")}Wochen-Highlight</span><b>${esc(e.m.short)}</b><span class="hl-when">${esc(fmtDate(e.date))}${e.start ? " · " + esc(timeText(e)) : ""}</span><span class="hl-where">${ic("pin")}${esc(e.m.area || e.m.place)}</span><span class="promo-go">Zum Markt${ic("chev")}</span></a>`)].filter(Boolean);
   const slider = slides.length ? `<section class="hl" aria-label="Highlights"><div class="hl-track" id="hlTrack">${slides.join("")}</div>${slides.length > 1 ? `<div class="hl-dots js-only" id="hlDots">${slides.map((_, i) => `<button type="button" aria-label="Bild ${i + 1} von ${slides.length}"${i ? "" : ' aria-current="true"'}></button>`).join("")}</div>` : ""}</section>` : "";
   // Laufband über der Startseite mit dem Instagram-Hinweis. Bei „Bewegung reduzieren“ steht es still.
@@ -1718,6 +1720,8 @@ for (const [p, pg] of pages) {
 fs.mkdirSync(path.join(OUT, "assets"), { recursive: true });
 fs.writeFileSync(path.join(OUT, "assets/style.css"), withBase(fontCSS) + CSS_SRC.slice(fontCSS.length));
 fs.copyFileSync(path.join(ROOT, "src/site.js"), path.join(OUT, "assets/site.js"));
+// Das Skript liegt zusätzlich unter einem Namen mit Versionskürzel: Diese Datei ändert sich nie und darf ein Jahr gespeichert werden.
+if (JS_V) fs.copyFileSync(path.join(ROOT, "src/site.js"), path.join(OUT, `assets/site.${JS_V.slice(3)}.js`));
 fs.copyFileSync(path.join(ROOT, "src/icon.svg"), path.join(OUT, "assets/icon.svg"));
 if (HAS_ICONS) {
   // favicon.ico und apple-touch-icon.png suchen Browser von sich aus ganz oben, die übrigen liegen bei den anderen Dateien
@@ -1739,7 +1743,7 @@ if (IMGS.size) {
   const used = new Set(); for (const pg of pages.values()) for (const m of pg.html.matchAll(/\/assets\/img\/([a-z0-9-]+\.(?:webp|jpg))/g)) used.add(m[1]);
   fs.mkdirSync(path.join(OUT, "assets/img"), { recursive: true });
   // Im Bericht steht eine Datei nur, wenn auch ihre zweite Größe (…-klein) nirgends vorkommt: Dann ist sie wirklich übrig.
-  const twin = x => /-klein\.(webp|jpg)$/.test(x) ? x.replace(/-klein\./, ".") : x.replace(/\.(webp|jpg)$/, "-klein.$1");
+  const twin = x => /-(klein|mini)\.(webp|jpg)$/.test(x) ? x.replace(/-(klein|mini)\./, ".") : x.replace(/\.(webp|jpg)$/, "-klein.$1");
   for (const x of IMGS) { if (used.has(imgOut(x))) fs.copyFileSync(path.join(imgDir, x), path.join(OUT, "assets/img", imgOut(x))); else if (!(IMGS.has(twin(x)) && used.has(imgOut(twin(x))))) IMG_UNUSED.push(x); }
 }
 if (fontsFound.length) {
@@ -1848,6 +1852,11 @@ ExpiresByType application/manifest+json "access plus 1 day"
 ExpiresByType text/css "access plus 1 day"
 ExpiresByType application/javascript "access plus 1 day"
 ExpiresByType text/javascript "access plus 1 day"
+# Ausnahme: Das Skript mit Versionskürzel im Dateinamen (site.1a2b3c4d.js) ändert sich nie und darf ein Jahr bleiben.
+<FilesMatch "\\.[0-9a-f]{8}\\.js$">
+ExpiresByType application/javascript "access plus 1 year"
+ExpiresByType text/javascript "access plus 1 year"
+</FilesMatch>
 ExpiresByType image/svg+xml "access plus 1 week"
 ExpiresByType image/webp "access plus 1 month"
 ExpiresByType image/jpeg "access plus 1 month"

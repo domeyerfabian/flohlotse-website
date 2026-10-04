@@ -6,12 +6,12 @@ Ihr pflegt nur die Tabelle. Die ausführliche Einrichtungsanleitung liegt als Do
 ## Was wo ist
 - `build.mjs` baut die Website. Nicht ändern nötig.
 - `daten/` enthält eine Kopie der Tabelle. Sie wird nur genutzt, solange noch keine Google-Tabelle verbunden ist.
-- `src/` enthält Gestaltung (style.css), Menü-Skript und Symbol.
+- `src/` enthält Gestaltung (style.css), Skript (site.js) und die Symbole für Browser-Tab, Lesezeichen und Startbildschirm (`icon.svg`, `favicon.ico`, `apple-touch-icon.png`, `icon-192.png`, `icon-512.png`, `icon-maskable-512.png`).
 - `fonts/` für die Schriftdateien, siehe LIESMICH.txt.
 - `bilder/` enthält die Symbolfotos (Startseite, Ratgeber, Vorschaubild beim Teilen). Dateinamen nicht ändern; fehlt ein Foto, wird die Stelle ohne Bild gebaut.
 - Icons: Jede Marktart aus der Spalte „Kategorien“ (Blatt Märkte) hat ein eigenes Icon (Phosphor Icons, Stil Light, MIT-Lizenz; Stern, Mond, Haus …). Eine neue Kategorie im Sheet bekommt automatisch ein neutrales Etikett-Icon, es geht nichts kaputt.
 - Schilder: Der Schildgenerator liegt unter /flohmarkt-schilder/. Die Texte der Vorlagen stehen in build.mjs im Abschnitt „Schilder“ (nicht im Sheet). Die Vorschaubilder entstehen beim Bau automatisch.
-- `bericht.md` zeigt nach jedem Bau, was geprüft werden sollte: fehlende Uhrzeiten, kaputte Links, fehlende Angaben.
+- `bericht.md` zeigt nach jedem Bau drei Abschnitte: **Zu erledigen** (Fehler in der Tabelle zuerst, dann fehlende Uhrzeiten und der Termin-Wächter), **Vorschläge zum Einfügen** (fertige Zeilen des Termin-Wächters) und **Zur Kenntnis** (z. B. Märkte ohne Termin in der Vorschau, als eine Sammelzeile).
 
 ## Was die Website für Google automatisch macht
 - **Titel und Beschreibungen** der Markt-, Bezirks-, Tages- und Monatsseiten entstehen aus den Terminen, mit nächstem Termin und Jahreszahl. Die Spalte „SEO-Beschreibung“ im Blatt Märkte wird nur genutzt, wenn kein Termin bekannt ist und sie kein festes Datum enthält. Der „SEO-Titel“ bleibt, die Jahreszahl wird automatisch ergänzt.
@@ -56,11 +56,14 @@ Ihr pflegt nur die Tabelle. Die ausführliche Einrichtungsanleitung liegt als Do
 
 ## Termin-Wächter
 
-- Jede Nacht ruft der Bau die Adresse aus der Spalte „Veranstalter-Website“ ab und merkt sich, welche Datumsangaben dort stehen. Ändern sie sich, steht im Bericht unter „Termin-Wächter“, was neu ist und was fehlt, zusammen mit dem Link. Der Hinweis bleibt sieben Tage stehen.
-- Es wird **nichts automatisch übernommen**. Für neue Tage liefert der Bericht aber fertige Zeilen („Vorschläge zum Einfügen“): auf der Veranstalterseite prüfen, Zeilen kopieren, im Blatt „Termine“ einfügen. Eingesetzt ist die übliche Uhrzeit des Markts. Verschwindet ein Tag von der Veranstalterseite, der noch im Kalender steht, warnt der Bericht ausdrücklich.
-- Am genauesten arbeitet der Wächter, wenn in „Veranstalter-Website“ die Seite steht, auf der die Termine wirklich stehen (nicht nur die Startseite).
+- Jede Nacht ruft der Bau die Adresse aus der Spalte „Veranstalter-Website“ ab und merkt sich, welche Datumsangaben dort stehen. Im Bericht steht nur, was zu tun ist:
+  - **Neu dort und noch nicht in der Tabelle:** mit fertiger Zeile zum Einfügen („Vorschläge zum Einfügen“). Sobald der Tag in der Tabelle steht, verschwindet der Hinweis; sonst nach sieben Tagen.
+  - **Dort verschwunden, aber noch im Kalender:** ausdrückliche Warnung, dass der Termin vielleicht ausfällt.
+- Es wird **nichts automatisch übernommen**. Vorschläge immer erst auf der Veranstalterseite prüfen. Eingesetzt ist die übliche Uhrzeit des Markts (leer, wenn die Tabelle noch keine kennt).
+- Damit der Bericht ruhig bleibt, zählt nicht mit: vergangene Tage und das Tagesdatum der Seite; Listen, die auf allen Seiten eines Veranstalters gleich stehen („Kommende Flohmärkte“); auf Sammelseiten für mehrere Orte alles, was zu fremden Orten gehört; auf der Startseite eines Veranstaltungsorts alles ohne Marktwort in der Nähe (Konzerte, Gottesdienste). Zeilen gibt es nur für Tage am üblichen Wochentag des Markts oder an einem Feiertag.
+- Am genauesten arbeitet der Wächter, wenn in „Veranstalter-Website“ die Seite steht, auf der die Termine dieses Markts wirklich stehen (nicht die Startseite und keine Seite für einen einzelnen Tag).
 - Der erste Lauf merkt sich nur den Stand und meldet nichts. Termine in Bildern, PDFs oder auf Facebook und Instagram erkennt der Wächter nicht.
-- Sperrt ein Veranstalter automatische Abrufe (robots.txt), wird seine Seite nicht abgerufen und einmalig im Bericht genannt.
+- Sperrt ein Veranstalter automatische Abrufe (robots.txt), wird seine Seite nicht abgerufen und einmalig im Bericht genannt. Ist eine Seite drei Nächte in Folge nicht erreichbar, steht das ebenfalls einmal im Bericht.
 - Der Merkzettel liegt unter `/assets/waechter.json` auf der Website. Abschalten: im Workflow die Variable `WAECHTER` auf `aus` setzen.
 
 ## Wetter und Teilen
@@ -125,3 +128,14 @@ Das Profil ist im Menü, im Footer und in einem Kasten auf der Startseite verlin
 Auf der Startseite läuft oben ein Laufband mit dem Instagram-Hinweis („+++ Flohlotse gibt’s jetzt auch bei Insta +++“) und einem festen Knopf „Folgen“. Beim Drüberfahren hält es an; ist am Gerät „Bewegung reduzieren“ eingestellt, steht es still. Ohne Instagram-Adresse entfällt es.
 
 Ratgeber-Artikel: Je Bereich wechseln sich mehrere Fotos und Formen ab (`KB_POOL` in `build.mjs`), damit nicht jeder Artikel dasselbe Bild zeigt. Zusätzliche Banner heißen `banner-<name>.webp` und `banner-<name>-klein.webp`. Ein Foto nur für einen Artikel: `artikel-<kennung>.webp` (und `-klein.webp`) in den Ordner `bilder` legen, es hat Vorrang.
+
+## Website-Check vom 4. Oktober 2026
+
+- **Symbole:** Browser-Tab, Lesezeichen, Startbildschirm (iPhone und Android) und Google bekommen eigene Symboldateien aus `src/`. Dazu gibt es ein kleines Web-Manifest (`/manifest.webmanifest`) mit Name und Farben.
+- **Sicherheit (`.htaccess`, entsteht beim Bau):** Die Seite lädt Skripte, Stile und Schriften nur von sich selbst, Kartenbilder nur von OpenStreetMap. Sie lässt sich nicht in fremde Seiten einbetten und ist ein halbes Jahr lang nur verschlüsselt erreichbar (HSTS). **Wichtig:** Wer später etwas von außen einbindet (Video, Schrift, Statistik, Formular), muss die Quelle in `build.mjs` bei `const CSP` ergänzen, sonst blockiert der Browser sie. Außerdem müsste dann die Datenschutzerklärung angepasst werden.
+- **Notbremse:** Ergibt die Tabelle plötzlich weniger als die Hälfte der Märkte (oder der Märkte mit Termin) oder weniger als 40 % der Termine der letzten Nacht, wird nichts veröffentlicht. Meist sind dann Zeilen gelöscht oder Spalten verrutscht. Der Lauf wird rot und sagt, was zu tun ist; die bisherige Website bleibt online. Termine werden nur verglichen, wenn „Tage im Voraus“ unverändert ist und der letzte Bau höchstens eine Woche zurückliegt. Ist der Rückgang gewollt: im Blatt Einstellungen eine Zeile `Notbremse` mit dem Wert `aus` eintragen, neu bauen, Zeile wieder löschen.
+- **Seite von gestern:** Zwischen Mitternacht und dem nächtlichen Neubau (oder wenn ein Neubau ausfällt) blendet die Seite vergangene Tage selbst aus und zeigt oben einen schwarzen Hinweis mit dem Stand.
+- **Ohne JavaScript** bleiben alle Inhalte lesbar; Bedienelemente, die nur mit JavaScript etwas tun (Filter, Karte, Suche, Designer-Felder), werden dann nicht angezeigt.
+- **Versionskürzel** (`?v=…`) tragen jetzt auch die Icon-Sammlung, das Symbol und die Karte. Änderungen an Stil, Skript und Icons kommen dadurch sofort bei allen an. Das Kürzel des Stils berücksichtigt auch die Schriftdateien.
+- **Bilder:** Hochgeladen wird nur, was auf mindestens einer Seite vorkommt. Übrige Dateien im Ordner `bilder` nennt der Bericht unter „Zur Kenntnis“.
+- **Marktseiten mit fernem Termin** (weiter weg als „Tage im Voraus“) zeigen ihn jetzt überall einheitlich: Überschrift, Terminliste, häufige Fragen und Daten für Google.

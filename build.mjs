@@ -3,14 +3,17 @@
 // Keine Abhängigkeiten, läuft mit Node 18 oder neuer:  node build.mjs
 import fs from "node:fs";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, domainToUnicode } from "node:url";
 import { createHash as hashOf } from "node:crypto";
 
 const ROOT = path.dirname(fileURLToPath(import.meta.url));
 const OUT = path.join(ROOT, "dist");
 // Versionskürzel für Stil und Skript: Ändert sich die Datei, ändert sich die Adresse, und Browser laden sofort die neue Fassung statt der gespeicherten.
 const ver = f => { try { return "?v=" + hashOf("sha1").update(fs.readFileSync(path.join(ROOT, f))).digest("hex").slice(0, 8); } catch { return ""; } };
-const CSS_V = ver("src/style.css"), JS_V = ver("src/site.js");
+const JS_V = ver("src/site.js"), ICON_V = ver("src/icon.svg");
+// Symbole für Browser-Tab, Lesezeichen, Startbildschirm und Google (liegen im Ordner src; fehlt eines, bleibt es beim einfachen Symbol)
+const APP_ICONS = ["favicon.ico", "apple-touch-icon.png", "icon-192.png", "icon-512.png", "icon-maskable-512.png"];
+const HAS_ICONS = APP_ICONS.every(f => fs.existsSync(path.join(ROOT, "src", f)));
 const TABS = ["Einstellungen", "Bezirke", "Märkte", "Serien", "Termine", "Bereiche", "Ratgeber", "Neuigkeiten"];
 // Fehler in der Tabelle ohne technischen Ballast melden (in GitHub als rote Meldung und in der Zusammenfassung)
 process.on("uncaughtException", e => {
@@ -21,7 +24,8 @@ process.on("uncaughtException", e => {
   process.exit(1);
 });
 const warnings = [], warnSeen = new Set();
-const warn = (bereich, text) => { const k = bereich + "|" + text; if (!warnSeen.has(k)) { warnSeen.add(k); warnings.push([bereich, text]); } };
+// info = true: nur zur Kenntnis (steht im Bericht unten), sonst: zu erledigen
+const warn = (bereich, text, info = false) => { const k = bereich + "|" + text; if (!warnSeen.has(k)) { warnSeen.add(k); warnings.push([bereich, text, info]); } };
 
 /* ---------------------------------------------------------------- Daten laden */
 function parseCSV(text) {
@@ -235,13 +239,21 @@ for (const r of data.Serien) {
     if (last && addDays(d, 7).getUTCMonth() === d.getUTCMonth()) continue;
     evMap.set(m.slug + key(d), { m, date: d, k: key(d), start, end, cancelled: false, note: "" });
   }
+  (m.rules = m.rules || []).push({ wd, nth: nth ? +nth[1] : 0, last, months, skip, from, to: r["Gültig bis"] ? to : null });
 }
+// Fällt ein Tag unter eine Serie des Markts? (auch für Tage jenseits der Vorschau; nutzt der Termin-Wächter)
+const ruleHits = (r, d) => d.getUTCDay() === r.wd && !r.skip.has(key(d)) && (!r.months || r.months.has(d.getUTCMonth() + 1)) && (!r.nth || Math.ceil(d.getUTCDate() / 7) === r.nth) && (!r.last || addDays(d, 7).getUTCMonth() !== d.getUTCMonth()) && d >= r.from && (!r.to || d <= r.to);
 for (const r of data.Termine) {
   const m = MBY[r["Markt"]]; if (!m) { if (r["Markt"]) warn("Termine", `Markt „${r["Markt"]}“ ist unbekannt oder nicht aktiv.`); continue; }
   if (!r["Datum"]) { warn("Termine", `${m.name}: Zeile ohne Datum. Falls ein Datum eingetragen ist, die Spalte als „Nur Text“ formatieren und das Datum neu eintippen.`); continue; }
   const d = parseDate(r["Datum"], m.name); if (!d || d < TODAY) continue;
   // Termine jenseits der Vorschau („Tage im Voraus“) stehen nicht im Kalender, aber auf der Marktseite als nächster bekannter Termin.
-  if (d > END) { if (!/abgesagt|fällt aus|entfällt/i.test(r["Status"] || "")) (m.later = m.later || []).push({ date: d, start: parseTime(r["Beginn"], m.name) || "", end: parseTime(r["Ende"], m.name) || "" }); continue; }
+  if (d > END) {
+    const k = key(d); m.later = (m.later || []).filter(x => x.k !== k); // steht ein Tag doppelt in der Tabelle, gilt wie überall die letzte Zeile
+    if (!/abgesagt|fällt aus|entfällt/i.test(r["Status"] || "")) { const st = parseTime(r["Beginn"], m.name) || ""; m.later.push({ m, date: d, k, start: st, end: checkEnd(st, parseTime(r["Ende"], m.name) || "", `${m.name} am ${fmtDate(d)}`), cancelled: false, note: r["Hinweis"] || "", far: true }); }
+    if (!m.later.length) delete m.later;
+    continue;
+  }
   const k = key(d), ex = evMap.get(m.slug + k);
   const e = ex || { m, date: d, k, start: "", end: "", cancelled: false, note: "" };
   const st = parseTime(r["Beginn"], m.name), en = parseTime(r["Ende"], m.name);
@@ -253,10 +265,14 @@ for (const r of data.Termine) {
 }
 const EVENTS = [...evMap.values()].sort((a, b) => a.k === b.k ? (a.start || "99").localeCompare(b.start || "99") : a.k.localeCompare(b.k));
 for (const e of EVENTS) e.m.events.push(e);
-for (const e of EVENTS) if (!e.start && !e.cancelled && (e.date - TODAY) / 864e5 < 21) warn("Uhrzeit fehlt", `${e.m.name} am ${fmtDate(e.date)}`);
+// Für den Bericht: Termine der nächsten drei Wochen ohne Uhrzeit (eine Sammelzeile statt vieler Einzelzeilen)
+const NO_TIME = EVENTS.filter(e => !e.start && !e.cancelled && (e.date - TODAY) / 864e5 < 21);
 for (const m of MARKETS) if (m.later) m.later.sort((a, b) => a.date - b.date);
 const fmtDateY = d => `${fmtDate(d)} ${d.getUTCFullYear()}`;
-for (const m of MARKETS) if (!m.events.length && !m.later) warn("Keine Termine", `${m.name} hat in den nächsten ${HORIZON} Tagen keinen Termin.`);
+// nächster bekannter Termin eines Markts: im Vorschau-Zeitraum oder, falls dort keiner liegt, der nächste spätere
+const nextEv = m => m.events.find(e => !e.cancelled) || (m.later ? m.later[0] : null);
+const fmtShortY = e => fmtShort(e.date) + (e.far ? e.date.getUTCFullYear() : "");
+const NO_DATES = MARKETS.filter(m => !m.events.length && !m.later);
 
 const KB = data.Ratgeber.filter(r => yes(r["Aktiv"]) && r["Kennung"] && validSlug(r["Kennung"], "Ratgeber", r["Überschrift"])).map(r => ({
   s: r["Kennung"], c: r["Bereich"], kw: r["Suchbegriff"], i: r["Suchabsicht"], t: r["SEO-Titel"], d: r["SEO-Beschreibung"], h: r["Überschrift"], a: r["Kurz gesagt"],
@@ -292,6 +308,9 @@ const fontScore = x => (x.endsWith("woff2") ? 2 : 0) + (/variable/i.test(x) ? 1 
 const fontsFound = FONT_RULES.map(([re, fam, w]) => { const f = fontFilesAll.filter(x => re.test(x) && !/italic/i.test(x)).sort((a, b) => fontScore(b) - fontScore(a) || a.localeCompare(b))[0]; return f && { f, fam, w }; }).filter(Boolean);
 const FONT_PRELOAD = fontsFound.filter(x => x.f.endsWith("woff2")).map(x => `<link rel="preload" href="/fonts/${encodeURIComponent(x.f)}" as="font" type="font/woff2" crossorigin>`).join("");
 const fontCSS = fontsFound.map(x => `@font-face{font-family:"${x.fam}";src:url("/fonts/${encodeURIComponent(x.f)}") format("${x.f.endsWith("woff2") ? "woff2" : "truetype"}");font-weight:${x.w};font-style:normal;font-display:swap}`).join("\n");
+// Stil der Website: der Schriften-Teil (hängt von den Dateien im Ordner fonts ab) plus src/style.css. Das Versionskürzel entsteht aus beidem.
+const CSS_SRC = fontCSS + "\n" + fs.readFileSync(path.join(ROOT, "src/style.css"), "utf8");
+const CSS_V = "?v=" + hashOf("sha1").update(CSS_SRC).digest("hex").slice(0, 8);
 if (fontsFound.length < 2) warn("Schriften", `Im Ordner fonts fehlen ${2 - fontsFound.length} von 2 Schriftdateien. Die Seite nutzt so lange Systemschriften.`);
 
 /* ---------------------------------------------------------------- Symbolbilder */
@@ -373,7 +392,9 @@ const ICONS = {
 const ICON_LICENSE = "Frosch-Icon (Wetterfrosch): Font Awesome Free 7.1.0 by @fontawesome, https://fontawesome.com\nLizenz: CC BY 4.0, https://creativecommons.org/licenses/by/4.0/ , Copyright 2025 Fonticons, Inc. Unverändert übernommen.\n\nAlle anderen Icons: Phosphor Icons (https://phosphoricons.com), Stil Light\n\nMIT License\n\nCopyright (c) 2023 Phosphor Icons\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\nSOFTWARE.\n";
 const ICON_VB = { frog: "0 0 576 512" };
 const SPRITE_FILE = `<!-- Icons: Phosphor Icons, MIT License, (c) 2023 Phosphor Icons; Frosch: Font Awesome Free, CC BY 4.0, (c) Fonticons, Inc.; siehe /assets/icons-lizenz.txt --><svg xmlns="http://www.w3.org/2000/svg"><defs>${Object.entries(ICONS).map(([k, v]) => `<symbol id="i-${k}" viewBox="${ICON_VB[k] || "0 0 256 256"}" fill="currentColor">${v}</symbol>`).join("")}</defs></svg>`;
-const ic = (n, cls = "i") => `<svg class="${cls}" aria-hidden="true" focusable="false"><use href="/assets/icons.svg#i-${ICONS[n] ? n : "tag"}"/></svg>`;
+// Die Icon-Sammlung bekommt wie Stil und Skript ein Versionskürzel: Kommt ein Icon dazu, laden Browser sofort die neue Datei.
+const ICONS_V = "?v=" + hashOf("sha1").update(SPRITE_FILE).digest("hex").slice(0, 8);
+const ic = (n, cls = "i") => `<svg class="${cls}" aria-hidden="true" focusable="false"><use href="/assets/icons.svg${ICONS_V}#i-${ICONS[n] ? n : "tag"}"/></svg>`;
 // Icons für die Marktarten aus der Tabelle; unbekannte Arten bekommen das Etikett-Icon
 const TAG_ICON = { "Frühaufsteher": "sunrise", "Langschläfer": "bed", "Groß & bekannt": "star", "Abends": "moon", "Nachbarschaft": "home", "Sammler & Vinyl": "disc", "Kinder & Spielzeug": "smile", "Überdacht": "umbrella", "Umland": "tree", "Fahrräder": "bike" };
 const tagIc = t => ic(TAG_ICON[t] || "tag");
@@ -410,13 +431,16 @@ function imgLD(p, body) {
   const ldImg = fs_.map(f => { const c = credOf(f); return { "@context": "https://schema.org", "@type": "ImageObject", contentUrl: SITE + imgUrl(f), caption: String(c.alt || "").replace(/^Symbolfoto: /, ""), creditText: `${c.autor || CRED_SRC.name} / ${CRED_SRC.name}`, creator: { "@type": "Organization", name: c.autor || CRED_SRC.name }, copyrightNotice: `${c.autor || CRED_SRC.name} / ${CRED_SRC.name}`, ...(CRED_SRC.lizenz ? { license: CRED_SRC.lizenz, acquireLicensePage: CRED_SRC.url } : {}) }; });
   return `<script type="application/ld+json">${JSON.stringify(ldImg).replace(/</g, "\\u003c")}</script>`;
 }
+const REL_PAGES = new Set(["/", "/heute/", "/morgen/", "/wochenende/", "/samstag/", "/sonntag/"]);
 function layout({ p, title, desc, body, ld, noindex, nav, extraHead = "", img = OG_IMG }) {
   const url = SITE + p;
   // Google zeigt rund 60 Zeichen. Ist der Titel länger, fällt der angehängte Markenname weg (Google ergänzt den Seitennamen selbst).
   if (title.length > 60 && title.endsWith(` | ${NAME}`)) title = title.slice(0, -(` | ${NAME}`).length);
   const navItems = [["/termine/", "Termine", "termine"], ["/flohmaerkte/", "Märkte", "maerkte"], ["/ratgeber/", "Ratgeber", "ratgeber"], ["/flohmarkt-schilder/", "Schilder", "schilder"], ["/veranstalter/", "Für Veranstalter", "org"]];
+  // data-stand: Tag des Baus. Ist die Seite beim Aufruf älter (kurz nach Mitternacht oder nach einem ausgefallenen Neubau),
+  // blendet das Skript vergangene Tage aus und zeigt einen Hinweis. data-rel: Seiten, die von „heute“ und „morgen“ sprechen.
   const html = `<!doctype html>
-<html lang="de">
+<html lang="de" data-stand="${key(TODAY)}"${REL_PAGES.has(p) ? " data-rel" : ""}>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
@@ -428,7 +452,9 @@ ${FONT_PRELOAD}
 <meta property="og:type" content="website"><meta property="og:locale" content="de_DE"><meta property="og:site_name" content="${esc(NAME)}">
 <meta property="og:title" content="${esc(title)}"><meta property="og:description" content="${esc(desc)}"><meta property="og:url" content="${esc(url)}">${img ? `\n<meta property="og:image" content="${esc(SITE + img)}"><meta name="twitter:card" content="summary_large_image">` : ""}
 <link rel="stylesheet" href="/assets/style.css${CSS_V}">
-<link rel="icon" href="/assets/icon.svg" type="image/svg+xml">
+${HAS_ICONS ? `<link rel="icon" href="/favicon.ico" sizes="32x32">\n` : ""}<link rel="icon" href="/assets/icon.svg${ICON_V}" type="image/svg+xml">${HAS_ICONS ? `\n<link rel="apple-touch-icon" href="/apple-touch-icon.png">\n<link rel="manifest" href="/manifest.webmanifest">` : ""}
+<meta name="theme-color" content="#F2F4F0" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#0F1411" media="(prefers-color-scheme: dark)">
+<noscript><style>.js-only{display:none!important}</style></noscript>
 ${ld ? `<script type="application/ld+json">${JSON.stringify(ld).replace(/</g, "\\u003c")}</script>` : ""}${imgLD(p, body)}${extraHead}
 </head>
 <body>
@@ -489,7 +515,7 @@ function groupList(evs, lvl = 2) {
 }
 const kbCard = s => { const r = KBY[s]; if (!r) { warn("Ratgeber", `Verweis auf unbekannten Artikel „${s}“`); return ""; } return `<a class="card" href="/ratgeber/${r.s}/"><span class="kicker">Ratgeber · ${esc(CLUSTERS[r.c]?.t || "")}</span><h3>${brColon(esc(r.h))}</h3><p>${esc(short(plain(r.a), 110))}</p></a>`; };
 function short(t, n) { t = String(t || ""); if (t.length <= n) return t; const cut = t.slice(0, n); return (cut.lastIndexOf(" ") > n * 0.6 ? cut.slice(0, cut.lastIndexOf(" ")) : cut).replace(/[\s,.;:–-]+$/, "") + " …"; }
-const mCard = m => { const n = m.events.find(e => !e.cancelled); return `<a class="card" href="/flohmarkt/${m.slug}/"><span class="kicker">${esc(m.area)}</span><h3>${esc(m.name)}</h3><p class="ln">${ic("repeat")}<span>${esc(m.rhythm)}</span></p>${n ? `<p class="ln">${ic("cal")}<span>Nächster Termin ${fmtShort(n.date)}</span></p>` : ""}</a>`; };
+const mCard = m => { const n = nextEv(m); return `<a class="card" href="/flohmarkt/${m.slug}/"><span class="kicker">${esc(m.area)}</span><h3>${esc(m.name)}</h3><p class="ln">${ic("repeat")}<span>${esc(m.rhythm)}</span></p>${n ? `<p class="ln" data-day="${n.k}">${ic("cal")}<span>Nächster Termin ${fmtShortY(n)}</span></p>` : ""}</a>`; };
 const grid = cards => { cards = cards.filter(Boolean); const n = cards.length; return `<div class="news ${n % 3 === 0 ? "cols3" : n % 2 === 0 ? "cols2" : "fit"}">${cards.join("")}</div>`; };
 const regionChips = skip => `<div class="chips">${[["/heute/", "Heute"], ["/morgen/", "Morgen"], ["/wochenende/", "Wochenende"], ["/samstag/", "Samstag"], ["/sonntag/", "Sonntag"]].filter(x => x[0] !== skip).map(([h, l]) => `<a class="chip" href="${h}">${ic(h === "/heute/" ? "sun" : "cal")}${l}</a>`).join("")}${REGIONS.filter(r => `/flohmarkt-hamburg/${r.k}/` !== skip).map(r => `<a class="chip" href="/flohmarkt-hamburg/${r.k}/">${esc(r.name)}</a>`).join("")}</div>`;
 const KBMAP = { "Überdacht": ["flohmarkt-bei-regen", "beste-uhrzeit-flohmarkt", "handeln-auf-dem-flohmarkt"], "Umland": ["was-mitnehmen-flohmarkt", "beste-uhrzeit-flohmarkt", "handeln-auf-dem-flohmarkt"], "Kinder & Spielzeug": ["flohmarkt-mit-kindern", "kinderflohmarkt-verkaufen", "handeln-auf-dem-flohmarkt"], "Sammler & Vinyl": ["antiquitaeten-erkennen-flohmarkt", "faelschungen-erkennen-flohmarkt", "handeln-auf-dem-flohmarkt"], "Nachbarschaft": ["flohmarkt-knigge", "flohmarkt-mit-kindern", "handeln-auf-dem-flohmarkt"], "Abends": ["nachtflohmarkt", "bezahlen-auf-dem-flohmarkt", "handeln-auf-dem-flohmarkt"] };
@@ -545,7 +571,7 @@ for (let y = YEAR - 1; y <= YEAR + 2; y++) {
 // Seiten nach Art des Markts. Eine Seite entsteht nur, wenn mindestens zwei Märkte dazugehören.
 const kbL = (s, t) => KBY[s] ? `[${t}](/ratgeber/${s}/)` : t;
 const CATS = [
-  { s: "hallenflohmarkt-hamburg", tag: "Überdacht", icon: "umbrella", chip: "Hallen & überdacht", pl: "Hallenflohmärkte und überdachte Flohmärkte",
+  { s: "hallenflohmarkt-hamburg", tag: "Überdacht", icon: "umbrella", chip: "Hallen & überdacht", pl: "Hallenflohmärkte und überdachte Flohmärkte", plW: "Hallenflohmärkte und überdachten Flohmärkte",
     h1: "Hallenflohmarkt Hamburg: überdachte Flohmärkte und Indoor-Märkte", t: Y => `Hallenflohmarkt Hamburg ${Y}: überdacht & indoor`,
     lead: "Drinnen oder überdacht stöbern: Diese Flohmärkte in Hamburg und Umgebung finden in Hallen, Parkhäusern, Einkaufszentren oder unter Dach statt, also auch bei Regen und im Winter.",
     b: () => [["Stöbern bei jedem Wetter", `Hallen, Parkdecks und Gemeindesäle machen den Flohmarkt wetterfest. Gerade von November bis März sind überdachte Märkte die sichere Wahl, wenn draußen Schietwetter ist. Wie du dich auf einen Markt bei Regen einstellst, steht im Ratgeber ${kbL("flohmarkt-bei-regen", "Flohmarkt bei Regen")}.`],
@@ -588,7 +614,7 @@ const CATS = [
       ["Selbst einen Hofflohmarkt organisieren", `Du willst mit deinen Nachbarn einen Hofflohmarkt auf die Beine stellen? Wie das klappt, steht im Ratgeber ${kbL("hofflohmarkt-organisieren", "Hofflohmarkt organisieren")}.`]],
     f: [["Was ist ein Hofflohmarkt?", "Bei einem Hofflohmarkt verkaufen Anwohner in ihren Höfen, Einfahrten oder Gärten. Oft machen viele Häuser in einem Viertel gleichzeitig mit."]],
     kb: ["hofflohmarkt-organisieren", "flohmarkt-knigge", "handeln-auf-dem-flohmarkt"] },
-  { s: "groesste-flohmaerkte-hamburg", tag: "Groß & bekannt", icon: "star", chip: "Große Märkte", pl: "großen und bekannten Flohmärkte",
+  { s: "groesste-flohmaerkte-hamburg", tag: "Groß & bekannt", icon: "star", chip: "Große Märkte", pl: "große und bekannte Flohmärkte", plW: "großen und bekannten Flohmärkte",
     h1: "Die größten Flohmärkte in Hamburg", t: Y => `Größter Flohmarkt Hamburg: die großen Märkte ${Y}`,
     lead: "Viel Fläche, viele Stände: Diese großen und bekannten Flohmärkte in Hamburg lohnen sich, wenn du richtig stöbern willst.",
     b: () => [["Gut vorbereitet auf große Märkte", `Auf großen Märkten läufst du schnell ein paar Kilometer. Bequeme Schuhe, eine stabile Tasche und Bargeld in kleinen Scheinen helfen. Die Checkliste steht im Ratgeber ${kbL("was-mitnehmen-flohmarkt", "Was mitnehmen auf den Flohmarkt?")}.`],
@@ -602,7 +628,7 @@ const CATS = [
       ["Selbst verkaufen", "Bügel, ein Spiegel und gut lesbare Preise helfen beim Verkaufen. Passende Schilder druckst du kostenlos mit unserem [Schilder-Designer](/flohmarkt-schilder/)."]],
     f: [],
     kb: ["vintage-kleidung-flohmarkt", "handeln-auf-dem-flohmarkt", "flohmarkt-knigge"] },
-  { s: "flohmarkt-hamburg-umgebung", tag: "Umland", icon: "tree", chip: "Umland bis 30 km", pl: "Flohmärkte im Hamburger Umland",
+  { s: "flohmarkt-hamburg-umgebung", tag: "Umland", icon: "tree", chip: "Umland bis 30 km", pl: "Flohmärkte im Hamburger Umland", ort: false, plKurz: "Flohmärkte", ansStart: "Im Hamburger Umland bis 30 Kilometer",
     h1: "Flohmärkte in der Umgebung von Hamburg", t: () => "Flohmarkt Hamburg Umgebung: alle Termine bis 30 km",
     lead: "Rund um Hamburg finden viele Märkte auf großen Parkplätzen und Parkdecks statt. Hier stehen alle Flohmärkte im Umland bis 30 Kilometer mit Terminen.",
     b: () => [["Groß und oft überdacht", "Im Umland finden viele Märkte auf Parkplätzen von Bau- und Supermärkten statt, teils auf überdachten Parkdecks. Mit dem Auto ist die Anreise meist bequem, viele Märkte erreichst du aber auch mit Bus und Bahn."]],
@@ -635,7 +661,7 @@ const faqLD = f => ({ "@type": "FAQPage", mainEntity: f.map(([q, x]) => ({ "@typ
 const faqBlock = (f, h = "Häufige Fragen") => f.length ? `<section class="faq"><h2>${h}</h2>${f.map(([q, x]) => `<details><summary>${esc(q)}</summary><p>${rich(x)}</p></details>`).join("")}</section>` : "";
 // Ratgeber-Artikel mit passender Hamburg-Seite nach Art
 const ART_CTA = { "nachtflohmarkt": "nachtflohmarkt-hamburg", "flohmarkt-mit-kindern": "kinderflohmarkt-hamburg", "kinderflohmarkt-verkaufen": "kinderflohmarkt-hamburg", "flohmarkt-bei-regen": "hallenflohmarkt-hamburg", "schallplatten-flohmarkt": "antikmarkt-hamburg", "antiquitaeten-erkennen-flohmarkt": "antikmarkt-hamburg", "flohmarkt-troedelmarkt-antikmarkt": "antikmarkt-hamburg", "hofflohmarkt-organisieren": "nachbarschaftsflohmarkt-hamburg", "vintage-kleidung-flohmarkt": "frauenflohmarkt-hamburg", "flohmaerkte-hamburg": "groesste-flohmaerkte-hamburg", "elektrogeraete-flohmarkt": "fahrradflohmarkt-hamburg" };
-const catCta = c => { const nx = nextOf(c.evs); return `<a class="cta-box" href="/${c.s}/">${ic(c.icon)}<span><b>In Hamburg: ${esc(cap(c.pl))}</b>${c.ms.length} Märkte mit allen Terminen${nx ? `, der nächste am ${dDate(nx.date)}` : ""}.</span>${ic("chev")}</a>`; };
+const catCta = c => { const nx = nextOf(c.evs); return `<a class="cta-box" href="/${c.s}/">${ic(c.icon)}<span><b>${c.ort === false ? "" : "In Hamburg: "}${esc(cap(c.pl))}</b>${c.ms.length} Märkte mit allen Terminen${nx ? `, der nächste am ${dDate(nx.date)}` : ""}.</span>${ic("chev")}</a>`; };
 const catLink = (s, t) => CAT_BY_S[s] ? `[${t}](/${s}/)` : t;
 const extUrl = u => /^https?:\/\/[^\s"<>]+$/i.test(String(u || "").trim()) ? String(u).trim() : "";
 
@@ -725,38 +751,82 @@ function rainBox(evs) {
 const listNamesPlain = a => a.length <= 3 ? a.join(", ") : `${a.slice(0, 3).join(", ")} und ${a.length - 3} weitere`;
 /* ---------------------------------------------------------------- Termin-Wächter
    Ruft einmal pro Bau die Website jedes Veranstalters ab und merkt sich, welche Datumsangaben dort stehen.
-   Ändern sie sich, steht das im Bericht: „bitte prüfen“. Es wird nichts automatisch übernommen.
-   Gespeichert werden nur Adresse, Prüfsumme und die gefundenen Datumsangaben (keine Texte, keine Personen),
+   Kommt ein Tag neu dazu, der noch nicht in der Tabelle steht, oder verschwindet ein Tag, der noch im Kalender steht,
+   dann steht das im Bericht: „bitte prüfen“. Es wird nichts automatisch übernommen.
+   Gespeichert werden nur Adresse und die gefundenen Datumsangaben mit ihrer Anzahl (keine Texte, keine Personen),
    und zwar in /assets/waechter.json der Website selbst. Der nächste Bau liest die Datei von dort wieder ein.
-   robots.txt der Veranstalter wird beachtet. Läuft nur im echten Bau (SHEET_ID) oder mit WAECHTER=an; aus mit WAECHTER=aus. */
-const WATCH = { v: 1, stand: "", seiten: {} }, WATCH_ROWS = [];
+   robots.txt der Veranstalter wird beachtet. Läuft nur im echten Bau (SHEET_ID) oder mit WAECHTER=an; aus mit WAECHTER=aus.
+
+   Damit der Bericht ruhig bleibt, zählt nicht mit:
+   - was auf den meisten Seiten desselben Veranstalters gleich steht (Liste „nächste Märkte“ in der Randspalte),
+   - auf Sammelseiten für mehrere Märkte alles, was erkennbar zu anderen Orten gehört,
+   - auf der Startseite eines Veranstaltungsorts alles ohne Marktwort in der Nähe (Konzerte, Gottesdienste),
+   - vergangene Tage und das heutige Tagesdatum,
+   - Tage, die schon in der Tabelle stehen oder von einer Serie abgedeckt sind. */
+const WATCH = { v: 2, stand: "", seiten: {} }, WATCH_ROWS = [];
 // Datumsangabe von einer Veranstalterseite („14.11.“, „14.11.2026“, „14. nov 2026“) in ein Datum wandeln; ohne Jahr: das nächste Mal ab heute
 const WMON = { jan: 1, feb: 2, "mär": 3, mae: 3, apr: 4, mai: 5, jun: 6, jul: 7, aug: 8, sep: 9, okt: 10, nov: 11, dez: 12 };
+const tokParts = t => { let m = /^(\d{2})\.(\d{2})\.(\d{4})?$/.exec(t); if (m) return [+m[1], +m[2], m[3] ? +m[3] : 0]; m = /^(\d{2})\. (\S{3})(?: (\d{4}))?$/.exec(t); return m && WMON[m[2]] ? [+m[1], WMON[m[2]], m[3] ? +m[3] : 0] : null; };
 const tokDate = t => {
-  let m = /^(\d{2})\.(\d{2})\.(\d{4})?$/.exec(t), d, mo, y;
-  if (m) { d = +m[1]; mo = +m[2]; y = m[3] ? +m[3] : 0; } else if ((m = /^(\d{2})\. (\S{3})(?: (\d{4}))?$/.exec(t)) && WMON[m[2]]) { d = +m[1]; mo = WMON[m[2]]; y = m[3] ? +m[3] : 0; } else return null;
+  const p = tokParts(t); if (!p) return null; const [d, mo, y] = p;
   const mk = yy => { const x = new Date(Date.UTC(yy, mo - 1, d)); return x.getUTCMonth() === mo - 1 ? x : null; };
   if (y) return mk(y);
   const a = mk(TODAY.getUTCFullYear()); return a && a >= TODAY ? a : mk(TODAY.getUTCFullYear() + 1);
 };
 const mostOf = a => { const c = {}; let best = ""; for (const x of a) if (x) { c[x] = (c[x] || 0) + 1; if (!best || c[x] > c[best]) best = x; } return best; };
 const deDate = d => `${String(d.getUTCDate()).padStart(2, "0")}.${String(d.getUTCMonth() + 1).padStart(2, "0")}.${d.getUTCFullYear()}`;
+// alle Zeilen des Blatts Termine je Markt (auch vergangene und abgesagte), still gelesen: Fehler darin sind oben schon gemeldet
+const ROW_DAYS = {};
+{ const n = warnings.length, tm = v => { const m = /^(\d{1,2})[:.](\d{2})/.exec(String(v || "").trim()); return m && +m[1] < 24 ? m[1].padStart(2, "0") + ":" + m[2] : ""; };
+  for (const r of data.Termine) { const d = r["Markt"] && r["Datum"] ? parseDate(r["Datum"], "") : null; if (d) (ROW_DAYS[r["Markt"]] = ROW_DAYS[r["Markt"]] || []).push({ d, k: key(d), start: tm(r["Beginn"]), end: tm(r["Ende"]) }); }
+  for (const [b, t] of warnings.splice(n)) warnSeen.delete(b + "|" + t); }
 // alle Tage, die für einen Markt schon in der Tabelle stehen (Einzeltermine jeder Zukunft, Serien im Vorschau-Zeitraum)
-const knownDays = m => new Set([...m.events.map(e => e.k), ...data.Termine.filter(r => r["Markt"] === m.slug).map(r => { const d = parseDate(r["Datum"], ""); return d ? key(d) : ""; })]);
-const SERIES_SLUGS = new Set(data.Serien.map(r => r["Markt"]));
+const knownDays = m => new Set([...m.events.map(e => e.k), ...(ROW_DAYS[m.slug] || []).map(r => r.k)]);
 {
   const mode = (process.env.WAECHTER || "").toLowerCase(), UA = `FlohlotseBot/1.0 (+${SITE}/veranstalter/#waechter)`;
   const get = async (u, ms = 10000) => { const r = await fetch(u, { signal: AbortSignal.timeout(ms), headers: { "User-Agent": UA, "Accept": "text/html,text/plain" }, redirect: "follow" }); if (!r.ok) throw new Error("HTTP " + r.status); return (await r.text()).slice(0, 1500000); };
   const MONS = "januar|februar|märz|maerz|april|mai|juni|juli|august|september|oktober|november|dezember|jan|feb|mär|apr|jun|jul|aug|sep|sept|okt|nov|dez";
-  // sichtbaren Text holen, dann nur Datumsangaben herausziehen: „14.11.“, „14.11.2026“, „14. November“
-  const datesOf = html => {
-    const txt = html.replace(/<(script|style|noscript|svg|template)[\s\S]*?<\/\1>/gi, " ").replace(/<!--[\s\S]*?-->/g, " ").replace(/<[^>]+>/g, " ").replace(/&nbsp;|&#160;/g, " ").replace(/\s+/g, " ");
-    const out = new Set();
-    for (const m of txt.matchAll(/\b(\d{1,2})\.\s?(\d{1,2})\.(?:\s?(\d{4}|\d{2})\b)?/g)) { const d = +m[1], mo = +m[2]; if (d >= 1 && d <= 31 && mo >= 1 && mo <= 12) out.add(`${String(d).padStart(2, "0")}.${String(mo).padStart(2, "0")}.${m[3] ? (m[3].length === 2 ? "20" + m[3] : m[3]) : ""}`); }
-    for (const m of txt.matchAll(new RegExp(`\\b(\\d{1,2})\\.\\s?(${MONS})\\b\\.?(?:\\s?(\\d{4}))?`, "gi"))) { const d = +m[1]; if (d >= 1 && d <= 31) out.add(`${String(d).padStart(2, "0")}. ${m[2].toLowerCase().slice(0, 3)}${m[3] ? " " + m[3] : ""}`); }
-    return { dates: [...out].sort().slice(0, 150), len: txt.length };
+  // Sichtbaren Text aus HTML holen. Bewusst ohne verschachtelte Muster: Auch eine kaputte Seite mit tausenden offenen „<“ darf den Bau nicht bremsen.
+  const textOf = html => {
+    const low = html.toLowerCase(); let out = "", i = 0, gt = -2;   // gt: Stelle des nächsten „>“ (gemerkt, damit nicht immer wieder gesucht wird)
+    const cut = (from, to) => { out += html.slice(i, from) + " "; i = to; };
+    for (;;) {
+      const a = low.indexOf("<", i); if (a < 0) break;
+      if (low.startsWith("<!--", a)) { const e = low.indexOf("-->", a + 4); cut(a, e < 0 ? html.length : e + 3); continue; }
+      const m = /^<(script|style|noscript|svg|template)\b/.exec(low.slice(a, a + 12));
+      if (m) { const e = low.indexOf("</" + m[1], a + 1), g = e < 0 ? -1 : low.indexOf(">", e); cut(a, g < 0 ? html.length : g + 1); continue; }
+      if (!/[a-z/!?]/.test(low[a + 1] || "")) { out += html.slice(i, a + 1); i = a + 1; continue; } // „<“ ohne Buchstaben dahinter ist kein Tag, sondern Text („a < b“)
+      if (gt !== -1 && gt <= a) gt = low.indexOf(">", a + 1);
+      if (gt < 0) break;                                                           // kein „>“ mehr: der Rest ist Text
+      const n = low.indexOf("<", a + 1);
+      if (n >= 0 && n < gt) { out += html.slice(i, a + 1); i = a + 1; continue; }  // „<“ vor dem nächsten „>“: das Zeichen ist Text
+      cut(a, gt + 1);
+    }
+    return (out + html.slice(i)).replace(/&nbsp;|&#160;/g, " ").replace(/\s+/g, " ");
   };
-  const hash = s => { let h = 5381; for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) >>> 0; return h.toString(36); };
+  // Datumsangaben herausziehen: „14.11.“, „14.11.2026“, „14.11.26“, „14. November“, auch Doppeltermine wie „24./25.10.“.
+  // Je Fundstelle bleibt kurz der Text davor und danach im Arbeitsspeicher (nicht in der Datei), um Sammelseiten den Märkten zuzuordnen.
+  const Y0 = TODAY.getUTCFullYear(), p2 = n => String(n).padStart(2, "0"), SEP = "(?:\\/|\\+|&|-|–|und|u\\.|bis)";
+  const datesOf = html => {
+    const txt = textOf(html);
+    let occ = [];
+    const push = (t, m) => occ.push({ t, i: m.index, j: m.index + m[0].length });
+    // Jahr: vierstellig (auch nach Leerzeichen) oder zweistellig direkt angehängt und plausibel. „25.10. 10–16 Uhr“ ist keine Jahreszahl.
+    for (const m of txt.matchAll(/\b(\d{1,2})\.\s?(\d{1,2})\.(?:\s?((?:19|20)\d{2})\b|(\d{2})\b(?![.:]\d))?/g)) { const d = +m[1], mo = +m[2], y2 = m[4] ? 2000 + +m[4] : 0;
+      if (d >= 1 && d <= 31 && mo >= 1 && mo <= 12) push(`${p2(d)}.${p2(mo)}.${m[3] || (y2 >= Y0 - 5 && y2 <= Y0 + 3 ? y2 : "")}`, m); }
+    for (const m of txt.matchAll(new RegExp(`\\b(\\d{1,2})\\.\\s?(${MONS})\\b\\.?(?:\\s?(\\d{4}))?`, "gi"))) { const d = +m[1]; if (d >= 1 && d <= 31) push(`${p2(d)}. ${m[2].toLowerCase().slice(0, 3)}${m[3] ? " " + m[3] : ""}`, m); }
+    // erster Tag eines Doppeltermins („24./25.10.2026“, „24. und 25. Oktober“): Monat und Jahr stehen erst beim zweiten Tag
+    for (const m of txt.matchAll(new RegExp(`\\b(\\d{1,2})\\.\\s?${SEP}\\s?(?=\\d{1,2}\\.\\s?(\\d{1,2})\\.(?:\\s?((?:19|20)\\d{2})\\b)?)`, "g"))) { const d = +m[1], mo = +m[2]; if (d >= 1 && d <= 31 && mo >= 1 && mo <= 12) push(`${p2(d)}.${p2(mo)}.${m[3] || ""}`, m); }
+    for (const m of txt.matchAll(new RegExp(`\\b(\\d{1,2})\\.\\s?${SEP}\\s?(?=\\d{1,2}\\.\\s?(${MONS})\\b\\.?(?:\\s?(\\d{4}))?)`, "gi"))) { const d = +m[1]; if (d >= 1 && d <= 31) push(`${p2(d)}. ${m[2].toLowerCase().slice(0, 3)}${m[3] ? " " + m[3] : ""}`, m); }
+    occ.sort((a, b) => a.i - b.i);
+    const all = {}; for (const o of occ) all[o.t] = (all[o.t] || 0) + 1;
+    // Behalten wird, was nicht älter als 400 Tage ist, nach Datum sortiert und höchstens 600 Angaben (die Grenze verschiebt sich so nicht, wenn vorn etwas dazukommt)
+    const seit = addDays(TODAY, -400), when = t => { const d = tokDate(t); return d ? d.getTime() : 0; };
+    const dates = Object.keys(all).filter(t => { const d = tokDate(t); return !d || d >= seit; }).sort((a, b) => when(a) - when(b) || (a < b ? -1 : 1)).slice(0, 600), keep = new Set(dates), n = Object.fromEntries(dates.map(t => [t, all[t]]));
+    // Text zwischen dieser und der vorigen bzw. nächsten Datumsangabe (höchstens 80 bzw. 100 Zeichen)
+    occ = occ.map((o, k) => ({ t: o.t, b: txt.slice(Math.max(k ? occ[k - 1].j : 0, o.i - 80), o.i).toLowerCase(), a: txt.slice(o.j, Math.min(k + 1 < occ.length ? occ[k + 1].i : txt.length, o.j + 100)).toLowerCase() })).filter(o => keep.has(o.t));
+    return { dates, n, occ, len: txt.length };
+  };
   // robots.txt: Regeln für uns oder für alle (*); gesperrt, wenn ein Disallow auf den Pfad passt
   const robots = {};
   const allowed = async u => {
@@ -772,37 +842,138 @@ const SERIES_SLUGS = new Set(data.Serien.map(r => r["Markt"]));
     const p = url.pathname + url.search, best = list => Math.max(0, ...list.filter(r => p.startsWith(r.replace(/\*.*$/, ""))).map(r => r.length));
     return best(alw) >= best(dis);
   };
+
+  /* Sammelseite für mehrere Märkte (z. B. eine Terminliste für viele Orte): Welche Datumsangabe gehört zu welchem unserer Märkte?
+     Gesucht wird der Ortsname direkt vor oder nach dem Datum. Ob die Seite den Ort vor oder hinter das Datum schreibt, zeigt sich
+     an den Tagen, die wir schon kennen: Die Seite, auf der die bekannten Tage beim richtigen Markt landen, gewinnt.
+     Klappt das bei weniger als 80 % der bekannten Tage (ein Ausreißer ist erlaubt), wird nichts zugeordnet (Ergebnis null) und die
+     Seite wie bisher behandelt. Hat es in der letzten Nacht geklappt (sticky), genügt die Hälfte: So kippt die Zuordnung nicht,
+     nur weil ein bekannter Tag von der Seite verschwindet – genau das soll ja gemeldet werden. */
+  const STOPW = new Set("und der die das den dem des am an im in auf bei von vom zum zur mit für rund ums ehemals flohmarkt flohmärkte flohmaerkte markt märkte marktplatz hamburg hamburger parkplatz parkdeck außenfläche außengelände gelände center centrum halle saal platz straße strasse kind kinder famila ikea rewe edeka kaufland metro marktkauf globus höffner real toom obi".split(" "));
+  const CONNW = new Set("uhr und sowie bis von ab am um sa so mo di mi do fr samstag sonntag montag dienstag mittwoch donnerstag freitag sonnabend".split(" "));
+  const isConn = s => s.length <= 40 && s.split(/[^a-zäöüß0-9]+/).every(w => !w || CONNW.has(w) || /^\d{1,4}$/.test(w));
+  const translit = w => w.replace(/ä/g, "ae").replace(/ö/g, "oe").replace(/ü/g, "ue").replace(/ß/g, "ss");
+  const wordsOf = m => [...new Set(`${m.area} ${m.short} ${m.place}`.toLowerCase().split(/[^a-zäöüß0-9]+/).filter(w => w.length >= 3 && !STOPW.has(w) && !/^\d+$/.test(w)))];
+  // Text vor (B) und nach (A) jeder Fundstelle; Aufzählungen („04.10., 01.11. und 03.01.“) erben den Text der ersten bzw. letzten Angabe
+  const segsOf = g => { if (g.segs) return g.segs; const occ = g.occ, B = [], A = [];
+    occ.forEach((o, k) => { B[k] = k && isConn(o.b) ? B[k - 1] : o.b; });
+    for (let k = occ.length - 1; k >= 0; k--) A[k] = k + 1 < occ.length && isConn(occ[k].a) ? A[k + 1] : occ[k].a;
+    return (g.segs = [B, A]); };
+  /* Startseite eines Veranstaltungsorts (Kirche, Kulturhaus, Halle): Dort stehen auch Konzerte, Gottesdienste und das Tagesdatum.
+     Steht bei mindestens einer Datumsangabe ein Marktwort („Flohmarkt“, „Trödel“, „Börse“ …), zählen nur Angaben mit solchem Wort. */
+  const MARKTW = /floh|tr(?:ö|oe)del|markt|b(?:ö|oe)rse|basar|second/;
+  const marketDates = g => { const [B, A] = segsOf(g), s = new Set(); g.occ.forEach((o, k) => { if (MARKTW.test(B[k]) || MARKTW.test(A[k])) s.add(o.t); }); return s; };
+  const attribute = (g, ms, u, sticky) => {
+    let hostU = new URL(u).host.toLowerCase(); try { hostU = domainToUnicode(hostU) || hostU; } catch { /* Adresse bleibt, wie sie ist */ }
+    const res = ms.map(m => { const oth = new Set(ms.filter(o => o !== m).flatMap(wordsOf)); return wordsOf(m).filter(w => !oth.has(w) && !hostU.includes(w) && !hostU.includes(translit(w))).map(w => new RegExp("(^|[^a-zäöüß0-9])" + w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))); });
+    if (res.some(r => !r.length)) return null; // ein Markt ohne eigenes Erkennungswort: lieber nichts zuordnen
+    const occ = g.occ, [B, A] = segsOf(g);
+    const side = segs => { const by = {}; occ.forEach((o, k) => { const s = (by[o.t] = by[o.t] || new Set()); res.forEach((rs, mi) => { if (rs.some(r => r.test(segs[k]))) s.add(mi); }); }); return by; };
+    const sb = side(B), sa = side(A), known = ms.map(knownDays);
+    const kt = g.dates.filter(t => { const d = tokDate(t); return d && known.some(s => s.has(key(d))); });
+    const score = by => kt.filter(t => { const k = key(tokDate(t)); return [...(by[t] || [])].some(mi => known[mi].has(k)); }).length;
+    const scB = score(sb), scA = score(sa), n = kt.length;
+    let mode = 0; // 1 = Ort steht hinter dem Datum, 2 = davor, 3 = beides
+    if (sticky && (n === 0 || (sticky & 1 ? scA : 0) + (sticky & 2 ? scB : 0) >= Math.max(1, Math.ceil(n * 0.5)))) mode = sticky;
+    else if (Math.max(scA, scB) >= Math.max(2, Math.min(Math.ceil(n * 0.8), n - 1))) mode = scA > scB ? 1 : scB > scA ? 2 : 3;
+    if (!mode) return null;
+    const pick = [...(mode & 1 ? [sa] : []), ...(mode & 2 ? [sb] : [])], out = {};
+    for (const t of g.dates) { const s = new Set(pick.flatMap(by => [...(by[t] || [])])); if (s.size) out[t] = [...s].sort((x, y) => x - y); }
+    return { by: out, mode }; // by: Datumsangabe → Nummern der Märkte dieser Seite
+  };
+
   const urls = new Map(), urlMs = new Map(); for (const m of MARKETS) if (m.web) { if (!urls.has(m.web)) { urls.set(m.web, []); urlMs.set(m.web, []); } urls.get(m.web).push(m.name); urlMs.get(m.web).push(m); }
   if (mode !== "aus" && (process.env.SHEET_ID || mode === "an") && urls.size) {
-    let old = {}; try { const j = JSON.parse(await get(SITE + "/assets/waechter.json", 8000)); if (j && j.seiten) old = j.seiten; } catch { /* erster Lauf oder Website noch nicht online: nur merken, nichts melden */ }
-    const todo = [...urls.keys()], today = key(TODAY);
+    // Merkzettel der letzten Nacht. Gibt es ihn noch nicht (erster Lauf), wird nur gemerkt und nichts gemeldet. Bei einer Störung dreimal versuchen.
+    let old = {};
+    for (let i = 0; i < 3; i++) {
+      try { const j = JSON.parse(await get(SITE + "/assets/waechter.json", 8000)); if (j && j.seiten && typeof j.seiten === "object") old = j.seiten; break; }
+      catch (e) { if (/HTTP 404/.test(String(e && e.message))) break; if (i === 2) warn("Termin-Wächter", "Der Merkzettel der letzten Nacht war nicht lesbar. Der Termin-Wächter hat sich deshalb heute nur den Stand gemerkt und meldet Änderungen erst wieder ab morgen.", true); else await new Promise(r => setTimeout(r, 2000)); }
+    }
+    // Der Wächter liest fremde Seiten. Stolpert er dabei, darf das den Bau nicht aufhalten: Dann bleibt der Stand der letzten Nacht, und der Bericht nennt den Fehler.
+    try {
+    const todo = [...urls.keys()], today = key(TODAY), got = {};
+    // Schritt 1: alle Seiten abrufen (höchstens vier gleichzeitig)
     const work = async () => { for (let u; (u = todo.shift());) {
-      const prev = old[u] || null, names = listNamesPlain(urls.get(u));
-      try {
-        if (!(await allowed(u))) { WATCH.seiten[u] = { gesperrt: true }; if (!prev || !prev.gesperrt) warn("Termin-Wächter", `${names}: Die Website des Veranstalters möchte nicht automatisch abgerufen werden (robots.txt). Diese Seite bitte weiter von Hand prüfen: ${u}`); continue; }
-        const { dates, len } = datesOf(await get(u)), h = hash(dates.length ? dates.join("|") : String(Math.round(len / 200)));
-        const e = { h, d: dates, seit: prev && prev.h === h ? prev.seit || "" : prev && prev.h ? today : "", neu: prev && prev.h === h ? prev.neu || [] : prev && prev.d ? dates.filter(x => !prev.d.includes(x)) : [], weg: prev && prev.h === h ? prev.weg || [] : prev && prev.d ? prev.d.filter(x => !dates.includes(x)) : [] };
-        WATCH.seiten[u] = e;
-        // eine Änderung bleibt 7 Tage im Bericht stehen, damit sie nicht untergeht
-        const fresh7 = e.seit && (TODAY - new Date(e.seit + "T00:00:00Z")) / 864e5 <= 7, ms = urlMs.get(u);
-        let still = [];
-        if (fresh7) {
-          // fertige Zeilen für das Blatt Termine: neue, künftige Tage, die noch nicht in der Tabelle stehen
-          for (const tok of e.neu) { const d = tokDate(tok); if (!d || d < TODAY || d > addDays(TODAY, 400)) continue; const k = key(d);
-            if (ms.some(m => knownDays(m).has(k)) || (d > END && ms.some(m => SERIES_SLUGS.has(m.slug)))) continue;
-            const m0 = ms[0], evs = ms.flatMap(m => m.events.filter(x => !x.cancelled));
-            WATCH_ROWS.push({ k, row: [ms.length === 1 ? m0.slug : "BITTE WÄHLEN: " + ms.map(m => m.slug).join(" oder "), deDate(d), mostOf(evs.map(x => x.start)), mostOf(evs.map(x => x.end)), "Findet statt", ""], src: u }); }
-          // von der Seite verschwunden, aber noch im Kalender
-          still = e.weg.map(tokDate).filter(d => d && d >= TODAY && ms.some(m => m.events.some(x => x.k === key(d) && !x.cancelled))).map(deDate);
-        }
-        if (fresh7) warn("Termin-Wächter", `${names}: Auf der Website des Veranstalters haben sich am ${e.seit.split("-").reverse().join(".")} die Terminangaben geändert.${e.neu.length ? ` Neu dort: ${e.neu.slice(0, 12).map(x => x.replace(/\.$/, "")).join(", ")}${e.neu.length > 12 ? " …" : ""}.` : ""}${e.weg.length ? ` Nicht mehr dort: ${e.weg.slice(0, 12).map(x => x.replace(/\.$/, "")).join(", ")}${e.weg.length > 12 ? " …" : ""}.` : ""}${still.length ? ` Achtung: ${still.join(", ")} ${still.length === 1 ? "steht" : "stehen"} noch im Kalender, ${still.length === 1 ? "ist" : "sind"} auf der Seite aber nicht mehr zu finden. Prüfen, ob der Termin ausfällt.` : ""}${!dates.length ? " Die Seite nennt keine lesbaren Datumsangaben, verglichen wurde nur der Umfang." : ""} Bitte prüfen: ${u}`);
-      } catch (err) {
-        const f = ((prev && prev.fehler) || 0) + 1; WATCH.seiten[u] = { ...(prev || {}), fehler: f };
-        if (f === 3) warn("Termin-Wächter", `${names}: Die Website des Veranstalters war drei Nächte in Folge nicht erreichbar. Adresse in der Spalte „Veranstalter-Website“ prüfen: ${u}`);
-      }
+      try { got[u] = (await allowed(u)) ? datesOf(await get(u)) : { gesperrt: true }; } catch { got[u] = { fehler: true }; }
     } };
     await Promise.all([work(), work(), work(), work()]);
+    // Schritt 2: Datumsangaben, die auf den meisten Seiten desselben Veranstalters stehen (rollende Übersicht „nächste Märkte“,
+    // Kopf- oder Fußzeile), sagen nichts über den einzelnen Markt. Gemerkt wird, wie oft sie dort üblicherweise stehen:
+    // Steht ein Tag auf einer Seite öfter als üblich, ist er dort zusätzlich als eigener Termin eingetragen und zählt doch.
+    const hostOf = u => new URL(u).host.replace(/^www\./, ""), base = {};
+    { const byHost = {}; for (const u of urls.keys()) if (got[u] && got[u].dates) (byHost[hostOf(u)] = byHost[hostOf(u)] || []).push(u);
+      for (const [h, us] of Object.entries(byHost)) { base[h] = {}; if (us.length < 5) continue; // bei wenigen Seiten wäre das Risiko zu groß, echte Termine zu übersehen
+        const cnt = {}; for (const u of us) for (const t of got[u].dates) (cnt[t] = cnt[t] || []).push(got[u].n[t]);
+        for (const [t, a] of Object.entries(cnt)) if (a.length >= Math.max(4, Math.ceil(us.length * 0.75))) base[h][t] = +mostOf(a.sort((x, y) => x - y).map(String)); } }
+    // Ein Tag gilt als abgelaufen, wenn er vor heute liegt (ohne Jahreszahl: in den letzten 60 Tagen). Abgelaufene Tage verschwinden von selbst und sind keine Meldung wert.
+    const expired = t => { const p = tokParts(t); if (!p) return false; const [d, mo, y] = p, mk = yy => new Date(Date.UTC(yy, mo - 1, d)); if (y) return mk(y) < TODAY;
+      return [TODAY.getUTCFullYear(), TODAY.getUTCFullYear() - 1].some(yy => { const x = mk(yy); return x < TODAY && (TODAY - x) / 864e5 <= 60; }); };
+    // Das heutige Datum steht auf vielen Seiten einfach als Tagesdatum: Es ist kein neuer Termin.
+    const isToday = t => { const d = tokDate(t); return !!d && key(d) === today; };
+    const young = s => (TODAY - new Date(s + "T00:00:00Z")) / 864e5 <= 7;
+    const asMap = (v, seit) => !v ? {} : Array.isArray(v) ? Object.fromEntries(v.map(t => [t, seit || today])) : v;
+    const seenRow = new Set();
+    // Schritt 3: je Seite mit dem Stand der letzten Nacht vergleichen
+    let kaputt = 0;
+    for (const u of urls.keys()) { try {
+      const g = got[u], prev = old[u] && typeof old[u] === "object" ? old[u] : null, names = listNamesPlain(urls.get(u)), ms = urlMs.get(u);
+      if (!g) continue;
+      if (g.gesperrt) { WATCH.seiten[u] = { gesperrt: true }; if (!prev || !prev.gesperrt) warn("Termin-Wächter", `${names}: Die Website des Veranstalters möchte nicht automatisch abgerufen werden (robots.txt). Diese Seite bitte weiter von Hand prüfen: ${u}`); continue; }
+      if (g.fehler) { const f = ((prev && prev.fehler) || 0) + 1; WATCH.seiten[u] = { ...(prev || {}), fehler: f }; if (f === 3) warn("Termin-Wächter", `${names}: Die Website des Veranstalters war drei Nächte in Folge nicht erreichbar. Adresse in der Spalte „Veranstalter-Website“ prüfen: ${u}`); continue; }
+      // eigene Datumsangaben dieser Seite: ohne seitenweite Listen, auf Sammelseiten nur die unserer Märkte
+      const bs = base[hostOf(u)] || {}, attR = ms.length > 1 ? attribute(g, ms, u, prev && prev.s) : null, att = attR && attR.by;
+      const loc = new URL(u), md = !att && /^\/?$/.test(loc.pathname) && !loc.search ? marketDates(g) : null, mdOn = !!md && md.size > 0;
+      const own = g.dates.filter(t => (!(t in bs) || g.n[t] > bs[t]) && (!att || att[t]) && (!mdOn || md.has(t))), ownSet = new Set(own);
+      // verglichen wird der Tag, nicht die Schreibweise: Aus „15.11.2026“ darf „15. November 2026“ werden, ohne dass es eine Meldung gibt
+      const dayOf = t => { const d = tokDate(t); return d ? key(d) : t; }, ownDays = new Set(own.map(dayOf));
+      // Stand der letzten Nacht; bis Oktober 2026 war das eine einfache Liste ohne Anzahl (höchstens 150 Einträge)
+      const legacy = !!prev && Array.isArray(prev.d);
+      const prevN = prev && prev.d ? (legacy ? Object.fromEntries(prev.d.map(t => [t, 1])) : prev.d) : null;
+      const prevOwn = !prevN ? [] : legacy ? prev.d.filter(t => !(t in g.n) || ownSet.has(t)) : (Array.isArray(prev.o) ? prev.o : Object.keys(prevN)), prevOwnDays = new Set(prevOwn.map(dayOf));
+      // Zeigt die Seite plötzlich gar kein Datum mehr (Wartungsseite, Umbau, Störung), wird abgewartet, bevor Termine als verschwunden gelten:
+      // eine Nacht, und zwei Nächte, wenn dort vorher mehrere Termine standen oder die Seite dabei stark geschrumpft ist
+      if (!g.dates.length && prevN && Object.keys(prevN).length && (prev.leer || 0) < (Object.keys(prevN).length >= 3 || (prev.l > 0 && g.len < prev.l * 0.4) ? 2 : 1)) { WATCH.seiten[u] = { ...prev, leer: (prev.leer || 0) + 1 }; continue; }
+      const cut = legacy && prev.d.length >= 150 ? prev.d[prev.d.length - 1] : "";
+      const pNeu = asMap(prev && prev.neu, prev && prev.seit), pWeg = asMap(prev && prev.weg, prev && prev.seit), neu = {}, weg = {};
+      if (prevN) {
+        for (const t of own) { if (expired(t) || isToday(t)) continue;
+          const fresh = !(t in prevN) ? !(cut && t > cut) && !prevOwnDays.has(dayOf(t)) : (!legacy && !prevOwn.includes(t) && g.n[t] > prevN[t]);
+          if (fresh) neu[t] = today; else if (pNeu[t] && young(pNeu[t])) neu[t] = pNeu[t]; } // eine Änderung bleibt 7 Tage stehen, damit sie nicht untergeht
+        for (const t of prevOwn) if (!expired(t) && !ownDays.has(dayOf(t)) && (!(t in g.n) || (!legacy && !ownSet.has(t) && g.n[t] < prevN[t]))) weg[t] = today;
+        for (const [t, s] of Object.entries(pWeg)) if (!(t in weg) && young(s) && !expired(t) && !ownDays.has(dayOf(t))) weg[t] = s;
+      }
+      WATCH.seiten[u] = { d: g.n, l: g.len, ...(own.length !== g.dates.length ? { o: own } : {}), ...(attR ? { s: attR.mode } : {}), ...(Object.keys(neu).length ? { neu } : {}), ...(Object.keys(weg).length ? { weg } : {}) };
+      if (!Object.keys(neu).length && !Object.keys(weg).length) continue;
+      // Was davon ist zu tun? Neu: nur Tage, die für den Markt noch fehlen. Verschwunden: nur Tage, die noch im Kalender stehen.
+      const kd = ms.map(knownDays), cov = (mi, d) => kd[mi].has(key(d)) || (d > END && (ms[mi].rules || []).some(r => ruleHits(r, d)));
+      const openFor = t => { const d = tokDate(t); if (!d) return null; return att ? att[t].filter(mi => !cov(mi, d)) : ms.some((_, mi) => cov(mi, d)) ? [] : ms.map((_, mi) => mi); };
+      const live = d => ms.some(m => [...m.events, ...(m.later || [])].some(x => x.k === key(d) && !x.cancelled));
+      const show = t => { const d = tokDate(t); return d ? deDate(d) : t.replace(/\.$/, ""); };
+      const neuL = Object.keys(neu).filter(t => { const o = openFor(t); return !o || o.length; });
+      const wegL = Object.keys(weg).filter(t => { const d = tokDate(t); return d && d > TODAY && live(d); });
+      // fertige Zeilen für das Blatt Termine: neue, künftige Tage am üblichen Wochentag des Markts (oder an einem Feiertag)
+      // (üblicher Wochentag: aus den bekannten Terminen ohne Feiertage und aus den Serien; ohne solche Angaben gilt jeder Wochentag)
+      const dows = ms.map(m => new Set([...[...m.events, ...(m.later || []), ...(ROW_DAYS[m.slug] || [])].filter(e => !HOLI[e.k]).map(e => (e.date || e.d).getUTCDay()), ...(m.rules || []).map(r => r.wd)]));
+      for (const t of neuL) { const d = tokDate(t); if (!d || d <= TODAY || d > addDays(TODAY, 400)) continue; const k = key(d);
+        const cand = openFor(t).filter(mi => !dows[mi].size || dows[mi].has(d.getUTCDay()) || HOLI[k]); if (!cand.length) continue;
+        const who = cand.length === 1 ? ms[cand[0]].slug : "BITTE WÄHLEN: " + cand.map(mi => ms[mi].slug).join(" oder ");
+        if (seenRow.has(who + k)) continue; seenRow.add(who + k);
+        const cm = cand.map(mi => ms[mi]), evs = cm.flatMap(m => m.events.filter(x => !x.cancelled)), rows = cm.flatMap(m => ROW_DAYS[m.slug] || []);
+        WATCH_ROWS.push({ k, row: [who, deDate(d), mostOf([...evs.map(x => x.start), ...rows.map(r => r.start)]), mostOf([...evs.map(x => x.end), ...rows.map(r => r.end)]), "Findet statt", ""], src: u }); }
+      if (!neuL.length && !wegL.length) continue;
+      const at = t => { const d = tokDate(t); return d ? d.getTime() : 0; }, fmtL = l => { const a = [...new Set([...l].sort((x, y) => at(x) - at(y)).map(show))]; return a.slice(0, 12).join(", ") + (a.length > 12 ? " …" : ""); };
+      // auf Sammelseiten nur die Märkte nennen, um die es geht
+      const rel = att ? [...new Set([...neuL.flatMap(t => openFor(t) || []), ...wegL.flatMap(t => { const k = key(tokDate(t)); return ms.map((m, mi) => [...m.events, ...(m.later || [])].some(x => x.k === k && !x.cancelled) ? mi : -1).filter(mi => mi >= 0); })])].sort((x, y) => x - y) : [];
+      warn("Termin-Wächter", `${rel.length ? listNamesPlain(rel.map(mi => ms[mi].name)) : names}: ${neuL.length ? `Neu auf der Website des Veranstalters und noch nicht in der Tabelle: ${fmtL(neuL)}. ` : ""}${wegL.length ? `Achtung: ${fmtL(wegL)} ${new Set(wegL.map(show)).size === 1 ? "steht" : "stehen"} noch im Kalender, ${new Set(wegL.map(show)).size === 1 ? "ist" : "sind"} auf der Website des Veranstalters aber nicht mehr zu finden. Prüfen, ob der Termin ausfällt. ` : ""}Bitte prüfen: ${u}`);
+    } catch (e) { kaputt++; WATCH.seiten[u] = got[u] && got[u].n ? { d: got[u].n, l: got[u].len } : {}; } } // diese eine Seite neu merken, die anderen laufen weiter
+    if (kaputt) warn("Termin-Wächter", `Bei ${kaputt === 1 ? "einer Veranstalterseite" : kaputt + " Veranstalterseiten"} konnte der Termin-Wächter den Stand nicht vergleichen und hat ihn neu gemerkt. Das ist einmalig in Ordnung.`, true);
     WATCH.stand = today;
+    } catch (e) {
+      WATCH.seiten = old; WATCH_ROWS.length = 0;
+      for (let i = warnings.length - 1; i >= 0; i--) if (warnings[i][0] === "Termin-Wächter") { warnSeen.delete(warnings[i][0] + "|" + warnings[i][1]); warnings.splice(i, 1); }
+      warn("Termin-Wächter", `Der Termin-Wächter ist in dieser Nacht auf einen Fehler gestoßen und wurde übersprungen (${String(e && e.message || e).slice(0, 160)}). Die Website wurde trotzdem gebaut, der Stand der letzten Nacht bleibt erhalten. Tritt das mehrere Nächte in Folge auf, bitte melden.`);
+    }
   }
 }
 const WATCH_ON = Object.keys(WATCH.seiten).length > 0;
@@ -883,7 +1054,7 @@ const shareBtn = (m, e, cls = "share") => `<button type="button" class="${cls}" 
   const slides = [
     sImg ? `<figure class="hl-slide hl-photo"><img src="${imgUrl((sSmall || sImg).f)}" srcset="${[sSmall && `${imgUrl(sSmall.f)} 760w`, `${imgUrl(sImg.f)} 1520w`].filter(Boolean).join(", ")}" sizes="(max-width: 800px) 100vw, 760px" width="760" height="507" alt="${esc(altOf(sImg))}" fetchpriority="high" decoding="async"><figcaption>${capOf(sImg)}</figcaption></figure>` : "",
     ...hlEvs.map(e => `<a class="hl-slide hl-card" href="/flohmarkt/${e.m.slug}/"><span class="kicker">${ic("star")}Wochen-Highlight</span><b>${esc(e.m.short)}</b><span class="hl-when">${esc(fmtDate(e.date))}${e.start ? " · " + esc(timeText(e)) : ""}</span><span class="hl-where">${ic("pin")}${esc(e.m.area || e.m.place)}</span><span class="promo-go">Zum Markt${ic("chev")}</span></a>`)].filter(Boolean);
-  const slider = slides.length ? `<section class="hl" aria-label="Highlights"><div class="hl-track" id="hlTrack">${slides.join("")}</div>${slides.length > 1 ? `<div class="hl-dots" id="hlDots">${slides.map((_, i) => `<button type="button" aria-label="Bild ${i + 1} von ${slides.length}"${i ? "" : ' aria-current="true"'}></button>`).join("")}</div>` : ""}</section>` : "";
+  const slider = slides.length ? `<section class="hl" aria-label="Highlights"><div class="hl-track" id="hlTrack">${slides.join("")}</div>${slides.length > 1 ? `<div class="hl-dots js-only" id="hlDots">${slides.map((_, i) => `<button type="button" aria-label="Bild ${i + 1} von ${slides.length}"${i ? "" : ' aria-current="true"'}></button>`).join("")}</div>` : ""}</section>` : "";
   // Laufband über der Startseite mit dem Instagram-Hinweis. Bei „Bewegung reduzieren“ steht es still.
   const tickItems = INSTA ? Array(4).fill(`<a href="${INSTA}" rel="noopener me"><i aria-hidden="true">+++</i>${esc(NAME)} gibt’s jetzt auch bei Insta</a>`) : [];
   const ticker = tickItems.length ? `<div class="ticker" role="region" aria-label="Neuigkeiten"><div class="ticker-view"><div class="ticker-run"><div class="ticker-set">${tickItems[0]}${tickItems.slice(1).join("").replace(/<a /g, '<a tabindex="-1" aria-hidden="true" ')}</div><div class="ticker-set" aria-hidden="true">${tickItems.join("").replace(/<a /g, '<a tabindex="-1" ')}</div></div></div>${INSTA ? `<a class="ticker-cta" href="${INSTA}" rel="noopener me" aria-label="${esc(NAME)} auf Instagram folgen">Folgen${ic("chev")}</a>` : ""}</div>` : "";
@@ -911,14 +1082,14 @@ ${INSTA ? `<section class="sec"><a class="follow" href="${INSTA}" rel="noopener 
 <section class="sec" id="veranstalter"><div class="org"><h2>Du veranstaltest einen Flohmarkt?</h2><p>Trag deinen Termin kostenlos ein. Wir prüfen jeden Eintrag, bevor er erscheint.</p><a class="btn" href="/veranstalter/">Termin eintragen${ic("chev")}</a></div></section>`;
   layout({ p: "/", title: `Flohmarkt Hamburg: Alle Flohmärkte & Termine ${YEAR} | ${NAME}`,
     desc: pickDesc(`Alle ${MARKETS.length} Flohmärkte in Hamburg und Umgebung mit Terminen, Uhrzeiten und Adressen.${weN ? ` ${sunOnly ? "Heute" : "Am Wochenende"}: ${weN} Märkte.` : ""} Täglich aktualisiert, ohne Werbung.`, "Alle Flohmärkte in Hamburg und Umgebung, aufgeräumt: Termine, Zeiten, Adressen und ein Ratgeber mit Antworten auf die wichtigsten Flohmarkt-Fragen."),
-    body, nav: "", ld: G([{ "@type": "WebSite", "@id": SITE + "/#website", name: NAME, url: SITE + "/", inLanguage: "de", publisher: { "@id": SITE + "/#org" } }, { "@type": "Organization", "@id": SITE + "/#org", name: NAME, url: SITE + "/", logo: SITE + "/assets/icon.svg", ...(INSTA ? { sameAs: [INSTA] } : {}) }, faqLD(homeFaq)]) });
+    body, nav: "", ld: G([{ "@type": "WebSite", "@id": SITE + "/#website", name: NAME, url: SITE + "/", inLanguage: "de", publisher: { "@id": SITE + "/#org" } }, { "@type": "Organization", "@id": SITE + "/#org", name: NAME, url: SITE + "/", logo: SITE + (HAS_ICONS ? "/assets/icon-512.png" : "/assets/icon.svg"), ...(INSTA ? { sameAs: [INSTA] } : {}) }, faqLD(homeFaq)]) });
 }
 
 /* ---------------------------------------------------------------- Alle Termine */
 {
   const evs = upcoming(60);
   const body = crumbs([[NAME, "/"], ["Termine"]]) + `<section class="hub-head"><h1>Flohmarkt-Termine in Hamburg und Umgebung</h1><p>Alle Termine der nächsten 60 Tage in Hamburg und im Umland bis 30 Kilometer, nach Tagen sortiert.</p>
-<div class="chips" id="filter" role="group" aria-label="Art des Markts"><button class="chip" type="button" data-t="" aria-pressed="true">Alle Arten</button>${[...TIME_TAGS, ...TAGS_ALL].map(t => `<button class="chip" type="button" data-t="${esc(t)}" aria-pressed="false">${tagIc(t)}${esc(t)}</button>`).join("")}</div>${nearBox()}</section>
+<div class="chips js-only" id="filter" role="group" aria-label="Art des Markts"><button class="chip" type="button" data-t="" aria-pressed="true">Alle Arten</button>${[...TIME_TAGS, ...TAGS_ALL].map(t => `<button class="chip" type="button" data-t="${esc(t)}" aria-pressed="false">${tagIc(t)}${esc(t)}</button>`).join("")}</div>${nearBox()}</section>
 <div id="liste">${groupList(evs)}</div><div class="empty" id="leer" hidden>Keine Märkte dieser Art in den nächsten 60 Tagen.</div>
 ${MONTHS.length ? `<section class="related"><div class="sec-head"><h2>Termine nach Monat</h2></div>${monthChips()}</section>` : ""}
 <section class="related"><div class="sec-head"><h2>Nach Art des Markts</h2></div>${catChips()}</section>
@@ -930,8 +1101,8 @@ ${MONTHS.length ? `<section class="related"><div class="sec-head"><h2>Termine na
 /* ---------------------------------------------------------------- Alle Märkte */
 {
   const body = crumbs([[NAME, "/"], ["Alle Märkte"]]) + `<section class="hub-head"><h1>Alle Flohmärkte in Hamburg und Umgebung</h1><p>${MARKETS.length} Märkte in Hamburg und im Umland bis 30 Kilometer, sortiert nach Bezirk und Region.</p>${catChips()}${nearBox("Märkte")}</section>
-${HAS_MAP ? `<section class="map-sec" id="karte"><div class="sec-head"><h2>Alle Märkte auf der Karte</h2></div><div class="map-box" id="mapBox"><div class="map-consent"><p><b>Karte laden?</b> Die Karte zeigt alle Märkte mit Kartenbildern von OpenStreetMap. Erst beim Laden wird deine IP-Adresse an die OpenStreetMap Foundation übertragen. Mehr dazu in den <a href="/datenschutz/">Datenschutzhinweisen</a>.</p><button class="btn" id="mapLoad" type="button">${ic("map")}Karte laden</button></div></div>
-<script type="application/json" id="mapData">${JSON.stringify(MARKETS.filter(m => m.ll).map(m => { const n = m.events.find(e => !e.cancelled); return [m.name, m.slug, m.area, m.ll[0], m.ll[1], n ? fmtShort(n.date) + (n.start ? ", " + timeText(n) : "") : "", m.rhythm]; })).replace(/</g, "\\u003c")}</script>
+${HAS_MAP ? `<section class="map-sec js-only" id="karte"><div class="sec-head"><h2>Alle Märkte auf der Karte</h2></div><div class="map-box" id="mapBox"><div class="map-consent"><p><b>Karte laden?</b> Die Karte zeigt alle Märkte mit Kartenbildern von OpenStreetMap. Erst beim Laden wird deine IP-Adresse an die OpenStreetMap Foundation übertragen. Mehr dazu in den <a href="/datenschutz/">Datenschutzhinweisen</a>.</p><button class="btn" id="mapLoad" type="button">${ic("map")}Karte laden</button></div></div>
+<script type="application/json" id="mapData">${JSON.stringify(MARKETS.filter(m => m.ll).map(m => { const n = nextEv(m); return [m.name, m.slug, m.area, m.ll[0], m.ll[1], n ? fmtShortY(n) + (n.start ? ", " + timeText(n) : "") : "", m.rhythm]; })).replace(/</g, "\\u003c")}</script>
 <p class="small meta">Die Punkte zeigen die ungefähre Lage. Die genaue Adresse steht auf der Seite des Markts.</p></section>` : ""}
 ${REGIONS.map(r => { const ms = MARKETS.filter(m => m.bez === r.k); return ms.length ? `<section class="cluster"><div class="sec-head"><h2>${esc(r.name)}</h2>${more(`/flohmarkt-hamburg/${r.k}/`, r.umland ? "Zur Region" : "Zum Bezirk", "Seite " + r.name)}</div><div class="qlist">${ms.map(m => `<a href="/flohmarkt/${m.slug}/"${llAttr(m)}><span>${esc(m.name)}<small class="meta">${esc(m.area)} · ${esc(m.rhythm)}</small></span>${ic("chev")}</a>`).join("")}</div></section>` : ""; }).join("")}`;
   layout({ p: "/flohmaerkte/", title: `Flohmärkte in Hamburg und Umgebung: alle ${MARKETS.length} Märkte | ${NAME}`, desc: `Alle ${MARKETS.length} Flohmärkte in Hamburg und im Umland bis 30 Kilometer auf einen Blick, sortiert nach Bezirk und Region, mit Rhythmus und Terminen.`, body, nav: "maerkte", ld: G([crumbLD([[NAME, "/"], ["Alle Märkte"]]), { "@type": "ItemList", itemListElement: MARKETS.map((m, i) => ({ "@type": "ListItem", position: i + 1, name: m.name, url: `${SITE}/flohmarkt/${m.slug}/` })) }]) });
@@ -946,6 +1117,8 @@ for (const m of MARKETS) {
   const singleDates = !m.when && m.events.filter(e => !e.cancelled).length === 1;
   const when = whenOf(m);
   const far = !first && m.later ? m.later[0] : null;
+  // Liste „Nächste Termine“: zuerst die Termine im Vorschau-Zeitraum, dann spätere, die schon in der Tabelle stehen
+  const nxAll = [...nx, ...(m.later || []).slice(0, Math.max(0, 8 - nx.length))];
   const timeVariants = new Set(m.events.filter(e => !e.cancelled).map(timeText));
   const mixed = timeVariants.size > 1;
   const answer = when ? `${esc(m.satz)} findet ${esc(when)}${first && first.start && !mixed && /^am [A-Za-zä]+, /.test(when) ? "," : ""}${first && first.start && !mixed ? (first.end ? ` von ${hmText(first.start)} bis ${hmText(first.end)} Uhr` : ` ab ${hmText(first.start)} Uhr`) : ""} statt. Adresse: ${esc(m.addr)}. ${first ? (singleDates ? "" : "Nächster Termin: " + fmtDate(first.date) + (mixed && first.start ? ", " + (first.end ? `${hmText(first.start)} bis ${hmText(first.end)} Uhr` : `ab ${hmText(first.start)} Uhr`) : "") + ".") : ""}`
@@ -956,20 +1129,24 @@ for (const m of MARKETS) {
   const bei = /^Der |^Das /.test(m.satz) ? "beim " + m.satz.slice(4) : /^Die /.test(m.satz) ? "bei der " + m.satz.slice(4) : "bei " + m.satz;
   const tNext = first ? `${fmtDate(first.date)}${first.start ? ", " + timeText(first) : ""}` : "";
   const mFaq = [
-    ...(first ? [[`Wann findet ${nom} das nächste Mal statt?`, `Der nächste Termin ist am ${tNext}.${m.events.filter(e => !e.cancelled).length > 1 ? " Alle weiteren Termine stehen oben unter „Nächste Termine“." : ""}`]] : [[`Wann findet ${nom} wieder statt?`, "Derzeit ist kein Termin angekündigt. Sobald der Veranstalter neue Termine veröffentlicht, stehen sie hier."]]),
+    ...(first ? [[`Wann findet ${nom} das nächste Mal statt?`, `Der nächste Termin ist am ${tNext}.${m.events.filter(e => !e.cancelled).length > 1 ? " Alle weiteren Termine stehen oben unter „Nächste Termine“." : ""}`]] : far ? [[`Wann findet ${nom} wieder statt?`, `Der nächste bekannte Termin ist am ${fmtDateY(far.date)}${far.start ? ", " + timeText(far) : ""}.${m.later.length > 1 ? " Weitere Termine stehen oben unter „Nächste Termine“." : ""}`]] : [[`Wann findet ${nom} wieder statt?`, "Derzeit ist kein Termin angekündigt. Sobald der Veranstalter neue Termine veröffentlicht, stehen sie hier."]]),
     ...(first && first.start && !mixed ? [[`Wie lange hat ${nom} geöffnet?`, `${first.end ? `Von ${hmText(first.start)} bis ${hmText(first.end)} Uhr` : `Ab ${hmText(first.start)} Uhr`}, so steht es beim nächsten Termin. Wer früh kommt, hat die größte Auswahl.`]] : []),
-    [`Wo findet ${nom} statt?`, `${m.place !== m.name ? m.place + ", " : ""}${m.addr}${m.oepnv ? `. Nächste Haltestelle: ${m.oepnv}` : ""}.`],
+    [`Wo findet ${nom} statt?`, `${m.place !== m.name && !m.addr.toLowerCase().startsWith(m.place.toLowerCase()) ? m.place + ", " : ""}${m.addr}${m.oepnv ? `. Nächste Haltestelle: ${m.oepnv}` : ""}.`],
     ...(m.tags.includes("Überdacht") ? [[`Findet ${nom} auch bei Regen statt?`, `Der Markt ist ganz oder teilweise überdacht. Kurzfristige Absagen sind trotzdem möglich, schau am besten vorher beim Veranstalter nach.`]] : []),
     [`Wie bekomme ich einen Stand ${bei}?`, `Standplätze vergibt der Veranstalter${m.org ? " " + m.org : ""}. Frag am besten dort nach, wie die Anmeldung läuft${m.web ? `: [Website des Veranstalters](${m.web})` : ""}. Tipps für deinen Stand stehen im Ratgeber ${KBY["flohmarktstand-anmelden"] ? "[Flohmarktstand anmelden](/ratgeber/flohmarktstand-anmelden/)" : "Verkaufen"}.`]
   ];
-  const Ym = yearSpan(m.events.filter(e => !e.cancelled).slice(0, 1).length ? [first] : []);
+  const Ym = far ? String(far.date.getUTCFullYear()) : yearSpan(m.events.filter(e => !e.cancelled).slice(0, 1).length ? [first] : []);
   const baseT = m.t || `${m.name}: Termine & Öffnungszeiten`;
-  const mTitle = !first || /20\d\d/.test(baseT) || (baseT + " " + Ym).length > 60 ? baseT : /\bTermine?\b/.test(baseT) ? baseT.replace(/\bTermine?\b/, x => `${x} ${Ym}`) : `${baseT} ${Ym}`;
+  const mTitle = (!first && !far) || /20\d\d/.test(baseT) || (baseT + " " + Ym).length > 60 ? baseT : /\bTermine?\b/.test(baseT) ? baseT.replace(/\bTermine?\b/, x => `${x} ${Ym}`) : `${baseT} ${Ym}`;
   const mDesc = first ? pickDesc(
       fresh(m.d) && `Nächster Termin: ${dDate(first.date)}${first.start ? ", " + timeText(first) : ""}. ${m.d}`,
       `${m.name}${m.name.includes(m.area) ? "" : ` (${m.area})`}: nächster Termin ${dDate(first.date)}${first.start ? ", " + timeText(first) : ""}. ${m.note || ""} Adresse und Anfahrt.`,
       `${m.name}${m.name.includes(m.area) ? "" : ` in ${m.area}`}: nächster Termin ${dDate(first.date)}${first.start ? ", " + timeText(first) : ""}. Alle Termine ${Ym}, Adresse, Anfahrt und Tipps für deinen Besuch.`,
       `${m.name}: nächster Termin ${dDate(first.date)}. Alle Termine ${Ym}, Uhrzeiten, Adresse und Anfahrt.`)
+    : far ? pickDesc(
+      `${m.name}${m.name.includes(m.area) ? "" : ` (${m.area})`}: nächster Termin ${dDate(far.date)} ${far.date.getUTCFullYear()}${far.start ? ", " + timeText(far) : ""}. ${m.note || ""} Adresse und Anfahrt.`,
+      `${m.name}: nächster Termin ${dDate(far.date)} ${far.date.getUTCFullYear()}${far.start ? ", " + timeText(far) : ""}. Adresse, Anfahrt und Tipps für deinen Besuch.`,
+      `${m.short}: nächster Termin ${dDate(far.date)} ${far.date.getUTCFullYear()}. Adresse und Anfahrt.`)
     : pickDesc(fresh(m.d), `${m.name} in ${m.area}: ${m.note || ""} Neue Termine folgen, sobald der Veranstalter sie veröffentlicht. Adresse und Anfahrt.`, `${m.name}: ${m.note || ""} Adresse, Anfahrt und neue Termine, sobald der Veranstalter sie veröffentlicht.`, `${m.name}: Adresse, Anfahrt und alle Termine, sobald der Veranstalter sie veröffentlicht. Täglich aktualisiert.`, `${m.short}: Adresse, Anfahrt und neue Termine, sobald der Veranstalter sie veröffentlicht.`);
   const body = crumbs([[NAME, "/"], [r.umland ? "Umland" : "Flohmärkte Hamburg", "/flohmaerkte/"], [r.name, `/flohmarkt-hamburg/${r.k}/`], [m.short]]) + `<article class="kb">
 <h1>${esc(m.name)}: Öffnungszeiten und Termine</h1>
@@ -980,7 +1157,7 @@ for (const m of MARKETS) {
 ${m.oepnv ? `<div><dt>${ic("tram")}Nächste Haltestelle</dt><dd>${esc(m.oepnv)}</dd></div>` : ""}${m.org || m.web ? `<div><dt>${ic("user")}Veranstalter</dt><dd>${esc(m.org)}${m.web ? `${m.org ? "<br>" : ""}<a href="${esc(m.web)}" rel="noopener">Website des Veranstalters</a>` : ""}</dd></div>` : ""}${m.tags.length ? `<div><dt>${ic("tag")}Art des Markts</dt><dd class="tags-dd">${m.tags.map(t => CAT_BY_TAG[t] ? `<a class="tag" href="/${CAT_BY_TAG[t].s}/">${tagIc(t)}${esc(t)}</a>` : `<span class="tag">${tagIc(t)}${esc(t)}</span>`).join(" ")}</dd></div>` : ""}</dl>
 <div class="share-row">${shareBtn(m, first, "btn share-big")}<a class="route" href="${route}" rel="noopener">${ic("route")}Route planen</a></div>${first ? wxSay(wxEv(first), "für " + (first.k === key(TODAY) ? "heute" : first.k === key(addDays(TODAY, 1)) ? "morgen" : WDL[first.date.getUTCDay()])) : ""}
 ${m.intro ? `<section class="block kb-body"><h2>Über den Markt</h2><p>${rich(m.intro)}</p></section>` : ""}
-<section class="block"><h2>Nächste Termine</h2>${nx.length ? `<ul class="dates">${nx.map(e => `<li${e.cancelled ? ' class="off"' : ""}><span class="dt">${fmtDate(e.date)}</span><span class="tm">${e.cancelled ? "fällt aus" : timeText(e)}</span>${e.note ? `<span class="meta">${esc(e.note)}</span>` : ""}</li>`).join("")}</ul>` : '<p class="meta">Die nächsten Termine sind noch nicht angekündigt.</p>'}</section>
+<section class="block"><h2>Nächste Termine</h2>${nxAll.length ? `<ul class="dates">${nxAll.map(e => `<li${e.cancelled ? ' class="off"' : ""} data-day="${e.k}"><span class="dt">${e.far ? fmtDateY(e.date) : fmtDate(e.date)}</span><span class="tm">${e.cancelled ? "fällt aus" : timeText(e)}</span>${e.note ? `<span class="meta">${esc(e.note)}</span>` : ""}</li>`).join("")}</ul>` : '<p class="meta">Die nächsten Termine sind noch nicht angekündigt.</p>'}</section>
 ${m.tips.length ? `<section class="block kb-body"><h2>Gut zu wissen</h2><ul class="tips">${m.tips.map(t => `<li>${rich(t)}</li>`).join("")}</ul></section>` : ""}
 ${m.hint ? `<p class="hint">${rich(m.hint)}</p>` : ""}
 ${faqBlock(mFaq, `Häufige Fragen zu ${esc(m.short)}`)}
@@ -989,7 +1166,7 @@ ${faqBlock(mFaq, `Häufige Fragen zu ${esc(m.short)}`)}
 <section class="related"><div class="sec-head"><h2>Weitere Flohmärkte ${esc(r.im)}</h2>${more(`/flohmarkt-hamburg/${r.k}/`, "Alle", "Alle Märkte " + r.im)}</div>${others.length ? grid(others.map(mCard)) : '<p class="meta">Weitere Märkte folgen.</p>'}</section>
 ${others.length < 2 ? (() => { const nb = (NEAR[m.bez] || []).flatMap(k => MARKETS.filter(x => x.bez === k && x.events.some(e => !e.cancelled))).sort((a, b) => a.events.find(e => !e.cancelled).k.localeCompare(b.events.find(e => !e.cancelled).k)).slice(0, 3); return nb.length ? `<section class="related"><div class="sec-head"><h2>Flohmärkte in der Nähe</h2></div>${grid(nb.map(mCard))}</section>` : ""; })() : ""}</article>`;
   if (!m.t) warn("SEO", `${m.name}: SEO-Titel fehlt.`);
-  layout({ p: `/flohmarkt/${m.slug}/`, title: `${mTitle} | ${NAME}`, desc: mDesc, body, nav: "maerkte", ld: G([crumbLD([[NAME, "/"], [r.umland ? "Umland" : "Flohmärkte Hamburg", "/flohmaerkte/"], [r.name, `/flohmarkt-hamburg/${r.k}/`], [m.name]]), faqLD(mFaq)].concat(nx.map(eventLD))) });
+  layout({ p: `/flohmarkt/${m.slug}/`, title: `${mTitle} | ${NAME}`, desc: mDesc, body, nav: "maerkte", ld: G([crumbLD([[NAME, "/"], [r.umland ? "Umland" : "Flohmärkte Hamburg", "/flohmaerkte/"], [r.name, `/flohmarkt-hamburg/${r.k}/`], [m.name]]), faqLD(mFaq)].concat(nxAll.map(eventLD))) });
 }
 
 /* ---------------------------------------------------------------- Bezirke und Regionen */
@@ -1008,7 +1185,7 @@ for (const r of REGIONS) {
   const body = crumbs([[NAME, "/"], [r.umland ? "Umland" : "Flohmärkte Hamburg", "/flohmaerkte/"], [r.name]]) + `<article class="kb"><h1>${esc(r.h)}</h1>
 <div class="byline"><span>${ic("map")}${esc(regionLabel(r))}</span><span>${ic("pin")}${ms.length === 1 ? "1 Markt" : ms.length + " Märkte"}</span><span>${ic("update")}Stand: ${STAND}</span></div>
 <div class="answer"><span class="kicker">Kurz gesagt</span><p>${esc(cap(r.im))} ${ms.length === 1 ? "steht ein Flohmarkt" : `stehen ${ms.length} Flohmärkte`} im ${esc(NAME)}-Kalender.${first ? ` Der nächste Termin: ${esc(first.m.name)} am ${fmtDate(first.date)}, ${timeText(first)}.` : ""}</p></div>
-${r.intro || missing.length ? `<section class="block kb-body"><p>${rich(r.intro || "")}${missing.length ? `${r.intro ? " " : ""}Außerdem ${r.im}: ${listNames(missing.map(m => `[${m.name}](/flohmarkt/${m.slug}/)`), 8)}.` : ""}</p></section>` : ""}
+${r.intro || missing.length ? `<section class="block kb-body"><p>${rich((r.intro || "") + (missing.length ? `${r.intro ? " " : ""}Außerdem ${r.im}: ${listMore(missing.map(m => `[${m.name}](/flohmarkt/${m.slug}/)`), 12)}.` : ""))}</p></section>` : ""}
 <section class="related"><div class="sec-head"><h2>Die Märkte</h2></div>${grid(ms.map(mCard))}</section>
 <section class="related"><div class="sec-head"><h2>Nächste Termine</h2><small>${longList ? "alle bekannten Termine" : "nächste 30 Tage"}</small></div>${groupList(ev, 3) || '<p class="meta">Derzeit sind keine Termine angekündigt.</p>'}</section>
 ${near.length ? `<section class="related"><div class="sec-head"><h2>Flohmärkte in der Nähe</h2></div>${grid(near.map(mCard))}</section>` : ""}
@@ -1086,13 +1263,13 @@ for (const c of CATS_ON) {
   const ev60 = upcoming(60, e => c.ms.includes(e.m)), nx = nextOf(c.evs), Y = yearSpan(ev60.filter(e => !e.cancelled).length ? ev60.filter(e => !e.cancelled) : c.evs);
   const cr = [[NAME, "/"], ["Alle Märkte", "/flohmaerkte/"], [c.chip]];
   const withEv = ms.filter(m => m.events.some(e => !e.cancelled));
-  const ans = `In Hamburg und Umgebung ${c.ms.length === 1 ? "steht ein Markt" : `stehen ${c.ms.length} ${c.pl}`} im ${NAME}-Kalender${withEv.length < c.ms.length ? `, ${withEv.length} davon mit angekündigten Terminen` : ""}.${nx ? ` Der nächste Termin: ${nx.m.name} am ${fmtDate(nx.date)}${nx.start ? ", " + timeText(nx) : ""}.` : " Neue Termine folgen, sobald die Veranstalter sie veröffentlichen."}`;
+  const ans = `${c.ansStart || "In Hamburg und Umgebung"} ${c.ms.length === 1 ? "steht ein Markt" : `stehen ${c.ms.length} ${c.plKurz || c.pl}`} im ${NAME}-Kalender${withEv.length < c.ms.length ? `, ${withEv.length} davon mit angekündigten Terminen` : ""}.${nx ? ` Der nächste Termin: ${nx.m.name} am ${fmtDate(nx.date)}${nx.start ? ", " + timeText(nx) : ""}.` : " Neue Termine folgen, sobald die Veranstalter sie veröffentlichen."}`;
   const faq = [...(nx ? [[`Wann ist der nächste Termin?`, `${nx.m.name} am ${fmtDate(nx.date)}${nx.start ? ", " + timeText(nx) : ""}. Alle weiteren Termine stehen oben in der Liste.`]] : []),
-    [`Welche ${c.pl} gibt es in Hamburg?`, `${listMore(ms.map(m => `[${m.name}](/flohmarkt/${m.slug}/)`), 6)}.`], ...c.f];
+    [`Welche ${c.plW || c.pl} gibt es${c.ort === false ? "" : " in Hamburg"}?`, `${listMore(ms.map(m => `[${m.name}](/flohmarkt/${m.slug}/)`), 6)}.`], ...c.f];
   const desc = pickDesc(
-    `${cap(c.pl)} in Hamburg und Umgebung: ${c.ms.length} Märkte${nx ? `, nächster Termin ${dDate(nx.date)}` : ""}. Alle Termine ${Y} mit Uhrzeit, Adresse und Anfahrt.`,
-    `${cap(c.pl)} in Hamburg und Umgebung: ${c.ms.length} Märkte mit allen Terminen ${Y}, Uhrzeiten und Adressen. Täglich aktualisiert.`,
-    `Alle ${c.pl} in Hamburg: ${c.ms.length} Märkte mit Terminen ${Y}, Uhrzeiten und Adressen.`);
+    `${cap(c.pl)}${c.ort === false ? "" : " in Hamburg und Umgebung"}: ${c.ms.length} Märkte${nx ? `, nächster Termin ${dDate(nx.date)}` : ""}. Alle Termine ${Y} mit Uhrzeit, Adresse und Anfahrt.`,
+    `${cap(c.pl)}${c.ort === false ? "" : " in Hamburg und Umgebung"}: ${c.ms.length} Märkte mit allen Terminen ${Y}, Uhrzeiten und Adressen. Täglich aktualisiert.`,
+    `Alle ${c.plW || c.pl}${c.ort === false ? "" : " in Hamburg"}: ${c.ms.length} Märkte mit Terminen ${Y}, Uhrzeiten und Adressen.`);
   const body = crumbs(cr) + `<article class="kb"><h1>${esc(c.h1)}</h1>
 <div class="byline"><span>${ic("pin")}${c.ms.length} Märkte</span><span>${ic("cal")}${c.evs.filter(e => !e.cancelled).length} Termine</span><span>${ic("update")}Stand: ${STAND}</span></div>
 <div class="answer"><span class="kicker">Kurz gesagt</span><p>${esc(ans)}</p></div>${nearBox()}
@@ -1231,9 +1408,9 @@ function genHTML(st, presets, heading) {
   const fmtBtn = (f, l) => `<button type="button" class="chip" data-fmt="${f}" aria-pressed="${st.fmt === f}">${l}</button>`;
   return `<section class="gen" id="gen" data-kind="${st.kind}" data-fmt="${st.fmt}" aria-labelledby="genH">
 <h2 id="genH">${heading}</h2>
-${presets.length > 1 ? `<div class="chips gen-presets" role="group" aria-label="Vorlage wählen">${presets.map((p, i) => `<button type="button" class="chip" data-set="${pj(p.set)}" aria-pressed="${i === 0}">${esc(p.l)}</button>`).join("")}</div>` : ""}
+${presets.length > 1 ? `<div class="chips gen-presets js-only" role="group" aria-label="Vorlage wählen">${presets.map((p, i) => `<button type="button" class="chip" data-set="${pj(p.set)}" aria-pressed="${i === 0}">${esc(p.l)}</button>`).join("")}</div>` : ""}
 <div class="sheet-wrap" id="sheetWrap">${sheetHTML(st)}</div>
-<div class="gen-form">
+<div class="gen-form js-only">
 <label class="only-sign"><span>Großer Text</span><input id="fMain" type="text" value="${esc(st.main)}" maxlength="40" autocomplete="off" enterkeyhint="done"></label>
 <label class="only-sign"><span>Kleine Zeile oben <small>(optional)</small></span><input id="fTop" type="text" value="${esc(st.top)}" maxlength="40" autocomplete="off" enterkeyhint="done"></label>
 <label class="only-sign"><span>Kleine Zeile unten <small>(optional)</small></span><input id="fBot" type="text" value="${esc(st.bot)}" maxlength="60" autocomplete="off" enterkeyhint="done"></label>
@@ -1242,8 +1419,8 @@ ${presets.length > 1 ? `<div class="chips gen-presets" role="group" aria-label="
 <label class="switch only-tags"><input type="checkbox" id="fVb" checked>Kästchen „VB“</label>
 <label class="switch"><input type="checkbox" id="fSave">Sparmodus: Rahmen statt Farbe</label></div>
 </div>
-<button class="btn gen-print" id="doPrint" type="button">${ic("printer")}Drucken oder als PDF speichern</button>
-<p class="gen-hint">Kein Drucker? Wähl im Druckfenster „Als PDF speichern“ und lass das PDF im Copyshop drucken. Deine Texte bleiben auf deinem Gerät.</p>
+<button class="btn gen-print js-only" id="doPrint" type="button">${ic("printer")}Drucken oder als PDF speichern</button>
+<p class="gen-hint js-only">Kein Drucker? Wähl im Druckfenster „Als PDF speichern“ und lass das PDF im Copyshop drucken. Deine Texte bleiben auf deinem Gerät.</p>
 <noscript><p class="gen-hint">Der Schilder-Designer braucht JavaScript. Die Vorlagen unten kannst du dir trotzdem ansehen.</p></noscript>
 <template id="tplSign">${SG_UNIT}</template><template id="tplTag">${TG_UNIT}</template>
 </section>`;
@@ -1338,7 +1515,7 @@ const clusterThumb = (c, i) => { const x = pickImg(`ratgeber-${c}-klein`) || pic
 {
   const body = crumbs([[NAME, "/"], ["Ratgeber"]]) + `<section class="hub-head"><h1>Flohmarkt-Ratgeber: Antworten auf die häufigsten Fragen</h1>
 <p>Unsere Empfehlungen zum Kaufen, Verkaufen, Handeln und Organisieren. Jeder Artikel beginnt mit einer kurzen Antwort, danach folgen die Details.</p>
-<div class="search"><label for="kbSearch" class="kicker">Frage suchen</label><input id="kbSearch" type="search" placeholder="z. B. handeln, Steuern, Standgebühr" autocomplete="off"></div></section>
+<div class="search js-only"><label for="kbSearch" class="kicker">Frage suchen</label><input id="kbSearch" type="search" placeholder="z. B. handeln, Steuern, Standgebühr" autocomplete="off"></div></section>
 ${Object.entries(CLUSTERS).map(([c, info], i) => { const items = KB.filter(a => a.c === c); return items.length ? `<section class="cluster" id="${c}"><div class="cl-head${i % 2 ? " flip" : ""}"><div><h2>${esc(info.t)}</h2><p>${esc(info.p)}</p></div>${clusterThumb(c, i)}</div><div class="qlist">${items.map(a => `<a href="/ratgeber/${a.s}/" data-q="${esc((a.h + " " + a.kw + " " + plain(a.a)).toLowerCase())}"><span>${brColon(esc(a.h))}</span>${ic("chev")}</a>`).join("")}</div></section>` : ""; }).join("")}
 ${CRED_SRC ? `<p class="meta cl-cred">Symbolfotos: ${credLink()}${S["Bildnachweis"] ? " · " + esc(String(S["Bildnachweis"]).replace(/^Fotos:\s*/, "").replace(/\.$/, "")) : ""}</p>` : ""}
 <div class="empty" id="kbLeer" hidden>Dazu gibt es noch keinen Artikel. Versuch einen anderen Begriff, etwa „Steuern“ oder „Stand“.</div>`;
@@ -1373,10 +1550,11 @@ ${a.x ? '<p class="hint">Unser Tipp: Verbindliche Auskünfte für deinen Fall be
 <section class="block kb-body" id="korrektur"><h2>Eintrag ändern oder entfernen</h2><p>Dein Markt steht im Kalender und etwas stimmt nicht, oder du möchtest nicht genannt werden? Schreib uns${FORM_MAIL ? ` eine <a href="${esc(FORM)}">E-Mail</a>` : ` über die Angaben im <a href="/impressum/">Impressum</a>`}. Wir korrigieren oder entfernen den Eintrag umgehend und ohne Rückfragen. Mehr dazu in den <a href="/datenschutz/">Datenschutzhinweisen</a>.</p></section>
 <section class="block kb-body" id="waechter"><h2>Automatischer Termin-Check</h2><p>Damit der Kalender aktuell bleibt, ruft ${esc(NAME)} höchstens einmal pro Nacht die öffentliche Termin-Seite jedes eingetragenen Veranstalters ab und prüft, ob sich dort Datumsangaben geändert haben. In den Zugriffsprotokollen erscheint der Abruf als „FlohlotseBot“. Wir übernehmen dabei keine Texte und speichern nur die gefundenen Datumsangaben. Vorgaben in der robots.txt beachten wir. Du möchtest das für deine Website nicht? Eine kurze Nachricht genügt.</p></section>
 <section class="block kb-body badge-box" id="badge"><h2>Für deine Website: Link zu deinen Terminen</h2><p>Dein Markt steht schon bei ${esc(NAME)}? Verlinke deine Seite bei uns, dann finden Besucher alle Termine, Uhrzeiten und die Anfahrt an einem Ort. Wähl deinen Markt aus und kopier den Code in deine Website.</p>
-<label class="bdg-sel">Dein Markt<select id="bdgSel" data-site="${esc(SITE)}">${[...MARKETS].sort((a, b) => a.name.localeCompare(b.name, "de")).map(m => `<option value="${m.slug}">${esc(m.name)}</option>`).join("")}</select></label>
-<div class="bdg-prev" id="bdgPrev" aria-label="Vorschau"></div>
-<label class="bdg-code">Code für deine Website<textarea id="bdgCode" rows="4" readonly></textarea></label>
-<button class="btn" id="bdgCopy" type="button">Code kopieren</button></section></article>`;
+<noscript><p class="small">Der Code-Baukasten braucht JavaScript.</p></noscript>
+<label class="bdg-sel js-only">Dein Markt<select id="bdgSel" data-site="${esc(SITE)}">${[...MARKETS].sort((a, b) => a.name.localeCompare(b.name, "de")).map(m => `<option value="${m.slug}">${esc(m.name)}</option>`).join("")}</select></label>
+<div class="bdg-prev js-only" id="bdgPrev" aria-label="Vorschau"></div>
+<label class="bdg-code js-only">Code für deine Website<textarea id="bdgCode" rows="4" readonly></textarea></label>
+<button class="btn js-only" id="bdgCopy" type="button">Code kopieren</button></section></article>`;
   if (!FORM) warn("Einstellungen", "Weder Formular-Link noch Impressum-E-Mail eingetragen. Auf der Seite Für Veranstalter steht so lange „bald verfügbar“.");
   layout({ p: "/veranstalter/", title: `Flohmarkt eintragen: kostenlos für Veranstalter | ${NAME}`, desc: "Veranstaltest du einen Flohmarkt in Hamburg oder im Umland? Trag deine Termine kostenlos ein. Wir prüfen jeden Eintrag und verlinken auf deine Seite.", body, nav: "org", ld: G([crumbLD([[NAME, "/"], ["Für Veranstalter"]])]) });
 }
@@ -1495,9 +1673,28 @@ for (const [p, pg] of pages) {
   }
   for (const m of pg.html.matchAll(/href="(\/[^"#]*)(#[^"]*)?"/g)) {
     const target = m[1];
-    if (target.startsWith("/assets/") || target.startsWith("/fonts/")) continue;
+    if (target.startsWith("/assets/") || target.startsWith("/fonts/") || /^\/(favicon\.ico|apple-touch-icon\.png|manifest\.webmanifest)$/.test(target)) continue;
     if (!existing.has(target)) warn("Links", `${p} verlinkt auf ${target}, diese Seite gibt es nicht.`);
   }
+}
+
+/* ---------------------------------------------------------------- Merkzettel der letzten Nacht und Notbremse
+   Der Merkzettel liegt unter /assets/seiten-stand.json auf der Website und wird beim nächsten Bau von dort gelesen.
+   Er merkt sich je Seite, wann sich ihr Inhalt zuletzt geändert hat (für Google), und wie viele Märkte und Termine es gab. */
+let OLD_STATE = {};
+if (process.env.SHEET_ID || process.env.SEITENSTAND === "an") { try { const r = await fetch(SITE + "/assets/seiten-stand.json", { signal: AbortSignal.timeout(8000) }); if (r.ok) { const j = await r.json(); if (j && typeof j === "object") OLD_STATE = j; } } catch { /* erster Lauf: alle Seiten bekommen das heutige Datum */ } }
+{
+  // Notbremse: Fehlt plötzlich mehr als die Hälfte der Märkte oder Termine, ist fast immer in der Tabelle etwas verrutscht
+  // (Zeilen gelöscht, Spalte überschrieben, falsch sortiert). Dann lieber nichts veröffentlichen: Die bisherige Website bleibt online.
+  const z = Array.isArray(OLD_STATE._zahlen) ? OLD_STATE._zahlen : null, vorM = z ? +z[0] || 0 : Object.keys(OLD_STATE).filter(p => /^\/flohmarkt\/[^/]+\/$/.test(p)).length;
+  // Termine lassen sich nur vergleichen, wenn der Vergleichsstand frisch ist (höchstens eine Woche alt) und „Tage im Voraus“ gleich geblieben ist
+  const frisch = z && +z[3] === HORIZON && /^\d{4}-\d{2}-\d{2}$/.test(String(z[4])) && (TODAY - new Date(z[4] + "T00:00:00Z")) / 864e5 <= 7;
+  const vorT = frisch ? +z[1] || 0 : 0, vorD = frisch ? +z[2] || 0 : 0, mitTermin = MARKETS.length - NO_DATES.length;
+  const aus = /^(aus|nein|no|0|off)$/i.test(String(S["Notbremse"] || "").trim());
+  const weg = vorM >= 20 && MARKETS.length < vorM / 2 ? `nur noch ${MARKETS.length} statt ${vorM} Märkte` : vorD >= 20 && mitTermin < vorD / 2 ? `nur noch ${mitTermin} statt ${vorD} Märkte mit Termin` : vorT >= 40 && EVENTS.length < vorT * 0.4 ? `nur noch ${EVENTS.length} statt ${vorT} Termine` : "";
+  if (weg && !aus) throw new Error(`Notbremse: Die Tabelle ergibt ${weg}. Das sieht nach einem Versehen aus (Zeilen gelöscht, Spalte überschrieben oder falsch sortiert), deshalb wurde nichts veröffentlicht. Bitte die Blätter „Märkte“ und „Termine“ prüfen; in Google Sheets hilft Datei > Versionsverlauf. Ist der Rückgang gewollt: im Blatt Einstellungen eine Zeile „Notbremse“ mit dem Wert „aus“ eintragen, neu bauen und die Zeile danach wieder löschen.`);
+  if (weg) warn("Einstellungen", `Die Notbremse ist ausgeschaltet (Einstellung „Notbremse“ = aus) und die Tabelle ergibt ${weg}. Wenn das so gewollt war: die Zeile „Notbremse“ jetzt wieder löschen.`);
+  else if (aus) warn("Einstellungen", "Die Notbremse ist ausgeschaltet (Einstellung „Notbremse“ = aus). Sie schützt davor, dass eine versehentlich geleerte Tabelle veröffentlicht wird. Bitte die Zeile wieder löschen.");
 }
 
 /* ---------------------------------------------------------------- Schreiben */
@@ -1510,9 +1707,16 @@ for (const [p, pg] of pages) {
   fs.writeFileSync(file, withBase(pg.html));
 }
 fs.mkdirSync(path.join(OUT, "assets"), { recursive: true });
-fs.writeFileSync(path.join(OUT, "assets/style.css"), withBase(fontCSS) + "\n" + fs.readFileSync(path.join(ROOT, "src/style.css"), "utf8"));
+fs.writeFileSync(path.join(OUT, "assets/style.css"), withBase(fontCSS) + CSS_SRC.slice(fontCSS.length));
 fs.copyFileSync(path.join(ROOT, "src/site.js"), path.join(OUT, "assets/site.js"));
 fs.copyFileSync(path.join(ROOT, "src/icon.svg"), path.join(OUT, "assets/icon.svg"));
+if (HAS_ICONS) {
+  // favicon.ico und apple-touch-icon.png suchen Browser von sich aus ganz oben, die übrigen liegen bei den anderen Dateien
+  for (const f of APP_ICONS) fs.copyFileSync(path.join(ROOT, "src", f), path.join(OUT, /^(favicon|apple)/.test(f) ? f : "assets/" + f));
+  // Web-Manifest: Name, Farben und Symbole, wenn jemand die Seite auf den Startbildschirm legt. Pfade ohne Schrägstrich vorn, damit es auch in einem Unterordner stimmt.
+  fs.writeFileSync(path.join(OUT, "manifest.webmanifest"), JSON.stringify({ name: `${NAME} – Flohmärkte in Hamburg`, short_name: NAME, description: "Flohmarkt-Kalender für Hamburg und das Umland: Termine, Uhrzeiten, Anfahrt.", lang: "de", start_url: "./", scope: "./", display: "minimal-ui", background_color: "#F2F4F0", theme_color: "#F2F4F0",
+    icons: [{ src: "assets/icon-192.png", sizes: "192x192", type: "image/png" }, { src: "assets/icon-512.png", sizes: "512x512", type: "image/png" }, { src: "assets/icon-maskable-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" }] }, null, 1) + "\n");
+}
 if (PLZ_ROWS.length) fs.writeFileSync(path.join(OUT, "assets/plz.json"), JSON.stringify(PLZ_C));
 if (HAS_MAP) for (const f of ["leaflet.js", "leaflet.css"]) fs.copyFileSync(path.join(ROOT, "src", f), path.join(OUT, "assets", f));
 fs.writeFileSync(path.join(OUT, "assets/icons-lizenz.txt"), ICON_LICENSE);
@@ -1520,7 +1724,15 @@ fs.writeFileSync(path.join(OUT, "assets/icons.svg"), SPRITE_FILE);
 if (WATCH_ON) fs.writeFileSync(path.join(OUT, "assets/waechter.json"), JSON.stringify(WATCH));
 fs.mkdirSync(path.join(OUT, "assets/schilder"), { recursive: true });
 for (const t of SIGNS) fs.writeFileSync(path.join(OUT, signImg(t).slice(1)), signPreviewSVG(t));
-if (IMGS.size) { fs.mkdirSync(path.join(OUT, "assets/img"), { recursive: true }); for (const x of IMGS) fs.copyFileSync(path.join(imgDir, x), path.join(OUT, "assets/img", imgOut(x))); }
+// Bilder: Hochgeladen wird nur, was auf mindestens einer Seite vorkommt. Der Rest bleibt im Ordner bilder liegen und steht im Bericht.
+const IMG_UNUSED = [];
+if (IMGS.size) {
+  const used = new Set(); for (const pg of pages.values()) for (const m of pg.html.matchAll(/\/assets\/img\/([a-z0-9-]+\.(?:webp|jpg))/g)) used.add(m[1]);
+  fs.mkdirSync(path.join(OUT, "assets/img"), { recursive: true });
+  // Im Bericht steht eine Datei nur, wenn auch ihre zweite Größe (…-klein) nirgends vorkommt: Dann ist sie wirklich übrig.
+  const twin = x => /-klein\.(webp|jpg)$/.test(x) ? x.replace(/-klein\./, ".") : x.replace(/\.(webp|jpg)$/, "-klein.$1");
+  for (const x of IMGS) { if (used.has(imgOut(x))) fs.copyFileSync(path.join(imgDir, x), path.join(OUT, "assets/img", imgOut(x))); else if (!(IMGS.has(twin(x)) && used.has(imgOut(twin(x))))) IMG_UNUSED.push(x); }
+}
 if (fontsFound.length) {
   fs.mkdirSync(path.join(OUT, "fonts"), { recursive: true }); for (const x of fontsFound) fs.copyFileSync(path.join(fontDir, x.f), path.join(OUT, "fonts", x.f));
   // Die Open Font License verlangt, dass Urhebervermerk und Lizenztext mit den Schriften ausgeliefert werden
@@ -1530,19 +1742,17 @@ if (fontsFound.length) {
 const indexable = [...pages].filter(([p, pg]) => !pg.noindex && p !== "/404.html").map(([p]) => p);
 // Sitemap, bei den Schilder-Seiten mit Vorschaubildern für die Google-Bildersuche
 // Änderungsdatum je Seite: bleibt stehen, solange sich der Inhalt nicht ändert (Google nutzt lastmod nur, wenn es verlässlich ist).
-// Der Merkzettel liegt unter /assets/seiten-stand.json auf der Website und wird beim nächsten Bau von dort gelesen.
+// Versionskürzel von Stil, Skript und Icons zählen dabei nicht mit: Ein neuer Anstrich ist kein neuer Inhalt.
 const LASTMOD = {}, PAGE_STATE = {};
 {
-  const { createHash } = await import("node:crypto");
-  let old = {};
-  if (process.env.SHEET_ID || process.env.SEITENSTAND === "an") { try { const r = await fetch(SITE + "/assets/seiten-stand.json", { signal: AbortSignal.timeout(8000) }); if (r.ok) { const j = await r.json(); if (j && typeof j === "object") old = j; } } catch { /* erster Lauf: alle Seiten bekommen das heutige Datum */ } }
-  const today = key(TODAY);
+  const old = OLD_STATE, today = key(TODAY);
   for (const p of indexable) {
-    const sig = createHash("sha1").update(pages.get(p).html.split(STAND).join("").split(today).join("")).digest("hex").slice(0, 12), o = old[p];
+    const sig = hashOf("sha1").update(pages.get(p).html.split(STAND).join("").split(today).join("").replace(/\?v=[0-9a-f]{8}/g, "")).digest("hex").slice(0, 12), o = old[p];
     const d = Array.isArray(o) && o[0] === sig && /^\d{4}-\d{2}-\d{2}$/.test(o[1]) && o[1] <= today ? o[1] : today;
     LASTMOD[p] = d; PAGE_STATE[p] = [sig, d];
   }
 }
+PAGE_STATE._zahlen = [MARKETS.length, EVENTS.length, MARKETS.length - NO_DATES.length, HORIZON, key(TODAY)]; // Märkte, Termine, Märkte mit Termin, Tage im Voraus, Datum: für die Notbremse im nächsten Bau
 fs.writeFileSync(path.join(OUT, "assets/seiten-stand.json"), JSON.stringify(PAGE_STATE));
 const smImgs = p => [...(PAGE_PHOTOS.get(p) || []).map(u => [u]), ...(SIGN_PAGE_IMGS.get(p) || [])].map(([u, t]) => `<image:image><image:loc>${esc(SITE + u)}</image:loc></image:image>`).join("");
 fs.writeFileSync(path.join(OUT, "sitemap.xml"), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n${indexable.map(p => `  <url><loc>${esc(SITE + p)}</loc><lastmod>${LASTMOD[p] || key(TODAY)}</lastmod>${smImgs(p)}</url>`).join("\n")}\n</urlset>\n`);
@@ -1560,7 +1770,7 @@ Die Termine stammen von den Veranstaltern. Vor dem Besuch lohnt ein Blick auf di
 ## Termine
 - [Flohmärkte heute](${SITE}/heute/): alle Märkte von heute mit Uhrzeit
 - [Flohmärkte am Wochenende](${SITE}/wochenende/): Samstag und Sonntag
-- [Alle Termine](${SITE}/termine/): die nächsten ${HORIZON} Tage, filterbar nach Art und Umkreis
+- [Alle Termine](${SITE}/termine/): die nächsten 60 Tage, filterbar nach Art und Umkreis
 
 ## Märkte
 - [Alle Märkte nach Bezirk](${SITE}/flohmaerkte/): Übersicht aller ${MARKETS.length} Märkte
@@ -1579,11 +1789,13 @@ ${CATS_ON.map(c => `- [${c.chip}](${SITE}/${c.s}/): ${c.ms.length} Märkte`).joi
 ${INSTA ? `- [Instagram](${INSTA}): jede Woche die Flohmärkte am Wochenende\n` : ""}- [Impressum](${SITE}/impressum/)
 - [Datenschutz](${SITE}/datenschutz/)
 `);
-if (!PUBLIC) warn("Google", "Die Website ist noch nicht für Google freigegeben (Einstellung „Für Google freigeben“ = Nein). Das ist richtig, solange ihr testet.");
+if (!PUBLIC) warn("Google", "Die Website ist noch nicht für Google freigegeben (Einstellung „Für Google freigeben“ = Nein). Das ist richtig, solange ihr testet.", true);
 if (process.env.CNAME) fs.writeFileSync(path.join(OUT, "CNAME"), process.env.CNAME + "\n");
 // Einstellungen für Webspace mit Apache (z. B. Hetzner). GitHub Pages beachtet die Datei nicht.
 {
   const host = new URL(SITE).hostname, bare = host.replace(/^www\./, ""), rx = bare.replace(/\./g, "\\.");
+  // Was die Seite laden darf. Wer später etwas von außen einbindet (z. B. ein Video), muss die Quelle hier ergänzen.
+  const CSP = ["default-src 'self'", "script-src 'self'", "style-src 'self' 'unsafe-inline'", "img-src 'self' data: https://tile.openstreetmap.org", "font-src 'self'", "connect-src 'self'", "manifest-src 'self'", "object-src 'none'", "base-uri 'self'", "form-action 'self'", "frame-ancestors 'self'"].join("; ");
   fs.writeFileSync(path.join(OUT, ".htaccess"), `# Automatisch erzeugt von build.mjs. Änderungen hier gehen beim nächsten Bau verloren.
 Options -Indexes
 ErrorDocument 404 /404.html
@@ -1604,10 +1816,13 @@ RewriteRule ^ https://${host}%{REQUEST_URI} [R=301,L]
 AddType font/woff2 .woff2
 AddType image/webp .webp
 AddType image/svg+xml .svg
+AddType application/manifest+json .webmanifest
 </IfModule>
 
 <IfModule mod_deflate.c>
-AddOutputFilterByType DEFLATE text/html text/css text/plain application/javascript text/javascript image/svg+xml application/json application/xml text/xml
+<IfModule mod_filter.c>
+AddOutputFilterByType DEFLATE text/html text/css text/plain application/javascript text/javascript image/svg+xml application/json application/xml text/xml application/manifest+json
+</IfModule>
 </IfModule>
 
 <IfModule mod_expires.c>
@@ -1616,18 +1831,31 @@ ExpiresDefault "access plus 1 hour"
 ExpiresByType text/html "access plus 10 minutes"
 ExpiresByType application/json "access plus 10 minutes"
 ExpiresByType application/xml "access plus 1 hour"
+ExpiresByType application/manifest+json "access plus 1 day"
+# Stil, Skript und Icons tragen ein Versionskürzel in der Adresse (?v=…): Änderungen kommen sofort an.
+# Die Speicherdauer bleibt trotzdem kurz. Beim Hochladen kommen Seiten und Dateien nicht im selben Augenblick an;
+# wer genau dann eine Seite öffnet, hätte sonst die alte Datei lange unter der neuen Adresse gespeichert.
 ExpiresByType text/css "access plus 1 day"
 ExpiresByType application/javascript "access plus 1 day"
 ExpiresByType text/javascript "access plus 1 day"
 ExpiresByType image/svg+xml "access plus 1 week"
 ExpiresByType image/webp "access plus 1 month"
 ExpiresByType image/jpeg "access plus 1 month"
+ExpiresByType image/png "access plus 1 week"
+ExpiresByType image/x-icon "access plus 1 week"
+ExpiresByType image/vnd.microsoft.icon "access plus 1 week"
 ExpiresByType font/woff2 "access plus 1 year"
 </IfModule>
 
+# Sicherheit: Die Seite lädt Skripte, Schriften und Stile nur von sich selbst, Kartenbilder nur von OpenStreetMap.
+# Sie lässt sich nicht in fremde Seiten einbetten und ist für Browser ein halbes Jahr lang nur verschlüsselt erreichbar.
 <IfModule mod_headers.c>
-Header set X-Content-Type-Options "nosniff"
-Header set Referrer-Policy "strict-origin-when-cross-origin"
+Header always set X-Content-Type-Options "nosniff"
+Header always set Referrer-Policy "strict-origin-when-cross-origin"
+Header always set X-Frame-Options "SAMEORIGIN"
+Header always set Permissions-Policy "geolocation=(self), camera=(), microphone=(), payment=(), usb=()"
+Header always set Strict-Transport-Security "max-age=15552000"
+Header always set Content-Security-Policy "${CSP}"
 </IfModule>
 `);
 }
@@ -1635,16 +1863,25 @@ Header set Referrer-Policy "strict-origin-when-cross-origin"
 /* ---------------------------------------------------------------- Bericht */
 const evCount = [...pages.values()].reduce((n, pg) => n + (pg.html.match(/"@type":"Event"/g) || []).length, 0);
 const summary = [`# ${NAME}: Website gebaut`, "", `Stand ${STAND} · ${pages.size} Seiten (${PUBLIC ? indexable.length + " für Google" : "noch nicht für Google freigegeben"}) · ${MARKETS.length} Märkte · ${EVENTS.length} Termine in den nächsten ${HORIZON} Tagen · ${KB.length} Ratgeber-Artikel · ${evCount} Event-Auszeichnungen`, ""];
-if (warnings.length) {
-  summary.push(`## ${warnings.length} Hinweise zum Prüfen`, "", "| Bereich | Hinweis |", "|---|---|");
-  for (const [b, t] of warnings) summary.push(`| ${b} | ${t.replace(/\|/g, "/")} |`);
-} else summary.push("Keine Hinweise. Alles in Ordnung.");
+// Erst, was zu tun ist (Fehler in der Tabelle zuerst), dann die fertigen Zeilen des Termin-Wächters, am Ende, was nur zur Kenntnis ist.
+if (NO_TIME.length) warn("Uhrzeit fehlt", `${NO_TIME.length === 1 ? "Ein Termin" : NO_TIME.length + " Termine"} in den nächsten drei Wochen ohne Uhrzeit: ${NO_TIME.map(e => `${e.m.name} am ${fmtDate(e.date)}`).join("; ")}. Uhrzeit beim Veranstalter nachsehen und im Blatt „Termine“ (oder „Serien“) eintragen.`);
+const ORDER = ["Einstellungen", "Impressum", "Datenschutz", "Google", "Bezirke", "Märkte", "Serien", "Termine", "Bereiche", "Neuigkeiten", "Datum", "Uhrzeit", "Links", "Ratgeber", "Bilder", "Schriften", "Karte", "Wetter", "Uhrzeit fehlt", "Termin-Wächter", "Serie endet bald", "SEO"];
+const rank = b => { const i = ORDER.indexOf(b); return i < 0 ? 10.5 : i; };
+const todo = warnings.filter(w => !w[2]).map((w, i) => [w, i]).sort((x, y) => rank(x[0][0]) - rank(y[0][0]) || x[1] - y[1]).map(x => x[0]);
+const info = warnings.filter(w => w[2]).map(w => w[1]);
+if (NO_DATES.length) info.push(`${NO_DATES.length === 1 ? "Ein Markt hat" : NO_DATES.length + " Märkte haben"} in den nächsten ${HORIZON} Tagen keinen Termin (Saisonpause oder noch nicht angekündigt): ${NO_DATES.map(m => m.name).sort((a, b) => a.localeCompare(b, "de")).join(", ")}.`);
+if (IMG_UNUSED.length) info.push(`${IMG_UNUSED.length === 1 ? "Eine Bilddatei" : IMG_UNUSED.length + " Bilddateien"} im Ordner bilder ${IMG_UNUSED.length === 1 ? "wird" : "werden"} auf keiner Seite verwendet und deshalb nicht hochgeladen: ${IMG_UNUSED.join(", ")}.`);
+if (todo.length) {
+  summary.push(`## Zu erledigen: ${todo.length} ${todo.length === 1 ? "Hinweis" : "Hinweise"}`, "", "| Bereich | Hinweis |", "|---|---|");
+  for (const [b, t] of todo) summary.push(`| ${b} | ${t.replace(/\|/g, "/").replace(/\s*[\r\n]+\s*/g, " ")} |`);
+} else summary.push("Nichts zu erledigen. Alles in Ordnung.");
 if (WATCH_ROWS.length) {
   const rows = WATCH_ROWS.sort((a, b) => a.row[0].localeCompare(b.row[0]) || a.k.localeCompare(b.k));
   summary.push("", `## Termin-Wächter: ${rows.length} ${rows.length === 1 ? "Vorschlag" : "Vorschläge"} zum Einfügen`, "",
-    "Diese Tage stehen neu auf Veranstalterseiten und fehlen in der Tabelle. **Erst auf der Seite des Veranstalters prüfen**, ob es wirklich ein Markttermin ist und ob die Uhrzeit stimmt (eingesetzt ist die übliche Uhrzeit des Markts). Dann die Zeilen markieren, kopieren und im Blatt „Termine“ in die erste freie Zeile einfügen. Die Spalten sind: Markt, Datum, Beginn, Ende, Status, Hinweis.", "",
+    "Diese Tage stehen neu auf Veranstalterseiten und fehlen in der Tabelle. **Erst auf der Seite des Veranstalters prüfen**, ob es wirklich ein Markttermin ist und ob die Uhrzeit stimmt (eingesetzt ist die übliche Uhrzeit des Markts; ist sie leer, kennt die Tabelle noch keine). Dann die Zeilen markieren, kopieren und im Blatt „Termine“ in die erste freie Zeile einfügen. Die Spalten sind: Markt, Datum, Beginn, Ende, Status, Hinweis. Ein Vorschlag bleibt sieben Tage stehen und verschwindet, sobald der Tag in der Tabelle steht.", "",
     "```", ...rows.map(r => r.row.join("\t")), "```", "", "Quellen:", ...[...new Set(rows.map(r => r.src))].map(u => `- ${u}`));
 }
+if (info.length) summary.push("", "## Zur Kenntnis", "", ...info.map(t => `- ${t.replace(/\s*[\r\n]+\s*/g, " ")}`));
 const report = summary.join("\n") + "\n";
 fs.writeFileSync(path.join(ROOT, "bericht.md"), report);
 if (process.env.GITHUB_STEP_SUMMARY) fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, report);

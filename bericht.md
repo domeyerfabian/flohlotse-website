@@ -2,11 +2,12 @@
 
 Stand 04.10.2026 · 190 Seiten (187 für Google) · 102 Märkte · 184 Termine in den nächsten 120 Tagen · 42 Ratgeber-Artikel · 741 Event-Auszeichnungen
 
-## Zu erledigen: 2 Hinweise
+## Zu erledigen: 3 Hinweise
 
 | Bereich | Hinweis |
 |---|---|
 | Uhrzeit fehlt | 4 Termine in den nächsten drei Wochen ohne Uhrzeit: Schrødelmarkt im Schrødingers am Sonntag, 4. Oktober; Flohmarkt famila Wedel am Sonntag, 4. Oktober; Flohmarkt Kaufland Henstedt-Ulzburg am Sonntag, 11. Oktober; Flohmarkt im Parkhaus REWE-Center Wandsbek am Sonntag, 18. Oktober. Uhrzeit beim Veranstalter nachsehen und im Blatt „Termine“ (oder „Serien“) eintragen. |
+| Termin-Wächter | HNT Flohmarkt: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 08.10.2026. Bitte prüfen: https://www.hntonline.de/flohmarkt |
 | Termin-Wächter | Flohmarkt famila Winsen (Luhe): Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 11.10.2026. Bitte prüfen: https://flohmaxx.de/flohmarkt/winsen-famila/2026-10-03 |
 
 ## Termin-Wächter: 1 Vorschlag zum Einfügen

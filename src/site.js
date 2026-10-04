@@ -7,6 +7,14 @@
     document.addEventListener("keydown", function (e) { if (e.key === "Escape" && menu.open) { menu.open = false; menu.querySelector("summary").focus(); } });
     document.addEventListener("click", function (e) { if (menu.open && (!menu.contains(e.target) || e.target.closest(".menu a"))) menu.open = false; });
   }
+  // Am Computer öffnen Links zu fremden Seiten (Veranstalter, Google Maps, Instagram) einen neuen Tab; Flohlotse bleibt offen. Am Handy bleibt alles wie gehabt, damit Karten-Apps direkt aufgehen.
+  if (window.matchMedia && matchMedia("(hover: hover) and (pointer: fine)").matches) {
+    document.addEventListener("click", function (e) {
+      var a = e.target.closest && e.target.closest("a[href]");
+      if (!a || a.target || !/^https?:$/.test(a.protocol) || a.hostname === location.hostname) return;
+      a.target = "_blank"; if (!/noopener/.test(a.rel)) a.rel = (a.rel + " noopener").trim();
+    }, true);
+  }
   // Heute in Hamburg (unabhängig von der Uhr-Einstellung des Geräts)
   var berlin = function () { try { var o = {}; new Intl.DateTimeFormat("de-DE", { timeZone: "Europe/Berlin", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).formatToParts(new Date()).forEach(function (x) { o[x.type] = x.value; }); return { day: o.year + "-" + o.month + "-" + o.day, hm: o.hour + ":" + o.minute }; } catch (e) { return null; } };
   var NOW = berlin();

@@ -1,6 +1,6 @@
 # Flohlotse: Website gebaut
 
-Stand 05.10.2026 · 198 Seiten (195 für Google) · 110 Märkte · 184 Termine in den nächsten 120 Tagen · 42 Ratgeber-Artikel · 739 Event-Auszeichnungen
+Stand 05.10.2026 · 205 Seiten (202 für Google) · 117 Märkte · 191 Termine in den nächsten 120 Tagen · 42 Ratgeber-Artikel · 773 Event-Auszeichnungen
 
 ## Zu erledigen: 3 Hinweise
 

@@ -1,6 +1,6 @@
 # Flohlotse: Website gebaut
 
-Stand 06.10.2026 · 206 Seiten (203 für Google) · 117 Märkte · 192 Termine in den nächsten 120 Tagen · 42 Ratgeber-Artikel · 774 Event-Auszeichnungen
+Stand 07.10.2026 · 206 Seiten (203 für Google) · 117 Märkte · 192 Termine in den nächsten 120 Tagen · 42 Ratgeber-Artikel · 777 Event-Auszeichnungen
 
 ## Zu erledigen: 4 Hinweise
 
@@ -8,7 +8,7 @@ Stand 06.10.2026 · 206 Seiten (203 für Google) · 117 Märkte · 192 Termine i
 |---|---|
 | Uhrzeit fehlt | 2 Termine in den nächsten drei Wochen ohne Uhrzeit: Flohmarkt Kaufland Henstedt-Ulzburg am Sonntag, 11. Oktober; Flohmarkt im Parkhaus REWE-Center Wandsbek am Sonntag, 18. Oktober. Uhrzeit beim Veranstalter nachsehen und im Blatt „Termine“ (oder „Serien“) eintragen. |
 | Termin-Wächter | Hallenflohmarkt in der Halle 15: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 08.10.2026. Bitte prüfen: https://www.asb-halle15.de/ |
-| Termin-Wächter | HNT Flohmarkt: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 08.10.2026. Bitte prüfen: https://www.hntonline.de/flohmarkt |
+| Termin-Wächter | HNT Flohmarkt: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 08.10.2026, 17.10.2026. Bitte prüfen: https://www.hntonline.de/flohmarkt |
 | Termin-Wächter | Flohmarkt famila Winsen (Luhe): Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 11.10.2026, 18.10.2026. Bitte prüfen: https://flohmaxx.de/flohmarkt/winsen-famila/2026-10-03 |
 
 ## Termin-Wächter: 2 Vorschläge zum Einfügen

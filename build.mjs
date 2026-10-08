@@ -773,6 +773,7 @@ const listNamesPlain = a => a.length <= 3 ? a.join(", ") : `${a.slice(0, 3).join
    - was auf den meisten Seiten desselben Veranstalters gleich steht (Liste „nächste Märkte“ in der Randspalte),
    - auf Sammelseiten für mehrere Märkte alles, was erkennbar zu anderen Orten gehört,
    - auf der Startseite eines Veranstaltungsorts alles ohne Marktwort in der Nähe (Konzerte, Gottesdienste),
+   - Randbereiche der Seite (Seitenleiste, Navigation, Fußzeile) mit anderen Veranstaltungen des Hauses,
    - vergangene Tage und das heutige Tagesdatum,
    - Tage, die schon in der Tabelle stehen oder von einer Serie abgedeckt sind. */
 const WATCH = { v: 2, stand: "", seiten: {} }, WATCH_ROWS = [];
@@ -799,9 +800,18 @@ const knownDays = m => new Set([...m.events.map(e => e.k), ...(ROW_DAYS[m.slug] 
   const get = async (u, ms = 10000) => { const r = await fetch(u, { signal: AbortSignal.timeout(ms), headers: { "User-Agent": UA, "Accept": "text/html,text/plain" }, redirect: "follow" }); if (!r.ok) throw new Error("HTTP " + r.status); return (await r.text()).slice(0, 1500000); };
   const MONS = "januar|februar|märz|maerz|april|mai|juni|juli|august|september|oktober|november|dezember|jan|feb|mär|apr|jun|jul|aug|sep|sept|okt|nov|dez";
   // Sichtbaren Text aus HTML holen. Bewusst ohne verschachtelte Muster: Auch eine kaputte Seite mit tausenden offenen „<“ darf den Bau nicht bremsen.
-  const textOf = html => {
+  // Mit rand = true fallen Randbereiche weg: <aside>, <nav>, <footer> und Blöcke, deren class/id „sidebar“ oder „widget-area“ enthält.
+  // Dort stehen oft andere Veranstaltungen des Hauses (z. B. „17.10. Line Dance“ neben der Flohmarktseite eines Sportvereins).
+  const RAND = /^<(aside|nav|footer)\b|^<([a-z][a-z0-9]*)\b[^>]*\b(?:class|id)\s*=\s*["'][^"']*(?:sidebar|widget-area)/;
+  const textOf = (html, rand = false) => {
     const low = html.toLowerCase(); let out = "", i = 0, gt = -2;   // gt: Stelle des nächsten „>“ (gemerkt, damit nicht immer wieder gesucht wird)
     const cut = (from, to) => { out += html.slice(i, from) + " "; i = to; };
+    // Ende eines Elements finden (gleichnamige Elemente darin werden mitgezählt); ohne passendes Ende: -1, dann bleibt alles stehen
+    const endOf = (a, name) => { let depth = 0, p = a; const o = "<" + name, c = "</" + name;
+      for (let k = 0; k < 5000; k++) { const x = low.indexOf(o, p), y = low.indexOf(c, p); if (y < 0) return -1;
+        if (x >= 0 && x < y) { if (/[\s>/]/.test(low[x + o.length] || "")) depth++; p = x + o.length; continue; }
+        depth--; const g = low.indexOf(">", y); if (g < 0) return -1; if (depth <= 0) return g + 1; p = g + 1; }
+      return -1; };
     for (;;) {
       const a = low.indexOf("<", i); if (a < 0) break;
       if (low.startsWith("<!--", a)) { const e = low.indexOf("-->", a + 4); cut(a, e < 0 ? html.length : e + 3); continue; }
@@ -812,6 +822,7 @@ const knownDays = m => new Set([...m.events.map(e => e.k), ...(ROW_DAYS[m.slug] 
       if (gt < 0) break;                                                           // kein „>“ mehr: der Rest ist Text
       const n = low.indexOf("<", a + 1);
       if (n >= 0 && n < gt) { out += html.slice(i, a + 1); i = a + 1; continue; }  // „<“ vor dem nächsten „>“: das Zeichen ist Text
+      if (rand && low[a + 1] !== "/") { const r = RAND.exec(low.slice(a, gt + 1)); if (r) { const e = endOf(a, r[1] || r[2]); if (e > 0) { cut(a, e); continue; } } }
       cut(a, gt + 1);
     }
     return (out + html.slice(i)).replace(/&nbsp;|&#160;/g, " ").replace(/\s+/g, " ");
@@ -820,7 +831,10 @@ const knownDays = m => new Set([...m.events.map(e => e.k), ...(ROW_DAYS[m.slug] 
   // Je Fundstelle bleibt kurz der Text davor und danach im Arbeitsspeicher (nicht in der Datei), um Sammelseiten den Märkten zuzuordnen.
   const Y0 = TODAY.getUTCFullYear(), p2 = n => String(n).padStart(2, "0"), SEP = "(?:\\/|\\+|&|-|–|und|u\\.|bis)";
   const datesOf = html => {
-    const txt = textOf(html);
+    const voll = textOf(html), ohneRand = textOf(html, true);
+    const hat = t => /\b\d{1,2}\.\s?(?:\d{1,2}\.|[a-zäö]{3})/i.test(t);
+    // Randbereiche weglassen, außer die Seite hätte dann gar kein Datum mehr (dann lieber alles lesen, als einen echten Termin zu übersehen)
+    const txt = hat(ohneRand) || !hat(voll) ? ohneRand : voll;
     let occ = [];
     const push = (t, m) => occ.push({ t, i: m.index, j: m.index + m[0].length });
     // Jahr: vierstellig (auch nach Leerzeichen) oder zweistellig direkt angehängt und plausibel. „25.10. 10–16 Uhr“ ist keine Jahreszahl.

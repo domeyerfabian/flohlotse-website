@@ -1,26 +1,28 @@
 # Flohlotse: Website gebaut
 
-Stand 08.10.2026 · 206 Seiten (203 für Google) · 117 Märkte · 190 Termine in den nächsten 120 Tagen · 42 Ratgeber-Artikel · 786 Event-Auszeichnungen
+Stand 08.10.2026 · 207 Seiten (204 für Google) · 118 Märkte · 191 Termine in den nächsten 120 Tagen · 42 Ratgeber-Artikel · 792 Event-Auszeichnungen
 
 ## Zu erledigen: 3 Hinweise
 
 | Bereich | Hinweis |
 |---|---|
 | Uhrzeit fehlt | 2 Termine in den nächsten drei Wochen ohne Uhrzeit: Flohmarkt Kaufland Henstedt-Ulzburg am Sonntag, 11. Oktober; Flohmarkt im Parkhaus REWE-Center Wandsbek am Sonntag, 18. Oktober. Uhrzeit beim Veranstalter nachsehen und im Blatt „Termine“ (oder „Serien“) eintragen. |
-| Termin-Wächter | HNT Flohmarkt: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 17.10.2026. Bitte prüfen: https://www.hntonline.de/flohmarkt |
+| Termin-Wächter | HNT Flohmarkt: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 17.10.2026, 18.10.2026. Bitte prüfen: https://www.hntonline.de/flohmarkt |
 | Termin-Wächter | Flohmarkt famila Winsen (Luhe): Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 11.10.2026, 18.10.2026. Bitte prüfen: https://flohmaxx.de/flohmarkt/winsen-famila/2026-10-03 |
 
-## Termin-Wächter: 2 Vorschläge zum Einfügen
+## Termin-Wächter: 3 Vorschläge zum Einfügen
 
 Diese Tage stehen neu auf Veranstalterseiten und fehlen in der Tabelle. **Erst auf der Seite des Veranstalters prüfen**, ob es wirklich ein Markttermin ist und ob die Uhrzeit stimmt (eingesetzt ist die übliche Uhrzeit des Markts; ist sie leer, kennt die Tabelle noch keine). Dann die Zeilen markieren, kopieren und im Blatt „Termine“ in die erste freie Zeile einfügen. Die Spalten sind: Markt, Datum, Beginn, Ende, Status, Hinweis. Ein Vorschlag bleibt sieben Tage stehen und verschwindet, sobald der Tag in der Tabelle steht.
 
 ```
 flohmarkt-famila-winsen	11.10.2026	11:00	16:00	Findet statt	
 flohmarkt-famila-winsen	18.10.2026	11:00	16:00	Findet statt	
+hnt-flohmarkt-hausbruch	18.10.2026	09:00	14:00	Findet statt	
 ```
 
 Quellen:
 - https://flohmaxx.de/flohmarkt/winsen-famila/2026-10-03
+- https://www.hntonline.de/flohmarkt
 
 ## Zur Kenntnis
 

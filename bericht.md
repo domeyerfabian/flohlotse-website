@@ -1,12 +1,12 @@
 # Flohlotse: Website gebaut
 
-Stand 09.10.2026 · 207 Seiten (204 für Google) · 118 Märkte · 194 Termine in den nächsten 120 Tagen · 42 Ratgeber-Artikel · 809 Event-Auszeichnungen
+Stand 10.10.2026 · 207 Seiten (204 für Google) · 118 Märkte · 194 Termine in den nächsten 120 Tagen · 42 Ratgeber-Artikel · 808 Event-Auszeichnungen
 
 ## Zu erledigen: 2 Hinweise
 
 | Bereich | Hinweis |
 |---|---|
-| Termin-Wächter | HNT Flohmarkt: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 17.10.2026, 18.10.2026. Bitte prüfen: https://www.hntonline.de/flohmarkt |
+| Termin-Wächter | HNT Flohmarkt: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 17.10.2026, 18.10.2026, 19.10.2026, 24.10.2026. Bitte prüfen: https://www.hntonline.de/flohmarkt |
 | Termin-Wächter | Flohmarkt famila Winsen (Luhe): Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 11.10.2026, 18.10.2026. Bitte prüfen: https://flohmaxx.de/flohmarkt/winsen-famila/2026-10-03 |
 
 ## Termin-Wächter: 3 Vorschläge zum Einfügen

@@ -387,7 +387,7 @@
       if (!ok) c.remove(); else { var dd = c.querySelector(".dk-day"); if (dd && (k === TODAY || k === TOMORROW)) dd.textContent = (k === TODAY ? "Heute · " : "Morgen · ") + dd.textContent; }
       return ok;
     });
-    if (!all.length) { deck.hidden = true; document.getElementById("dkEmpty").hidden = false; }
+    if (!all.length) { deck.hidden = true; document.getElementById("dkEmpty").hidden = false; var dkSec = document.getElementById("dkSec"); if (dkSec) dkSec.hidden = true; }
     else {
       deck.classList.add("on");
       var cnt = document.getElementById("dkCount"), btnY = document.getElementById("dkYes"), btnN = document.getElementById("dkNo"), btnU = document.getElementById("dkUndo"), done = document.getElementById("dkDone"), hist = [], idx = 0, busy = false;
@@ -418,7 +418,7 @@
       btnN.addEventListener("click", function () { decide(-1); });
       btnU.addEventListener("click", undo);
       document.getElementById("dkAgain").addEventListener("click", function () { hist = []; idx = 0; all.forEach(function (c) { c.style.transition = "none"; c.style.transform = ""; c.style.opacity = ""; stamp(c, 0); }); lay(); fit(); });
-      document.addEventListener("keydown", function (e) { if (deck.hidden || /^(INPUT|TEXTAREA|SELECT)$/.test((e.target || {}).tagName || "") || e.altKey || e.ctrlKey || e.metaKey) return; if (e.key === "ArrowRight") { e.preventDefault(); decide(1); } else if (e.key === "ArrowLeft") { e.preventDefault(); decide(-1); } });
+      if (deck.hasAttribute("data-keys")) document.addEventListener("keydown", function (e) { if (deck.hidden || /^(INPUT|TEXTAREA|SELECT)$/.test((e.target || {}).tagName || "") || e.altKey || e.ctrlKey || e.metaKey) return; if (e.key === "ArrowRight") { e.preventDefault(); decide(1); } else if (e.key === "ArrowLeft") { e.preventDefault(); decide(-1); } });
       // Ziehen mit Finger oder Maus (senkrecht scrollt die Seite weiter)
       var drag = null, noClick = 0;
       stack.addEventListener("click", function (e) { if (Date.now() - noClick < 450) { e.preventDefault(); e.stopPropagation(); } }, true);
@@ -441,8 +441,51 @@
       stack.addEventListener("pointerup", end); stack.addEventListener("pointercancel", function (e) { if (drag && e.pointerId === drag.id) { var c = drag.c; drag = null; c.style.transition = "transform .2s ease-out"; c.style.transform = ""; stamp(c, 0); } });
       lay(); fit(); window.addEventListener("resize", fit);
       // Beim ersten Laden stupst die oberste Karte einmal nach rechts und links: So sieht man, dass sie sich wischen lässt
-      if (!RM) setTimeout(function () { var c = all[idx]; if (!c || drag || busy || hist.length) return; c.classList.add("nudge"); setTimeout(function () { c.classList.remove("nudge"); }, 1700); }, 700);
+      // Auf der Startseite erst, wenn der Stapel ins Bild kommt
+      var nudge = function () { var c = all[idx]; if (!c || drag || busy || hist.length) return; c.classList.add("nudge"); setTimeout(function () { c.classList.remove("nudge"); }, 1700); };
+      if (!RM) { if ("IntersectionObserver" in window) { var io = new IntersectionObserver(function (en) { if (en[0].isIntersecting) { io.disconnect(); setTimeout(nudge, 500); } }, { threshold: 0.6 }); io.observe(stack); } else setTimeout(nudge, 700); }
       if (document.fonts && document.fonts.ready) document.fonts.ready.then(fit);
     }
+  }
+
+  // Kasten „Aktuell“ auf der Startseite: Reiter zum Anklicken, blättert alle 7 Sekunden weiter.
+  // Pause bei Maus darüber, Fokus darin, verstecktem Tab oder wenn der Kasten nicht zu sehen ist. Nach einem Klick auf einen Reiter bleibt er stehen.
+  var news = document.getElementById("news");
+  if (news) {
+    var tabs = Array.prototype.slice.call(news.querySelectorAll(".akt-tab")), pans = Array.prototype.slice.call(news.querySelectorAll(".akt-p")), bar = document.getElementById("newsBar"), pBtn = document.getElementById("newsPause");
+    var cur = 0, auto = tabs.length > 1 && !(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches), hover = false, focus = false, seen = true, timer = 0, left = 7000, t0 = 0, DUR = 7000;
+    news.classList.add("on");
+    var show = function (i, byUser) {
+      cur = (i + tabs.length) % tabs.length;
+      tabs.forEach(function (t, k) { t.setAttribute("aria-selected", String(k === cur)); t.tabIndex = k === cur ? 0 : -1; });
+      pans.forEach(function (p, k) { p.classList.toggle("act", k === cur); p.setAttribute("aria-hidden", String(k !== cur)); });
+      if (byUser) { auto = false; syncBtn(); }
+      left = DUR; run();
+    };
+    var running = function () { return auto && !hover && !focus && seen && !document.hidden; };
+    var run = function () {
+      clearTimeout(timer);
+      if (bar) { bar.style.transition = "none"; bar.style.width = (100 * (1 - left / DUR)) + "%"; void bar.offsetWidth; }
+      if (!running()) { news.classList.toggle("paused", auto); return; }
+      news.classList.remove("paused"); t0 = Date.now();
+      if (bar) { bar.style.transition = "width " + left + "ms linear"; bar.style.width = "100%"; }
+      timer = setTimeout(function () { show(cur + 1); }, left);
+    };
+    var hold = function () { if (timer && t0) { left = Math.max(300, left - (Date.now() - t0)); } clearTimeout(timer); timer = 0; t0 = 0; run(); };
+    var syncBtn = function () { if (!pBtn) return; pBtn.setAttribute("aria-pressed", String(!auto)); pBtn.setAttribute("aria-label", auto ? "Automatisches Weiterblättern anhalten" : "Automatisch weiterblättern"); news.classList.toggle("stopped", !auto); };
+    tabs.forEach(function (t, k) { t.addEventListener("click", function () { show(k, true); }); });
+    news.querySelector(".akt-tabs").addEventListener("keydown", function (e) { var d = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0; if (!d) return; e.preventDefault(); show(cur + d, true); tabs[cur].focus(); });
+    if (pBtn) pBtn.addEventListener("click", function () { auto = !auto; syncBtn(); if (auto) { left = DUR; show(cur + 1); } else hold(); });
+    news.addEventListener("mouseenter", function () { hover = true; hold(); });
+    news.addEventListener("mouseleave", function () { hover = false; run(); });
+    news.addEventListener("focusin", function () { focus = true; hold(); });
+    news.addEventListener("focusout", function (e) { if (!news.contains(e.relatedTarget)) { focus = false; run(); } });
+    document.addEventListener("visibilitychange", function () { if (document.hidden) hold(); else run(); });
+    if ("IntersectionObserver" in window) new IntersectionObserver(function (en) { seen = en[0].isIntersecting; if (seen) run(); else hold(); }, { threshold: 0.5 }).observe(news);
+    // Wischen über den Kasten blättert vor oder zurück
+    var sx = null, sy = 0, panEl = document.getElementById("newsPanels");
+    panEl.addEventListener("touchstart", function (e) { sx = e.touches[0].clientX; sy = e.touches[0].clientY; }, { passive: true });
+    panEl.addEventListener("touchend", function (e) { if (sx === null) return; var dx = e.changedTouches[0].clientX - sx, dy = e.changedTouches[0].clientY - sy; sx = null; if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) show(cur + (dx < 0 ? 1 : -1), true); }, { passive: true });
+    syncBtn(); show(0);
   }
 })();

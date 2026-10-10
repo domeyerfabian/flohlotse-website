@@ -736,3 +736,39 @@ button.fav[aria-pressed="true"],.btn.fav-big[aria-pressed="true"]{background:var
 .dk-card.nudge .dk-stamp.no{animation:dkshowN 1.6s ease-in-out}
 @keyframes dkshowY{0%,10%,40%,100%{opacity:0}22%{opacity:1}}
 @keyframes dkshowN{0%,52%,82%,100%{opacity:0}66%{opacity:1}}
+/* Kasten „Aktuell“ auf der Startseite: ein Kasten mit Reitern statt einzelner Hinweise */
+.akt{margin-top:18px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.akt-head{display:flex;align-items:center;gap:8px;padding:12px 12px 0 12px}
+.akt-tabs{display:flex;gap:6px;flex:1;min-width:0;overflow-x:auto;scrollbar-width:none}
+.akt-tabs::-webkit-scrollbar{display:none}
+.akt-tab{display:inline-flex;align-items:center;gap:6px;flex:none;font:inherit;font-weight:700;font-size:14px;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:7px 13px;cursor:pointer;white-space:nowrap}
+.akt-tab .i{width:17px;height:17px}
+.akt-tab:hover{border-color:var(--ink)}
+.akt-tab[aria-selected="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.akt-pause{flex:none;display:inline-grid;place-items:center;width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer;padding:0}
+.akt-pause .i{width:14px;height:14px;grid-area:1/1}
+.akt-pause:hover{border-color:var(--ink)}
+.akt-pause .np-play,.akt.stopped .akt-pause .np-pause{display:none}
+.akt.stopped .akt-pause .np-play{display:block}
+.akt-bar{height:3px;margin:12px 12px 0;background:var(--line);border-radius:3px;overflow:hidden}
+.akt-bar i{display:block;height:100%;width:0;background:var(--ink);border-radius:3px}
+.akt.stopped .akt-bar{visibility:hidden}
+.akt-panels{padding:4px 16px 16px}
+.akt-p{display:flex;gap:14px;align-items:flex-start;padding-top:14px}
+.akt-p + .akt-p{border-top:1px solid var(--line);margin-top:14px}
+.akt-p > .i{width:28px;height:28px;flex:none;margin-top:1px}
+.akt-p b{display:block;font-family:var(--f-display);font-size:19px;line-height:1.25;letter-spacing:-.01em;text-wrap:balance}
+.akt-p p{margin:6px 0 0;font-size:15px;color:var(--muted)}
+.akt-p p a{color:var(--ink);font-weight:600}
+.akt-p .more-link{display:inline-flex;margin-top:8px;font-weight:700}
+.akt.on .akt-panels{display:grid}
+.akt.on .akt-p{grid-area:1/1;border:0;margin:0;visibility:hidden;opacity:0}
+.akt.on .akt-p.act{visibility:visible;opacity:1}
+@media (prefers-reduced-motion:no-preference){.akt.on .akt-p{transition:opacity .35s ease,visibility .35s}.akt.on .akt-p:not(.act){transform:translateX(12px)}.akt.on .akt-p{transition:opacity .35s ease,transform .35s ease,visibility .35s}}
+@media (min-width:700px){.akt-panels{padding:4px 20px 18px}.akt-head{padding:14px 14px 0}.akt-bar{margin:12px 14px 0}}
+/* Wischen & merken auf der Startseite */
+.home-deck .dk-intro{margin:-6px 0 0;color:var(--muted);font-size:15px;max-width:60ch}
+.deck.mini{margin-top:14px}
+.deck.mini .dk-card .note{display:none}
+.deck.mini .dk-card h2{font-size:23px}
+@media (max-width:420px){.akt-tab{padding:7px 12px}.akt-tab .i{display:none}}

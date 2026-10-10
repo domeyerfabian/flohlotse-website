@@ -572,7 +572,7 @@ const deckCard = e => {
 <h2>${esc(m.name)}${neuPill(m)}</h2><p class="meta ln">${ic("pin")}<span><b>${esc(m.area)}</b> · ${addrNb(m.addr)}</span></p>
 ${m.note ? `<p class="note">${esc(m.note)}${e.note ? " " + esc(e.note) : ""}</p>` : ""}${m.tags.length ? `<div class="row">${m.tags.map(t => `<span class="tag">${tagIc(t)}${esc(t)}</span>`).join("")}</div>` : ""}
 <p class="ln rhythm">${ic("repeat")}<span>${esc(m.rhythm)}</span></p><a class="route go" href="/flohmarkt/${m.slug}/">Zum Markt${ic("chev")}</a>
-<span class="dk-stamp yes" aria-hidden="true">${ic("thumbsup")}Merken</span><span class="dk-stamp no" aria-hidden="true">${ic("thumbsdown")}Nein</span></article>`;
+<span class="dk-stamp yes" aria-hidden="true">${ic("thumbsup")}Merken →</span><span class="dk-stamp no" aria-hidden="true">← Nein${ic("thumbsdown")}</span></article>`;
 };
 // Kartenstapel (Seite /entdecken/ und Startseite). mini = kompakte Fassung für die Startseite: ohne Beschreibung, ohne Tastatur.
 const deckHTML = mini => `<section class="deck${mini ? " mini" : ""}" id="deck"${mini ? "" : " data-keys"}${DK_EVS.length ? "" : " hidden"}>

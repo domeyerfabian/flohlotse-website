@@ -203,6 +203,10 @@ const MARKETS = data["Märkte"].filter(r => yes(r["Aktiv"]) && r["Kennung"] && v
   when: r["Rhythmus im Satz"], note: r["Kurzbeschreibung"], intro: r["Einleitung"], tips: lines(r["Tipps"]), hint: r["Hinweis"], oepnv: r["Haltestelle"],
   kw: r["Suchbegriff"], t: r["SEO-Titel"], d: r["SEO-Beschreibung"], kb: list(r["Ratgeber-Artikel"]), events: [],
   geo: r["Koordinaten"] || "", entry: String(r["Eintritt"] || "").trim(),
+  // Freiwillige Spalten für Besucher und Verkäufer (nur Angaben des Veranstalters)
+  park: String(r["Parken"] || "").trim(), food: String(r["Essen & Trinken"] || "").trim(), fee: String(r["Standgebühr"] || "").trim(),
+  signup: /^https?:\/\/[^\s"<>]+$/i.test(String(r["Anmeldung"] || "").trim()) ? String(r["Anmeldung"]).trim() : "", signupHint: String(r["Anmeldung Hinweis"] || "").trim(),
+  sellers: String(r["Händler"] || "").trim(),
   web: /^https?:\/\/[^\s"<>]+$/i.test(String(r["Veranstalter-Website"] || "").trim()) ? String(r["Veranstalter-Website"]).trim() : ""
 }));
 if (!MARKETS.length) throw new Error("Keine aktiven Märkte gefunden (Blatt „Märkte“, Spalte „Aktiv“). Die Website wurde nicht veröffentlicht, damit keine leere Seite online geht.");
@@ -407,6 +411,8 @@ const ICONS = {
   thumbsdown: "<g fill=\"none\" stroke=\"currentColor\" stroke-width=\"14\" stroke-linecap=\"round\" stroke-linejoin=\"round\" transform=\"matrix(1 0 0 -1 0 256)\"><path d=\"M32,112H76v96H32Z\"/><path d=\"M76,112,114,34c19,0,34,13,34,34V90h58c14,0,24,11,22,25l-11,76c-2,10-10,17-20,17H76\"/></g>",
   pause: "<path d=\"M92,44h20a8,8,0,0,1,8,8V204a8,8,0,0,1-8,8H92a8,8,0,0,1-8-8V52A8,8,0,0,1,92,44Zm52,0h20a8,8,0,0,1,8,8V204a8,8,0,0,1-8,8H144a8,8,0,0,1-8-8V52A8,8,0,0,1,144,44Z\"/>",
   play: "<path d=\"M92,46.4V209.6a8,8,0,0,0,12.2,6.8l130.6-81.6a8,8,0,0,0,0-13.6L104.2,39.6A8,8,0,0,0,92,46.4Z\"/>",
+  car: "<g fill=\"none\" stroke=\"currentColor\" stroke-width=\"13\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M36,124,62,72a16,16,0,0,1,14-8H180a16,16,0,0,1,14,8l26,52\"/><rect x=\"28\" y=\"124\" width=\"200\" height=\"56\" rx=\"12\"/><path d=\"M52,180v20M204,180v20\"/><path d=\"M68,152h16M172,152h16\"/></g>",
+  cup: "<g fill=\"none\" stroke=\"currentColor\" stroke-width=\"13\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M44,96H188v48a64,64,0,0,1-64,64H108a64,64,0,0,1-64-64Z\"/><path d=\"M188,108h8a28,28,0,0,1,0,56h-12\"/><path d=\"M84,36c-8,10,8,18,0,28M116,36c-8,10,8,18,0,28M148,36c-8,10,8,18,0,28\"/></g>",
   search: "<path d=\"M228.24,219.76l-51.38-51.38a86.15,86.15,0,1,0-8.48,8.48l51.38,51.38a6,6,0,0,0,8.48-8.48ZM38,112a74,74,0,1,1,74,74A74.09,74.09,0,0,1,38,112Z\"/>",
   frog: "<path d=\"M368 32c41.7 0 75.9 31.8 79.7 72.5l85.6 26.3c25.4 7.8 42.8 31.3 42.8 57.9 0 21.8-11.7 41.9-30.7 52.7l-144.5 82.1 92.5 92.5h50.7c17.7 0 32 14.3 32 32s-14.3 32-32 32h-64c-8.5 0-16.6-3.4-22.6-9.4L346.9 360.2c11.7-36 3.2-77.1-25.4-105.7-40.6-40.6-106.3-40.6-146.9-.1l-73.6 70c-6.4 6.1-6.7 16.2-.6 22.6s16.2 6.6 22.6.6l73.8-70.2.1-.1.1-.1c3.5-3.5 7.3-6.6 11.3-9.2 27.9-18.5 65.9-15.4 90.5 9.2 24.7 24.7 27.7 62.9 9 90.9-2.6 3.8-5.6 7.5-9 10.9l-37 37H352c17.7 0 32 14.3 32 32s-14.3 32-32 32H64c-35.3 0-64-28.7-64-64C0 249.6 127 112.9 289.3 97.5 296.2 60.2 328.8 32 368 32m0 104a24 24 0 1 0 0-48 24 24 0 1 0 0 48\"/>",
 };
@@ -509,8 +515,9 @@ const G = graph => ({ "@context": "https://schema.org", "@graph": graph });
 
 /* ---------------------------------------------------------------- Bausteine */
 // Freiwillige Spalte „Eintritt“ im Blatt Märkte: „frei“ oder ein Betrag wie „2 €“ / „2,50“. Nur dann gibt es Preisangaben für Google.
-const priceOf = v => { v = String(v || "").trim().toLowerCase(); if (!v) return null; if (/^(eintritt\s+)?(frei|kostenlos|gratis)$|^0([.,]0{1,2})?\s*(€|eur|euro)?$/.test(v)) return 0; const m = /^(\d{1,3})(?:[.,](\d{1,2}))?\s*(€|eur|euro)?$/.exec(v); return m ? +(m[1] + "." + (m[2] || "0")) : null; };
-const entryText = m => { const p = priceOf(m.entry); return p === null ? m.entry : p === 0 ? "frei" : p.toFixed(2).replace(".", ",").replace(",00", "") + " €"; };
+const priceOf = v => { v = String(v || "").trim().toLowerCase(); if (!v) return null; if (/^(eintritt\s+)?(frei|kostenlos|gratis)\b|^0([.,]0{1,2})?\s*(€|eur|euro)?\b/.test(v)) return 0; const m = /^(\d{1,3})(?:[.,](\d{1,2}))?\s*(€|eur|euro)(?=$|[\s,;(])/.exec(v) || /^(\d{1,3})(?:[.,](\d{1,2}))?$/.exec(v); return m ? +(m[1] + "." + (m[2] || "0")) : null; };
+// Anzeige: reine Angaben („frei“, „3 €“) einheitlich, längere Texte wie eingetragen
+const entryText = m => { const p = priceOf(m.entry), plainV = /^(eintritt\s+)?(frei|kostenlos|gratis)$|^\d{1,3}([.,]\d{1,2})?\s*(€|eur|euro)?$/i.test(m.entry); return p === null || !plainV ? m.entry : p === 0 ? "frei" : p.toFixed(2).replace(".", ",").replace(",00", "") + " €"; };
 function eventLD(e) {
   const m = e.m, parts = m.addr.split(", "), pm = /(\d{5})\s+(.+)/.exec(parts[parts.length - 1] || "");
   const ev = {
@@ -1288,7 +1295,9 @@ for (const m of MARKETS) {
     [`Wo findet ${nom} statt?`, `${m.place !== m.name && !m.addr.toLowerCase().startsWith(m.place.toLowerCase()) ? m.place + ", " : ""}${m.addr}${m.oepnv ? `. Nächste Haltestelle: ${m.oepnv}` : ""}.`],
     ...(m.entry ? [[`Kostet ${nom} Eintritt?`, priceOf(m.entry) === 0 ? "Nein, der Eintritt ist frei." : priceOf(m.entry) !== null ? `Ja, der Eintritt kostet ${entryText(m)}.` : `${cap(m.entry)}.`.replace(/\.\.$/, ".")]] : []),
     ...(m.tags.includes("Überdacht") ? [[`Findet ${nom} auch bei Regen statt?`, `Der Markt ist ganz oder teilweise überdacht. Kurzfristige Absagen sind trotzdem möglich, schau am besten vorher beim Veranstalter nach.`]] : []),
-    [`Wie bekomme ich einen Stand ${bei}?`, `Standplätze vergibt der Veranstalter${m.org ? " " + m.org : ""}. Frag am besten dort nach, wie die Anmeldung läuft${m.web ? `: [Website des Veranstalters](${m.web})` : ""}. Tipps für deinen Stand stehen im Ratgeber ${KBY["flohmarktstand-anmelden"] ? "[Flohmarktstand anmelden](/ratgeber/flohmarktstand-anmelden/)" : "Verkaufen"}.`]
+    ...(m.park ? [[`Wo kann ich ${bei} parken?`, m.park]] : []),
+    ...(m.food ? [[`Gibt es ${bei} etwas zu essen und zu trinken?`, m.food]] : []),
+    [`Wie bekomme ich einen Stand ${bei}?`, `Standplätze vergibt der Veranstalter${m.org ? " " + m.org : ""}.${m.fee ? ` Standgebühr laut Veranstalter: ${m.fee.replace(/\.$/, "")}.` : ""}${m.signupHint ? " " + m.signupHint.replace(/([^.!?])$/, "$1.") : ""} ${m.signup ? `Zur Anmeldung: [Anmeldeseite des Veranstalters](${m.signup}).` : `Frag am besten dort nach, wie die Anmeldung läuft${m.web ? `: [Website des Veranstalters](${m.web})` : ""}.`} Tipps für deinen Stand stehen im Ratgeber ${KBY["flohmarktstand-anmelden"] ? "[Flohmarktstand anmelden](/ratgeber/flohmarktstand-anmelden/)" : "Verkaufen"}.`]
   ];
   const Ym = far ? String(far.date.getUTCFullYear()) : yearSpan(m.events.filter(e => !e.cancelled).slice(0, 1).length ? [first] : []);
   const baseT = m.t || `${m.name}: Termine & Öffnungszeiten`;
@@ -1310,11 +1319,12 @@ ${favBtn(m, "btn fav-big")}
 <div class="answer"><span class="kicker">Kurz gesagt</span><p>${answer}</p></div>
 <dl class="facts"><div><dt>${ic("cal")}Wann</dt><dd>${esc(cap(when) || (far ? m.later.slice(0, 4).map(x => fmtDateY(x.date)).join(" · ") : "Derzeit kein Termin"))}</dd></div><div><dt>${ic("clock")}Uhrzeit</dt><dd>${!first ? (far && far.start ? timeText(far) : "–") : mixed ? "je nach Termin, siehe unten" : timeText(first)}</dd></div>
 <div><dt>${ic("pin")}Adresse</dt><dd>${addrNb(m.addr)}<br><a class="route" href="${route}" rel="noopener">${ic("route")}Route planen</a></dd></div>
-${m.oepnv ? `<div><dt>${ic("tram")}Nächste Haltestelle</dt><dd>${esc(m.oepnv)}</dd></div>` : ""}${m.entry ? `<div><dt>${ic("tag")}Eintritt</dt><dd>${esc(entryText(m))}</dd></div>` : ""}${m.org || m.web ? `<div><dt>${ic("user")}Veranstalter</dt><dd>${esc(m.org)}${m.web ? `${m.org ? "<br>" : ""}<a href="${esc(m.web)}" rel="noopener">Website des Veranstalters</a>` : ""}</dd></div>` : ""}${m.tags.length ? `<div><dt>${ic("tag")}Art des Markts</dt><dd class="tags-dd">${m.tags.map(t => CAT_BY_TAG[t] ? `<a class="tag" href="/${CAT_BY_TAG[t].s}/">${tagIc(t)}${esc(t)}</a>` : `<span class="tag">${tagIc(t)}${esc(t)}</span>`).join(" ")}</dd></div>` : ""}</dl>
+${m.oepnv ? `<div><dt>${ic("tram")}Nächste Haltestelle</dt><dd>${esc(m.oepnv)}</dd></div>` : ""}${m.entry ? `<div><dt>${ic("tag")}Eintritt</dt><dd>${esc(entryText(m))}</dd></div>` : ""}${m.park ? `<div><dt>${ic("car")}Parken</dt><dd>${esc(m.park)}</dd></div>` : ""}${m.food ? `<div><dt>${ic("cup")}Essen &amp; Trinken</dt><dd>${esc(m.food)}</dd></div>` : ""}${m.org || m.web ? `<div><dt>${ic("user")}Veranstalter</dt><dd>${esc(m.org)}${m.web ? `${m.org ? "<br>" : ""}<a href="${esc(m.web)}" rel="noopener">Website des Veranstalters</a>` : ""}</dd></div>` : ""}${m.tags.length ? `<div><dt>${ic("tag")}Art des Markts</dt><dd class="tags-dd">${m.tags.map(t => CAT_BY_TAG[t] ? `<a class="tag" href="/${CAT_BY_TAG[t].s}/">${tagIc(t)}${esc(t)}</a>` : `<span class="tag">${tagIc(t)}${esc(t)}</span>`).join(" ")}</dd></div>` : ""}</dl>
 <div class="share-row">${shareBtn(m, first, "btn share-big")}<a class="route" href="${route}" rel="noopener">${ic("route")}Route planen</a></div>${first ? wxSay(wxEv(first), "für " + (first.k === key(TODAY) ? "heute" : first.k === key(addDays(TODAY, 1)) ? "morgen" : WDL[first.date.getUTCDay()])) : ""}
 ${m.intro ? `<section class="block kb-body"><h2>Über den Markt</h2><p>${rich(m.intro)}</p></section>` : ""}
 <section class="block"><h2>Nächste Termine</h2>${nxAll.length ? `<ul class="dates">${nxAll.map(e => `<li${e.cancelled ? ' class="off"' : ""} data-day="${e.k}"><span class="dt">${e.far ? fmtDateY(e.date) : fmtDate(e.date)}</span><span class="tm">${e.cancelled ? "fällt aus" : timeText(e)}</span>${e.note ? `<span class="meta">${esc(e.note)}</span>` : ""}</li>`).join("")}</ul>` : '<p class="meta">Die nächsten Termine sind noch nicht angekündigt.</p>'}</section>
 ${m.tips.length ? `<section class="block kb-body"><h2>Gut zu wissen</h2><ul class="tips">${m.tips.map(t => `<li>${rich(t)}</li>`).join("")}</ul></section>` : ""}
+${m.fee || m.signup || m.signupHint || m.sellers ? `<section class="block sell"><h2>Selbst verkaufen</h2><dl class="facts">${m.fee ? `<div><dt>${ic("tag")}Standgebühr</dt><dd>${esc(m.fee)}</dd></div>` : ""}${m.sellers ? `<div><dt>${ic("user")}Verkäufer</dt><dd>${esc(m.sellers)}</dd></div>` : ""}${m.signupHint ? `<div><dt>${ic("list")}Anmeldung</dt><dd>${esc(m.signupHint)}</dd></div>` : ""}</dl>${m.signup ? `<p class="sell-go"><a class="route" href="${esc(m.signup)}" rel="noopener">Zur Anmeldung beim Veranstalter${ic("chev")}</a></p>` : ""}<p class="meta small">Stand der Angaben: Veranstalter, ohne Gewähr. Preise und Regeln können sich ändern.</p></section>` : ""}
 ${m.hint ? `<p class="hint">${rich(m.hint)}</p>` : ""}
 ${faqBlock(mFaq, `Häufige Fragen zu ${esc(m.short)}`)}
 <p class="hint">Angaben nach öffentlichen Informationen des Veranstalters${m.web ? ` (<a href="${esc(m.web)}" rel="noopener">Website</a>)` : ""}, ohne Gewähr. Märkte können kurzfristig ausfallen. Du veranstaltest diesen Markt? <a href="/veranstalter/#korrektur">Eintrag ändern oder entfernen lassen</a>.</p>

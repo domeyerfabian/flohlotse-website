@@ -20,7 +20,7 @@
   var NOW = berlin();
   // Die Seite wird jede Nacht neu gebaut. Zwischen Mitternacht und dem Neubau (oder wenn ein Neubau ausfällt) ist sie von gestern:
   // Dann verschwinden die vergangenen Tage, und ein Hinweis sagt, von wann der Stand ist.
-  var stand = document.documentElement.getAttribute("data-stand"), me0 = document.querySelector('script[src*="/assets/site.js"]'), ROOT0 = me0 ? me0.getAttribute("src").replace(/\/assets\/site\.js.*$/, "") : "";
+  var stand = document.documentElement.getAttribute("data-stand"), me0 = document.querySelector('script[src*="/assets/site."]'), ROOT0 = me0 ? me0.getAttribute("src").replace(/\/assets\/site\..*$/, "") : "";
   if (NOW && stand && stand < NOW.day) {
     var dated = document.querySelectorAll("main [data-day]"), old = 0;
     dated.forEach(function (el) { if (el.getAttribute("data-day") < NOW.day) { el.remove(); old++; } });
@@ -34,7 +34,7 @@
     }
   }
   // Pfad der Website (falls sie in einem Unterordner liegt), abgeleitet aus dem Pfad dieses Skripts
-  var me = document.querySelector('script[src*="/assets/site.js"]'), ROOT = me ? me.getAttribute("src").replace(/\/assets\/site\.js.*$/, "") : "";
+  var me = document.querySelector('script[src*="/assets/site."]'), ROOT = me ? me.getAttribute("src").replace(/\/assets\/site\..*$/, "") : "";
   // Filter: Art des Markts (Termine-Seite) und Umkreis nach Postleitzahl oder Standort. Alles passiert im Browser.
   var filter = document.getElementById("filter"), near = document.getElementById("near");
   var F = { tag: "", origin: null, km: 10, label: "" };
@@ -267,5 +267,182 @@
     window.addEventListener("resize", scale);
     (document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve()).then(render);
     render();
+  }
+  /* Merkliste: gemerkte Märkte liegen nur im Browser (Local Storage, Schlüssel „flohlotse-merkliste“, nur die Kennungen der Märkte).
+     Angelegt wird sie erst, wenn jemand auf ein Herz tippt. Nichts davon wird an den Server geschickt. */
+  var FK = "flohlotse-merkliste", SLUG_OK = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+  var favOk = (function () { try { return !!window.localStorage && typeof localStorage.getItem === "function"; } catch (e) { return false; } })();
+  var favGet = function () { try { var v = JSON.parse(localStorage.getItem(FK) || "[]"); return Array.isArray(v) ? v.filter(function (x) { return typeof x === "string" && SLUG_OK.test(x); }) : []; } catch (e) { return []; } };
+  var favSet = function (a) { try { if (a.length) localStorage.setItem(FK, JSON.stringify(a)); else localStorage.removeItem(FK); return true; } catch (e) { return false; } };
+  var favHas = function (s) { return favGet().indexOf(s) > -1; };
+  // kurze Meldung unten am Bildschirm (schwarz = Hinweis), auf Wunsch mit Link oder Knopf
+  var toastEl = null, toastT = 0;
+  var toast = function (msg, act, fn) {
+    if (!toastEl) { toastEl = document.createElement("div"); toastEl.className = "toast"; toastEl.setAttribute("role", "status"); toastEl.setAttribute("aria-live", "polite"); document.body.appendChild(toastEl); }
+    toastEl.innerHTML = ""; var t = document.createElement("span"); t.textContent = msg; toastEl.appendChild(t);
+    if (act) { var a; if (typeof fn === "string") { a = document.createElement("a"); a.href = fn; } else { a = document.createElement("button"); a.type = "button"; a.addEventListener("click", function () { fn(); toastEl.classList.remove("on"); }); } a.textContent = act; toastEl.appendChild(a); }
+    toastEl.classList.add("on"); clearTimeout(toastT); toastT = setTimeout(function () { toastEl.classList.remove("on"); }, 4000);
+  };
+  var favSync = function () {
+    var a = favGet();
+    document.querySelectorAll("button[data-fav]").forEach(function (b) {
+      var on = a.indexOf(b.getAttribute("data-fav")) > -1, n = b.getAttribute("data-name") || "Markt";
+      b.setAttribute("aria-pressed", String(on)); b.setAttribute("aria-label", on ? n + " von der Merkliste nehmen" : n + " merken");
+      var l = b.querySelector(".fav-l"); if (l) l.textContent = on ? "Gemerkt" : "Merken";
+    });
+    document.querySelectorAll(".fav-n").forEach(function (x) { x.textContent = a.length > 99 ? "99+" : String(a.length); x.hidden = !a.length; });
+    document.querySelectorAll(".fav-top").forEach(function (x) { x.setAttribute("aria-label", a.length ? "Merkliste, " + a.length + (a.length === 1 ? " Markt" : " Märkte") : "Merkliste"); x.classList.toggle("has", a.length > 0); });
+  };
+  // on: true = merken, false = entfernen, nichts = umschalten. Ergebnis: neuer Zustand oder null, wenn der Browser nichts speichern lässt.
+  var favToggle = function (s, on) {
+    var a = favGet(), i = a.indexOf(s); if (on === undefined) on = i < 0;
+    if (on && i < 0) a.push(s); if (!on && i > -1) a.splice(i, 1);
+    if (!favSet(a)) { toast("Merken klappt in diesem Browser gerade nicht, zum Beispiel im privaten Fenster."); return null; }
+    favSync(); try { document.dispatchEvent(new CustomEvent("flfav")); } catch (e) {}
+    return on;
+  };
+  if (favOk) {
+    document.querySelectorAll("button[data-fav]").forEach(function (b) { b.hidden = false; });
+    document.addEventListener("click", function (e) {
+      var b = e.target.closest && e.target.closest("button[data-fav]"); if (!b) return;
+      var s = b.getAttribute("data-fav"), n = b.getAttribute("data-name") || "Markt", on = favToggle(s);
+      if (on === null) return;
+      if (b.classList.contains("fav")) { b.classList.remove("pop"); void b.offsetWidth; if (on) b.classList.add("pop"); }
+      if (!document.getElementById("merk")) toast(on ? "„" + n + "“ ist auf deiner Merkliste." : "„" + n + "“ ist nicht mehr auf der Merkliste.", on ? "Ansehen" : "Rückgängig", on ? ROOT + "/merkliste/" : function () { favToggle(s, true); });
+    });
+    window.addEventListener("storage", function (e) { if (e.key === FK || e.key === null) { favSync(); try { document.dispatchEvent(new CustomEvent("flfav")); } catch (x) {} } });
+    favSync();
+  }
+  var esc2 = function (t) { return String(t).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); };
+  var dayAdd = function (k, n) { var p = k.split("-"), d = new Date(Date.UTC(+p[0], +p[1] - 1, +p[2] + n)); return d.toISOString().slice(0, 10); };
+  var TODAY = NOW ? NOW.day : new Date().toISOString().slice(0, 10), TOMORROW = dayAdd(TODAY, 1);
+  var dayLab = function (k) { if (k === TODAY) return "Heute"; if (k === TOMORROW) return "Morgen"; var p = k.split("-"), d = new Date(Date.UTC(+p[0], +p[1] - 1, +p[2])); return ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"][d.getUTCDay()] + " " + p[2] + "." + p[1] + "." + (p[0] !== TODAY.slice(0, 4) ? p[0] : ""); };
+
+  // Seite Merkliste: Daten der Märkte laden und die gemerkten mit ihren nächsten Terminen zeigen
+  var merk = document.getElementById("merk");
+  if (merk) {
+    var DATA = null, msg = document.getElementById("merkMsg"), tools = document.getElementById("merkTools"), imp = null;
+    try { var hm0 = new URLSearchParams(location.hash.slice(1)).get("m"); if (hm0) imp = hm0.split(",").filter(function (x) { return SLUG_OK.test(x); }).slice(0, 200); } catch (e) {}
+    var say = function (html) { msg.innerHTML = html || ""; };
+    var spr = (function () { var u = document.querySelector(".fav-top use"); return u ? u.getAttribute("href").replace(/#.*$/, "") : ROOT + "/assets/icons.svg"; })();
+    var svg = function (id, cls) { return '<svg class="i ' + cls + '" aria-hidden="true" focusable="false"><use href="' + spr + "#i-" + id + '"/></svg>'; };
+    var card = function (s) {
+      var d = DATA[s], dates = d[3].filter(function (x) { return x[0] >= TODAY; });
+      var dl = dates.length ? '<ul class="mk-dates">' + dates.map(function (x) { return '<li' + (x[1] === "fällt aus" ? ' class="off"' : "") + '><b>' + dayLab(x[0]) + "</b>" + (x[1] ? " · " + esc2(x[1]) : "") + "</li>"; }).join("") + "</ul>" : '<p class="meta">Zurzeit ist kein Termin bekannt.</p>';
+      return '<article class="mk"><div class="mk-top"><h2><a href="' + ROOT + "/flohmarkt/" + s + '/">' + esc2(d[0]) + '</a></h2><button type="button" class="fav" data-fav="' + s + '" data-name="' + esc2(d[0]) + '" aria-pressed="true" aria-label="' + esc2(d[0]) + ' von der Merkliste nehmen">' + svg("heart", "ho") + svg("heartfill", "hf") + "</button></div>" +
+        '<p class="meta">' + esc2(d[1]) + "</p>" + dl + '<p class="ln rh">' + svg("repeat", "") + "<span>" + esc2(d[2]) + "</span></p></article>";
+    };
+    var render = function () {
+      if (!DATA) return;
+      if (!favOk) { merk.innerHTML = '<div class="empty">Dein Browser lässt hier nichts speichern, zum Beispiel im privaten Fenster. Dann funktioniert die Merkliste leider nicht.</div>'; return; }
+      var a = favGet(), known = a.filter(function (s) { return DATA[s]; }), gone = a.length - known.length, out = "";
+      if (gone) { favSet(known); favSync(); say(gone === 1 ? "Ein gemerkter Markt steht nicht mehr im Kalender und wurde entfernt." : gone + " gemerkte Märkte stehen nicht mehr im Kalender und wurden entfernt."); }
+      if (imp) {
+        var neu = imp.filter(function (s) { return DATA[s] && known.indexOf(s) < 0; });
+        out += neu.length ? '<div class="mk-imp"><p><b>Dieser Link enthält ' + (neu.length === 1 ? "einen Markt" : neu.length + " Märkte") + ", die noch nicht auf deiner Merkliste " + (neu.length === 1 ? "steht" : "stehen") + ':</b> ' + neu.map(function (s) { return esc2(DATA[s][0]); }).join(", ") + '</p><div class="share-row"><button type="button" class="btn" id="mkImpYes">Übernehmen</button><button type="button" class="btn" id="mkImpNo">Nein danke</button></div></div>' : "";
+        if (!neu.length) { imp = null; try { history.replaceState(null, "", location.pathname); } catch (e) {} }
+      }
+      var nx = function (s) { var x = DATA[s][3].filter(function (y) { return y[0] >= TODAY && y[1] !== "fällt aus"; })[0]; return x ? x[0] : "9999"; };
+      known.sort(function (p, q) { return nx(p) < nx(q) ? -1 : nx(p) > nx(q) ? 1 : DATA[p][0].localeCompare(DATA[q][0], "de"); });
+      out += known.length ? '<p class="mk-n">' + (known.length === 1 ? "1 Markt" : known.length + " Märkte") + ", sortiert nach dem nächsten Termin.</p>" + '<div class="mk-list">' + known.map(card).join("") + "</div>"
+        : '<div class="empty mk-empty"><p><b>Noch nichts gemerkt.</b></p><p>Tipp bei einem Termin auf das Herz oder wisch dich durch die Märkte von heute und morgen.</p><div class="share-row"><a class="btn" href="' + ROOT + '/entdecken/">Wischen &amp; merken</a><a class="route" href="' + ROOT + '/termine/">Alle Termine</a></div></div>';
+      merk.innerHTML = out; tools.hidden = !known.length;
+      var y = document.getElementById("mkImpYes");
+      if (y) { y.addEventListener("click", function () { var a2 = favGet(); imp.forEach(function (s) { if (DATA[s] && a2.indexOf(s) < 0) a2.push(s); }); if (favSet(a2)) { favSync(); say("Übernommen."); } imp = null; try { history.replaceState(null, "", location.pathname); } catch (e) {} render(); });
+        document.getElementById("mkImpNo").addEventListener("click", function () { imp = null; try { history.replaceState(null, "", location.pathname); } catch (e) {} render(); }); }
+    };
+    // Herz auf der Merkliste: Markt entfernen, mit „Rückgängig“
+    merk.addEventListener("click", function (e) {
+      var b = e.target.closest("button[data-fav]"); if (!b) return;
+      var s = b.getAttribute("data-fav"), n = b.getAttribute("data-name");
+      setTimeout(function () { if (!favHas(s)) { render(); say("„" + esc2(n) + "“ entfernt. "); var u = document.createElement("button"); u.type = "button"; u.className = "linkish"; u.textContent = "Rückgängig"; u.addEventListener("click", function () { favToggle(s, true); say(""); render(); }); msg.appendChild(u); } }, 0);
+    });
+    document.addEventListener("flfav", function () { if (!merk.contains(document.activeElement)) render(); });
+    document.getElementById("merkLink").addEventListener("click", function () {
+      var a = favGet().filter(function (s) { return DATA && DATA[s]; }); if (!a.length) return;
+      var url = location.origin + ROOT + "/merkliste/#m=" + a.join(",");
+      if (navigator.share) { navigator.share({ title: "Meine Flohmarkt-Merkliste", url: url }).catch(function () {}); return; }
+      var ok = function () { say("Link kopiert. Schick ihn dir selbst, dann hast du deine Merkliste überall."); };
+      if (navigator.clipboard) navigator.clipboard.writeText(url).then(ok, function () { prompt("Link zur Merkliste:", url); }); else prompt("Link zur Merkliste:", url);
+    });
+    document.getElementById("merkClear").addEventListener("click", function () {
+      if (!confirm("Merkliste wirklich leeren? Das lässt sich nicht rückgängig machen.")) return;
+      favSet([]); favSync(); say("Die Merkliste ist leer."); render();
+    });
+    fetch(merk.getAttribute("data-src")).then(function (r) { if (!r.ok) throw new Error(); return r.json(); }).then(function (j) { DATA = j.m || {}; render(); })
+      .catch(function () { merk.innerHTML = '<div class="empty">Die Merkliste konnte gerade nicht geladen werden. Versuch es gleich noch einmal.</div>'; });
+  }
+
+  // Wischen & merken: Karten von heute und morgen. Rechts = merken, links = weiter (wird nicht gespeichert).
+  var deck = document.getElementById("deck"), stack = document.getElementById("dkStack");
+  if (deck && stack && !deck.hidden && !favOk) {
+    document.getElementById("dkBtns").hidden = true;
+    var nt = document.createElement("p"); nt.className = "empty"; nt.textContent = "Dein Browser lässt hier nichts speichern, zum Beispiel im privaten Fenster. Deshalb gibt es die Märkte hier als Liste."; deck.insertBefore(nt, stack);
+  }
+  if (deck && stack && favOk && !deck.hidden) {
+    var all = Array.prototype.slice.call(stack.querySelectorAll(".dk-card")), RM = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+    all = all.filter(function (c) {
+      var k = c.getAttribute("data-day"), e = c.getAttribute("data-e");
+      var ok = NOW ? (k === TODAY && !(e && NOW.hm >= e)) || k === TOMORROW : true;
+      if (!ok) c.remove(); else { var dd = c.querySelector(".dk-day"); if (dd && (k === TODAY || k === TOMORROW)) dd.textContent = (k === TODAY ? "Heute · " : "Morgen · ") + dd.textContent; }
+      return ok;
+    });
+    if (!all.length) { deck.hidden = true; document.getElementById("dkEmpty").hidden = false; }
+    else {
+      deck.classList.add("on");
+      var cnt = document.getElementById("dkCount"), btnY = document.getElementById("dkYes"), btnN = document.getElementById("dkNo"), btnU = document.getElementById("dkUndo"), done = document.getElementById("dkDone"), hist = [], idx = 0, busy = false;
+      all.forEach(function (c) { if (favHas(c.getAttribute("data-fav"))) { var h = document.createElement("span"); h.className = "dk-had"; h.textContent = "Schon auf deiner Merkliste"; c.insertBefore(h, c.firstChild); } });
+      var fit = function () { var h = 0; stack.style.height = ""; deck.classList.add("measure"); all.forEach(function (c) { h = Math.max(h, c.offsetHeight); }); deck.classList.remove("measure"); if (h) stack.style.height = (h + 18) + "px"; };
+      var lay = function () {
+        all.forEach(function (c, i) { var r = i - idx; c.className = "dk-card " + (r < 0 ? "gone" : r === 0 ? "c0" : r === 1 ? "c1" : r === 2 ? "c2" : "cx"); if (r !== 0) { c.style.transform = ""; c.style.opacity = ""; } c.setAttribute("aria-hidden", String(r !== 0)); c.querySelectorAll("a").forEach(function (a) { a.tabIndex = r === 0 ? 0 : -1; }); });
+        var end = idx >= all.length; done.hidden = !end; stack.hidden = end; document.getElementById("dkBtns").hidden = end; btnU.disabled = !hist.length;
+        if (!end) cnt.textContent = (idx + 1) + " von " + all.length;
+        else { var n = hist.filter(function (x) { return x.dir > 0; }).length; cnt.textContent = ""; document.getElementById("dkDoneP").textContent = n ? "Du hast " + (n === 1 ? "einen Markt" : n + " Märkte") + " gemerkt. Alle stehen auf deiner Merkliste." : "Diesmal war nichts für dich dabei. Alle Termine der nächsten Wochen findest du im Kalender."; }
+      };
+      var stamp = function (c, dx) { var y = c.querySelector(".dk-stamp.yes"), n = c.querySelector(".dk-stamp.no"), v = Math.max(-1, Math.min(1, dx / 90)); y.style.opacity = v > 0 ? v : 0; n.style.opacity = v < 0 ? -v : 0; c.classList.toggle("to-yes", v > 0.35); c.classList.toggle("to-no", v < -0.35); };
+      var decide = function (dir) {
+        if (busy || idx >= all.length) return; var c = all[idx], s = c.getAttribute("data-fav"), was = favHas(s);
+        if (dir > 0 && favToggle(s, true) === null) return;
+        hist.push({ dir: dir, was: was }); busy = true; stamp(c, dir * 120);
+        var fin = function () { busy = false; idx++; lay(); };
+        if (RM) return fin();
+        c.style.transition = "transform .32s ease-in, opacity .32s ease-in"; c.style.transform = "translate(" + (dir * 1.4 * stack.offsetWidth) + "px, 30px) rotate(" + (dir * 24) + "deg)"; c.style.opacity = "0";
+        setTimeout(fin, 330);
+      };
+      var undo = function () {
+        if (busy || !hist.length) return; var h = hist.pop(); idx--; var c = all[idx];
+        if (h.dir > 0 && !h.was) favToggle(c.getAttribute("data-fav"), false);
+        c.style.transition = "none"; c.style.transform = ""; c.style.opacity = ""; stamp(c, 0); lay();
+      };
+      btnY.addEventListener("click", function () { decide(1); });
+      btnN.addEventListener("click", function () { decide(-1); });
+      btnU.addEventListener("click", undo);
+      document.getElementById("dkAgain").addEventListener("click", function () { hist = []; idx = 0; all.forEach(function (c) { c.style.transition = "none"; c.style.transform = ""; c.style.opacity = ""; stamp(c, 0); }); lay(); fit(); });
+      document.addEventListener("keydown", function (e) { if (deck.hidden || /^(INPUT|TEXTAREA|SELECT)$/.test((e.target || {}).tagName || "") || e.altKey || e.ctrlKey || e.metaKey) return; if (e.key === "ArrowRight") { e.preventDefault(); decide(1); } else if (e.key === "ArrowLeft") { e.preventDefault(); decide(-1); } });
+      // Ziehen mit Finger oder Maus (senkrecht scrollt die Seite weiter)
+      var drag = null, noClick = 0;
+      stack.addEventListener("click", function (e) { if (Date.now() - noClick < 450) { e.preventDefault(); e.stopPropagation(); } }, true);
+      stack.addEventListener("pointerdown", function (e) {
+        var c = e.target.closest(".dk-card.c0"); if (!c || busy || (e.pointerType === "mouse" && e.button !== 0)) return;
+        drag = { c: c, x: e.clientX, y: e.clientY, t: Date.now(), dx: 0, dy: 0, id: e.pointerId, moved: false };
+      });
+      stack.addEventListener("pointermove", function (e) {
+        if (!drag || e.pointerId !== drag.id) return; drag.dx = e.clientX - drag.x; drag.dy = e.clientY - drag.y;
+        if (!drag.moved) { if (Math.abs(drag.dx) < 8) return; if (Math.abs(drag.dy) > Math.abs(drag.dx)) { drag = null; return; } drag.moved = true; try { drag.c.setPointerCapture(e.pointerId); } catch (x) {} drag.c.style.transition = "none"; }
+        drag.c.style.transform = "translate(" + drag.dx + "px," + (drag.dy * 0.2) + "px) rotate(" + (drag.dx / 18) + "deg)"; stamp(drag.c, drag.dx);
+      });
+      var end = function (e) {
+        if (!drag || e.pointerId !== drag.id) return; var d = drag; drag = null; if (!d.moved) return;
+        var v = Math.abs(d.dx) / Math.max(1, Date.now() - d.t), thr = Math.min(100, stack.offsetWidth * 0.25);
+        if (Math.abs(d.dx) > thr || (v > 0.6 && Math.abs(d.dx) > 40)) decide(d.dx > 0 ? 1 : -1);
+        else { d.c.style.transition = RM ? "none" : "transform .2s ease-out"; d.c.style.transform = ""; stamp(d.c, 0); }
+        noClick = Date.now();
+      };
+      stack.addEventListener("pointerup", end); stack.addEventListener("pointercancel", function (e) { if (drag && e.pointerId === drag.id) { var c = drag.c; drag = null; c.style.transition = "transform .2s ease-out"; c.style.transform = ""; stamp(c, 0); } });
+      lay(); fit(); window.addEventListener("resize", fit);
+      // Beim ersten Laden stupst die oberste Karte einmal nach rechts und links: So sieht man, dass sie sich wischen lässt
+      if (!RM) setTimeout(function () { var c = all[idx]; if (!c || drag || busy || hist.length) return; c.classList.add("nudge"); setTimeout(function () { c.classList.remove("nudge"); }, 1700); }, 700);
+      if (document.fonts && document.fonts.ready) document.fonts.ready.then(fit);
+    }
   }
 })();

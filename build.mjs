@@ -202,7 +202,7 @@ const MARKETS = data["Märkte"].filter(r => yes(r["Aktiv"]) && r["Kennung"] && v
   area: r["Stadtteil"], addr: r["Adresse"], bez: r["Bezirk"], org: r["Veranstalter"], tags: list(r["Kategorien"]), rhythm: r["Rhythmus kurz"],
   when: r["Rhythmus im Satz"], note: r["Kurzbeschreibung"], intro: r["Einleitung"], tips: lines(r["Tipps"]), hint: r["Hinweis"], oepnv: r["Haltestelle"],
   kw: r["Suchbegriff"], t: r["SEO-Titel"], d: r["SEO-Beschreibung"], kb: list(r["Ratgeber-Artikel"]), events: [],
-  geo: r["Koordinaten"] || "",
+  geo: r["Koordinaten"] || "", entry: String(r["Eintritt"] || "").trim(),
   web: /^https?:\/\/[^\s"<>]+$/i.test(String(r["Veranstalter-Website"] || "").trim()) ? String(r["Veranstalter-Website"]).trim() : ""
 }));
 if (!MARKETS.length) throw new Error("Keine aktiven Märkte gefunden (Blatt „Märkte“, Spalte „Aktiv“). Die Website wurde nicht veröffentlicht, damit keine leere Seite online geht.");
@@ -508,6 +508,9 @@ const crumbLD = items => ({ "@type": "BreadcrumbList", itemListElement: items.ma
 const G = graph => ({ "@context": "https://schema.org", "@graph": graph });
 
 /* ---------------------------------------------------------------- Bausteine */
+// Freiwillige Spalte „Eintritt“ im Blatt Märkte: „frei“ oder ein Betrag wie „2 €“ / „2,50“. Nur dann gibt es Preisangaben für Google.
+const priceOf = v => { v = String(v || "").trim().toLowerCase(); if (!v) return null; if (/^(eintritt\s+)?(frei|kostenlos|gratis)$|^0([.,]0{1,2})?\s*(€|eur|euro)?$/.test(v)) return 0; const m = /^(\d{1,3})(?:[.,](\d{1,2}))?\s*(€|eur|euro)?$/.exec(v); return m ? +(m[1] + "." + (m[2] || "0")) : null; };
+const entryText = m => { const p = priceOf(m.entry); return p === null ? m.entry : p === 0 ? "frei" : p.toFixed(2).replace(".", ",").replace(",00", "") + " €"; };
 function eventLD(e) {
   const m = e.m, parts = m.addr.split(", "), pm = /(\d{5})\s+(.+)/.exec(parts[parts.length - 1] || "");
   const ev = {
@@ -518,6 +521,11 @@ function eventLD(e) {
     location: { "@type": "Place", name: m.place, address: { "@type": "PostalAddress", streetAddress: parts[0], addressLocality: pm ? pm[2] : (parts.length > 1 ? parts[parts.length - 1] : (m.area || "Hamburg")), addressCountry: "DE", ...(pm ? { postalCode: pm[1] } : {}) } }
   };
   if (e.start && e.end) ev.endDate = `${e.k}T${tLast(e.end)}:00${berlinOff(e.date)}`;
+  else if (!e.start) ev.endDate = e.k; // ohne Uhrzeit: Der Markt endet am selben Tag
+  // Bild: das Logo (Google erlaubt „Bild oder Logo“). Bewusst kein Foto, damit keinem Markt ein fremdes Bild zugeordnet wird.
+  if (HAS_ICONS) ev.image = [SITE + "/assets/icon-512.png"];
+  const price = priceOf(m.entry);
+  if (price !== null && !e.cancelled) ev.offers = { "@type": "Offer", price, priceCurrency: "EUR", availability: "https://schema.org/InStock", url: `${SITE}/flohmarkt/${m.slug}/`, validFrom: key(TODAY) };
   if (m.org) ev.organizer = { "@type": "Organization", name: m.org, ...(m.web ? { url: m.web } : {}) };
   return ev;
 }
@@ -1278,6 +1286,7 @@ for (const m of MARKETS) {
     ...(first ? [[`Wann findet ${nom} das nächste Mal statt?`, `Der nächste Termin ist am ${tNext}.${m.events.filter(e => !e.cancelled).length > 1 ? " Alle weiteren Termine stehen oben unter „Nächste Termine“." : ""}`]] : far ? [[`Wann findet ${nom} wieder statt?`, `Der nächste bekannte Termin ist am ${fmtDateY(far.date)}${far.start ? ", " + timeText(far) : ""}.${m.later.length > 1 ? " Weitere Termine stehen oben unter „Nächste Termine“." : ""}`]] : [[`Wann findet ${nom} wieder statt?`, "Derzeit ist kein Termin angekündigt. Sobald der Veranstalter neue Termine veröffentlicht, stehen sie hier."]]),
     ...(first && first.start && !mixed ? [[`Wie lange hat ${nom} geöffnet?`, `${first.end ? `Von ${hmText(first.start)} bis ${hmText(first.end)} Uhr` : `Ab ${hmText(first.start)} Uhr`}, so steht es beim nächsten Termin. Wer früh kommt, hat die größte Auswahl.`]] : []),
     [`Wo findet ${nom} statt?`, `${m.place !== m.name && !m.addr.toLowerCase().startsWith(m.place.toLowerCase()) ? m.place + ", " : ""}${m.addr}${m.oepnv ? `. Nächste Haltestelle: ${m.oepnv}` : ""}.`],
+    ...(m.entry ? [[`Kostet ${nom} Eintritt?`, priceOf(m.entry) === 0 ? "Nein, der Eintritt ist frei." : priceOf(m.entry) !== null ? `Ja, der Eintritt kostet ${entryText(m)}.` : `${cap(m.entry)}.`.replace(/\.\.$/, ".")]] : []),
     ...(m.tags.includes("Überdacht") ? [[`Findet ${nom} auch bei Regen statt?`, `Der Markt ist ganz oder teilweise überdacht. Kurzfristige Absagen sind trotzdem möglich, schau am besten vorher beim Veranstalter nach.`]] : []),
     [`Wie bekomme ich einen Stand ${bei}?`, `Standplätze vergibt der Veranstalter${m.org ? " " + m.org : ""}. Frag am besten dort nach, wie die Anmeldung läuft${m.web ? `: [Website des Veranstalters](${m.web})` : ""}. Tipps für deinen Stand stehen im Ratgeber ${KBY["flohmarktstand-anmelden"] ? "[Flohmarktstand anmelden](/ratgeber/flohmarktstand-anmelden/)" : "Verkaufen"}.`]
   ];
@@ -1301,7 +1310,7 @@ ${favBtn(m, "btn fav-big")}
 <div class="answer"><span class="kicker">Kurz gesagt</span><p>${answer}</p></div>
 <dl class="facts"><div><dt>${ic("cal")}Wann</dt><dd>${esc(cap(when) || (far ? m.later.slice(0, 4).map(x => fmtDateY(x.date)).join(" · ") : "Derzeit kein Termin"))}</dd></div><div><dt>${ic("clock")}Uhrzeit</dt><dd>${!first ? (far && far.start ? timeText(far) : "–") : mixed ? "je nach Termin, siehe unten" : timeText(first)}</dd></div>
 <div><dt>${ic("pin")}Adresse</dt><dd>${addrNb(m.addr)}<br><a class="route" href="${route}" rel="noopener">${ic("route")}Route planen</a></dd></div>
-${m.oepnv ? `<div><dt>${ic("tram")}Nächste Haltestelle</dt><dd>${esc(m.oepnv)}</dd></div>` : ""}${m.org || m.web ? `<div><dt>${ic("user")}Veranstalter</dt><dd>${esc(m.org)}${m.web ? `${m.org ? "<br>" : ""}<a href="${esc(m.web)}" rel="noopener">Website des Veranstalters</a>` : ""}</dd></div>` : ""}${m.tags.length ? `<div><dt>${ic("tag")}Art des Markts</dt><dd class="tags-dd">${m.tags.map(t => CAT_BY_TAG[t] ? `<a class="tag" href="/${CAT_BY_TAG[t].s}/">${tagIc(t)}${esc(t)}</a>` : `<span class="tag">${tagIc(t)}${esc(t)}</span>`).join(" ")}</dd></div>` : ""}</dl>
+${m.oepnv ? `<div><dt>${ic("tram")}Nächste Haltestelle</dt><dd>${esc(m.oepnv)}</dd></div>` : ""}${m.entry ? `<div><dt>${ic("tag")}Eintritt</dt><dd>${esc(entryText(m))}</dd></div>` : ""}${m.org || m.web ? `<div><dt>${ic("user")}Veranstalter</dt><dd>${esc(m.org)}${m.web ? `${m.org ? "<br>" : ""}<a href="${esc(m.web)}" rel="noopener">Website des Veranstalters</a>` : ""}</dd></div>` : ""}${m.tags.length ? `<div><dt>${ic("tag")}Art des Markts</dt><dd class="tags-dd">${m.tags.map(t => CAT_BY_TAG[t] ? `<a class="tag" href="/${CAT_BY_TAG[t].s}/">${tagIc(t)}${esc(t)}</a>` : `<span class="tag">${tagIc(t)}${esc(t)}</span>`).join(" ")}</dd></div>` : ""}</dl>
 <div class="share-row">${shareBtn(m, first, "btn share-big")}<a class="route" href="${route}" rel="noopener">${ic("route")}Route planen</a></div>${first ? wxSay(wxEv(first), "für " + (first.k === key(TODAY) ? "heute" : first.k === key(addDays(TODAY, 1)) ? "morgen" : WDL[first.date.getUTCDay()])) : ""}
 ${m.intro ? `<section class="block kb-body"><h2>Über den Markt</h2><p>${rich(m.intro)}</p></section>` : ""}
 <section class="block"><h2>Nächste Termine</h2>${nxAll.length ? `<ul class="dates">${nxAll.map(e => `<li${e.cancelled ? ' class="off"' : ""} data-day="${e.k}"><span class="dt">${e.far ? fmtDateY(e.date) : fmtDate(e.date)}</span><span class="tm">${e.cancelled ? "fällt aus" : timeText(e)}</span>${e.note ? `<span class="meta">${esc(e.note)}</span>` : ""}</li>`).join("")}</ul>` : '<p class="meta">Die nächsten Termine sind noch nicht angekündigt.</p>'}</section>
@@ -1807,7 +1816,7 @@ ${topStart ? `<h2>Uhrzeiten</h2><p>Die häufigste Anfangszeit ist ${hmText(topSt
 <h2>So entstehen die Zahlen</h2><p>Alle Angaben werden jede Nacht aus dem ${esc(NAME)}-Kalender berechnet. Gezählt werden Flohmärkte in Hamburg und im Umkreis von rund 30 km, die im Kalender stehen. Die Termine stammen von den Veranstaltern. Es ist keine amtliche Statistik: Märkte, die wir noch nicht kennen, fehlen. Wer die Zahlen zitiert, nennt bitte ${esc(NAME)} (${esc(SITE.replace(/^https?:\/\//, ""))}) und das Datum als Quelle.</p></div>
 ${faqHTML(faq)}</article>`;
   layout({ p: STATS_P, title: `Flohmärkte in Hamburg in Zahlen: Statistik ${YEAR} | ${NAME}`, desc: `Wie viele Flohmärkte gibt es in Hamburg? ${n} Märkte, ${nf(live.length)} Termine, Verteilung nach Bezirk, Art, Wochentag und Uhrzeit. Täglich neu berechnet.`, body,
-    ld: G([crumbLD(cr), faqLD(faq), { "@type": "Dataset", name: "Flohmärkte in Hamburg und Umgebung in Zahlen", description: plain(ans), url: SITE + STATS_P, dateModified: key(TODAY), creator: { "@type": "Organization", name: NAME, url: SITE + "/" }, spatialCoverage: "Hamburg und Umland bis 30 km", isAccessibleForFree: true }]) });
+    ld: G([crumbLD(cr), faqLD(faq)]) });
 }
 
 /* ---------------------------------------------------------------- 404 */

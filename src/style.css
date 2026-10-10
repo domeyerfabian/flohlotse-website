@@ -845,3 +845,7 @@ button.fav[aria-pressed="true"],.btn.fav-big[aria-pressed="true"]{background:var
 .group.anc{scroll-margin-top:-17px} /* html hat schon 80px Abstand für die Kopfzeile; so steht der Tag direkt darunter */
 .chip.sx-pick.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
 .chip.sx-pick.on .i{color:inherit}
+/* Marktseite: Abschnitt „Selbst verkaufen“ */
+.sell .facts{margin-top:12px}
+.sell-go{margin:14px 0 0}
+.sell .meta.small{margin:10px 0 0}

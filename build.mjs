@@ -1242,6 +1242,19 @@ ${REGIONS.map(r => { const ms = MARKETS.filter(m => m.bez === r.k); return ms.le
 }
 
 /* ---------------------------------------------------------------- Marktseiten */
+// Entfernung zwischen zwei Märkten in km (Luftlinie). Die Lage stammt aus „Koordinaten“ oder der Postleitzahl, ist also ungefähr.
+const kmOf = (a, b) => { const t = x => x * Math.PI / 180, h = Math.sin(t(b[0] - a[0]) / 2) ** 2 + Math.cos(t(a[0])) * Math.cos(t(b[0])) * Math.sin(t(b[1] - a[1]) / 2) ** 2; return 12742 * Math.asin(Math.sqrt(h)); };
+const street = m => String(m.addr || "").split(",")[0].trim().toLowerCase();
+// „In der Nähe“ auf jeder Marktseite: die nächstgelegenen Märkte mit Termin, dazu Märkte am selben Ort. Jede Seite bekommt so ihre eigene Auswahl
+// statt derselben langen Liste aller Märkte im Bezirk (Google wertet viele gleiche Blöcke als fast doppelte Seiten).
+function nearOf(m, n = 6) {
+  if (!m.ll) return [];
+  const all = MARKETS.filter(x => x !== m && x.ll).map(x => ({ x, km: kmOf(m.ll, x.ll), same: street(x) === street(m) && kmOf(m.ll, x.ll) < 1 })).sort((a, b) => (b.same - a.same) || a.km - b.km);
+  const same = all.filter(o => o.same).slice(0, 3);
+  const dated = all.filter(o => !o.same && nextEv(o.x) && o.km <= 25).slice(0, Math.max(0, n - same.length));
+  return [...same, ...dated];
+}
+const nearCard = ({ x, km, same }) => { const nv = nextEv(x); return `<a class="card" href="/flohmarkt/${x.slug}/"><span class="kicker">${same ? "Am selben Ort" : km < 1 ? "Unter 1 km entfernt" : `Ca. ${Math.round(km)} km entfernt`} · ${esc(x.area)}${neuPill(x)}</span><h3>${esc(x.name)}</h3><p class="ln">${ic("repeat")}<span>${esc(x.rhythm)}</span></p>${nv ? `<p class="ln" data-day="${nv.k}">${ic("cal")}<span>Nächster Termin ${fmtShortY(nv)}</span></p>` : ""}</a>`; };
 for (const m of MARKETS) {
   const r = RBY[m.bez] || { name: m.bez, im: "", umland: false, k: m.bez };
   const nx = m.events.slice(0, 8), first = m.events.find(e => !e.cancelled);
@@ -1297,8 +1310,11 @@ ${m.hint ? `<p class="hint">${rich(m.hint)}</p>` : ""}
 ${faqBlock(mFaq, `Häufige Fragen zu ${esc(m.short)}`)}
 <p class="hint">Angaben nach öffentlichen Informationen des Veranstalters${m.web ? ` (<a href="${esc(m.web)}" rel="noopener">Website</a>)` : ""}, ohne Gewähr. Märkte können kurzfristig ausfallen. Du veranstaltest diesen Markt? <a href="/veranstalter/#korrektur">Eintrag ändern oder entfernen lassen</a>.</p>
 <section class="related"><div class="sec-head"><h2>Tipps für deinen Besuch</h2>${more("/ratgeber/", "Ratgeber")}</div>${grid(kbFor(m).map(kbCard))}</section>
-<section class="related"><div class="sec-head"><h2>Weitere Flohmärkte ${esc(r.im)}</h2>${more(`/flohmarkt-hamburg/${r.k}/`, "Alle", "Alle Märkte " + r.im)}</div>${others.length ? grid(others.map(mCard)) : '<p class="meta">Weitere Märkte folgen.</p>'}</section>
-${others.length < 2 ? (() => { const nb = (NEAR[m.bez] || []).flatMap(k => MARKETS.filter(x => x.bez === k && x.events.some(e => !e.cancelled))).sort((a, b) => a.events.find(e => !e.cancelled).k.localeCompare(b.events.find(e => !e.cancelled).k)).slice(0, 3); return nb.length ? `<section class="related"><div class="sec-head"><h2>Flohmärkte in der Nähe</h2></div>${grid(nb.map(mCard))}</section>` : ""; })() : ""}</article>`;
+${(() => { const nb = nearOf(m), allLink = more(`/flohmarkt-hamburg/${r.k}/`, `Alle ${r.umland ? "in der Region" : "im Bezirk"}`, "Alle Märkte " + r.im);
+  if (nb.length) return `<section class="related"><div class="sec-head"><h2>${first || far ? "Flohmärkte in der Nähe" : "Bald geöffnet in der Nähe"}</h2>${allLink}</div>${grid(nb.map(nearCard))}</section>`;
+  // ohne bekannte Lage: wie bisher Märkte aus dem Bezirk, höchstens sechs, die mit dem nächsten Termin zuerst
+  const byNext = others.slice().sort((a, b) => (nextEv(a) ? nextEv(a).k : "9999").localeCompare(nextEv(b) ? nextEv(b).k : "9999")).slice(0, 6);
+  return `<section class="related"><div class="sec-head"><h2>Weitere Flohmärkte ${esc(r.im)}</h2>${allLink}</div>${byNext.length ? grid(byNext.map(mCard)) : '<p class="meta">Weitere Märkte folgen.</p>'}</section>`; })()}</article>`;
   if (!m.t) warn("SEO", `${m.name}: SEO-Titel fehlt.`);
   layout({ p: `/flohmarkt/${m.slug}/`, title: `${mTitle} | ${NAME}`, desc: mDesc, body, nav: "maerkte", ld: G([crumbLD([[NAME, "/"], [r.umland ? "Umland" : "Flohmärkte Hamburg", "/flohmaerkte/"], [r.name, `/flohmarkt-hamburg/${r.k}/`], [m.name]]), faqLD(mFaq)].concat(nxAll.map(eventLD))) });
 }

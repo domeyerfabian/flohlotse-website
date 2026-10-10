@@ -399,6 +399,12 @@ const ICONS = {
   share: "<path d=\"M176,162a37.91,37.91,0,0,0-28.3,12.67L98.8,143.24a37.89,37.89,0,0,0,0-30.48l48.9-31.43a38,38,0,1,0-6.5-10.09L92.3,102.67a38,38,0,1,0,0,50.66l48.9,31.43A38,38,0,1,0,176,162Zm0-132a26,26,0,1,1-26,26A26,26,0,0,1,176,30ZM64,154a26,26,0,1,1,26-26A26,26,0,0,1,64,154Zm112,72a26,26,0,1,1,26-26A26,26,0,0,1,176,226Z\"/>",
   sunrise: "<path d=\"M240,154H197.28a70.91,70.91,0,0,0,.72-10,70,70,0,0,0-140,0,70.91,70.91,0,0,0,.72,10H16a6,6,0,0,0,0,12H240a6,6,0,0,0,0-12ZM70,144a58,58,0,1,1,115.13,10H70.87A58.63,58.63,0,0,1,70,144Zm144,56a6,6,0,0,1-6,6H48a6,6,0,0,1,0-12H208A6,6,0,0,1,214,200ZM74.63,42.69a6,6,0,0,1,10.74-5.37l8,16a6,6,0,0,1-10.74,5.36Zm-56,50.63a6,6,0,0,1,8.05-2.69l16,8a6,6,0,0,1-5.36,10.74l-16-8A6,6,0,0,1,18.63,93.32Zm192,13.36a6,6,0,0,1,2.69-8.05l16-8a6,6,0,1,1,5.36,10.74l-16,8a6,6,0,0,1-8.05-2.69Zm-48-53.36,8-16a6,6,0,0,1,10.74,5.37l-8,16a6,6,0,1,1-10.74-5.36Z\"/>",
   bed: "<path d=\"M216,74H30V48a6,6,0,0,0-12,0V208a6,6,0,0,0,12,0V174H242v34a6,6,0,0,0,12,0V112A38,38,0,0,0,216,74ZM30,86h76v76H30Zm88,76V86h98a26,26,0,0,1,26,26v50Z\"/>",
+  heart: "<path d=\"M178,42c-21,0-39.26,9.47-50,25.34C117.26,51.47,99,42,78,42a60.07,60.07,0,0,0-60,60c0,29.2,18.2,59.59,54.1,90.31a334.68,334.68,0,0,0,53.06,37,6,6,0,0,0,5.68,0,334.68,334.68,0,0,0,53.06-37C219.8,161.59,238,131.2,238,102A60.07,60.07,0,0,0,178,42ZM128,217.11C111.59,207.64,30,157.72,30,102A48.05,48.05,0,0,1,78,54c20.28,0,37.31,10.83,44.45,28.27a6,6,0,0,0,11.1,0C140.69,64.83,157.72,54,178,54a48.05,48.05,0,0,1,48,48C226,157.72,144.41,207.64,128,217.11Z\"/>",
+  heartfill: "<path d=\"M240,102c0,70-103.79,126.66-108.21,129a8,8,0,0,1-7.58,0C119.79,228.66,16,172,16,102A62.07,62.07,0,0,1,78,40c20.65,0,38.73,8.88,50,23.89C139.27,48.88,157.35,40,178,40A62.07,62.07,0,0,1,240,102Z\"/>",
+  x: "<path d=\"M204.24,195.76a6,6,0,1,1-8.48,8.48L128,136.49,60.24,204.24a6,6,0,0,1-8.48-8.48L119.51,128,51.76,60.24a6,6,0,0,1,8.48-8.48L128,119.51l67.76-67.75a6,6,0,0,1,8.48,8.48L136.49,128Z\"/>",
+  undo: "<path d=\"M222,128a94,94,0,0,1-92.29,94H128a93.43,93.43,0,0,1-64.5-25.65,6,6,0,1,1,8.24-8.73A82,82,0,1,0,70,70.25L54.15,86H80a6,6,0,0,1,0,12H40a6,6,0,0,1-6-6V52a6,6,0,0,1,12,0V77.57L61.62,62A94,94,0,0,1,222,128Z\"/>",
+  thumbsup: "<g fill=\"none\" stroke=\"currentColor\" stroke-width=\"14\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M32,112H76v96H32Z\"/><path d=\"M76,112,114,34c19,0,34,13,34,34V90h58c14,0,24,11,22,25l-11,76c-2,10-10,17-20,17H76\"/></g>",
+  thumbsdown: "<g fill=\"none\" stroke=\"currentColor\" stroke-width=\"14\" stroke-linecap=\"round\" stroke-linejoin=\"round\" transform=\"matrix(1 0 0 -1 0 256)\"><path d=\"M32,112H76v96H32Z\"/><path d=\"M76,112,114,34c19,0,34,13,34,34V90h58c14,0,24,11,22,25l-11,76c-2,10-10,17-20,17H76\"/></g>",
   frog: "<path d=\"M368 32c41.7 0 75.9 31.8 79.7 72.5l85.6 26.3c25.4 7.8 42.8 31.3 42.8 57.9 0 21.8-11.7 41.9-30.7 52.7l-144.5 82.1 92.5 92.5h50.7c17.7 0 32 14.3 32 32s-14.3 32-32 32h-64c-8.5 0-16.6-3.4-22.6-9.4L346.9 360.2c11.7-36 3.2-77.1-25.4-105.7-40.6-40.6-106.3-40.6-146.9-.1l-73.6 70c-6.4 6.1-6.7 16.2-.6 22.6s16.2 6.6 22.6.6l73.8-70.2.1-.1.1-.1c3.5-3.5 7.3-6.6 11.3-9.2 27.9-18.5 65.9-15.4 90.5 9.2 24.7 24.7 27.7 62.9 9 90.9-2.6 3.8-5.6 7.5-9 10.9l-37 37H352c17.7 0 32 14.3 32 32s-14.3 32-32 32H64c-35.3 0-64-28.7-64-64C0 249.6 127 112.9 289.3 97.5 296.2 60.2 328.8 32 368 32m0 104a24 24 0 1 0 0-48 24 24 0 1 0 0 48\"/>",
 };
 const ICON_LICENSE = "Frosch-Icon (Wetterfrosch): Font Awesome Free 7.1.0 by @fontawesome, https://fontawesome.com\nLizenz: CC BY 4.0, https://creativecommons.org/licenses/by/4.0/ , Copyright 2025 Fonticons, Inc. Unverändert übernommen.\n\nAlle anderen Icons: Phosphor Icons (https://phosphoricons.com), Stil Light\n\nMIT License\n\nCopyright (c) 2023 Phosphor Icons\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\nSOFTWARE.\n";
@@ -424,7 +430,7 @@ function menuHTML() {
   const li = (h, l) => `<li><a href="${h}">${l}</a></li>`;
   return `<details class="menu-wrap"><summary class="menu-btn">${ic("list")}<span>Menü</span></summary>
 <div class="menu"><nav class="menu-grid" aria-label="Alle Bereiche">
-<div><p class="menu-h">Flohmärkte finden</p><ul>${li("/heute/", "Heute")}${li("/morgen/", "Morgen")}${li("/wochenende/", "Am Wochenende")}${li("/samstag/", "Am Samstag")}${li("/sonntag/", "Am Sonntag")}${li("/termine/", "Alle Termine")}${li("/flohmaerkte/", "Alle Märkte")}</ul></div>
+<div><p class="menu-h">Flohmärkte finden</p><ul>${li("/heute/", "Heute")}${li("/morgen/", "Morgen")}${li("/wochenende/", "Am Wochenende")}${li("/samstag/", "Am Samstag")}${li("/sonntag/", "Am Sonntag")}${li("/termine/", "Alle Termine")}${li("/flohmaerkte/", "Alle Märkte")}${li("/entdecken/", "Wischen &amp; merken")}${li("/merkliste/", "Meine Merkliste")}</ul></div>
 <div><p class="menu-h">Nach Art</p><ul>${CATS_ON.map(c => li(`/${c.s}/`, esc(c.chip))).join("")}</ul></div>
 <div><p class="menu-h">Hamburg</p><ul>${REGIONS.filter(r => !r.umland).map(r => li(`/flohmarkt-hamburg/${r.k}/`, `${esc(r.name)} <small>${cnt(r.k)}</small>`)).join("")}</ul></div>
 <div><p class="menu-h">Umland bis 30 km</p><ul>${REGIONS.filter(r => r.umland).map(r => li(`/flohmarkt-hamburg/${r.k}/`, `${esc(r.name)} <small>${cnt(r.k)}</small>`)).join("")}</ul></div>
@@ -474,6 +480,7 @@ ${ld ? `<script type="application/ld+json">${JSON.stringify(ld).replace(/</g, "\
 <header class="top"><div class="wrap">
 <a class="brand" href="/"><i>€</i>${esc(NAME)}</a>
 <nav class="nav" aria-label="Hauptmenü">${navItems.map(([h, l, k]) => `<a href="${h}"${k === nav ? ' aria-current="page"' : ""}>${l}</a>`).join("")}</nav>
+<a class="fav-top" href="/merkliste/" aria-label="Merkliste"${nav === "merk" ? ' aria-current="page"' : ""}>${ic("heart")}<span class="fav-n" hidden></span></a>
 ${MENU()}
 </div></header>
 <main class="wrap" id="inhalt">
@@ -513,7 +520,7 @@ function evHTML(e, h = 3) {
   const hm = x => x.includes("/") ? hmText(x) : x;
   // Handy: gelbe Zeile „08:00 bis 16:00“ über dem Namen. Ab Tablet: der runde Zeit-Sticker links.
   const t = ic("clock") + (e.cancelled ? '<span class="t-lab">Termin</span><span class="t-main">fällt aus</span>' : !e.start ? '<span class="t-lab">Uhrzeit</span><span class="t-main">folgt</span>' : e.end ? `<span class="t-a">${hm(e.start)}</span><span class="t-bis">bis</span><span class="t-b">${hm(e.end)}</span>` : `<span class="t-lab">ab</span><span class="t-main">${hm(e.start)}</span>`);
-  return `<article class="ev${e.cancelled ? " off" : ""}" data-tags="${esc([...m.tags, ...timeTags(e)].join("|"))}"${llAttr(m)}${!e.cancelled && e.start ? ` data-s="${tFirst(e.start)}"${e.end ? ` data-e="${tLast(e.end)}"` : ""}` : ""}><div class="time" aria-label="${esc(e.cancelled ? "Abgesagt" : timeText(e))}">${t}</div><div class="ev-body">
+  return `<article class="ev${e.cancelled ? " off" : ""}" data-tags="${esc([...m.tags, ...timeTags(e)].join("|"))}"${llAttr(m)}${!e.cancelled && e.start ? ` data-s="${tFirst(e.start)}"${e.end ? ` data-e="${tLast(e.end)}"` : ""}` : ""}>${favBtn(m)}<div class="time" aria-label="${esc(e.cancelled ? "Abgesagt" : timeText(e))}">${t}</div><div class="ev-body">
 <h${h}><a href="/flohmarkt/${m.slug}/">${esc(m.name)}</a>${neuPill(m)}</h${h}><p class="meta ln">${ic("pin")}<span><b>${esc(m.area)}</b> · ${addrNb(m.addr)}</span></p>
 ${e.cancelled ? `<p class="note warn-text">Dieser Termin fällt aus.${e.note ? " " + esc(e.note) : ""}</p>` : m.note ? `<p class="note">${esc(m.note)}${e.note ? " " + esc(e.note) : ""}</p>` : ""}
 ${m.tags.length ? `<div class="row">${m.tags.map(t => CAT_BY_TAG[t] ? `<a class="tag" href="/${CAT_BY_TAG[t].s}/">${tagIc(t)}${esc(t)}</a>` : `<span class="tag">${tagIc(t)}${esc(t)}</span>`).join("")}</div>` : ""}
@@ -550,6 +557,21 @@ function weekendDays() {
   return { sat, sun: addDays(sat, 1), sunOnly: false };
 }
 const upcoming = (days, filter = () => true) => EVENTS.filter(e => (e.date - TODAY) / 864e5 < days && filter(e));
+// Wischen & merken (Seite /entdecken/ und Hinweis auf der Startseite)
+const DK_KEYS = [key(TODAY), key(addDays(TODAY, 1)), key(addDays(TODAY, 2))];
+// Für die Seite drei Tage: Fällt ein nächtlicher Bau aus, bleiben „heute“ und „morgen“ trotzdem gefüllt. Das Skript zeigt nur heute und morgen.
+const DK_EVS = EVENTS.filter(e => !e.cancelled && DK_KEYS.includes(e.k));
+const DK_N = DK_EVS.filter(e => e.k !== DK_KEYS[2]).length;
+const deckCard = e => {
+  const m = e.m, hm = x => x.includes("/") ? hmText(x) : x;
+  const t = !e.start ? "Uhrzeit folgt" : e.end ? `${hm(e.start)} bis ${hm(e.end)}` : `ab ${hm(e.start)}`;
+  return `<article class="dk-card" data-fav="${m.slug}" data-name="${esc(m.short || m.name)}" data-day="${e.k}"${e.start ? ` data-s="${tFirst(e.start)}"` : ""}${e.start && e.end ? ` data-e="${tLast(e.end)}"` : ""}>
+<p class="dk-day">${fmtDate(e.date)}</p><span class="dk-time">${ic("clock")}<span>${t}</span></span>
+<h2>${esc(m.name)}${neuPill(m)}</h2><p class="meta ln">${ic("pin")}<span><b>${esc(m.area)}</b> · ${addrNb(m.addr)}</span></p>
+${m.note ? `<p class="note">${esc(m.note)}${e.note ? " " + esc(e.note) : ""}</p>` : ""}${m.tags.length ? `<div class="row">${m.tags.map(t => `<span class="tag">${tagIc(t)}${esc(t)}</span>`).join("")}</div>` : ""}
+<p class="ln rhythm">${ic("repeat")}<span>${esc(m.rhythm)}</span></p><a class="route go" href="/flohmarkt/${m.slug}/">Zum Markt${ic("chev")}</a>
+<span class="dk-stamp yes" aria-hidden="true">${ic("thumbsup")}Merken</span><span class="dk-stamp no" aria-hidden="true">${ic("thumbsdown")}Nein</span></article>`;
+};
 
 /* ---------------------------------------------------------------- SEO-Bausteine
    Seiten nach Art des Markts, Monatsseiten, Feiertage und Hilfen für Titel und Beschreibungen.
@@ -1021,6 +1043,8 @@ function shareText(m, e) {
   const wet = w && w.lvl === "wet" ? (cov ? " Schietwetter? Egal, ist überdacht." : " Regenjacke nicht vergessen, es wird wohl nass.") : w && w.lvl === "dry" ? " Soll trocken bleiben." : "";
   return `${pool[h % pool.length]}${wet} ${url}`;
 }
+// Merken: Herz-Knopf. Die Merkliste liegt nur im Browser (Local Storage), erst nach dem ersten Tippen. Ohne JavaScript bleibt der Knopf versteckt.
+const favBtn = (m, cls = "fav") => `<button type="button" class="${cls}" data-fav="${m.slug}" data-name="${esc(m.short || m.name)}" aria-pressed="false" aria-label="${esc(m.name)} merken" hidden>${ic("heart", "i ho")}${ic("heartfill", "i hf")}${cls === "fav" ? "" : '<span class="fav-l">Merken</span>'}</button>`;
 const shareBtn = (m, e, cls = "share") => `<button type="button" class="${cls}" data-share="${esc(shareText(m, e))}" aria-label="${esc(m.name)} teilen" hidden>${ic("share")}${cls === "share" ? "" : "Teilen"}</button>`;
 
 /* ---------------------------------------------------------------- Startseite */
@@ -1089,11 +1113,12 @@ const shareBtn = (m, e, cls = "share") => `<button type="button" class="${cls}" 
 <h1>Flohmarkt Hamburg: alle Termine, aufgeräumt.</h1>
 <p>Alle Flohmärkte in Hamburg und Umgebung: wann, wo und wie lange. Ohne Werbebanner, ohne alte Termine.</p>
 <p class="wachst">${ic("update")}<span>${NEU_MS.length ? `<b>Neu im Kalender:</b> ${NEU_MS.slice(0, 4).map(m => `<a href="/flohmarkt/${m.slug}/">${esc(m.short)}</a>`).join(", ")}${NEU_MS.length > 4 ? ` und ${NEU_MS.length - 4} weitere` : ""}. ` : ""}Der Kalender wächst ständig: Neue Märkte und Termine kommen laufend dazu. Schau gern wieder rein.</span></p>
-<div class="quick"><a class="chip" href="/heute/">${ic("sun")}Heute</a><a class="chip" href="/wochenende/">${ic("cal")}Wochenende</a><a class="chip" href="/sonntag/">${ic("cal")}Sonntag</a><a class="chip" href="/flohmaerkte/">${ic("map")}Märkte nach Bezirk</a>${HAS_MAP ? `<a class="chip" href="/flohmaerkte/#karte">${ic("pin")}Karte</a>` : ""}<a class="chip" href="/ratgeber/">${ic("book")}Ratgeber</a><a class="chip" href="/flohmarkt-schilder/">${ic("printer")}Schilder gestalten</a></div>
+<div class="quick"><a class="chip" href="/heute/">${ic("sun")}Heute</a><a class="chip" href="/entdecken/">${ic("heart")}Wischen &amp; merken</a><a class="chip" href="/wochenende/">${ic("cal")}Wochenende</a><a class="chip" href="/sonntag/">${ic("cal")}Sonntag</a><a class="chip" href="/flohmaerkte/">${ic("map")}Märkte nach Bezirk</a>${HAS_MAP ? `<a class="chip" href="/flohmaerkte/#karte">${ic("pin")}Karte</a>` : ""}<a class="chip" href="/ratgeber/">${ic("book")}Ratgeber</a><a class="chip" href="/flohmarkt-schilder/">${ic("printer")}Schilder gestalten</a></div>
 </div><a class="big-sticker" href="/wochenende/"><b>${weN}</b><span>${weLabel}</span></a></section>
 ${slider}
 ${rainBox(upcoming(4)) || frogLine(upcoming(5))}
 ${tip ? `<a class="cta-box tip" href="${tip[2]}">${ic("star")}<span><b>${esc(tip[0])}: ${esc(tip[1])}</b>Tipp des Tages, jede Nacht neu aus dem Kalender.</span>${ic("chev")}</a>` : ""}
+${DK_N ? `<a class="cta-box" href="/entdecken/">${ic("heart")}<span><b>Heute und morgen: ${DK_N} ${DK_N === 1 ? "Flohmarkt" : "Flohmärkte"} zum Durchwischen</b>Daumen hoch merkt den Markt, Daumen runter zeigt den nächsten.</span>${ic("chev")}</a>` : ""}
 <section class="sec"><div class="sec-head"><h2>Die nächsten Flohmärkte</h2>${more("/termine/", "Alle")}</div>
 ${groupList(next, 3) || '<div class="empty">Gerade stehen keine Termine im Kalender.</div>'}
 ${all14 > next.length ? `<a class="more" href="/termine/">Alle ${all14} Termine der nächsten 14 Tage anzeigen</a>` : ""}</section>
@@ -1124,6 +1149,35 @@ ${MONTHS.length ? `<section class="related"><div class="sec-head"><h2>Termine na
   layout({ p: "/termine/", title: `Flohmarkt Hamburg Termine ${yearSpan(evs)}: die nächsten 60 Tage | ${NAME}`,
     desc: pickDesc(`Alle ${evs.filter(e => !e.cancelled).length} Flohmarkttermine in Hamburg und Umgebung für die nächsten 60 Tage: ${new Set(evs.map(e => e.m)).size} Märkte mit Uhrzeit, Adresse und Veranstalter.`, "Alle Flohmarkt-Termine in Hamburg und im Umland bis 30 Kilometer für die nächsten 60 Tage, mit Uhrzeiten, Adressen und Veranstaltern."), body, nav: "termine", ld: G([crumbLD([[NAME, "/"], ["Termine"]])].concat(evs.slice(0, 60).map(eventLD))) });
 }
+
+/* ---------------------------------------------------------------- Wischen & merken, Merkliste
+   Die Merkliste liegt nur im Browser (Local Storage) und wird erst angelegt, wenn jemand auf ein Herz tippt.
+   Beide Seiten sind persönlich bzw. tagesaktuell und deshalb nicht für Google bestimmt (noindex, nicht in der Sitemap). */
+{
+  const body = crumbs([[NAME, "/"], ["Wischen & merken"]]) + `<section class="hub-head dk-head"><h1>Wischen und merken: Flohmärkte heute und morgen</h1><p>Daumen hoch oder nach rechts wischen: Der Markt kommt auf deine Merkliste. Daumen runter oder nach links: weiter zum nächsten.</p></section>
+<section class="deck" id="deck"${DK_EVS.length ? "" : " hidden"}>
+<p class="dk-count js-only" id="dkCount" aria-live="polite"></p>
+<div class="dk-stack" id="dkStack">${DK_EVS.map(deckCard).join("")}</div>
+<div class="dk-done" id="dkDone" hidden><p class="dk-done-h" id="dkDoneH">Geschafft!</p><p id="dkDoneP"></p><div class="share-row"><a class="btn" href="/merkliste/">${ic("heart")}Zur Merkliste</a><button type="button" class="btn" id="dkAgain">${ic("undo")}Nochmal von vorn</button><a class="route" href="/termine/">Alle Termine${ic("chev")}</a></div></div>
+<div class="dk-btns js-only" id="dkBtns"><span class="dk-bw"><button type="button" class="dk-b no" id="dkNo" aria-label="Nein, nicht merken">${ic("thumbsdown")}</button><span class="dk-bl" aria-hidden="true">← Nein</span></span><span class="dk-bw"><button type="button" class="dk-b undo" id="dkUndo" aria-label="Rückgängig" disabled>${ic("undo")}</button><span class="dk-bl" aria-hidden="true">Zurück</span></span><span class="dk-bw"><button type="button" class="dk-b yes" id="dkYes" aria-label="Merken">${ic("thumbsup")}</button><span class="dk-bl" aria-hidden="true">Merken →</span></span></div>
+<p class="dk-hint js-only">Am Computer gehen auch die Pfeiltasten ← und →.</p>
+</section>
+<div class="empty" id="dkEmpty"${DK_EVS.length ? " hidden" : ""}>Heute und morgen steht gerade kein Flohmarkt im Kalender. ${more("/termine/", "Alle Termine")}</div>`;
+  layout({ p: "/entdecken/", title: `Wischen und merken: Flohmärkte heute und morgen | ${NAME}`, desc: "Die Flohmärkte von heute und morgen in Hamburg und Umgebung zum Durchwischen: nach rechts merken, nach links weiter.", body, noindex: true, nav: "entdecken" });
+}
+{
+  const body = crumbs([[NAME, "/"], ["Merkliste"]]) + `<section class="hub-head"><h1>Deine Merkliste</h1><p>Hier stehen die Märkte, die du mit dem Herz gemerkt hast, mit ihren nächsten Terminen.</p></section>
+<noscript><div class="empty">Die Merkliste braucht JavaScript. Bitte schalte es in deinem Browser ein.</div></noscript>
+<div class="merk js-only" id="merk" data-src="/assets/maerkte.json?v=${key(TODAY)}"><p class="meta">Merkliste wird geladen …</p></div>
+<p class="merk-msg" id="merkMsg" role="status" aria-live="polite"></p>
+<section class="sec merk-tools" id="merkTools" hidden><h2>Merkliste sichern</h2><p>Mit dem Link kommt deine Merkliste auch auf ein anderes Gerät: einfach dir selbst schicken und dort öffnen.</p><div class="share-row"><button type="button" class="btn" id="merkLink">${ic("share")}<span>Als Link sichern</span></button><button type="button" class="btn" id="merkClear">${ic("x")}<span>Merkliste leeren</span></button></div></section>
+<section class="sec kb-body"><h2>Wo ist meine Merkliste gespeichert?</h2><p>Nur auf diesem Gerät, in deinem Browser. Sie wird nicht an uns übertragen, und es gibt kein Konto. Auf einem anderen Handy oder in einem anderen Browser ist sie deshalb leer.</p><p>Löschst du die Browserdaten, ist auch die Merkliste weg. Safari auf iPhone und iPad löscht solche Daten außerdem, wenn du die Seite längere Zeit nicht öffnest. Sicher gehst du mit „Als Link sichern“, oder du legst ${esc(NAME)} auf deinen Home-Bildschirm.</p></section>`;
+  layout({ p: "/merkliste/", title: `Merkliste | ${NAME}`, desc: "Deine gemerkten Flohmärkte mit den nächsten Terminen. Die Merkliste bleibt auf deinem Gerät.", body, noindex: true, nav: "merk" });
+}
+// Daten für die Merkliste: je Markt Name, Ort, Rhythmus und die nächsten Termine (ohne vergangene)
+const MERK_JSON = JSON.stringify({ stand: key(TODAY), m: Object.fromEntries(MARKETS.map(m => { const seen = new Set();
+  const d = [...m.events, ...(m.later || [])].filter(e => e.k >= key(TODAY) && !seen.has(e.k) && seen.add(e.k)).sort((a, b) => a.k.localeCompare(b.k)).slice(0, 4).map(e => [e.k, e.cancelled ? "fällt aus" : e.start ? timeText(e) : ""]);
+  return [m.slug, [m.name, m.area, m.rhythm, d]]; })) });
 
 /* ---------------------------------------------------------------- Alle Märkte */
 {
@@ -1178,6 +1232,7 @@ for (const m of MARKETS) {
   const body = crumbs([[NAME, "/"], [r.umland ? "Umland" : "Flohmärkte Hamburg", "/flohmaerkte/"], [r.name, `/flohmarkt-hamburg/${r.k}/`], [m.short]]) + `<article class="kb">
 <h1>${esc(m.name)}: Öffnungszeiten und Termine</h1>
 <div class="byline">${NEU[m.slug] ? '<span class="neu">Neu im Kalender</span>' : ""}<span>${ic("pin")}${esc(m.area)}</span><span>${ic("map")}${esc(regionLabel(r))}</span><span>${ic("update")}Stand: ${STAND}</span></div>
+${favBtn(m, "btn fav-big")}
 <div class="answer"><span class="kicker">Kurz gesagt</span><p>${answer}</p></div>
 <dl class="facts"><div><dt>${ic("cal")}Wann</dt><dd>${esc(cap(when) || (far ? m.later.slice(0, 4).map(x => fmtDateY(x.date)).join(" · ") : "Derzeit kein Termin"))}</dd></div><div><dt>${ic("clock")}Uhrzeit</dt><dd>${!first ? (far && far.start ? timeText(far) : "–") : mixed ? "je nach Termin, siehe unten" : timeText(first)}</dd></div>
 <div><dt>${ic("pin")}Adresse</dt><dd>${addrNb(m.addr)}<br><a class="route" href="${route}" rel="noopener">${ic("route")}Route planen</a></dd></div>
@@ -1341,8 +1396,8 @@ const SIGN_BASE = "/flohmarkt-schilder/";
 const kl = (s, t) => KBY[s] ? `<a href="/ratgeber/${s}/">${t}</a>` : t; // Ratgeber-Link, falls der Artikel existiert
 const SIGNS = [
   { s: "preisschilder", kind: "tags", chip: "Preisschilder", short: "24 Preisschilder pro A4-Blatt, auch für Etiketten 70 × 37 mm.",
-    h1: "Preisschilder für den Flohmarkt: Vorlage zum Ausdrucken", title: "Preisschilder Flohmarkt: Vorlage zum Ausdrucken",
-    desc: "Kostenlose Preisschilder für den Flohmarkt: 24 Stück pro A4-Blatt, zum Beschriften oder mit festem Preis. Passt auf Etikettenbögen 70 × 37 mm.",
+    h1: "Preisschilder für den Flohmarkt: Vorlage zum Ausdrucken", title: "Preisschilder Flohmarkt: kostenlos, auch als PDF",
+    desc: "Kostenlose Preisschilder für den Flohmarkt zum Ausdrucken oder als PDF: 24 Stück pro A4-Blatt, zum Beschriften oder mit festem Preis. Ohne Anmeldung.",
     ans: "Hier druckst du 24 Preisschilder auf ein A4-Blatt. Lass das Preisfeld leer, wenn du mit Stift beschriften willst, oder tipp einen festen Preis ein. Die Felder messen 70 × 37 mm und passen auf gängige Etikettenbögen in diesem Format.",
     v: [{ l: "Zum Beschriften", price: "" }, { l: "50 Cent", price: "50 Cent" }, { l: "1 €", price: "1 €" }, { l: "2 €", price: "2 €" }, { l: "5 €", price: "5 €" }],
     b: () => [["Preise, die man von Weitem liest", `Schreib Preise groß und mit dickem Filzstift, dann sieht man sie auch von der anderen Tischseite. Ein Kreuz bei „VB“ zeigt, dass du über den Preis redest. Wie du sinnvolle Preise findest, steht im Ratgeber ${kl("preise-festlegen-flohmarkt", "Preise auf dem Flohmarkt festlegen")}.`],
@@ -1632,7 +1687,7 @@ ${isGitHub
   ? `<h2>2. Hosting und Server-Logdateien</h2><p>Die Website wird über GitHub Pages bereitgestellt, einen Dienst der GitHub, Inc., 88 Colin P. Kelly Jr. Street, San Francisco, CA 94107, USA. Beim Aufruf einer Seite speichert GitHub die IP-Adresse der Besucher zu Sicherheitszwecken, außerdem technische Daten wie Datum, Uhrzeit und aufgerufene Seite. Wir haben auf diese Daten keinen Zugriff. Wie lange GitHub sie speichert, legt GitHub fest (<a href="https://docs.github.com/de/site-policy/privacy-policies/github-general-privacy-statement" rel="noopener">Datenschutzerklärung von GitHub</a>). Rechtsgrundlage ist unser berechtigtes Interesse, die Website sicher und zuverlässig auszuliefern (Art. 6 Abs. 1 lit. f DSGVO). Dabei können Daten in die USA übermittelt werden. GitHub ist nach dem EU-U.S. Data Privacy Framework zertifiziert, für das die EU-Kommission einen Angemessenheitsbeschluss erlassen hat (Art. 45 DSGVO).</p>`
   : `<h2>2. Hosting und Server-Logdateien</h2><p>Die Website wird bei ${ph("Datenschutz: Hoster", "Name und Sitz des Hosters")} betrieben. Beim Aufruf speichert der Server automatisch technische Daten wie IP-Adresse, Datum und Uhrzeit, aufgerufene Seite und Browser. Das ist nötig, um die Website sicher auszuliefern (Art. 6 Abs. 1 lit. f DSGVO). Die Daten werden nach ${ph("Datenschutz: Löschfrist Logdateien (Tage)", "Anzahl")} Tagen gelöscht, soweit der Hoster sie nicht länger zur Abwehr von Angriffen benötigt.${yes(f("Datenschutz: Vertrag mit Hoster")) ? " Mit dem Hoster haben wir einen Vertrag zur Auftragsverarbeitung geschlossen (Art. 28 DSGVO). Die Daten werden in Deutschland verarbeitet." : ""}</p>`}
 <h2>3. Keine Inhalte von fremden Servern</h2>${INSTA ? `<p>Unser Instagram-Profil ist nur als gewöhnlicher Link eingebunden. Es werden keine Inhalte, Schaltflächen oder Skripte von Instagram geladen. Erst wenn du den Link antippst, wechselst du zu Instagram; ab dann gelten die Datenschutzhinweise von Meta Platforms Ireland Limited.</p>` : ""}<p>Schriften, Icons, Bilder, Skripte und die Kartensoftware gehören zur Website selbst und werden von unserem Hoster (Abschnitt 2) mit ausgeliefert. Beim Aufruf einer Seite wird keine Verbindung zu Google, zu sozialen Netzwerken oder zu anderen Drittanbietern aufgebaut. Auch die Wettervorhersage laden nicht die Besucher: Wir rufen sie einmal bei der Aktualisierung der Website ab und liefern sie als festen Text mit aus.</p>
-<h2>4. Cookies, Tracking und warum es hier keinen Cookie-Banner gibt</h2><p>Diese Website setzt keine Cookies. Sie speichert nichts auf deinem Gerät (auch nicht im sogenannten Local Storage) und liest dort nichts aus. Es gibt keine Reichweitenmessung, keine Werbung, keine Social-Media-Plugins, keine eingebetteten Videos und kein Nutzerprofil.</p><p>Eine Einwilligung ist nach § 25 Abs. 1 TDDDG nur nötig, wenn eine Website Informationen auf dem Gerät speichert oder von dort ausliest und das nicht unbedingt erforderlich ist. Beides passiert hier nicht. Es gibt also nichts, in das du einwilligen müsstest, und deshalb keinen Cookie-Banner.</p><p>Zwei Funktionen brauchen deine ausdrückliche Handlung und starten erst dann: die Karte („Karte laden“) und die Standortabfrage („Mein Standort“). Beide sind in Abschnitt 9 beschrieben.</p>
+<h2>4. Cookies, Tracking und warum es hier keinen Cookie-Banner gibt</h2><p>Diese Website setzt keine Cookies. Es gibt keine Reichweitenmessung, keine Werbung, keine Social-Media-Plugins, keine eingebetteten Videos und kein Nutzerprofil.</p><p>Einzige Ausnahme ist die <a href="/merkliste/">Merkliste</a>: Erst wenn du bei einem Markt auf das Herz tippst, legt dein Browser die Liste deiner gemerkten Märkte im sogenannten Local Storage auf deinem Gerät ab. Gespeichert werden nur die Kennungen der Märkte (zum Beispiel „flohschanze“), sonst nichts. Ist eine Merkliste vorhanden, liest die Seite sie beim Aufruf aus, um deine Herzen anzuzeigen. Die Liste bleibt auf deinem Gerät und wird nicht an uns übertragen. Du kannst sie jederzeit auf der Seite Merkliste mit „Merkliste leeren“ löschen oder über die Einstellungen deines Browsers. Sicherst du die Merkliste als Link, stehen die Kennungen hinter dem #-Zeichen der Adresse; dieser Teil wird beim Aufruf nicht an den Server gesendet.</p><p>Eine Einwilligung ist nach § 25 Abs. 1 TDDDG nötig, wenn eine Website Informationen auf dem Gerät speichert oder von dort ausliest. Das gilt nicht, wenn das unbedingt erforderlich ist, damit eine Funktion bereitsteht, die du ausdrücklich nutzen möchtest (§ 25 Abs. 2 Nr. 2 TDDDG). So ist es bei der Merkliste: Sie speichert nur, wenn du sie selbst nutzt, und nur dafür. Darüber hinaus wird nichts gespeichert oder ausgelesen. Deshalb gibt es hier keinen Cookie-Banner.</p><p>Zwei Funktionen brauchen deine ausdrückliche Handlung und starten erst dann: die Karte („Karte laden“) und die Standortabfrage („Mein Standort“). Beide sind in Abschnitt 9 beschrieben.</p>
 <h2>5. Termine eintragen</h2><p>${formKind === "google" ? "Veranstalter können Termine über ein Formular von Google Formulare (Google Ireland Limited, Gordon House, Barrow Street, Dublin 4, Irland) einreichen. Das Formular öffnet sich erst, wenn du den Link anklickst. Dabei gelten zusätzlich die Datenschutzbestimmungen von Google." : formKind === "other" ? `Veranstalter können Termine über ein Formular bei ${esc(formHost)} einreichen. Das Formular öffnet sich erst, wenn du den Link anklickst. Dabei gelten zusätzlich die Datenschutzbestimmungen dieses Anbieters.` : "Veranstalter können uns Termine per E-Mail schicken."} Wir verarbeiten die Angaben zum Markt und deine E-Mail-Adresse. Die Marktdaten veröffentlichen wir nach Prüfung. Die E-Mail-Adresse nutzen wir nur für Rückfragen zu deinem Eintrag und veröffentlichen sie nicht. Rechtsgrundlage ist Art. 6 Abs. 1 lit. b und f DSGVO. Wir löschen die E-Mail-Adresse ${ph("Datenschutz: Löschfrist Formular", "Frist, z. B. zwölf Monate nach dem letzten Termin")}.</p>
 <h2>6. Kontakt per E-Mail</h2><p>Schreibst du uns eine E-Mail, verarbeiten wir deine Angaben, um die Anfrage zu beantworten (Art. 6 Abs. 1 lit. b oder f DSGVO), und löschen sie, sobald die Anfrage erledigt ist und keine gesetzlichen Aufbewahrungspflichten entgegenstehen.${f("Datenschutz: E-Mail-Anbieter") ? ` Unser E-Mail-Postfach liegt bei ${esc(f("Datenschutz: E-Mail-Anbieter"))}.` : ""}</p>
 <h2>7. Links zu anderen Websites</h2><p>Links wie „Route planen“ führen zu Google Maps oder zu Websites der Veranstalter. Erst wenn du einen solchen Link anklickst, werden Daten an den jeweiligen Anbieter übertragen. Das gilt auch für „Teilen“: Erst wenn du darauf tippst, öffnet sich die Teilen-Funktion deines Geräts mit einer vorformulierten Nachricht. Welche App du dann wählst, entscheidest du. Vorher werden keine Daten an andere Dienste übertragen.</p>
@@ -1734,6 +1789,7 @@ for (const [p, pg] of pages) {
 fs.mkdirSync(path.join(OUT, "assets"), { recursive: true });
 fs.writeFileSync(path.join(OUT, "assets/style.css"), withBase(fontCSS) + CSS_SRC.slice(fontCSS.length));
 fs.copyFileSync(path.join(ROOT, "src/site.js"), path.join(OUT, "assets/site.js"));
+fs.writeFileSync(path.join(OUT, "assets/maerkte.json"), MERK_JSON);
 // Das Skript liegt zusätzlich unter einem Namen mit Versionskürzel: Diese Datei ändert sich nie und darf ein Jahr gespeichert werden.
 if (JS_V) fs.copyFileSync(path.join(ROOT, "src/site.js"), path.join(OUT, `assets/site.${JS_V.slice(3)}.js`));
 fs.copyFileSync(path.join(ROOT, "src/icon.svg"), path.join(OUT, "assets/icon.svg"));

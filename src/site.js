@@ -488,4 +488,236 @@
     panEl.addEventListener("touchend", function (e) { if (sx === null) return; var dx = e.changedTouches[0].clientX - sx, dy = e.changedTouches[0].clientY - sy; sx = null; if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) show(cur + (dx < 0 ? 1 : -1), true); }, { passive: true });
     syncBtn(); show(0);
   }
+  // Suchfeld auf der Startseite: öffnet die Suche, der Begriff steht hinter dem # (wird nicht an den Server geschickt)
+  document.querySelectorAll(".sx-home").forEach(function (f) {
+    f.addEventListener("submit", function (e) { e.preventDefault(); var v = (f.querySelector("input").value || "").trim().slice(0, 80); location.href = ROOT + "/suche/" + (v ? "#q=" + encodeURIComponent(v) : ""); });
+  });
+  /* Suche (Seite /suche/): nach Name, Stadtteil, Veranstalter oder Datum. Läuft komplett im Browser mit /assets/maerkte.json,
+     es wird nichts an den Server geschickt. Das Suchfeld ist die einzige Quelle: Auch die Tag-Knöpfe schreiben nur hinein. */
+  (function () {
+    var out = document.getElementById("sxOut"); if (!out) return;
+    var q = document.getElementById("sxQ"), form = document.getElementById("sxForm"), msg = document.getElementById("sxMsg"), clr = document.getElementById("sxClear"),
+      pick = document.getElementById("sxDate"), days = document.getElementById("sxDays"), az = document.getElementById("sxAz"), tip = document.getElementById("sxTip");
+    var D = null, MO = {}, BIS = "", IDX = [], LIMIT = 12, showAll = false;
+    var WDN = ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"];
+    var MONN = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"];
+    var MSL = ["januar", "februar", "maerz", "april", "mai", "juni", "juli", "august", "september", "oktober", "november", "dezember"];
+    var spr = (function () { var u = document.querySelector(".fav-top use, .srch-top use"); return u ? u.getAttribute("href").replace(/#.*$/, "") : ROOT + "/assets/icons.svg"; })();
+    var svg = function (id, cls) { return '<svg class="i' + (cls ? " " + cls : "") + '" aria-hidden="true" focusable="false"><use href="' + spr + "#i-" + id + '"/></svg>'; };
+    var norm = function (t) { return String(t || "").toLowerCase().replace(/ä/g, "ae").replace(/ö/g, "oe").replace(/ü/g, "ue").replace(/ß/g, "ss").normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, " ").trim(); };
+    var STOP = {}; ("flohmarkt flohmaerkte flohmarkte flohmarkts flomarkt floh markt maerkte troedelmarkt der die das dem den des ein eine am an im in auf bei und von vom zum zur fuer mit findet statt wann wo ist gibt es hamburg hh naechster naechste termin termine offen geoeffnet").split(" ").forEach(function (w) { STOP[w] = 1; });
+    var ymd = function (y, m, d) { var x = new Date(Date.UTC(y, m - 1, d)); return x.getUTCFullYear() === y && x.getUTCMonth() === m - 1 && x.getUTCDate() === d ? x.toISOString().slice(0, 10) : null; };
+    var wdOf = function (k) { var p = k.split("-"); return new Date(Date.UTC(+p[0], +p[1] - 1, +p[2])).getUTCDay(); };
+    var longDay = function (k) { var p = k.split("-"); return WDN[wdOf(k)] + ", " + (+p[2]) + ". " + MONN[+p[1] - 1] + (p[0] !== TODAY.slice(0, 4) ? " " + p[0] : ""); };
+    var nextWd = function (wd) { var k = TODAY; for (var i = 0; i < 7; i++) { if (wdOf(k) === wd) return k; k = dayAdd(k, 1); } return k; };
+    var weekend = function () { var w = wdOf(TODAY); if (w === 0) return [TODAY]; var sa = nextWd(6); return [sa, dayAdd(sa, 1)]; };
+    // Jahr ergänzen: ein Tag ohne Jahr meint den nächsten; liegt er höchstens zwei Wochen zurück, ist dieses Jahr gemeint („schon vorbei“).
+    var withYear = function (d, m, y) {
+      if (y) { y = +y; if (y < 100) y += 2000; return ymd(y, m, d); }
+      var cy = +TODAY.slice(0, 4), k = ymd(cy, m, d); if (!k) return null;
+      return k < dayAdd(TODAY, -14) ? ymd(cy + 1, m, d) : k;
+    };
+    var MONRE = "(jan(?:uar)?|feb(?:ruar)?|m(?:ae|a)?rz|mär(?:z)?|apr(?:il)?|mai|juni?|juli?|aug(?:ust)?|sept?(?:ember)?|okt(?:ober)?|nov(?:ember)?|dez(?:ember)?)";
+    var monIdx = function (s) { s = s.replace("ä", "ae"); var keys = ["jan", "feb", "m", "apr", "mai", "jun", "jul", "aug", "sep", "okt", "nov", "dez"]; if (/^m(ae|a)?r|^mrz/.test(s)) return 2; for (var i = 0; i < 12; i++) if (i !== 2 && s.indexOf(keys[i]) === 0) return i; return -1; };
+    // Datum aus der Eingabe lesen. Ergebnis: { days: [...], bad, month } und der Rest als Namenssuche
+    var parse = function (raw) {
+      var s = " " + raw.toLowerCase().replace(/\s+/g, " ") + " ", r = { days: null, bad: false, month: null }, m;
+      var cut = function (x) { s = s.replace(x, " "); };
+      if ((m = /(\d{4})-(\d{2})-(\d{2})/.exec(s))) { r.days = [ymd(+m[1], +m[2], +m[3])]; cut(m[0]); }
+      else if ((m = /(^|[^\d.])(\d{1,2})\.\s?(\d{1,2})\.?(?:\s?(\d{4}|\d{2})(?![\d.]))?(?!\d)/.exec(s))) { r.days = [withYear(+m[2], +m[3], m[4])]; s = s.replace(m[0], m[1] + " "); }
+      else if ((m = new RegExp("(^|\\s)(\\d{1,2})\\.?\\s?" + MONRE + "\\.?(?:\\s(\\d{4}))?(?=\\s|$)").exec(s)) && monIdx(m[3]) > -1) { r.days = [withYear(+m[2], monIdx(m[3]) + 1, m[4])]; cut(m[0]); }
+      else if ((m = /\s(ue|ü)bermorgen\s/.exec(s))) { r.days = [dayAdd(TODAY, 2)]; cut(m[0]); }
+      else if ((m = /\sheute\s/.exec(s))) { r.days = [TODAY]; cut(m[0]); }
+      else if ((m = /\smorgen\s/.exec(s))) { r.days = [TOMORROW]; cut(m[0]); }
+      else if ((m = /\s(diese[sn]?\s|am\s|naechste[sn]?\s|nächste[sn]?\s)?wochenende\s/.exec(s))) { r.days = weekend(); r.we = true; cut(m[0]); }
+      else if ((m = /\s(sonntag|so|montag|mo|dienstag|di|mittwoch|mi|donnerstag|do|freitag|fr|samstag|sonnabend|sa)\.?\s/.exec(s))) {
+        var w = { so: 0, sonntag: 0, mo: 1, montag: 1, di: 2, dienstag: 2, mi: 3, mittwoch: 3, "do": 4, donnerstag: 4, fr: 5, freitag: 5, sa: 6, samstag: 6, sonnabend: 6 }[m[1]];
+        // „so“, „mo“, „di“ … nur als Tag lesen, wenn sonst nichts Längeres dasteht (sonst könnten es Wortteile sein)
+        if (m[1].length > 2 || !norm(s.replace(m[0], " ")).split(" ").filter(function (t) { return t && !STOP[t]; }).length) { r.days = [nextWd(w)]; cut(m[0]); }
+      }
+      if (!r.days && (m = new RegExp("(^|\\s)" + MONRE + "\\.?(?:\\s(\\d{4}))?(?=\\s|$)").exec(s)) && monIdx(m[2]) > -1 && m[2].length >= 3) {
+        var mi = monIdx(m[2]), y = m[3] ? +m[3] : +TODAY.slice(0, 4); if (!m[3] && mi + 1 < +TODAY.slice(5, 7)) y++;
+        r.month = y + "-" + ("0" + (mi + 1)).slice(-2); cut(m[0]);
+      }
+      if (r.days && !r.days[0]) { r.bad = true; r.days = null; }
+      r.toks = norm(s).split(" ").filter(function (t) { return t && !STOP[t]; });
+      return r;
+    };
+    // Tippfehler zulassen: Abstand nach Damerau-Levenshtein (Vertauschen zählt als ein Fehler)
+    var lev = function (a, b) {
+      if (Math.abs(a.length - b.length) > 2) return 9;
+      var d = [], i, j; for (i = 0; i <= a.length; i++) { d[i] = [i]; } for (j = 0; j <= b.length; j++) d[0][j] = j;
+      for (i = 1; i <= a.length; i++) for (j = 1; j <= b.length; j++) {
+        var c = a[i - 1] === b[j - 1] ? 0 : 1; d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + c);
+        if (i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) d[i][j] = Math.min(d[i][j], d[i - 2][j - 2] + 1);
+      }
+      return d[a.length][b.length];
+    };
+    var build = function () {
+      IDX = Object.keys(D).map(function (s) {
+        var x = D[s], f = [[x[0], 10, "n"], [x[7], 10, "n"], [x[1], 6, "a"], [x[8], 5, "a"], [x[6], 4, "b"], [x[5], 4, "o"], [x[9], 2, "a"], [(x[10] || []).join(" "), 3, "t"], [s.replace(/-/g, " "), 2, "n"]];
+        return { s: s, x: x, f: f.filter(function (y) { return y[0]; }).map(function (y) { var t = norm(y[0]); return { t: t, ws: t.split(" "), w: y[1], k: y[2] }; }) };
+      });
+    };
+    var tokHit = function (tok, it) {
+      var best = 0, kind = "";
+      it.f.forEach(function (fl) {
+        var sc = 0;
+        if (fl.ws.indexOf(tok) > -1) sc = fl.w * 1.25;
+        else if ((" " + fl.t).indexOf(" " + tok) > -1) sc = fl.w;
+        else if (tok.length >= 3 && fl.t.indexOf(tok) > -1) sc = fl.w * 0.8;
+        else if (tok.length >= 4) {
+          var lim = tok.length >= 8 ? 2 : 1;
+          fl.ws.forEach(function (w) {
+            if (w.length < 3) return;
+            var dm = Math.min(lev(tok, w), lev(tok, w.slice(0, tok.length)), lev(tok, w.slice(0, tok.length + 1)), tok.length > 4 ? lev(tok, w.slice(0, tok.length - 1)) : 9);
+            if (dm <= lim) sc = Math.max(sc, fl.w * (dm === 1 ? 0.6 : 0.4));
+          });
+        }
+        if (sc > best) { best = sc; kind = fl.k; }
+      });
+      return [best, kind];
+    };
+    var future = function (x) { return (x[4] || x[3] || []).filter(function (e) { return e[0] >= TODAY; }); };
+    var short = function (t) { return String(t || "").replace(/ bis /, "–").replace(/ Uhr$/, " Uhr"); };
+    var favB = function (s, n) { return favOk ? '<button type="button" class="fav" data-fav="' + s + '" data-name="' + esc2(n) + '" aria-pressed="false" aria-label="' + esc2(n) + ' merken">' + svg("heart", "ho") + svg("heartfill", "hf") + "</button>" : ""; };
+    var dayLink = function (k) {
+      if (k === TODAY) return [ROOT + "/heute/", "Alle Märkte von heute"]; if (k === TOMORROW) return [ROOT + "/morgen/", "Alle Märkte von morgen"];
+      var p = k.split("-"), mp = MO[p[0] + "-" + p[1]]; return mp ? [ROOT + mp + "#" + (+p[2]) + "-" + MSL[+p[1] - 1], "Diesen Tag im Monatskalender ansehen"] : null;
+    };
+    var tval = function (t) { var m = /(\d{1,2})(?::(\d{2}))?/.exec(t || ""); return m ? +m[1] + (+m[2] || 0) / 60 : 99; };
+    // Märkte an einem Tag
+    var onDay = function (k) {
+      var rows = [];
+      IDX.forEach(function (it) { (it.x[4] || []).forEach(function (e) { if (e[0] === k) rows.push({ it: it, e: e }); }); });
+      return rows.sort(function (a, b) { var oa = a.e[1] === "fällt aus" ? 1 : 0, ob = b.e[1] === "fällt aus" ? 1 : 0; return oa - ob || tval(a.e[1]) - tval(b.e[1]) || a.it.x[0].localeCompare(b.it.x[0], "de"); });
+    };
+    var nextDaysWith = function (from, n) { var seen = {}, list = []; IDX.forEach(function (it) { (it.x[4] || []).forEach(function (e) { if (e[0] > from && e[1] !== "fällt aus" && !seen[e[0]]) { seen[e[0]] = 1; list.push(e[0]); } }); }); return list.sort().slice(0, n); };
+    var dayChips = function (ks) { return '<div class="chips">' + ks.map(function (k) { return '<button type="button" class="chip" data-q="' + qOf(k) + '">' + svg("cal") + esc2(dayLab(k)) + "</button>"; }).join("") + "</div>"; };
+    var qOf = function (k) { var p = k.split("-"); return (+p[2]) + "." + (+p[1]) + "." + (p[0] !== TODAY.slice(0, 4) ? p[0] : ""); };
+    var renderDay = function (k) {
+      var rows = onDay(k), open = rows.filter(function (r) { return r.e[1] !== "fällt aus"; }).length, lk = dayLink(k), h = '<section class="sx-day"><div class="sx-dh"><h2>' + esc2(longDay(k)) + "</h2>";
+      if (k < TODAY) return h + '</div><div class="empty sx-empty"><p><b>Dieser Tag ist schon vorbei.</b></p><p>Die nächsten Flohmärkte:</p>' + dayChips(nextDaysWith(dayAdd(TODAY, -1), 4)) + "</div></section>";
+      if (!rows.length) {
+        var far = BIS && k > BIS;
+        return h + '</div><div class="empty sx-empty"><p><b>An diesem Tag steht noch kein Flohmarkt im Kalender.</b></p><p>' + (far ? "So weit im Voraus sind meist noch keine Termine bekannt. Schau später noch einmal rein." : "Neue Termine kommen laufend dazu.") + "</p>" + (nextDaysWith(k, 1).length ? "<p>Die nächsten Tage mit Flohmarkt:</p>" + dayChips(nextDaysWith(k, 4)) : "") + "</div></section>";
+      }
+      return h + '<span class="meta">' + (open === 1 ? "1 Flohmarkt" : open + " Flohmärkte") + "</span></div><div class=\"sx-rows\">" + rows.map(function (r) {
+        var x = r.it.x, off = r.e[1] === "fällt aus";
+        return '<article class="sx-row' + (off ? " off" : "") + '"><span class="sx-t' + (off ? " off" : r.e[1] ? "" : " na") + '">' + esc2(off ? "fällt aus" : r.e[1] ? short(r.e[1]) : "Uhrzeit folgt") + '</span><div class="sx-rb"><a href="' + ROOT + "/flohmarkt/" + r.it.s + '/">' + esc2(x[0]) + '</a><span class="meta">' + esc2(x[1]) + (r.e[2] ? " · " + esc2(r.e[2]) : "") + "</span></div>" + favB(r.it.s, x[7] || x[0]) + "</article>";
+      }).join("") + "</div>" + (lk ? '<a class="more-link" href="' + lk[0] + '">' + lk[1] + svg("chev") + "</a>" : "") + "</section>";
+    };
+    // Antwort auf „Findet … statt?“: nächster Termin oder der gefragte Tag
+    var card = function (it, p, kinds) {
+      var x = it.x, fu = future(x), ans = "", rest = fu, note = "";
+      var k0 = p.days ? p.days[0] : null;
+      if (k0) {
+        var lab = p.days.length > 1 ? "Am Wochenende" : k0 === TODAY ? "Heute" : k0 === TOMORROW ? "Morgen" : "Am " + dayLab(k0);
+        var hits = fu.filter(function (e) { return p.days.indexOf(e[0]) > -1; });
+        if (hits.length) {
+          var e0 = hits[0], off = e0[1] === "fällt aus";
+          ans = '<p class="sx-ans' + (off ? " off" : "") + '"><span class="kicker">' + esc2(lab) + "</span><b>" + (off ? "Fällt aus" : "Ja" + (p.days.length > 1 ? ", " + esc2(dayLab(e0[0])) : "")) + "</b>" + (off ? "" : esc2(e0[1] || "Uhrzeit folgt")) + "</p>";
+          note = e0[2] || ""; rest = fu.filter(function (e) { return e[0] !== e0[0]; });
+        } else {
+          var nx = fu.filter(function (e) { return e[0] > k0 && e[1] !== "fällt aus"; })[0];
+          ans = '<p class="sx-ans none"><span class="kicker">' + esc2(lab) + "</span>Kein Termin." + (nx ? " Nächster: <strong>" + esc2(dayLab(nx[0])) + "</strong>" + (nx[1] ? ", " + esc2(nx[1]) : "") : "") + "</p>";
+        }
+      } else if (p.month) {
+        var inM = fu.filter(function (e) { return e[0].slice(0, 7) === p.month; }), mn = MONN[+p.month.slice(5) - 1];
+        ans = inM.length ? '<p class="sx-ans"><span class="kicker">Im ' + mn + "</span><b>" + inM.filter(function (e) { return e[1] !== "fällt aus"; }).length + (inM.length === 1 ? " Termin" : " Termine") + "</b>" + esc2(inM.slice(0, 3).map(function (e) { return dayLab(e[0]); }).join(", ")) + (inM.length > 3 ? " …" : "") + "</p>"
+          : '<p class="sx-ans none"><span class="kicker">Im ' + mn + "</span>Kein Termin bekannt.</p>";
+      } else {
+        var cx = [], first = null; fu.forEach(function (e) { if (first) return; if (e[1] === "fällt aus") cx.push(e); else first = e; });
+        if (first) {
+          ans = '<p class="sx-ans"><span class="kicker">Nächster Termin</span><b>' + esc2(dayLab(first[0])) + "</b>" + esc2(first[1] || "Uhrzeit folgt") + "</p>";
+          if (cx.length) ans += '<p class="sx-note">' + esc2(cx.map(function (e) { return dayLab(e[0]); }).join(", ")) + " fällt aus.</p>";
+          note = first[2] || ""; rest = fu.filter(function (e) { return e !== first && e[1] !== "fällt aus"; });
+        } else ans = '<p class="sx-ans none">Zurzeit ist kein Termin bekannt, zum Beispiel wegen Saisonpause. Neue Termine tragen wir ein, sobald der Veranstalter sie veröffentlicht.</p>';
+      }
+      var more = rest.slice(0, 8);
+      return '<article class="mk"><div class="mk-top"><h2><a href="' + ROOT + "/flohmarkt/" + it.s + '/">' + esc2(x[0]) + "</a></h2>" + favB(it.s, x[7] || x[0]) + "</div>" +
+        '<p class="meta">' + esc2(x[1]) + (x[6] && x[6] !== x[1] ? " · " + esc2(x[6]) : "") + "</p>" + (kinds.o && x[5] ? '<p class="meta">Veranstalter: ' + esc2(x[5]) + "</p>" : "") + ans + (note ? '<p class="sx-note">' + esc2(note) + "</p>" : "") +
+        (more.length ? '<details class="sx-more"><summary>Weitere Termine' + svg("chev") + '</summary><ul class="mk-dates">' + more.map(function (e) { return "<li" + (e[1] === "fällt aus" ? ' class="off"' : "") + "><b>" + esc2(dayLab(e[0])) + "</b>" + (e[1] ? " · " + esc2(e[1]) : "") + "</li>"; }).join("") + (rest.length > 8 ? '<li><a href="' + ROOT + "/flohmarkt/" + it.s + '/">Alle Termine auf der Seite des Markts</a></li>' : "") + "</ul></details>" : "") +
+        '<p class="ln rh">' + svg("repeat") + "<span>" + esc2(x[2]) + "</span></p></article>";
+    };
+    var nextK = function (it) { var e = future(it.x).filter(function (y) { return y[1] !== "fällt aus"; })[0]; return e ? e[0] : "9999"; };
+    var setChips = function (p) {
+      if (!days) return;
+      var one = p.days && p.days.length === 1 && !p.toks.length ? p.days[0] : null, map = { "0": TODAY, "1": TOMORROW, sa: nextWd(6), so: nextWd(0) }, hit = false;
+      days.querySelectorAll("button[data-d]").forEach(function (b) { var on = !!one && map[b.getAttribute("data-d")] === one && !hit; if (on) hit = true; b.setAttribute("aria-pressed", String(on)); });
+      var lab = days.querySelector(".sx-pick span"), pk = days.querySelector(".sx-pick");
+      if (lab) lab.textContent = one && !hit ? dayLab(one) : "Datum wählen";
+      if (pk) pk.classList.toggle("on", !!one && !hit);
+      if (pick && one) pick.value = one;
+    };
+    // Der Suchbegriff steht nur hinter dem # in der Adresse: Dieser Teil wird nie an den Server geschickt.
+    var syncUrl = function (v) { try { history.replaceState(null, "", location.pathname + (v ? "#q=" + encodeURIComponent(v) : "")); } catch (e) {} };
+    var run = function () {
+      var v = q.value.trim(); clr.hidden = !v; syncUrl(v);
+      var empty = !v; az.classList.toggle("sx-hide", !empty); tip.classList.toggle("sx-hide", !empty);
+      if (empty) { out.innerHTML = ""; msg.textContent = ""; setChips({ days: null, toks: [] }); return; }
+      if (!D) { msg.textContent = "Suche wird geladen …"; return; }
+      var p = parse(v); setChips(p);
+      if (p.bad) { out.innerHTML = '<div class="empty sx-empty"><p><b>Dieses Datum gibt es nicht.</b></p><p>Tipp das Datum so ein: 24.10. oder 24. Oktober.</p></div>'; msg.textContent = ""; return; }
+      if (!p.toks.length && p.days) {
+        out.innerHTML = p.days.map(renderDay).join("");
+        var n = 0; p.days.forEach(function (k) { n += onDay(k).filter(function (r) { return r.e[1] !== "fällt aus"; }).length; });
+        msg.textContent = p.days.length > 1 ? (n === 1 ? "1 Termin am Wochenende." : n + " Termine am Wochenende.") : "";
+        favSync(); return;
+      }
+      if (!p.toks.length && p.month) {
+        var mp = MO[p.month], seen = {}, ks = [], mn = MONN[+p.month.slice(5) - 1] + " " + p.month.slice(0, 4);
+        IDX.forEach(function (it) { (it.x[4] || []).forEach(function (e) { if (e[0].slice(0, 7) === p.month && e[0] >= TODAY && e[1] !== "fällt aus") { if (!seen[e[0]]) ks.push(e[0]); seen[e[0]] = (seen[e[0]] || 0) + 1; } }); });
+        ks.sort();
+        out.innerHTML = '<section class="sx-day"><div class="sx-dh"><h2>Flohmärkte im ' + esc2(mn) + "</h2></div>" + (ks.length ? "<p class=\"meta\">Tipp auf einen Tag:</p>" + dayChips(ks) + (mp ? '<a class="more-link" href="' + ROOT + mp + '">Alle Termine im ' + esc2(mn) + svg("chev") + "</a>" : "") : '<div class="empty sx-empty"><p><b>Für diesen Monat stehen noch keine Termine im Kalender.</b></p></div>') + "</section>";
+        msg.textContent = ""; return;
+      }
+      if (!p.toks.length) { out.innerHTML = '<div class="empty sx-empty"><p><b>Wonach suchst du?</b></p><p>Tipp einen Namen, einen Stadtteil oder ein Datum ein, zum Beispiel „Goldbek“, „Altona“ oder „24.10.“</p></div>'; msg.textContent = ""; return; }
+      var scored = IDX.map(function (it) {
+        var sum = 0, all = true, kinds = {}, any = 0;
+        p.toks.forEach(function (t) { var h = tokHit(t, it); if (h[0] > 0) { sum += h[0]; kinds[h[1]] = 1; any++; } else all = false; });
+        if (sum && norm(it.x[0]).indexOf(p.toks.join(" ")) > -1) sum += 6;
+        if (sum && nextK(it) !== "9999") sum += 1.5; // bei sonst gleichem Treffer: Märkte mit bekanntem Termin zuerst
+        return { it: it, sc: sum, all: all, any: any, kinds: kinds };
+      });
+      var hits = scored.filter(function (r) { return r.all && r.sc > 0; }), loose = false;
+      if (!hits.length && p.toks.length > 1) { hits = scored.filter(function (r) { return r.any > 0; }); loose = hits.length > 0; }
+      hits.sort(function (a, b) { return (b.any - a.any) || (b.sc - a.sc) || (nextK(a.it) < nextK(b.it) ? -1 : nextK(a.it) > nextK(b.it) ? 1 : 0); });
+      if (!hits.length) {
+        out.innerHTML = '<div class="empty sx-empty"><p><b>Nichts gefunden für „' + esc2(v) + "“.</b></p><p>Prüf die Schreibweise oder such nach dem Stadtteil. Fehlt ein Markt im Kalender? Sag uns Bescheid, dann tragen wir ihn ein.</p>" +
+          '<div class="chips"><a class="chip" href="' + ROOT + '/veranstalter/">' + svg("mail") + 'Markt melden</a><a class="chip" href="' + ROOT + '/flohmaerkte/">' + svg("map") + "Alle Märkte</a></div></div>";
+        msg.textContent = "Keine Treffer."; return;
+      }
+      var shown = showAll ? hits : hits.slice(0, LIMIT);
+      out.innerHTML = (loose ? '<p class="sx-sub">Keine genaue Übereinstimmung. Ähnliche Märkte:</p>' : "") + '<div class="sx-hits">' + shown.map(function (r) { return card(r.it, p, r.kinds); }).join("") + "</div>" +
+        (hits.length > shown.length ? '<button type="button" class="more" id="sxMore">Alle ' + hits.length + " Treffer anzeigen</button>" : "") +
+        '<p class="sx-x meta">Nicht dabei? <a href="' + ROOT + '/veranstalter/">Markt melden</a> · <a href="' + ROOT + '/flohmaerkte/">Alle Märkte</a></p>';
+      msg.textContent = loose ? "" : hits.length === 1 ? "1 Markt gefunden." : hits.length + " Märkte gefunden.";
+      favSync();
+    };
+    var t = 0;
+    q.addEventListener("input", function () { showAll = false; clearTimeout(t); t = setTimeout(run, 120); });
+    form.addEventListener("submit", function (e) { e.preventDefault(); clearTimeout(t); run(); q.blur(); });
+    clr.addEventListener("click", function () { q.value = ""; showAll = false; run(); q.focus(); });
+    var setQ = function (v) { q.value = v; showAll = false; run(); };
+    out.addEventListener("click", function (e) {
+      var c = e.target.closest("[data-q]"); if (c) { setQ(c.getAttribute("data-q")); window.scrollTo({ top: 0, behavior: "smooth" }); return; }
+      if (e.target.closest("#sxMore")) { showAll = true; run(); }
+    });
+    if (days) days.addEventListener("click", function (e) {
+      var b = e.target.closest("button[data-d]"); if (!b) return;
+      var d = b.getAttribute("data-d"); setQ(b.getAttribute("aria-pressed") === "true" ? "" : { "0": "heute", "1": "morgen", sa: "samstag", so: "sonntag" }[d]);
+    });
+    if (pick) {
+      pick.min = TODAY;
+      pick.addEventListener("click", function () { try { if (pick.showPicker) pick.showPicker(); } catch (e) {} });
+      pick.addEventListener("change", function () { if (/^\d{4}-\d{2}-\d{2}$/.test(pick.value)) setQ(qOf(pick.value)); });
+    }
+    var fromUrl = function () { try { return new URLSearchParams(location.hash.slice(1)).get("q") || new URLSearchParams(location.search).get("q") || ""; } catch (e) { return ""; } };
+    var q0 = fromUrl(); if (q0) q.value = q0.slice(0, 80);
+    window.addEventListener("hashchange", function () { var v = fromUrl().slice(0, 80); if (v !== q.value.trim()) { q.value = v; showAll = false; run(); } });
+    if (q.value) run(); else if (window.matchMedia && matchMedia("(hover: hover) and (pointer: fine)").matches) q.focus();
+    fetch(out.getAttribute("data-src")).then(function (r) { if (!r.ok) throw new Error(); return r.json(); }).then(function (j) { D = j.m || {}; MO = j.mo || {}; BIS = j.bis || ""; build(); if (q.value.trim()) run(); })
+      .catch(function () { msg.textContent = ""; out.innerHTML = '<div class="empty">Die Suche konnte gerade nicht geladen werden. Versuch es gleich noch einmal oder schau in die <a href="' + ROOT + '/flohmaerkte/">Liste aller Märkte</a>.</div>'; });
+  })();
 })();

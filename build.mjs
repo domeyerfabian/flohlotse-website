@@ -405,6 +405,8 @@ const ICONS = {
   undo: "<path d=\"M222,128a94,94,0,0,1-92.29,94H128a93.43,93.43,0,0,1-64.5-25.65,6,6,0,1,1,8.24-8.73A82,82,0,1,0,70,70.25L54.15,86H80a6,6,0,0,1,0,12H40a6,6,0,0,1-6-6V52a6,6,0,0,1,12,0V77.57L61.62,62A94,94,0,0,1,222,128Z\"/>",
   thumbsup: "<g fill=\"none\" stroke=\"currentColor\" stroke-width=\"14\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M32,112H76v96H32Z\"/><path d=\"M76,112,114,34c19,0,34,13,34,34V90h58c14,0,24,11,22,25l-11,76c-2,10-10,17-20,17H76\"/></g>",
   thumbsdown: "<g fill=\"none\" stroke=\"currentColor\" stroke-width=\"14\" stroke-linecap=\"round\" stroke-linejoin=\"round\" transform=\"matrix(1 0 0 -1 0 256)\"><path d=\"M32,112H76v96H32Z\"/><path d=\"M76,112,114,34c19,0,34,13,34,34V90h58c14,0,24,11,22,25l-11,76c-2,10-10,17-20,17H76\"/></g>",
+  pause: "<path d=\"M92,44h20a8,8,0,0,1,8,8V204a8,8,0,0,1-8,8H92a8,8,0,0,1-8-8V52A8,8,0,0,1,92,44Zm52,0h20a8,8,0,0,1,8,8V204a8,8,0,0,1-8,8H144a8,8,0,0,1-8-8V52A8,8,0,0,1,144,44Z\"/>",
+  play: "<path d=\"M92,46.4V209.6a8,8,0,0,0,12.2,6.8l130.6-81.6a8,8,0,0,0,0-13.6L104.2,39.6A8,8,0,0,0,92,46.4Z\"/>",
   frog: "<path d=\"M368 32c41.7 0 75.9 31.8 79.7 72.5l85.6 26.3c25.4 7.8 42.8 31.3 42.8 57.9 0 21.8-11.7 41.9-30.7 52.7l-144.5 82.1 92.5 92.5h50.7c17.7 0 32 14.3 32 32s-14.3 32-32 32h-64c-8.5 0-16.6-3.4-22.6-9.4L346.9 360.2c11.7-36 3.2-77.1-25.4-105.7-40.6-40.6-106.3-40.6-146.9-.1l-73.6 70c-6.4 6.1-6.7 16.2-.6 22.6s16.2 6.6 22.6.6l73.8-70.2.1-.1.1-.1c3.5-3.5 7.3-6.6 11.3-9.2 27.9-18.5 65.9-15.4 90.5 9.2 24.7 24.7 27.7 62.9 9 90.9-2.6 3.8-5.6 7.5-9 10.9l-37 37H352c17.7 0 32 14.3 32 32s-14.3 32-32 32H64c-35.3 0-64-28.7-64-64C0 249.6 127 112.9 289.3 97.5 296.2 60.2 328.8 32 368 32m0 104a24 24 0 1 0 0-48 24 24 0 1 0 0 48\"/>",
 };
 const ICON_LICENSE = "Frosch-Icon (Wetterfrosch): Font Awesome Free 7.1.0 by @fontawesome, https://fontawesome.com\nLizenz: CC BY 4.0, https://creativecommons.org/licenses/by/4.0/ , Copyright 2025 Fonticons, Inc. Unverändert übernommen.\n\nAlle anderen Icons: Phosphor Icons (https://phosphoricons.com), Stil Light\n\nMIT License\n\nCopyright (c) 2023 Phosphor Icons\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\nSOFTWARE.\n";
@@ -572,6 +574,15 @@ ${m.note ? `<p class="note">${esc(m.note)}${e.note ? " " + esc(e.note) : ""}</p>
 <p class="ln rhythm">${ic("repeat")}<span>${esc(m.rhythm)}</span></p><a class="route go" href="/flohmarkt/${m.slug}/">Zum Markt${ic("chev")}</a>
 <span class="dk-stamp yes" aria-hidden="true">${ic("thumbsup")}Merken</span><span class="dk-stamp no" aria-hidden="true">${ic("thumbsdown")}Nein</span></article>`;
 };
+// Kartenstapel (Seite /entdecken/ und Startseite). mini = kompakte Fassung für die Startseite: ohne Beschreibung, ohne Tastatur.
+const deckHTML = mini => `<section class="deck${mini ? " mini" : ""}" id="deck"${mini ? "" : " data-keys"}${DK_EVS.length ? "" : " hidden"}>
+<p class="dk-count js-only" id="dkCount" aria-live="polite"></p>
+<div class="dk-stack" id="dkStack">${DK_EVS.map(deckCard).join("")}</div>
+<div class="dk-done" id="dkDone" hidden><p class="dk-done-h" id="dkDoneH">Geschafft!</p><p id="dkDoneP"></p><div class="share-row"><a class="btn" href="/merkliste/">${ic("heart")}Zur Merkliste</a><button type="button" class="btn" id="dkAgain">${ic("undo")}Nochmal von vorn</button><a class="route" href="/termine/">Alle Termine${ic("chev")}</a></div></div>
+<div class="dk-btns js-only" id="dkBtns"><span class="dk-bw"><button type="button" class="dk-b no" id="dkNo" aria-label="Nein, nicht merken">${ic("thumbsdown")}</button><span class="dk-bl" aria-hidden="true">← Nein</span></span><span class="dk-bw"><button type="button" class="dk-b undo" id="dkUndo" aria-label="Rückgängig" disabled>${ic("undo")}</button><span class="dk-bl" aria-hidden="true">Zurück</span></span><span class="dk-bw"><button type="button" class="dk-b yes" id="dkYes" aria-label="Merken">${ic("thumbsup")}</button><span class="dk-bl" aria-hidden="true">Merken →</span></span></div>
+${mini ? "" : '<p class="dk-hint js-only">Am Computer gehen auch die Pfeiltasten ← und →.</p>'}
+</section>
+<div class="empty" id="dkEmpty"${DK_EVS.length ? " hidden" : ""}>Heute und morgen steht gerade kein Flohmarkt im Kalender. ${more("/termine/", "Alle Termine")}</div>`;
 
 /* ---------------------------------------------------------------- SEO-Bausteine
    Seiten nach Art des Markts, Monatsseiten, Feiertage und Hilfen für Titel und Beschreibungen.
@@ -1098,6 +1109,30 @@ const shareBtn = (m, e, cls = "share") => `<button type="button" class="${cls}" 
     const evs = on(nd.date), lab = WDL[nd.date.getUTCDay()];
     return cluster(evs, lab) || [lab, `Am ${dDate(nd.date)} ${evs.length === 1 ? "hat ein Flohmarkt" : "haben " + evs.length + " Flohmärkte"} geöffnet.`, "/termine/"];
   })();
+  // Kasten „Aktuell“: Wetter, Tipp des Tages und Neues im Kalender als Reiter. Mit JavaScript blättert er alle paar Sekunden weiter,
+  // ohne JavaScript stehen die Abschnitte untereinander.
+  const NEWS_TABS = [];
+  { const evs = upcoming(4), days = [...new Set(evs.filter(e => !e.cancelled).map(e => e.k))].sort();
+    const whenOf = k => k === key(TODAY) ? "heute" : k === key(addDays(TODAY, 1)) ? "morgen" : "am " + WDL[new Date(k + "T00:00:00Z").getUTCDay()];
+    const pageOf = k => k === key(TODAY) ? "/heute/" : k === key(addDays(TODAY, 1)) ? "/morgen/" : "/termine/";
+    let wx = null;
+    for (const k of days) { const list = evs.filter(e => e.k === k && !e.cancelled), w = wxDay(list); if (!w || w.lvl !== "wet") continue;
+      const cov = list.filter(e => e.m.tags.includes("Überdacht")); if (!cov.length) continue;
+      wx = { lab: "Wetter", icon: "umbrella", first: true, title: `${cap(whenOf(k))} wird es wohl nass.`, body: `${cov.length === 1 ? "Dieser Markt ist" : `Diese ${cov.length} Märkte sind`} überdacht: ${cov.slice(0, 5).map(e => `<a href="/flohmarkt/${e.m.slug}/">${esc(e.m.short)}</a>`).join(", ")}${cov.length > 5 ? " und weitere" : ""}.`, link: CAT_BY_S["hallenflohmarkt-hamburg"] ? ["/hallenflohmarkt-hamburg/", "Alle überdachten Märkte"] : null }; break; }
+    if (!wx && days.length) { const k = days[0], list = evs.filter(e => e.k === k && !e.cancelled), w = wxDay(list);
+      if (w) wx = { lab: "Wetter", icon: "frog", title: `Der Wetterfrosch sagt für ${whenOf(k)} ${w.noun} voraus.`, body: `${cap(whenOf(k))} ${list.length === 1 ? "hat ein Flohmarkt" : "haben " + list.length + " Flohmärkte"} geöffnet.`, link: [pageOf(k), "Zu den Terminen"] }; }
+    if (wx && wx.first) NEWS_TABS.push(wx);
+    if (tip) NEWS_TABS.push({ lab: "Tagestipp", icon: "star", title: `${tip[0]}: ${tip[1]}`, body: "Jede Nacht neu aus dem Kalender.", link: [tip[2], "Ansehen"] });
+    const n60 = EVENTS.filter(e => !e.cancelled && (e.date - TODAY) / 864e5 < 60).length;
+    NEWS_TABS.push(NEU_MS.length
+      ? { lab: "Neu", icon: "update", title: `Neu im Kalender: ${NEU_MS.length === 1 ? "ein Markt" : NEU_MS.length + " Märkte"}`, body: `${NEU_MS.slice(0, 5).map(m => `<a href="/flohmarkt/${m.slug}/">${esc(m.short)}</a>`).join(", ")}${NEU_MS.length > 5 ? ` und ${NEU_MS.length - 5} weitere` : ""}. Der Kalender wächst ständig, schau gern wieder rein.`, link: null }
+      : { lab: "Neu", icon: "update", title: "Der Kalender wächst ständig.", body: `Schon ${MARKETS.length} Märkte und ${n60} Termine in den nächsten 60 Tagen. Neue Märkte und Termine kommen laufend dazu, schau gern wieder rein.`, link: ["/flohmaerkte/", "Alle Märkte"] });
+    if (wx && !wx.first) NEWS_TABS.push(wx); }
+  const newsBox = !NEWS_TABS.length ? "" : `<section class="akt" id="news" aria-label="Aktuell">
+<div class="akt-head js-only"><div class="akt-tabs" role="tablist" aria-label="Aktuell">${NEWS_TABS.map((t, i) => `<button type="button" role="tab" class="akt-tab" id="nt${i}" aria-controls="np${i}" aria-selected="${i === 0}"${i ? ' tabindex="-1"' : ""}>${ic(t.icon)}<span>${t.lab}</span></button>`).join("")}</div>${NEWS_TABS.length > 1 ? `<button type="button" class="akt-pause" id="newsPause" aria-pressed="false" aria-label="Automatisches Weiterblättern anhalten">${ic("pause", "i np-pause")}${ic("play", "i np-play")}</button>` : ""}</div>
+${NEWS_TABS.length > 1 ? '<div class="akt-bar js-only" aria-hidden="true"><i id="newsBar"></i></div>' : ""}
+<div class="akt-panels" id="newsPanels">${NEWS_TABS.map((t, i) => `<div class="akt-p" role="tabpanel" id="np${i}" aria-labelledby="nt${i}">${ic(t.icon)}<div><b>${esc(t.title)}</b><p>${t.body}</p>${t.link ? `<a class="more-link" href="${t.link[0]}">${t.link[1]}${ic("chev")}</a>` : ""}</div></div>`).join("")}</div>
+</section>`;
   // Slider: ein großes Symbolfoto, dazu bis zu zwei große Märkte der nächsten Tage als „Wochen-Highlight“.
   const hlEvs = []; for (const e of upcoming(8, e => !e.cancelled && e.m.tags.includes("Groß & bekannt"))) if (hlEvs.length < 2 && !hlEvs.some(x => x.m === e.m)) hlEvs.push(e);
   const sImg = pickImg("start"), sSmall = pickImg("start-klein"), sMini = pickImg("start-mini");
@@ -1112,13 +1147,11 @@ const shareBtn = (m, e, cls = "share") => `<button type="button" class="${cls}" 
 <span class="proto">${esc(REGION)}</span>
 <h1>Flohmarkt Hamburg: alle Termine, aufgeräumt.</h1>
 <p>Alle Flohmärkte in Hamburg und Umgebung: wann, wo und wie lange. Ohne Werbebanner, ohne alte Termine.</p>
-<p class="wachst">${ic("update")}<span>${NEU_MS.length ? `<b>Neu im Kalender:</b> ${NEU_MS.slice(0, 4).map(m => `<a href="/flohmarkt/${m.slug}/">${esc(m.short)}</a>`).join(", ")}${NEU_MS.length > 4 ? ` und ${NEU_MS.length - 4} weitere` : ""}. ` : ""}Der Kalender wächst ständig: Neue Märkte und Termine kommen laufend dazu. Schau gern wieder rein.</span></p>
 <div class="quick"><a class="chip" href="/heute/">${ic("sun")}Heute</a><a class="chip" href="/entdecken/">${ic("heart")}Wischen &amp; merken</a><a class="chip" href="/wochenende/">${ic("cal")}Wochenende</a><a class="chip" href="/sonntag/">${ic("cal")}Sonntag</a><a class="chip" href="/flohmaerkte/">${ic("map")}Märkte nach Bezirk</a>${HAS_MAP ? `<a class="chip" href="/flohmaerkte/#karte">${ic("pin")}Karte</a>` : ""}<a class="chip" href="/ratgeber/">${ic("book")}Ratgeber</a><a class="chip" href="/flohmarkt-schilder/">${ic("printer")}Schilder gestalten</a></div>
 </div><a class="big-sticker" href="/wochenende/"><b>${weN}</b><span>${weLabel}</span></a></section>
 ${slider}
-${rainBox(upcoming(4)) || frogLine(upcoming(5))}
-${tip ? `<a class="cta-box tip" href="${tip[2]}">${ic("star")}<span><b>${esc(tip[0])}: ${esc(tip[1])}</b>Tipp des Tages, jede Nacht neu aus dem Kalender.</span>${ic("chev")}</a>` : ""}
-${DK_N ? `<a class="cta-box" href="/entdecken/">${ic("heart")}<span><b>Heute und morgen: ${DK_N} ${DK_N === 1 ? "Flohmarkt" : "Flohmärkte"} zum Durchwischen</b>Daumen hoch merkt den Markt, Daumen runter zeigt den nächsten.</span>${ic("chev")}</a>` : ""}
+${newsBox}
+${DK_EVS.length ? `<section class="sec home-deck" id="dkSec"><div class="sec-head"><h2>Wischen &amp; merken</h2>${more("/merkliste/", "Merkliste")}</div><p class="dk-intro">Die Flohmärkte von heute und morgen: Daumen hoch merkt den Markt, Daumen runter zeigt den nächsten.</p>${deckHTML(true)}</section>` : ""}
 <section class="sec"><div class="sec-head"><h2>Die nächsten Flohmärkte</h2>${more("/termine/", "Alle")}</div>
 ${groupList(next, 3) || '<div class="empty">Gerade stehen keine Termine im Kalender.</div>'}
 ${all14 > next.length ? `<a class="more" href="/termine/">Alle ${all14} Termine der nächsten 14 Tage anzeigen</a>` : ""}</section>
@@ -1155,14 +1188,7 @@ ${MONTHS.length ? `<section class="related"><div class="sec-head"><h2>Termine na
    Beide Seiten sind persönlich bzw. tagesaktuell und deshalb nicht für Google bestimmt (noindex, nicht in der Sitemap). */
 {
   const body = crumbs([[NAME, "/"], ["Wischen & merken"]]) + `<section class="hub-head dk-head"><h1>Wischen und merken: Flohmärkte heute und morgen</h1><p>Daumen hoch oder nach rechts wischen: Der Markt kommt auf deine Merkliste. Daumen runter oder nach links: weiter zum nächsten.</p></section>
-<section class="deck" id="deck"${DK_EVS.length ? "" : " hidden"}>
-<p class="dk-count js-only" id="dkCount" aria-live="polite"></p>
-<div class="dk-stack" id="dkStack">${DK_EVS.map(deckCard).join("")}</div>
-<div class="dk-done" id="dkDone" hidden><p class="dk-done-h" id="dkDoneH">Geschafft!</p><p id="dkDoneP"></p><div class="share-row"><a class="btn" href="/merkliste/">${ic("heart")}Zur Merkliste</a><button type="button" class="btn" id="dkAgain">${ic("undo")}Nochmal von vorn</button><a class="route" href="/termine/">Alle Termine${ic("chev")}</a></div></div>
-<div class="dk-btns js-only" id="dkBtns"><span class="dk-bw"><button type="button" class="dk-b no" id="dkNo" aria-label="Nein, nicht merken">${ic("thumbsdown")}</button><span class="dk-bl" aria-hidden="true">← Nein</span></span><span class="dk-bw"><button type="button" class="dk-b undo" id="dkUndo" aria-label="Rückgängig" disabled>${ic("undo")}</button><span class="dk-bl" aria-hidden="true">Zurück</span></span><span class="dk-bw"><button type="button" class="dk-b yes" id="dkYes" aria-label="Merken">${ic("thumbsup")}</button><span class="dk-bl" aria-hidden="true">Merken →</span></span></div>
-<p class="dk-hint js-only">Am Computer gehen auch die Pfeiltasten ← und →.</p>
-</section>
-<div class="empty" id="dkEmpty"${DK_EVS.length ? " hidden" : ""}>Heute und morgen steht gerade kein Flohmarkt im Kalender. ${more("/termine/", "Alle Termine")}</div>`;
+${deckHTML(false)}`;
   layout({ p: "/entdecken/", title: `Wischen und merken: Flohmärkte heute und morgen | ${NAME}`, desc: "Die Flohmärkte von heute und morgen in Hamburg und Umgebung zum Durchwischen: nach rechts merken, nach links weiter.", body, noindex: true, nav: "entdecken" });
 }
 {

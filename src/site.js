@@ -92,6 +92,8 @@
       navigator.geolocation.getCurrentPosition(function (p) { F.origin = [p.coords.latitude, p.coords.longitude]; F.label = "deinen Standort"; plzIn.value = ""; clr.hidden = false; apply(); sync(); },
         function () { document.getElementById("nearMsg").textContent = "Standort nicht verfügbar. Gib stattdessen deine Postleitzahl ein."; }, { timeout: 10000, maximumAge: 600000 });
     });
+    // Startseite „In meiner Nähe“ (/termine/#near): Umkreis zeigen und gleich den Standort abfragen
+    if (location.hash === "#near") { setTimeout(function () { near.scrollIntoView({ block: "start" }); geo.click(); }, 60); }
     try { var hp = new URLSearchParams(location.hash.slice(1)), qp = new URLSearchParams(location.search), p0 = hp.get("plz") || qp.get("plz"), k0 = hp.get("km") || qp.get("km"); if (k0 && kmSel.querySelector('option[value="' + k0 + '"]')) { kmSel.value = k0; F.km = +k0; } if (p0) { plzIn.value = p0; byPlz(); } } catch (e) {}
   }
   // Karte (erst nach Klick: Kartenbilder von OpenStreetMap, Leaflet liegt auf unserem Server)

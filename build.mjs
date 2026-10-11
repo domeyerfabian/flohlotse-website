@@ -211,6 +211,8 @@ const MARKETS = data["Märkte"].filter(r => yes(r["Aktiv"]) && r["Kennung"] && v
 }));
 if (!MARKETS.length) throw new Error("Keine aktiven Märkte gefunden (Blatt „Märkte“, Spalte „Aktiv“). Die Website wurde nicht veröffentlicht, damit keine leere Seite online geht.");
 const MBY = Object.fromEntries(MARKETS.map(m => [m.slug, m]));
+// Märkte mit Aktiv = Nein: ihre Termine und Serien werden ohne Hinweis übersprungen (nur wirklich unbekannte Kennungen melden)
+const INACTIVE = new Set(data["Märkte"].filter(r => r["Kennung"] && !yes(r["Aktiv"])).map(r => r["Kennung"]));
 function assertUnique(items, blatt) {
   const dup = items.filter((s, i, a) => a.indexOf(s) !== i);
   if (dup.length) throw new Error(`Im Blatt „${blatt}“ ist die Kennung ${[...new Set(dup)].map(x => "„" + x + "“").join(", ")} mehrfach vergeben. Sonst würde eine Seite die andere überschreiben, deshalb wurde nicht gebaut.`);
@@ -228,7 +230,7 @@ function monthSet(v) {
 }
 const evMap = new Map();
 for (const r of data.Serien) {
-  const m = MBY[r["Markt"]]; if (!m) { if (r["Markt"]) warn("Serien", `Markt „${r["Markt"]}“ ist unbekannt oder nicht aktiv.`); continue; }
+  const m = MBY[r["Markt"]]; if (!m) { if (r["Markt"] && !INACTIVE.has(r["Markt"])) warn("Serien", `Markt „${r["Markt"]}“ ist unbekannt.`); continue; }
   const wd = WDMAP[String(r["Wochentag"]).toLowerCase()]; if (wd === undefined) { warn("Serien", `${m.name}: Wochentag „${r["Wochentag"]}“ ist ungültig.`); continue; }
   const rhythm = String(r["Rhythmus"]).toLowerCase(); const nth = /^(\d)\./.exec(rhythm); const last = rhythm.startsWith("letzt");
   if (!nth && !last && !rhythm.startsWith("jede")) { warn("Serien", `${m.name}: Rhythmus „${r["Rhythmus"]}“ ist ungültig.`); continue; }
@@ -248,7 +250,7 @@ for (const r of data.Serien) {
 // Fällt ein Tag unter eine Serie des Markts? (auch für Tage jenseits der Vorschau; nutzt der Termin-Wächter)
 const ruleHits = (r, d) => d.getUTCDay() === r.wd && !r.skip.has(key(d)) && (!r.months || r.months.has(d.getUTCMonth() + 1)) && (!r.nth || Math.ceil(d.getUTCDate() / 7) === r.nth) && (!r.last || addDays(d, 7).getUTCMonth() !== d.getUTCMonth()) && d >= r.from && (!r.to || d <= r.to);
 for (const r of data.Termine) {
-  const m = MBY[r["Markt"]]; if (!m) { if (r["Markt"]) warn("Termine", `Markt „${r["Markt"]}“ ist unbekannt oder nicht aktiv.`); continue; }
+  const m = MBY[r["Markt"]]; if (!m) { if (r["Markt"] && !INACTIVE.has(r["Markt"])) warn("Termine", `Markt „${r["Markt"]}“ ist unbekannt.`); continue; }
   if (!r["Datum"]) { warn("Termine", `${m.name}: Zeile ohne Datum. Falls ein Datum eingetragen ist, die Spalte als „Nur Text“ formatieren und das Datum neu eintippen.`); continue; }
   const d = parseDate(r["Datum"], m.name); if (!d || d < TODAY) continue;
   // Termine jenseits der Vorschau („Tage im Voraus“) stehen nicht im Kalender, aber auf der Marktseite als nächster bekannter Termin.
@@ -543,7 +545,7 @@ function evHTML(e, h = 3) {
   const t = ic("clock") + (e.cancelled ? '<span class="t-lab">Termin</span><span class="t-main">fällt aus</span>' : !e.start ? '<span class="t-lab">Uhrzeit</span><span class="t-main">folgt</span>' : e.end ? `<span class="t-a">${hm(e.start)}</span><span class="t-bis">bis</span><span class="t-b">${hm(e.end)}</span>` : `<span class="t-lab">ab</span><span class="t-main">${hm(e.start)}</span>`);
   return `<article class="ev${e.cancelled ? " off" : ""}" data-tags="${esc([...m.tags, ...timeTags(e)].join("|"))}"${llAttr(m)}${!e.cancelled && e.start ? ` data-s="${tFirst(e.start)}"${e.end ? ` data-e="${tLast(e.end)}"` : ""}` : ""}>${favBtn(m)}<div class="time" aria-label="${esc(e.cancelled ? "Abgesagt" : timeText(e))}">${t}</div><div class="ev-body">
 <h${h}><a href="/flohmarkt/${m.slug}/">${esc(m.name)}</a>${neuPill(m)}</h${h}><p class="meta ln">${ic("pin")}<span><b>${esc(m.area)}</b> · ${addrNb(m.addr)}</span></p>
-${e.cancelled ? `<p class="note warn-text">Dieser Termin fällt aus.${e.note ? " " + esc(e.note) : ""}</p>` : m.note ? `<p class="note">${esc(m.note)}${e.note ? " " + esc(e.note) : ""}</p>` : ""}
+${e.cancelled ? `<p class="note warn-text">Dieser Termin fällt aus.${e.note ? " " + esc(e.note.replace(/([^.!?…])$/, "$1.")) : ""}</p>` : m.note ? `<p class="note">${esc(m.note)}${e.note ? " " + esc(e.note.replace(/([^.!?…])$/, "$1.")) : ""}</p>` : ""}
 ${m.tags.length ? `<div class="row">${m.tags.map(t => CAT_BY_TAG[t] ? `<a class="tag" href="/${CAT_BY_TAG[t].s}/">${tagIc(t)}${esc(t)}</a>` : `<span class="tag">${tagIc(t)}${esc(t)}</span>`).join("")}</div>` : ""}
 <div class="row foot"><span class="rhythm ln">${ic("repeat")}<span>${esc(m.rhythm)}</span></span><span class="acts"><a class="route go" href="/flohmarkt/${m.slug}/" aria-label="Zum Markt: ${esc(m.name)}">Zum Markt${ic("chev")}</a>${e.cancelled ? "" : shareBtn(m, e)}<a class="route" href="https://www.google.com/maps/search/?api=1&amp;query=${q}" rel="noopener" aria-label="Route zu ${esc(m.name)} planen">${ic("route")}Route</a></span></div>
 ${m.org ? `<p class="meta small ln">${ic("user")}<span>Veranstalter: ${esc(m.org)}</span></p>` : ""}</div></article>`;
@@ -591,7 +593,7 @@ const deckCard = e => {
   return `<article class="dk-card" data-fav="${m.slug}" data-name="${esc(m.short || m.name)}" data-day="${e.k}"${e.start ? ` data-s="${tFirst(e.start)}"` : ""}${e.start && e.end ? ` data-e="${tLast(e.end)}"` : ""}>
 <p class="dk-day">${fmtDate(e.date)}</p><span class="dk-time">${ic("clock")}<span>${t}</span></span>
 <h2>${esc(m.name)}${neuPill(m)}</h2><p class="meta ln">${ic("pin")}<span><b>${esc(m.area)}</b> · ${addrNb(m.addr)}</span></p>
-${m.note ? `<p class="note">${esc(m.note)}${e.note ? " " + esc(e.note) : ""}</p>` : ""}${m.tags.length ? `<div class="row">${m.tags.map(t => `<span class="tag">${tagIc(t)}${esc(t)}</span>`).join("")}</div>` : ""}
+${m.note ? `<p class="note">${esc(m.note)}${e.note ? " " + esc(e.note.replace(/([^.!?…])$/, "$1.")) : ""}</p>` : ""}${m.tags.length ? `<div class="row">${m.tags.map(t => `<span class="tag">${tagIc(t)}${esc(t)}</span>`).join("")}</div>` : ""}
 <p class="ln rhythm">${ic("repeat")}<span>${esc(m.rhythm)}</span></p><a class="route go" href="/flohmarkt/${m.slug}/">Zum Markt${ic("chev")}</a>
 <span class="dk-stamp yes" aria-hidden="true">${ic("thumbsup")}Merken →</span><span class="dk-stamp no" aria-hidden="true">← Nein${ic("thumbsdown")}</span></article>`;
 };
@@ -1143,6 +1145,10 @@ const shareBtn = (m, e, cls = "share") => `<button type="button" class="${cls}" 
     if (!wx && days.length) { const k = days[0], list = evs.filter(e => e.k === k && !e.cancelled), w = wxDay(list);
       if (w) wx = { lab: "Wetter", icon: "frog", title: `Der Wetterfrosch sagt für ${whenOf(k)} ${w.noun} voraus.`, body: `${cap(whenOf(k))} ${list.length === 1 ? "hat ein Flohmarkt" : "haben " + list.length + " Flohmärkte"} geöffnet.`, link: [pageOf(k), "Zu den Terminen"] }; }
     if (wx && wx.first) NEWS_TABS.push(wx);
+    // November bis März: Hinweis auf überdachte Märkte (wenn nicht schon der Regen-Hinweis dasteht)
+    const winter = [10, 11, 0, 1, 2].includes(TODAY.getUTCMonth());
+    const cov14 = [...new Set(upcoming(14, e => !e.cancelled && e.m.tags.includes("Überdacht")).map(e => e.m))];
+    if (winter && !(wx && wx.first) && cov14.length && CAT_BY_S["hallenflohmarkt-hamburg"]) NEWS_TABS.push({ lab: "Drinnen", icon: "umbrella", title: "Im Winter wird drinnen getrödelt.", body: `${cov14.length === 1 ? "Ein überdachter Markt hat" : cov14.length + " überdachte Märkte haben"} in den nächsten zwei Wochen geöffnet, zum Beispiel ${cov14.slice(0, 3).map(m => `<a href="/flohmarkt/${m.slug}/">${esc(m.short)}</a>`).join(", ")}.`, link: ["/hallenflohmarkt-hamburg/", "Alle überdachten Märkte"] });
     if (tip) NEWS_TABS.push({ lab: "Tagestipp", icon: "star", title: `${tip[0]}: ${tip[1]}`, body: "Jede Nacht neu aus dem Kalender.", link: [tip[2], "Ansehen"] });
     const n60 = EVENTS.filter(e => !e.cancelled && (e.date - TODAY) / 864e5 < 60).length;
     NEWS_TABS.push(NEU_MS.length
@@ -1169,7 +1175,7 @@ ${NEWS_TABS.length > 1 ? '<div class="akt-bar js-only" aria-hidden="true"><i id=
 <h1>Flohmarkt Hamburg: alle Termine, aufgeräumt.</h1>
 <p>Alle Flohmärkte in Hamburg und Umgebung: wann, wo und wie lange. Ohne Werbebanner, ohne alte Termine.</p>
 ${sxForm(true)}
-<div class="quick"><a class="chip" href="/heute/">${ic("sun")}Heute</a><a class="chip" href="/entdecken/">${ic("heart")}Wischen &amp; merken</a><a class="chip" href="/wochenende/">${ic("cal")}Wochenende</a><a class="chip" href="/sonntag/">${ic("cal")}Sonntag</a><a class="chip" href="/flohmaerkte/">${ic("map")}Märkte nach Bezirk</a>${HAS_MAP ? `<a class="chip" href="/flohmaerkte/#karte">${ic("pin")}Karte</a>` : ""}<a class="chip" href="/ratgeber/">${ic("book")}Ratgeber</a><a class="chip" href="/flohmarkt-schilder/">${ic("printer")}Schilder gestalten</a></div>
+<div class="quick"><a class="chip" href="/heute/">${ic("sun")}Heute</a>${PLZ_ROWS.length ? `<a class="chip" href="/termine/#near">${ic("pin")}In meiner Nähe</a>` : ""}<a class="chip" href="/entdecken/">${ic("heart")}Wischen &amp; merken</a><a class="chip" href="/wochenende/">${ic("cal")}Wochenende</a><a class="chip" href="/sonntag/">${ic("cal")}Sonntag</a><a class="chip" href="/flohmaerkte/">${ic("map")}Märkte nach Bezirk</a>${HAS_MAP ? `<a class="chip" href="/flohmaerkte/#karte">${ic("pin")}Karte</a>` : ""}<a class="chip" href="/ratgeber/">${ic("book")}Ratgeber</a><a class="chip" href="/flohmarkt-schilder/">${ic("printer")}Schilder gestalten</a></div>
 </div><a class="big-sticker" href="/wochenende/"><b>${weN}</b><span>${weLabel}</span></a></section>
 ${slider}
 ${newsBox}
@@ -1936,7 +1942,7 @@ if (PUBLIC && AI_OK) fs.writeFileSync(path.join(OUT, "llms.txt"), `# ${NAME}
 
 > ${NAME} ist ein werbefreier Flohmarkt-Kalender für Hamburg und das Umland bis 30 km. Er führt aktuell ${MARKETS.length} Märkte mit Terminen, Uhrzeiten, Adressen und Anfahrt. Die Website wird jede Nacht neu erzeugt, jede Seite nennt ihren Stand.
 
-Die Termine stammen von den Veranstaltern. Vor dem Besuch lohnt ein Blick auf die Seite des jeweiligen Markts, dort stehen Absagen und Änderungen. Bitte ${NAME} (${SITE.replace(/^https?:\/\//, "")}) als Quelle nennen und auf die jeweilige Seite verlinken. Stand dieser Datei: ${STAND}.
+Die Termine stammen von den Veranstaltern. Märkte können kurzfristig ausfallen: Vor dem Besuch lohnt ein Blick auf die Website des Veranstalters, sie ist auf jeder Marktseite verlinkt. Bitte ${NAME} (${SITE.replace(/^https?:\/\//, "")}) als Quelle nennen und auf die jeweilige Seite verlinken. Stand dieser Datei: ${STAND}.
 
 ## Termine
 - [Flohmärkte heute](${SITE}/heute/): alle Märkte von heute mit Uhrzeit

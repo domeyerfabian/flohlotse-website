@@ -15,6 +15,17 @@
       a.target = "_blank"; if (!/noopener/.test(a.rel)) a.rel = (a.rel + " noopener").trim();
     }, true);
   }
+  // Wer einen längeren Text kopiert, bekommt die Quelle mitgeliefert (nicht in Eingabefeldern und nicht beim Code-Baukasten)
+  document.addEventListener("copy", function (e) {
+    try {
+      var sel = window.getSelection ? String(window.getSelection()) : "", el = document.activeElement;
+      if (sel.replace(/\s+/g, " ").trim().length < 80 || !e.clipboardData || (el && /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName))) return;
+      var can = document.querySelector('link[rel="canonical"]'), sn = document.querySelector('meta[property="og:site_name"]');
+      var url = can ? can.href : location.origin + location.pathname;
+      e.clipboardData.setData("text/plain", sel + "\n\nQuelle: " + (sn ? sn.content : "Flohlotse") + " – " + url);
+      e.preventDefault();
+    } catch (err) {}
+  });
   // Heute in Hamburg (unabhängig von der Uhr-Einstellung des Geräts)
   var berlin = function () { try { var o = {}; new Intl.DateTimeFormat("de-DE", { timeZone: "Europe/Berlin", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).formatToParts(new Date()).forEach(function (x) { o[x.type] = x.value; }); return { day: o.year + "-" + o.month + "-" + o.day, hm: o.hour + ":" + o.minute }; } catch (e) { return null; } };
   var NOW = berlin();

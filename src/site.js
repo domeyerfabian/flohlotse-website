@@ -373,7 +373,7 @@
       var nx = function (s) { var x = DATA[s][3].filter(function (y) { return y[0] >= TODAY && y[1] !== "fällt aus"; })[0]; return x ? x[0] : "9999"; };
       known.sort(function (p, q) { return nx(p) < nx(q) ? -1 : nx(p) > nx(q) ? 1 : DATA[p][0].localeCompare(DATA[q][0], "de"); });
       out += known.length ? '<p class="mk-n">' + (known.length === 1 ? "1 Markt" : known.length + " Märkte") + ", sortiert nach dem nächsten Termin.</p>" + '<div class="mk-list">' + known.map(card).join("") + "</div>"
-        : '<div class="empty mk-empty"><p><b>Noch nichts gemerkt.</b></p><p>Tipp bei einem Termin auf das Herz oder wisch dich durch die Märkte von heute und morgen.</p><div class="share-row"><a class="btn" href="' + ROOT + '/entdecken/">Wischen &amp; merken</a><a class="route" href="' + ROOT + '/termine/">Alle Termine</a></div></div>';
+        : '<div class="empty mk-empty"><p><b>Noch nichts gemerkt.</b></p><p>Tipp bei einem Termin auf das Herz oder wisch dich durch die Märkte der nächsten Wochen.</p><div class="share-row"><a class="btn" href="' + ROOT + '/entdecken/">Wischen &amp; merken</a><a class="route" href="' + ROOT + '/termine/">Alle Termine</a></div></div>';
       merk.innerHTML = out; tools.hidden = !known.length;
       var y = document.getElementById("mkImpYes");
       if (y) { y.addEventListener("click", function () { var a2 = favGet(); imp.forEach(function (s) { if (DATA[s] && a2.indexOf(s) < 0) a2.push(s); }); if (favSet(a2)) { favSync(); say("Übernommen."); } imp = null; try { history.replaceState(null, "", location.pathname); } catch (e) {} render(); });
@@ -401,7 +401,7 @@
       .catch(function () { merk.innerHTML = '<div class="empty">Die Merkliste konnte gerade nicht geladen werden. Versuch es gleich noch einmal.</div>'; });
   }
 
-  // Wischen & merken: Karten von heute und morgen. Rechts = merken, links = weiter (wird nicht gespeichert).
+  // Wischen & merken: Karten der nächsten vier Wochen. Rechts = merken, links = weiter (wird nicht gespeichert).
   var deck = document.getElementById("deck"), stack = document.getElementById("dkStack");
   if (deck && stack && !deck.hidden && !favOk) {
     document.getElementById("dkBtns").hidden = true;
@@ -411,7 +411,7 @@
     var all = Array.prototype.slice.call(stack.querySelectorAll(".dk-card")), RM = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
     all = all.filter(function (c) {
       var k = c.getAttribute("data-day"), e = c.getAttribute("data-e");
-      var ok = NOW ? (k === TODAY && !(e && NOW.hm >= e)) || k === TOMORROW : true;
+      var ok = NOW ? (k === TODAY && !(e && NOW.hm >= e)) || k > TODAY : true;
       if (!ok) c.remove(); else { var dd = c.querySelector(".dk-day"); if (dd && (k === TODAY || k === TOMORROW)) dd.textContent = (k === TODAY ? "Heute · " : "Morgen · ") + dd.textContent; }
       return ok;
     });

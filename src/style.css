@@ -868,3 +868,50 @@ button.fav[aria-pressed="true"],.btn.fav-big[aria-pressed="true"]{background:var
 .wk-eve{display:flex;align-items:flex-start;gap:7px;margin:12px 0 0;font-size:14px}
 .wk-eve .i{width:17px;height:17px;flex:none;margin-top:2px}
 .facts dd .meta{font-size:13px}
+/* Kompakte Terminkarten */
+.time .t-u{font-size:12px;font-weight:600}
+.live-dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:#1f9d55;flex:none;margin-left:2px;box-shadow:0 0 0 2px var(--sticker)}
+.ev.is-past{opacity:.6}
+.ev .ev-note{font-size:14px;margin:6px 0 0;color:var(--muted)}
+.ev .row.foot{margin-top:10px}
+.list > .ev{contain-intrinsic-block-size:auto 180px}
+@media (min-width:560px){.time .t-main{font-size:15px;font-weight:700}.time .t-u{font-size:11px;text-transform:uppercase;letter-spacing:.05em}.live-dot{margin:3px 0 0}}
+/* Filter auf dem Handy: eine wischbare Reihe */
+@media (max-width:559px){#filter{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin-left:-16px;margin-right:-16px;padding:2px 16px 6px}#filter::-webkit-scrollbar{display:none}#filter .chip{flex:none}}
+/* „In deiner Nähe“: erst ein Knopf, das Formular klappt auf */
+.near{background:none;border:0;padding:0;margin-top:14px}
+.near-h{display:inline-flex;align-items:center;gap:8px;font:inherit;font-weight:700;font-size:15px;line-height:1.2;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:10px 16px;color:var(--ink);cursor:pointer;margin:0}
+.near-h:hover{border-color:var(--ink)}
+.near-h .near-chev{width:16px;height:16px;transform:rotate(90deg);transition:transform .2s}
+.near.open .near-h .near-chev{transform:rotate(-90deg)}
+.near-in{margin-top:10px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px 16px}
+/* Startseite: weitere Bereiche als Textlinks */
+.quick-more{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:12px;font-size:14px}
+.quick-more a{color:var(--muted);text-decoration:underline;text-underline-offset:3px}
+.quick-more a:hover{color:var(--ink)}
+/* Terminliste: Werkzeugzeile (Umkreis, Liste | Karte) */
+.tools{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-start;margin-top:14px}
+.tools .near{margin-top:0}
+.tools .near.open{flex-basis:100%;order:2}
+.view-tog{display:inline-flex;gap:6px}
+#karte.map-sec{margin-top:18px}
+/* Tagesleiste */
+.daystrip{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin:18px -16px 6px;padding:2px 16px 6px}
+.daystrip::-webkit-scrollbar{display:none}
+.ds{flex:none;display:grid;justify-items:center;gap:1px;min-width:56px;padding:8px 6px;border:1px solid var(--line);border-radius:14px;background:var(--surface);color:var(--ink);text-decoration:none;line-height:1.2}
+.ds:hover{border-color:var(--ink)}
+.ds-w{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.ds-d{font-weight:700;font-size:15px;font-variant-numeric:tabular-nums}
+.ds-n{font-size:12px;color:var(--muted)}
+.ds.we{border-color:var(--ink)}
+.ds.we .ds-w{color:var(--ink)}
+@media (min-width:800px){.daystrip{margin-left:0;margin-right:0;padding-left:0;padding-right:0}}
+/* Anzahl in der Tagesüberschrift, Zwischenüberschriften an vollen Tagen */
+.group-h .gn{font-weight:400;font-size:14px;color:var(--muted)}
+.sub-h{margin:16px 0 8px;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.group-h + .sub .sub-h{margin-top:2px}
+/* Knopf „Nach oben“ */
+.to-top{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:20;width:48px;height:48px;border-radius:50%;background:var(--surface);border:1px solid var(--line);box-shadow:0 4px 14px rgba(0,0,0,.12);display:grid;place-content:center;color:var(--ink);cursor:pointer;padding:0}
+.to-top:hover{border-color:var(--ink)}
+.to-top .i{width:20px;height:20px;transform:rotate(-90deg)}
+.to-top[hidden]{display:none}

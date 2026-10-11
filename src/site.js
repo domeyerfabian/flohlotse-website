@@ -29,6 +29,16 @@
   // Heute in Hamburg (unabhängig von der Uhr-Einstellung des Geräts)
   var berlin = function () { try { var o = {}; new Intl.DateTimeFormat("de-DE", { timeZone: "Europe/Berlin", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).formatToParts(new Date()).forEach(function (x) { o[x.type] = x.value; }); return { day: o.year + "-" + o.month + "-" + o.day, hm: o.hour + ":" + o.minute }; } catch (e) { return null; } };
   var NOW = berlin();
+  // Nach Filtern oder Ausblenden: leere Teilbereiche („Hamburg“/„Umland“) verstecken, Anzahl in Tagesüberschrift und Tagesleiste nachziehen
+  var refreshDays = function () {
+    document.querySelectorAll("main .sub").forEach(function (s) { s.hidden = !s.querySelector(".ev:not([hidden])"); });
+    document.querySelectorAll("main .group").forEach(function (g) {
+      var n = g.querySelectorAll(".ev:not([hidden]):not(.off)").length, gn = g.querySelector(".gn");
+      if (gn) gn.textContent = n ? "· " + n + (n === 1 ? " Markt" : " Märkte") : "";
+      var a = document.querySelector('.daystrip a[data-day="' + g.getAttribute("data-day") + '"]');
+      if (a) { a.hidden = !n || g.hidden; var c = a.querySelector(".ds-n"); if (c) { c.textContent = n; c.setAttribute("aria-label", n + (n === 1 ? " Markt" : " Märkte")); } }
+    });
+  };
   // Die Seite wird jede Nacht neu gebaut. Zwischen Mitternacht und dem Neubau (oder wenn ein Neubau ausfällt) ist sie von gestern:
   // Dann verschwinden die vergangenen Tage, und ein Hinweis sagt, von wann der Stand ist.
   var stand = document.documentElement.getAttribute("data-stand"), me0 = document.querySelector('script[src*="/assets/site."]'), ROOT0 = me0 ? me0.getAttribute("src").replace(/\/assets\/site\..*$/, "") : "";
@@ -61,6 +71,7 @@
       ev.hidden = !ok; if (ok) shown++;
     });
     document.querySelectorAll("main .group").forEach(function (g) { g.hidden = !g.querySelector(".ev:not([hidden])"); });
+    refreshDays();
     var qs = document.querySelectorAll("main .qlist a[data-ll]");
     qs.forEach(function (a) { var d = kmOf(a), ok = !F.origin || (d !== null && d <= F.km); badge(a.querySelector(".meta"), F.origin ? d : null); a.hidden = !ok; if (ok) shown++; });
     if (qs.length) document.querySelectorAll("main .cluster").forEach(function (c) { if (c.querySelector(".qlist")) c.hidden = !c.querySelector(".qlist a:not([hidden])"); });
@@ -79,6 +90,9 @@
   }
   if (near) {
     near.hidden = false;
+    var nTog = document.getElementById("nearTog"), nIn = document.getElementById("nearIn");
+    var nOpen = function (on) { if (!nTog) return; nIn.hidden = !on; nTog.setAttribute("aria-expanded", String(on)); near.classList.toggle("open", on); };
+    if (nTog) nTog.addEventListener("click", function () { var on = nIn.hidden; nOpen(on); if (on) setTimeout(function () { var p = document.getElementById("nearPlz"); if (p && window.matchMedia && matchMedia("(hover: hover)").matches) p.focus(); }, 30); });
     var plzIn = document.getElementById("nearPlz"), kmSel = document.getElementById("nearKm"), geo = document.getElementById("nearGeo"), clr = document.getElementById("nearClear"), msg0 = document.getElementById("nearMsg").textContent, plzData = null;
     // Postleitzahl steht hinter dem # in der Adresse: dieser Teil wird nie an den Server gesendet
     var sync = function () { try { var h = F.origin && F.label.indexOf("PLZ") === 0 ? "#plz=" + plzIn.value + "&km=" + F.km : " "; history.replaceState(null, "", h === " " ? location.pathname + location.search : h); } catch (e) {} };
@@ -104,8 +118,8 @@
         function () { document.getElementById("nearMsg").textContent = "Standort nicht verfügbar. Gib stattdessen deine Postleitzahl ein."; }, { timeout: 10000, maximumAge: 600000 });
     });
     // Startseite „In meiner Nähe“ (/termine/#near): Umkreis zeigen und gleich den Standort abfragen
-    if (location.hash === "#near") { setTimeout(function () { near.scrollIntoView({ block: "start" }); geo.click(); }, 60); }
-    try { var hp = new URLSearchParams(location.hash.slice(1)), qp = new URLSearchParams(location.search), p0 = hp.get("plz") || qp.get("plz"), k0 = hp.get("km") || qp.get("km"); if (k0 && kmSel.querySelector('option[value="' + k0 + '"]')) { kmSel.value = k0; F.km = +k0; } if (p0) { plzIn.value = p0; byPlz(); } } catch (e) {}
+    if (location.hash === "#near") { nOpen(true); setTimeout(function () { near.scrollIntoView({ block: "start" }); geo.click(); }, 60); }
+    try { var hp = new URLSearchParams(location.hash.slice(1)), qp = new URLSearchParams(location.search), p0 = hp.get("plz") || qp.get("plz"), k0 = hp.get("km") || qp.get("km"); if (k0 && kmSel.querySelector('option[value="' + k0 + '"]')) { kmSel.value = k0; F.km = +k0; } if (p0) { nOpen(true); plzIn.value = p0; byPlz(); } } catch (e) {}
   }
   // Karte (erst nach Klick: Kartenbilder von OpenStreetMap, Leaflet liegt auf unserem Server)
   var mapLoad = document.getElementById("mapLoad");
@@ -138,6 +152,27 @@
       document.head.appendChild(js);
     });
     if (location.hash === "#karte") setTimeout(function () { var k = document.getElementById("karte"); if (k) k.scrollIntoView(); }, 50);
+  }
+  // Terminliste: Umschalter Liste | Karte (die Karte lädt erst nach Klick auf „Karte laden“)
+  var vTog = document.getElementById("viewTog");
+  if (vTog) {
+    var vSet = function (v) {
+      vTog.querySelectorAll("button").forEach(function (b) { b.setAttribute("aria-pressed", String(b.getAttribute("data-v") === v)); });
+      var k = document.getElementById("karte"), l = document.getElementById("liste"), s = document.querySelector(".daystrip");
+      if (k) k.hidden = v !== "karte"; if (l) l.hidden = v === "karte"; if (s) s.hidden = v === "karte";
+      var leer = document.getElementById("leer"); if (leer && v === "karte") leer.hidden = true;
+    };
+    vTog.addEventListener("click", function (e) { var b = e.target.closest("button"); if (b) vSet(b.getAttribute("data-v")); });
+    if (location.hash === "#karte") vSet("karte");
+  }
+  // Lange Listen: Knopf „Nach oben“, erscheint erst nach dem Scrollen
+  if (document.querySelectorAll("main .ev").length > 12) {
+    var up = document.createElement("button"); up.type = "button"; up.className = "to-top"; up.hidden = true; up.setAttribute("aria-label", "Nach oben");
+    up.innerHTML = '<svg class="i" aria-hidden="true" focusable="false"><use href="' + ROOT0 + '/assets/icons.svg#i-chev"/></svg>';
+    var useEl = document.querySelector("svg use[href*='icons.svg']"); if (useEl) up.querySelector("use").setAttribute("href", useEl.getAttribute("href").replace(/#.*$/, "#i-chev"));
+    document.body.appendChild(up);
+    var upT; window.addEventListener("scroll", function () { if (upT) return; upT = setTimeout(function () { upT = 0; up.hidden = window.scrollY < 1400; }, 120); }, { passive: true });
+    up.addEventListener("click", function () { window.scrollTo({ top: 0, behavior: window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" }); });
   }
   // Standgebühren im Vergleich: Filter „Spontan möglich“, „Nur Privatverkäufer“, „Bis 10 € pro Meter“
   var feeF = document.getElementById("feeF");
@@ -173,14 +208,20 @@
     var uhr = function (t) { var h = parseInt(t.slice(0, 2), 10), m = t.slice(3, 5); return h + (m === "00" ? "" : ":" + m) + " Uhr"; };
     liveEvs.forEach(function (ev) {
       var g = ev.closest(".group"); if (!g || g.getAttribute("data-day") !== today) return;
-      var s = ev.getAttribute("data-s"), e = ev.getAttribute("data-e"), cls, txt;
-      if (hm < s) { cls = "soon"; txt = "Öffnet heute um " + uhr(s); }
-      else if (!e) { cls = "soon"; txt = "Heute ab " + uhr(s); }
-      else if (hm < e) { cls = "on"; txt = "Jetzt geöffnet · bis " + uhr(e); }
-      else { cls = "past"; txt = "Heute schon vorbei"; }
-      var b = document.createElement("span"); b.className = "live " + cls; b.textContent = txt;
+      var s = ev.getAttribute("data-s"), e = ev.getAttribute("data-e");
+      if (hm < s || !e) return;
+      if (hm < e) { var t = ev.querySelector(".time"); if (t) { var d = document.createElement("span"); d.className = "live-dot"; d.title = "Jetzt geöffnet"; d.innerHTML = '<span class="vh">Jetzt geöffnet</span>'; t.appendChild(d); } return; }
+      ev.classList.add("is-past");
+      // Startseite: Heute schon beendete Märkte fallen weg (und der Tag, wenn nichts mehr übrig ist)
+      if (ev.closest(".home-next")) { ev.hidden = true; if (!g.querySelector(".ev:not([hidden])")) g.hidden = true; refreshDays(); return; }
+      var b = document.createElement("span"); b.className = "live past"; b.textContent = "Heute schon vorbei";
       var body = ev.querySelector(".ev-body"); if (body) body.insertBefore(b, body.firstChild);
     });
+  }
+  // Sticker auf der Startseite: Sonntagabend, wenn alle heutigen Märkte vorbei sind, zeigt er den nächsten Markttag
+  var bigSt = document.getElementById("bigSt");
+  if (bigSt && NOW && bigSt.getAttribute("data-day") === NOW.day && NOW.hm >= bigSt.getAttribute("data-end")) {
+    bigSt.querySelector("b").textContent = bigSt.getAttribute("data-n"); bigSt.querySelector("span").textContent = bigSt.getAttribute("data-l"); bigSt.href = bigSt.getAttribute("data-h");
   }
   // Slider auf der Startseite: Punkte zeigen die Position und springen zum Bild
   var hlT = document.getElementById("hlTrack"), hlD = document.getElementById("hlDots");

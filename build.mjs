@@ -1203,10 +1203,10 @@ ${sxForm(true)}
 </div><a class="big-sticker" id="bigSt" href="/wochenende/"${stAlt}><b>${weN}</b><span>${weLabel}</span></a></section>
 ${slider}
 ${newsBox}
+${DK_EVS.length ? `<section class="sec home-deck" id="dkSec"><div class="sec-head"><h2>Wischen &amp; merken</h2>${more("/merkliste/", "Merkliste")}</div><p class="dk-intro">Die Flohmärkte der nächsten vier Wochen: Daumen hoch merkt den Markt, Daumen runter zeigt den nächsten.</p>${deckHTML(true)}</section>` : ""}
 <section class="sec home-next"><div class="sec-head"><h2>Die nächsten Flohmärkte</h2>${more("/termine/", "Alle")}</div>
 ${groupList(next, 3) || '<div class="empty">Gerade stehen keine Termine im Kalender.</div>'}
 ${all14 > next.length ? `<a class="more" href="/termine/">Alle ${all14} Termine der nächsten 14 Tage</a>` : ""}</section>
-${DK_EVS.length ? `<section class="sec home-deck" id="dkSec"><div class="sec-head"><h2>Wischen &amp; merken</h2>${more("/merkliste/", "Merkliste")}</div><p class="dk-intro">Die Flohmärkte der nächsten vier Wochen: Daumen hoch merkt den Markt, Daumen runter zeigt den nächsten.</p>${deckHTML(true)}</section>` : ""}
 <section class="sec"><div class="sec-head"><h2>Flohmärkte nach Bezirk und Region</h2>${more("/flohmaerkte/", "Alle", "Alle Märkte")}</div>${regionChips()}</section>
 ${CATS_ON.length ? `<section class="sec"><div class="sec-head"><h2>Flohmärkte nach Art</h2></div>${catChips()}</section>` : ""}
 ${MONTHS.length ? `<section class="sec"><div class="sec-head"><h2>Termine nach Monat</h2>${more("/termine/", "Alle")}</div>${monthChips()}</section>` : ""}

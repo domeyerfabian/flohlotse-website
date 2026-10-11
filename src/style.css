@@ -868,5 +868,3 @@ button.fav[aria-pressed="true"],.btn.fav-big[aria-pressed="true"]{background:var
 .wk-eve{display:flex;align-items:flex-start;gap:7px;margin:12px 0 0;font-size:14px}
 .wk-eve .i{width:17px;height:17px;flex:none;margin-top:2px}
 .facts dd .meta{font-size:13px}
-/* Datum in Ziffern neben dem Tag */
-.group-h .gd{font-weight:400;font-size:13px;color:var(--muted);margin-left:-2px}

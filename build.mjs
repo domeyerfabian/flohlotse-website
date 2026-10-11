@@ -253,6 +253,8 @@ for (const r of data.Termine) {
   const m = MBY[r["Markt"]]; if (!m) { if (r["Markt"] && !INACTIVE.has(r["Markt"])) warn("Termine", `Markt „${r["Markt"]}“ ist unbekannt.`); continue; }
   if (!r["Datum"]) { warn("Termine", `${m.name}: Zeile ohne Datum. Falls ein Datum eingetragen ist, die Spalte als „Nur Text“ formatieren und das Datum neu eintippen.`); continue; }
   const d = parseDate(r["Datum"], m.name); if (!d || d < TODAY) continue;
+  // Status „Kein Termin“: Der Tag ist kein Markttermin (z. B. ein Fehlalarm des Termin-Wächters). Er erscheint nirgends, der Wächter meldet ihn aber nicht mehr.
+  if (/kein\s*(markt)?termin|ignorier/i.test(r["Status"] || "")) continue;
   // Termine jenseits der Vorschau („Tage im Voraus“) stehen nicht im Kalender, aber auf der Marktseite als nächster bekannter Termin.
   if (d > END) {
     const k = key(d); m.later = (m.later || []).filter(x => x.k !== k); // steht ein Tag doppelt in der Tabelle, gilt wie überall die letzte Zeile
@@ -559,7 +561,7 @@ ${m.org ? `<p class="meta small ln">${ic("user")}<span>Veranstalter: ${esc(m.org
 const dayId = d => `${d.getUTCDate()}-${MSLUG[d.getUTCMonth()]}`;
 function groupList(evs, lvl = 2, anchor = false) {
   const g = new Map(); for (const e of evs) { if (!g.has(e.k)) g.set(e.k, []); g.get(e.k).push(e); }
-  return [...g].map(([k, list]) => `<div class="group${anchor ? " anc" : ""}" data-day="${k}"${anchor ? ` id="${dayId(list[0].date)}"` : ""}><h${lvl} class="group-h">${ic("cal")}${fmtDate(list[0].date)}<span class="gd">${numD(list[0].date)}</span>${HOLI[k] ? ` <span class="hol">${HOLI[k]}</span>` : ""}${wxChip(wxDay(list))}</h${lvl}><div class="list">${list.map(e => evHTML(e, lvl + 1)).join("")}</div></div>`).join("");
+  return [...g].map(([k, list]) => `<div class="group${anchor ? " anc" : ""}" data-day="${k}"${anchor ? ` id="${dayId(list[0].date)}"` : ""}><h${lvl} class="group-h">${ic("cal")}${WDL[list[0].date.getUTCDay()]}, ${pad(list[0].date.getUTCDate())}.${pad(list[0].date.getUTCMonth() + 1)}.${list[0].date.getUTCFullYear()}${HOLI[k] ? ` <span class="hol">${HOLI[k]}</span>` : ""}${wxChip(wxDay(list))}</h${lvl}><div class="list">${list.map(e => evHTML(e, lvl + 1)).join("")}</div></div>`).join("");
 }
 const kbCard = s => { const r = KBY[s]; if (!r) { warn("Ratgeber", `Verweis auf unbekannten Artikel „${s}“`); return ""; } return `<a class="card" href="/ratgeber/${r.s}/"><span class="kicker">Ratgeber · ${esc(CLUSTERS[r.c]?.t || "")}</span><h3>${brColon(esc(r.h))}</h3><p>${esc(short(plain(r.a), 110))}</p></a>`; };
 function short(t, n) { t = String(t || ""); if (t.length <= n) return t; const cut = t.slice(0, n); return (cut.lastIndexOf(" ") > n * 0.6 ? cut.slice(0, cut.lastIndexOf(" ")) : cut).replace(/[\s,.;:–-]+$/, "") + " …"; }

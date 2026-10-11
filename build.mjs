@@ -559,7 +559,7 @@ ${m.org ? `<p class="meta small ln">${ic("user")}<span>Veranstalter: ${esc(m.org
 const dayId = d => `${d.getUTCDate()}-${MSLUG[d.getUTCMonth()]}`;
 function groupList(evs, lvl = 2, anchor = false) {
   const g = new Map(); for (const e of evs) { if (!g.has(e.k)) g.set(e.k, []); g.get(e.k).push(e); }
-  return [...g].map(([k, list]) => `<div class="group${anchor ? " anc" : ""}" data-day="${k}"${anchor ? ` id="${dayId(list[0].date)}"` : ""}><h${lvl} class="group-h">${ic("cal")}${fmtDate(list[0].date)}${HOLI[k] ? ` <span class="hol">${HOLI[k]}</span>` : ""}${wxChip(wxDay(list))}</h${lvl}><div class="list">${list.map(e => evHTML(e, lvl + 1)).join("")}</div></div>`).join("");
+  return [...g].map(([k, list]) => `<div class="group${anchor ? " anc" : ""}" data-day="${k}"${anchor ? ` id="${dayId(list[0].date)}"` : ""}><h${lvl} class="group-h">${ic("cal")}${fmtDate(list[0].date)}<span class="gd">${numD(list[0].date)}</span>${HOLI[k] ? ` <span class="hol">${HOLI[k]}</span>` : ""}${wxChip(wxDay(list))}</h${lvl}><div class="list">${list.map(e => evHTML(e, lvl + 1)).join("")}</div></div>`).join("");
 }
 const kbCard = s => { const r = KBY[s]; if (!r) { warn("Ratgeber", `Verweis auf unbekannten Artikel „${s}“`); return ""; } return `<a class="card" href="/ratgeber/${r.s}/"><span class="kicker">Ratgeber · ${esc(CLUSTERS[r.c]?.t || "")}</span><h3>${brColon(esc(r.h))}</h3><p>${esc(short(plain(r.a), 110))}</p></a>`; };
 function short(t, n) { t = String(t || ""); if (t.length <= n) return t; const cut = t.slice(0, n); return (cut.lastIndexOf(" ") > n * 0.6 ? cut.slice(0, cut.lastIndexOf(" ")) : cut).replace(/[\s,.;:–-]+$/, "") + " …"; }
@@ -618,6 +618,8 @@ const YEAR = TODAY.getUTCFullYear();
 // Jahr(e) einer Terminliste für Titel: „2026“ oder „2026/27“
 const yearSpan = evs => { const ys = [...new Set(evs.map(e => e.date.getUTCFullYear()))].sort(); return !ys.length ? String(YEAR) : ys.length === 1 ? String(ys[0]) : `${ys[0]}/${String(ys[ys.length - 1]).slice(2)}`; };
 const dDate = d => `${WD[d.getUTCDay()]}., ${d.getUTCDate()}. ${MON[d.getUTCMonth()]}`;
+// Datum in Ziffern, so wie viele es bei Google eintippen („flohmarkt 10.10.26“): „Sa., 10.10.2026“
+const numD = d => `${d.getUTCDate()}.${d.getUTCMonth() + 1}.${d.getUTCFullYear()}`, wdNum = d => `${WD[d.getUTCDay()]}., ${numD(d)}`;
 const nextOf = evs => evs.find(e => !e.cancelled);
 // Kurze, bekannte Namen zuerst (für knappe Beschreibungen)
 const topNames = (evs, n = 2) => listNames([...new Set(evs.map(e => e.m))].sort((a, b) => (b.tags.includes("Groß & bekannt") - a.tags.includes("Groß & bekannt")) || a.short.length - b.short.length).map(m => m.short), n);
@@ -1388,7 +1390,7 @@ ${CATS_ON.some(c => c.ms.some(m => m.bez === r.k)) ? `<section class="related"><
       else { const nk = [...byDay.keys()].sort().find(k => k > key(TODAY) && live(k).length); evs = nk ? byDay.get(nk) : []; ans = `Heute, ${fmtDate(TODAY)}, findet laut Kalender kein Flohmarkt in Hamburg und im Umland statt.${nk ? ` Der nächste Markttag ist ${fmtDate(evs[0].date)}: ${names(live(nk))}.` : ""}`; }
       const lt = live(key(TODAY));
       return { h: "Flohmarkt Hamburg heute", sub: fmtDate(TODAY), t: "Flohmarkt Hamburg heute: Welche Märkte haben geöffnet?", evs, ans,
-        d: pickDesc(lt.length === 1 ? `Heute, ${dDate(TODAY)}, hat in Hamburg ein Flohmarkt geöffnet: ${lt[0].m.name}${lt[0].start ? ", " + timeText(lt[0]) : ""}. Adresse, Anfahrt und die nächsten Termine.` : lt.length ? `Heute, ${dDate(TODAY)}: ${lt.length} Flohmärkte in Hamburg und Umgebung geöffnet${darunter(lt)}. Mit Uhrzeit und Adresse.` : "",
+        d: pickDesc(lt.length === 1 ? `Heute, ${wdNum(TODAY)}, hat in Hamburg ein Flohmarkt geöffnet: ${lt[0].m.name}${lt[0].start ? ", " + timeText(lt[0]) : ""}. Adresse, Anfahrt und die nächsten Termine.` : lt.length ? `Heute, ${wdNum(TODAY)}: ${lt.length} Flohmärkte in Hamburg und Umgebung geöffnet${darunter(lt)}. Mit Uhrzeit und Adresse.` : "",
           "Welche Flohmärkte haben heute in Hamburg geöffnet? Tagesaktuelle Übersicht mit Uhrzeiten und Adressen, und falls heute nichts ist, der nächste Termin."),
         next: ["/morgen/", "Und morgen? Alle Flohmärkte von morgen"] };
     },
@@ -1397,28 +1399,29 @@ ${CATS_ON.some(c => c.ms.some(m => m.bez === r.k)) ? `<section class="related"><
       const evs = (sunOnly ? [] : (byDay.get(key(sat)) || [])).concat(byDay.get(key(sun)) || []), n = a.length + b.length, c = x => x === 0 ? "keiner" : x === 1 ? "einer" : String(x);
       // Sonntags ist das laufende Wochenende fast vorbei: Darunter steht schon das nächste (so passt die Seite auch für die Planung unter der Woche)
       const nSat = addDays(sun, 6), nSun = addDays(sun, 7), nEvs = sunOnly ? (byDay.get(key(nSat)) || []).concat(byDay.get(key(nSun)) || []) : [], nN = nEvs.filter(e => !e.cancelled).length;
+      const spanN = (x, y) => `${x.getUTCDate()}./${y.getUTCDate()}.${y.getUTCMonth() + 1}.${y.getUTCFullYear()}`;
       const span = (x, y) => x.getUTCMonth() === y.getUTCMonth() ? `${x.getUTCDate()}./${y.getUTCDate()}. ${MON[y.getUTCMonth()]}` : `${x.getUTCDate()}.${x.getUTCMonth() + 1}./${y.getUTCDate()}.${y.getUTCMonth() + 1}.`;
       const ans = sunOnly
         ? `Heute, am Sonntag, ${sun.getUTCDate()}. ${MON[sun.getUTCMonth()]}, ${b.length === 0 ? "findet laut Kalender kein Flohmarkt" : b.length === 1 ? "findet ein Flohmarkt" : "finden " + b.length + " Flohmärkte"} in Hamburg und im Umland statt.${b.length ? " " + names(b) + "." : ""}${nN ? ` Am nächsten Wochenende, ${span(nSat, nSun)}, ${nN === 1 ? "steht ein Flohmarkt" : "stehen " + nN + " Flohmärkte"} im Kalender.` : ""}`
         : `Am Wochenende ${sat.getUTCDate()}. und ${sun.getUTCDate()}. ${MON[sun.getUTCMonth()]} ${n === 1 ? "findet ein Flohmarkt" : "finden " + n + " Flohmärkte"} in Hamburg und im Umland statt, ${c(a.length)} am Samstag und ${c(b.length)} am Sonntag.`;
       return { h: "Flohmarkt Hamburg am Wochenende", sub: sunOnly ? `Sonntag, ${sun.getUTCDate()}. ${MON[sun.getUTCMonth()]}` : `${sat.getUTCDate()}. und ${sun.getUTCDate()}. ${MON[sun.getUTCMonth()]}`,
         t: sunOnly ? `Flohmarkt Hamburg Wochenende: heute & ${span(nSat, nSun)}` : `Flohmarkt Hamburg Wochenende ${span(sat, sun)}: alle Termine`, evs, ans,
-        d: pickDesc(n ? (sunOnly ? `Heute, am Sonntag: ${b.length} Flohmärkte in Hamburg und Umgebung${darunter(b)}.${nN ? ` Am ${span(nSat, nSun)}: ${nN} Termine.` : ""} Mit Uhrzeit und Adresse.` : `Am Wochenende ${span(sat, sun)}: ${n} Flohmärkte in Hamburg und Umgebung, ${a.length} am Samstag und ${b.length} am Sonntag. Alle Termine mit Uhrzeit.`) : "",
-          nN ? `Flohmärkte in Hamburg am Wochenende: heute und am ${span(nSat, nSun)} mit ${nN} Terminen. Alle Märkte mit Uhrzeit, Adresse und Anfahrt.` : "",
+        d: pickDesc(n ? (sunOnly ? `Heute, am Sonntag: ${b.length} Flohmärkte in Hamburg und Umgebung${darunter(b)}.${nN ? ` Am ${spanN(nSat, nSun)}: ${nN} Termine.` : ""} Mit Uhrzeit und Adresse.` : `Am Wochenende ${spanN(sat, sun)}: ${n} Flohmärkte in Hamburg und Umgebung, ${a.length} am Samstag und ${b.length} am Sonntag. Alle Termine mit Uhrzeit.`) : "",
+          nN ? `Flohmärkte in Hamburg am Wochenende: heute und am ${spanN(nSat, nSun)} mit ${nN} Terminen. Alle Märkte mit Uhrzeit, Adresse und Anfahrt.` : "",
           "Alle Flohmärkte in Hamburg am kommenden Wochenende, Samstag und Sonntag, mit Uhrzeiten, Adressen und Links zu jedem Markt. Täglich aktualisiert."),
         extra: nEvs.length ? { h: `Nächstes Wochenende: ${nSat.getUTCDate()}. und ${nSun.getUTCDate()}. ${MON[nSun.getUTCMonth()]}`, evs: nEvs } : null };
     },
     sonntag: () => {
       const s0 = addDays(TODAY, (7 - TODAY.getUTCDay()) % 7), ks = [0, 7, 14, 21].map(n => key(addDays(s0, n))), first = live(ks[0]);
       return { h: "Flohmarkt Hamburg am Sonntag", sub: "ab " + fmtDate(s0), t: `Flohmarkt Hamburg Sonntag: Termine ab ${s0.getUTCDate()}. ${MON[s0.getUTCMonth()]}`, evs: ks.flatMap(k => byDay.get(k) || []),
-        d: pickDesc(first.length ? `Flohmarkt in Hamburg am Sonntag: Am ${dDate(s0)} öffnen ${first.length === 1 ? "ein Markt" : first.length + " Märkte"}${darunter(first)}. Alle Sonntagstermine mit Uhrzeit.` : "",
+        d: pickDesc(first.length ? `Flohmarkt in Hamburg am Sonntag: Am ${wdNum(s0)} öffnen ${first.length === 1 ? "ein Markt" : first.length + " Märkte"}${darunter(first)}. Alle Sonntagstermine mit Uhrzeit.` : "",
           "Flohmarkt in Hamburg am Sonntag: die nächsten Sonntagstermine mit Uhrzeiten und Adressen, in der Stadt und im Umland bis 30 Kilometer."),
         ans: (first.length ? `Am ${fmtDate(s0)} ${first.length === 1 ? "findet ein Flohmarkt" : "finden " + first.length + " Flohmärkte"} in Hamburg und im Umland statt: ${names(first)}.` : "Am kommenden Sonntag steht kein Flohmarkt im Kalender.") + " In der Stadt sind es sonntags vor allem Nachbarschaftsmärkte, im Umland kommen viele Märkte auf Bau- und Supermarktparkplätzen dazu." };
     },
     samstag: () => {
       const s0 = addDays(TODAY, (6 - TODAY.getUTCDay() + 7) % 7), ks = [0, 7, 14, 21].map(n => key(addDays(s0, n))), first = live(ks[0]);
       return { h: "Flohmarkt Hamburg am Samstag", sub: "ab " + fmtDate(s0), t: `Flohmarkt Hamburg Samstag: Termine ab ${s0.getUTCDate()}. ${MON[s0.getUTCMonth()]}`, evs: ks.flatMap(k => byDay.get(k) || []),
-        d: pickDesc(first.length ? `Flohmarkt in Hamburg am Samstag: Am ${dDate(s0)} öffnen ${first.length === 1 ? "ein Markt" : first.length + " Märkte"}${darunter(first)}. Alle Samstagstermine mit Uhrzeit.` : "",
+        d: pickDesc(first.length ? `Flohmarkt in Hamburg am Samstag: Am ${wdNum(s0)} öffnen ${first.length === 1 ? "ein Markt" : first.length + " Märkte"}${darunter(first)}. Alle Samstagstermine mit Uhrzeit.` : "",
           "Flohmarkt in Hamburg am Samstag: die nächsten Samstagstermine mit Uhrzeiten und Adressen, in der Stadt und im Umland bis 30 Kilometer."),
         ans: (first.length ? `Am ${fmtDate(s0)} ${first.length === 1 ? "findet ein Flohmarkt" : "finden " + first.length + " Flohmärkte"} in Hamburg und im Umland statt: ${names(first)}.` : "Am kommenden Samstag steht kein Flohmarkt im Kalender.") + " Der Samstag ist in Hamburg der wichtigste Flohmarkttag, viele Märkte beginnen schon früh am Morgen." };
     },
@@ -1428,7 +1431,7 @@ ${CATS_ON.some(c => c.ms.some(m => m.bez === r.k)) ? `<section class="related"><
       if (lv.length) ans = `Morgen, ${fmtDate(d)}, ${lv.length === 1 ? "hat ein Flohmarkt" : "haben " + lv.length + " Flohmärkte"} in Hamburg und im Umland geöffnet: ${names(lv)}.`;
       else { const nk = [...byDay.keys()].sort().find(x => x > k && live(x).length); evs = nk ? byDay.get(nk) : []; ans = `Morgen, ${fmtDate(d)}, findet laut Kalender kein Flohmarkt in Hamburg und im Umland statt.${nk ? ` Der nächste Markttag ist ${fmtDate(evs[0].date)}: ${names(live(nk))}.` : ""}`; }
       return { h: "Flohmarkt Hamburg morgen", sub: fmtDate(d), t: "Flohmarkt Hamburg morgen: Welche Märkte öffnen?", evs, ans,
-        d: pickDesc(lv.length === 1 ? `Morgen, ${dDate(d)}, hat in Hamburg ein Flohmarkt geöffnet: ${lv[0].m.name}${lv[0].start ? ", " + timeText(lv[0]) : ""}. Adresse, Anfahrt und die nächsten Termine.` : lv.length ? `Morgen, ${dDate(d)}: ${lv.length} Flohmärkte in Hamburg und Umgebung${darunter(lv)}. Mit Uhrzeit und Adresse.` : "",
+        d: pickDesc(lv.length === 1 ? `Morgen, ${wdNum(d)}, hat in Hamburg ein Flohmarkt geöffnet: ${lv[0].m.name}${lv[0].start ? ", " + timeText(lv[0]) : ""}. Adresse, Anfahrt und die nächsten Termine.` : lv.length ? `Morgen, ${wdNum(d)}: ${lv.length} Flohmärkte in Hamburg und Umgebung${darunter(lv)}. Mit Uhrzeit und Adresse.` : "",
           "Welche Flohmärkte haben morgen in Hamburg geöffnet? Übersicht mit Uhrzeiten und Adressen, und falls morgen nichts ist, der nächste Termin."),
         next: ["/heute/", "Zurück zu heute: alle Flohmärkte von heute"] };
     }
@@ -1660,7 +1663,7 @@ ${sideImg("seite-schilder", "quer kante")}<h2>So hält dein Schild den ganzen Ta
 <h2>Drucken ohne eigenen Drucker</h2><p>Tipp auf „Drucken oder als PDF speichern“ und wähl im Druckfenster „Als PDF speichern“. Das PDF druckst du im Copyshop oder bei Freunden aus. Für die gelbe Fläche reicht ein normaler Farbdrucker, im Sparmodus genügt Schwarzweiß.</p></div>
 ${faqHTML(faq)}
 <section class="related"><div class="sec-head"><h2>Aus dem Ratgeber</h2>${more("/ratgeber/#verkaufen", "Verkaufen")}</div>${grid(["checkliste-flohmarktstand", "preise-festlegen-flohmarkt", "flohmarktstand-anmelden"].filter(s => KBY[s]).map(kbCard))}</section></article>`;
-  layout({ p, title: `Flohmarkt-Schilder & Preisschilder zum Ausdrucken | ${NAME}`, desc: "Kostenlose Schilder und Preisschilder für deinen Flohmarktstand: Vorlage wählen, Text eintippen, drucken oder als PDF speichern. Ohne Anmeldung.", body, nav: "schilder", ld: signLD(p, cr, faq) });
+  layout({ p, title: `Flohmarkt-Schilder & Preisschilder: kostenlos als PDF | ${NAME}`, desc: "Kostenlose Schilder und Preisschilder für deinen Flohmarktstand: Vorlage wählen, Text eintippen, drucken oder als PDF speichern. Ohne Anmeldung.", body, nav: "schilder", ld: signLD(p, cr, faq) });
   SIGN_PAGE_IMGS.set(p, SIGNS.map(t => [signImg(t), signAlt(t)]));
 }
 // Eine Seite je Vorlage

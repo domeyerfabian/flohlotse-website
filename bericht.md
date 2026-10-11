@@ -1,8 +1,8 @@
 # Flohlotse: Website gebaut
 
-Stand 11.10.2026 · 220 Seiten (214 für Google) · 126 Märkte · 197 Termine in den nächsten 120 Tagen · 42 Ratgeber-Artikel · 876 Event-Auszeichnungen
+Stand 12.10.2026 · 220 Seiten (214 für Google) · 126 Märkte · 188 Termine in den nächsten 120 Tagen · 42 Ratgeber-Artikel · 828 Event-Auszeichnungen
 
-## Zu erledigen: 168 Hinweise
+## Zu erledigen: 159 Hinweise
 
 | Bereich | Hinweis |
 |---|---|
@@ -14,8 +14,6 @@ Stand 11.10.2026 · 220 Seiten (214 für Google) · 126 Märkte · 197 Termine i
 | Links | /flohmarkt/flohschanze/ verlinkt auf /kalender/flohschanze.ics, diese Seite gibt es nicht. |
 | Links | /flohmarkt/nachtflohmarkt-rindermarkthalle/ verlinkt auf /kalender/nachtflohmarkt-rindermarkthalle-naechster.ics, diese Seite gibt es nicht. |
 | Links | /flohmarkt/nachtflohmarkt-rindermarkthalle/ verlinkt auf /kalender/nachtflohmarkt-rindermarkthalle.ics, diese Seite gibt es nicht. |
-| Links | /flohmarkt/flohmarkt-hausdrei-altona/ verlinkt auf /kalender/flohmarkt-hausdrei-altona-naechster.ics, diese Seite gibt es nicht. |
-| Links | /flohmarkt/flohmarkt-hausdrei-altona/ verlinkt auf /kalender/flohmarkt-hausdrei-altona.ics, diese Seite gibt es nicht. |
 | Links | /flohmarkt/flohmarkt-else-rauch-platz/ verlinkt auf /kalender/flohmarkt-else-rauch-platz-naechster.ics, diese Seite gibt es nicht. |
 | Links | /flohmarkt/flohmarkt-else-rauch-platz/ verlinkt auf /kalender/flohmarkt-else-rauch-platz.ics, diese Seite gibt es nicht. |
 | Links | /flohmarkt/schallplattenboerse-hamburg-haus/ verlinkt auf /kalender/schallplattenboerse-hamburg-haus-naechster.ics, diese Seite gibt es nicht. |
@@ -40,22 +38,16 @@ Stand 11.10.2026 · 220 Seiten (214 für Google) · 126 Märkte · 197 Termine i
 | Links | /flohmarkt/antik-troedelmarkt-schenefeld/ verlinkt auf /kalender/antik-troedelmarkt-schenefeld.ics, diese Seite gibt es nicht. |
 | Links | /flohmarkt/flohmarkt-flugplatz-heist/ verlinkt auf /kalender/flohmarkt-flugplatz-heist-naechster.ics, diese Seite gibt es nicht. |
 | Links | /flohmarkt/flohmarkt-flugplatz-heist/ verlinkt auf /kalender/flohmarkt-flugplatz-heist.ics, diese Seite gibt es nicht. |
-| Links | /flohmarkt/hagebau-flohmarkt-rellingen/ verlinkt auf /kalender/hagebau-flohmarkt-rellingen-naechster.ics, diese Seite gibt es nicht. |
-| Links | /flohmarkt/hagebau-flohmarkt-rellingen/ verlinkt auf /kalender/hagebau-flohmarkt-rellingen.ics, diese Seite gibt es nicht. |
 | Links | /flohmarkt/adler-flohmarkt-halstenbek/ verlinkt auf /kalender/adler-flohmarkt-halstenbek-naechster.ics, diese Seite gibt es nicht. |
 | Links | /flohmarkt/adler-flohmarkt-halstenbek/ verlinkt auf /kalender/adler-flohmarkt-halstenbek.ics, diese Seite gibt es nicht. |
 | Links | /flohmarkt/flohmarkt-westring-pinneberg/ verlinkt auf /kalender/flohmarkt-westring-pinneberg-naechster.ics, diese Seite gibt es nicht. |
 | Links | /flohmarkt/flohmarkt-westring-pinneberg/ verlinkt auf /kalender/flohmarkt-westring-pinneberg.ics, diese Seite gibt es nicht. |
 | Links | /flohmarkt/flohmarkt-obi-norderstedt/ verlinkt auf /kalender/flohmarkt-obi-norderstedt-naechster.ics, diese Seite gibt es nicht. |
 | Links | /flohmarkt/flohmarkt-obi-norderstedt/ verlinkt auf /kalender/flohmarkt-obi-norderstedt.ics, diese Seite gibt es nicht. |
-| Links | /flohmarkt/flohmarkt-famila-ahrensburg/ verlinkt auf /kalender/flohmarkt-famila-ahrensburg-naechster.ics, diese Seite gibt es nicht. |
-| Links | /flohmarkt/flohmarkt-famila-ahrensburg/ verlinkt auf /kalender/flohmarkt-famila-ahrensburg.ics, diese Seite gibt es nicht. |
 | Links | /flohmarkt/flohmarkt-famila-reinbek/ verlinkt auf /kalender/flohmarkt-famila-reinbek-naechster.ics, diese Seite gibt es nicht. |
 | Links | /flohmarkt/flohmarkt-famila-reinbek/ verlinkt auf /kalender/flohmarkt-famila-reinbek.ics, diese Seite gibt es nicht. |
 | Links | /flohmarkt/flohmarkt-oststeinbek/ verlinkt auf /kalender/flohmarkt-oststeinbek-naechster.ics, diese Seite gibt es nicht. |
 | Links | /flohmarkt/flohmarkt-oststeinbek/ verlinkt auf /kalender/flohmarkt-oststeinbek.ics, diese Seite gibt es nicht. |
-| Links | /flohmarkt/flohmarkt-famila-geesthacht/ verlinkt auf /kalender/flohmarkt-famila-geesthacht-naechster.ics, diese Seite gibt es nicht. |
-| Links | /flohmarkt/flohmarkt-famila-geesthacht/ verlinkt auf /kalender/flohmarkt-famila-geesthacht.ics, diese Seite gibt es nicht. |
 | Links | /flohmarkt/flohmarkt-goldbekhaus-hof/ verlinkt auf /kalender/flohmarkt-goldbekhaus-hof-naechster.ics, diese Seite gibt es nicht. |
 | Links | /flohmarkt/flohmarkt-goldbekhaus-hof/ verlinkt auf /kalender/flohmarkt-goldbekhaus-hof.ics, diese Seite gibt es nicht. |
 | Links | /flohmarkt/kinderflohmarkt-goldbekhaus/ verlinkt auf /kalender/kinderflohmarkt-goldbekhaus-naechster.ics, diese Seite gibt es nicht. |
@@ -80,8 +72,6 @@ Stand 11.10.2026 · 220 Seiten (214 für Google) · 126 Märkte · 197 Termine i
 | Links | /flohmarkt/flohmarkt-rindermarkthalle-st-pauli/ verlinkt auf /kalender/flohmarkt-rindermarkthalle-st-pauli.ics, diese Seite gibt es nicht. |
 | Links | /flohmarkt/tonboerse-eidelstedt-center/ verlinkt auf /kalender/tonboerse-eidelstedt-center-naechster.ics, diese Seite gibt es nicht. |
 | Links | /flohmarkt/tonboerse-eidelstedt-center/ verlinkt auf /kalender/tonboerse-eidelstedt-center.ics, diese Seite gibt es nicht. |
-| Links | /flohmarkt/hallenflohmarkt-halle-15-rissen/ verlinkt auf /kalender/hallenflohmarkt-halle-15-rissen-naechster.ics, diese Seite gibt es nicht. |
-| Links | /flohmarkt/hallenflohmarkt-halle-15-rissen/ verlinkt auf /kalender/hallenflohmarkt-halle-15-rissen.ics, diese Seite gibt es nicht. |
 | Links | /flohmarkt/frauenklamottenflohmarkt-brakula/ verlinkt auf /kalender/frauenklamottenflohmarkt-brakula-naechster.ics, diese Seite gibt es nicht. |
 | Links | /flohmarkt/frauenklamottenflohmarkt-brakula/ verlinkt auf /kalender/frauenklamottenflohmarkt-brakula.ics, diese Seite gibt es nicht. |
 | Links | /flohmarkt/kinderflohmarkt-tibarg-niendorf/ verlinkt auf /kalender/kinderflohmarkt-tibarg-niendorf-naechster.ics, diese Seite gibt es nicht. |
@@ -124,8 +114,6 @@ Stand 11.10.2026 · 220 Seiten (214 für Google) · 126 Märkte · 197 Termine i
 | Links | /flohmarkt/flohmarkt-heiligengeistfeld/ verlinkt auf /kalender/flohmarkt-heiligengeistfeld.ics, diese Seite gibt es nicht. |
 | Links | /flohmarkt/flohmarkt-immenhof/ verlinkt auf /kalender/flohmarkt-immenhof-naechster.ics, diese Seite gibt es nicht. |
 | Links | /flohmarkt/flohmarkt-immenhof/ verlinkt auf /kalender/flohmarkt-immenhof.ics, diese Seite gibt es nicht. |
-| Links | /flohmarkt/flohmarkt-kaufland-henstedt-ulzburg/ verlinkt auf /kalender/flohmarkt-kaufland-henstedt-ulzburg-naechster.ics, diese Seite gibt es nicht. |
-| Links | /flohmarkt/flohmarkt-kaufland-henstedt-ulzburg/ verlinkt auf /kalender/flohmarkt-kaufland-henstedt-ulzburg.ics, diese Seite gibt es nicht. |
 | Links | /flohmarkt/flohmarkt-am-bunthaus/ verlinkt auf /kalender/flohmarkt-am-bunthaus-naechster.ics, diese Seite gibt es nicht. |
 | Links | /flohmarkt/flohmarkt-am-bunthaus/ verlinkt auf /kalender/flohmarkt-am-bunthaus.ics, diese Seite gibt es nicht. |
 | Links | /flohmarkt/antik-design-markt-colonnaden/ verlinkt auf /kalender/antik-design-markt-colonnaden-naechster.ics, diese Seite gibt es nicht. |
@@ -174,8 +162,22 @@ Stand 11.10.2026 · 220 Seiten (214 für Google) · 126 Märkte · 197 Termine i
 | Links | /flohmarkt/buecherflohmarkt-reinbek/ verlinkt auf /kalender/buecherflohmarkt-reinbek.ics, diese Seite gibt es nicht. |
 | Links | /flohmarkt/kinderbasar-elbe-grundschule-tespe/ verlinkt auf /kalender/kinderbasar-elbe-grundschule-tespe-naechster.ics, diese Seite gibt es nicht. |
 | Links | /flohmarkt/kinderbasar-elbe-grundschule-tespe/ verlinkt auf /kalender/kinderbasar-elbe-grundschule-tespe.ics, diese Seite gibt es nicht. |
+| Uhrzeit fehlt | Ein Termin in den nächsten drei Wochen ohne Uhrzeit: Flohmarkt famila Wedel am Sonntag, 1. November. Uhrzeit beim Veranstalter nachsehen und im Blatt „Termine“ (oder „Serien“) eintragen. |
+| Termin-Wächter | Hallenflohmarkt in der Halle 15: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 13.10.2026. Bitte prüfen: https://www.asb-halle15.de/ |
+| Termin-Wächter | Flohmarkt famila Winsen (Luhe): Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 25.10.2026. Bitte prüfen: https://flohmaxx.de/flohmarkt/winsen-famila/2026-10-03 |
+
+## Termin-Wächter: 1 Vorschlag zum Einfügen
+
+Diese Tage stehen neu auf Veranstalterseiten und fehlen in der Tabelle. **Erst auf der Seite des Veranstalters prüfen**, ob es wirklich ein Markttermin ist und ob die Uhrzeit stimmt (eingesetzt ist die übliche Uhrzeit des Markts; ist sie leer, kennt die Tabelle noch keine). Dann die Zeilen markieren, kopieren und im Blatt „Termine“ in die erste freie Zeile einfügen. Die Spalten sind: Markt, Datum, Beginn, Ende, Status, Hinweis. Ein Vorschlag bleibt sieben Tage stehen und verschwindet, sobald der Tag in der Tabelle steht.
+
+```
+flohmarkt-famila-winsen	25.10.2026	11:00	16:00	Findet statt	
+```
+
+Quellen:
+- https://flohmaxx.de/flohmarkt/winsen-famila/2026-10-03
 
 ## Zur Kenntnis
 
-- 42 Märkte haben in den nächsten 120 Tagen keinen Termin (Saisonpause oder noch nicht angekündigt): altonale Flohmarkt an der Museumstraße, Fietsenbörse am Spielbudenplatz, Flohmarkt EDEKA Center Struve Bramfeld, Flohmarkt EDEKA Center Struve Eidelstedt, Flohmarkt Eppendorfer Weg, Flohmarkt famila Bargteheide, Flohmarkt famila Buchholz, Flohmarkt famila Steilshoop, Flohmarkt famila Trittau, Flohmarkt famila Winsen (Luhe), Flohmarkt GLOBUS Lurup, Flohmarkt Hansaplatz, Flohmarkt Heidesiedlung Neu Wulmstorf, Flohmarkt Höffner Barsbüttel, Flohmarkt Hoheluftchaussee, Flohmarkt IKEA Altona, Flohmarkt IKEA Moorfleet, Flohmarkt IKEA Schnelsen, Flohmarkt im Barmbek°Basch, Flohmarkt Isestraße, Flohmarkt Körber (ehemals Hauni) Bergedorf, Flohmarkt Langenhorner Markt, Flohmarkt Lehmweg, Flohmarkt Marktplatz Glinde, Flohmarkt Metro Harburg, Flohmarkt Metro Niendorf, Flohmarkt mit Hofcafé am Kreativhaus, Flohmarkt Moorwegsiedlung Wedel, Flohmarkt Norderstedt Schmuggelstieg, Flohmarkt Uetersen bei Lüchau Baustoffe, Flohmarkt Uetersen City, FlohZinn in den Wilhelmsburger Zinnwerken, Kinderflohmarkt im kulturtreff Bergedorf Süd, KUGU Flohmarkt, Kultur-Flohmarkt am Museum der Arbeit, Langschläfer Flohmarkt, Langschläfer Flohmarkt Überseeboulevard, Nachbarschaftsflohmarkt Herthastraße, Nachbarschaftsflohmarkt Wilhelmsburg, Pen & Time Port, Quickborner famila-Flohmarkt, Turmweg-Flohmarkt.
+- 48 Märkte haben in den nächsten 120 Tagen keinen Termin (Saisonpause oder noch nicht angekündigt): altonale Flohmarkt an der Museumstraße, Fietsenbörse am Spielbudenplatz, Flohmarkt EDEKA Center Struve Bramfeld, Flohmarkt EDEKA Center Struve Eidelstedt, Flohmarkt Eppendorfer Weg, Flohmarkt famila Ahrensburg, Flohmarkt famila Bargteheide, Flohmarkt famila Buchholz, Flohmarkt famila Geesthacht, Flohmarkt famila Steilshoop, Flohmarkt famila Trittau, Flohmarkt famila Winsen (Luhe), Flohmarkt GLOBUS Lurup, Flohmarkt Hansaplatz, Flohmarkt Heidesiedlung Neu Wulmstorf, Flohmarkt Höffner Barsbüttel, Flohmarkt Hoheluftchaussee, Flohmarkt IKEA Altona, Flohmarkt IKEA Moorfleet, Flohmarkt IKEA Schnelsen, Flohmarkt im Barmbek°Basch, Flohmarkt Isestraße, Flohmarkt Kaufland Henstedt-Ulzburg, Flohmarkt Körber (ehemals Hauni) Bergedorf, Flohmarkt Langenhorner Markt, Flohmarkt Lehmweg, Flohmarkt Marktplatz Glinde, Flohmarkt Metro Harburg, Flohmarkt Metro Niendorf, Flohmarkt mit Hofcafé am Kreativhaus, Flohmarkt Moorwegsiedlung Wedel, Flohmarkt Norderstedt Schmuggelstieg, Flohmarkt Uetersen bei Lüchau Baustoffe, Flohmarkt Uetersen City, FlohZinn in den Wilhelmsburger Zinnwerken, Hallenflohmarkt in der Halle 15, Kinderflohmarkt im kulturtreff Bergedorf Süd, KUGU Flohmarkt, Kultur-Flohmarkt am Museum der Arbeit, Langschläfer Flohmarkt, Langschläfer Flohmarkt Überseeboulevard, Nachbarschaftsflohmarkt HausDrei, Nachbarschaftsflohmarkt Herthastraße, Nachbarschaftsflohmarkt Wilhelmsburg, Pen & Time Port, Quickborner famila-Flohmarkt, Rellinger Hagebau-Flohmarkt, Turmweg-Flohmarkt.
 - Eine Bilddatei im Ordner bilder wird auf keiner Seite verwendet und deshalb nicht hochgeladen: start-4.webp.

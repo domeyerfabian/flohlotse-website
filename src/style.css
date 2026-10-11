@@ -849,3 +849,22 @@ button.fav[aria-pressed="true"],.btn.fav-big[aria-pressed="true"]{background:var
 .sell .facts{margin-top:12px}
 .sell-go{margin:14px 0 0}
 .sell .meta.small{margin:10px 0 0}
+/* Standgebühren im Vergleich */
+.fee-page #feeF{margin-top:22px}
+.fee-page .chip small{font-size:12px;opacity:.7;font-weight:500}
+.fee-list{display:grid;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.fee{background:var(--surface);padding:14px 16px;min-width:0}
+.fee h3{font-size:17px;margin:0;line-height:1.3}
+.fee h3 a{color:var(--ink);text-decoration:none}
+.fee h3 a:hover{text-decoration:underline}
+.fee > .meta{margin:3px 0 0;font-size:14px}
+.fee-v{display:flex;align-items:flex-start;gap:7px;margin:9px 0 0;font-weight:600;line-height:1.4}
+.fee-v .i{width:18px;height:18px;flex:none;margin-top:2px}
+.fee-v.none{font-weight:400;color:var(--muted)}
+.fee-h{margin:4px 0 0 25px;font-size:14px;color:var(--muted);line-height:1.45}
+.fee .row{margin-top:10px}
+.fee-reg .sec-head{margin-bottom:10px}
+/* Unter der Woche */
+.wk-eve{display:flex;align-items:flex-start;gap:7px;margin:12px 0 0;font-size:14px}
+.wk-eve .i{width:17px;height:17px;flex:none;margin-top:2px}
+.facts dd .meta{font-size:13px}

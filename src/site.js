@@ -128,6 +128,21 @@
     });
     if (location.hash === "#karte") setTimeout(function () { var k = document.getElementById("karte"); if (k) k.scrollIntoView(); }, 50);
   }
+  // Standgebühren im Vergleich: Filter „Spontan möglich“, „Nur Privatverkäufer“, „Bis 10 € pro Meter“
+  var feeF = document.getElementById("feeF");
+  if (feeF) {
+    feeF.addEventListener("click", function (e) {
+      var b = e.target.closest("button"); if (!b) return;
+      var f = b.getAttribute("data-f"), any = false;
+      feeF.querySelectorAll("button").forEach(function (x) { x.setAttribute("aria-pressed", String(x === b)); });
+      document.querySelectorAll(".fee-reg").forEach(function (c) {
+        var n = 0;
+        c.querySelectorAll(".fee").forEach(function (r) { var ok = !f || (" " + r.getAttribute("data-f") + " ").indexOf(" " + f + " ") > -1; r.hidden = !ok; if (ok) n++; });
+        c.hidden = n === 0; if (n) any = true;
+      });
+      document.getElementById("feeLeer").hidden = any;
+    });
+  }
   var q = document.getElementById("kbSearch");
   if (q) {
     q.addEventListener("input", function () {

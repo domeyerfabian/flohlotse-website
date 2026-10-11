@@ -2,25 +2,7 @@
 
 Stand 11.10.2026 · 220 Seiten (214 für Google) · 126 Märkte · 197 Termine in den nächsten 120 Tagen · 42 Ratgeber-Artikel · 876 Event-Auszeichnungen
 
-## Zu erledigen: 2 Hinweise
-
-| Bereich | Hinweis |
-|---|---|
-| Termin-Wächter | HNT Flohmarkt: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 17.10.2026, 18.10.2026, 19.10.2026, 24.10.2026. Bitte prüfen: https://www.hntonline.de/flohmarkt |
-| Termin-Wächter | Flohmarkt famila Winsen (Luhe): Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 18.10.2026. Bitte prüfen: https://flohmaxx.de/flohmarkt/winsen-famila/2026-10-03 |
-
-## Termin-Wächter: 2 Vorschläge zum Einfügen
-
-Diese Tage stehen neu auf Veranstalterseiten und fehlen in der Tabelle. **Erst auf der Seite des Veranstalters prüfen**, ob es wirklich ein Markttermin ist und ob die Uhrzeit stimmt (eingesetzt ist die übliche Uhrzeit des Markts; ist sie leer, kennt die Tabelle noch keine). Dann die Zeilen markieren, kopieren und im Blatt „Termine“ in die erste freie Zeile einfügen. Die Spalten sind: Markt, Datum, Beginn, Ende, Status, Hinweis. Ein Vorschlag bleibt sieben Tage stehen und verschwindet, sobald der Tag in der Tabelle steht.
-
-```
-flohmarkt-famila-winsen	18.10.2026	11:00	16:00	Findet statt	
-hnt-flohmarkt-hausbruch	18.10.2026	09:00	14:00	Findet statt	
-```
-
-Quellen:
-- https://flohmaxx.de/flohmarkt/winsen-famila/2026-10-03
-- https://www.hntonline.de/flohmarkt
+Nichts zu erledigen. Alles in Ordnung.
 
 ## Zur Kenntnis
 

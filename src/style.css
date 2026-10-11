@@ -941,7 +941,8 @@ button.fav[aria-pressed="true"],.btn.fav-big[aria-pressed="true"]{background:var
 .tour-card .k .i{width:15px;height:15px}
 .tour-card h2{font-size:21px;margin:4px 0 6px}
 .tour-card p{margin:0;color:var(--muted);font-size:15px}
-.tour-card .go{display:inline-flex;align-items:center;gap:4px;margin-top:10px;font-weight:700}
+.tour-card .go{display:inline-flex;align-items:center;gap:6px;margin-top:14px;font-weight:700;font-size:16px;background:var(--sticker);color:var(--sticker-ink);border-radius:999px;padding:10px 16px 10px 20px;min-height:44px}
+.tour-card:hover .go{filter:brightness(.96)}
 .tour-card .go .i{width:17px;height:17px}
 .tour-back{margin:0 0 6px}.tour-back a{display:inline-flex;align-items:center;gap:4px;font-weight:600;text-decoration:none;color:var(--ink)}
 .tour-back .i{width:16px;height:16px}.i.flip{transform:rotate(180deg)}

@@ -438,16 +438,20 @@ const TAGS_ALL = [...new Set(MARKETS.flatMap(m => m.tags))];
 // Zwei Filter entstehen automatisch aus der Uhrzeit: Beginn bis 7 Uhr = Frühaufsteher, Beginn von 10 bis 15 Uhr = Langschläfer
 const timeTags = e => { if (e.cancelled || !e.start) return []; const h = parseInt(String(e.start).match(/\d{1,2}/)[0], 10); return h <= 7 ? ["Frühaufsteher"] : h >= 10 && h <= 15 ? ["Langschläfer"] : []; };
 const TIME_TAGS = ["Frühaufsteher", "Langschläfer"];
+// Zwei Seiten, die auch unter der Woche gesucht werden: Märkte von Montag bis Freitag und Standgebühren im Vergleich
+const WEEK_P = "/flohmarkt-hamburg-unter-der-woche/", FEE_P = "/flohmarkt-standgebuehr-hamburg/";
+// Zahl und Einheit bleiben in einer Zeile („4 m“, „12 €“, „7 Uhr“)
+const nbU = t => esc(t).replace(/(\d) (?=€|%|(?:m|Uhr|km)\b)/g, "$1&nbsp;");
 function menuHTML() {
   const cnt = k => MARKETS.filter(m => m.bez === k).length;
   const li = (h, l) => `<li><a href="${h}">${l}</a></li>`;
   return `<details class="menu-wrap"><summary class="menu-btn">${ic("list")}<span>Menü</span></summary>
 <div class="menu"><nav class="menu-grid" aria-label="Alle Bereiche">
-<div><p class="menu-h">Flohmärkte finden</p><ul>${li("/suche/", "Suchen nach Name oder Datum")}${li("/heute/", "Heute")}${li("/morgen/", "Morgen")}${li("/wochenende/", "Am Wochenende")}${li("/samstag/", "Am Samstag")}${li("/sonntag/", "Am Sonntag")}${li("/termine/", "Alle Termine")}${li("/flohmaerkte/", "Alle Märkte")}${li("/entdecken/", "Wischen &amp; merken")}${li("/merkliste/", "Meine Merkliste")}</ul></div>
+<div><p class="menu-h">Flohmärkte finden</p><ul>${li("/suche/", "Suchen nach Name oder Datum")}${li("/heute/", "Heute")}${li("/morgen/", "Morgen")}${li("/wochenende/", "Am Wochenende")}${li("/samstag/", "Am Samstag")}${li("/sonntag/", "Am Sonntag")}${li(WEEK_P, "Unter der Woche")}${li("/termine/", "Alle Termine")}${li("/flohmaerkte/", "Alle Märkte")}${li("/entdecken/", "Wischen &amp; merken")}${li("/merkliste/", "Meine Merkliste")}</ul></div>
 <div><p class="menu-h">Nach Art</p><ul>${CATS_ON.map(c => li(`/${c.s}/`, esc(c.chip))).join("")}</ul></div>
 <div><p class="menu-h">Hamburg</p><ul>${REGIONS.filter(r => !r.umland).map(r => li(`/flohmarkt-hamburg/${r.k}/`, `${esc(r.name)} <small>${cnt(r.k)}</small>`)).join("")}</ul></div>
 <div><p class="menu-h">Umland bis 30 km</p><ul>${REGIONS.filter(r => r.umland).map(r => li(`/flohmarkt-hamburg/${r.k}/`, `${esc(r.name)} <small>${cnt(r.k)}</small>`)).join("")}</ul></div>
-<div><p class="menu-h">Ratgeber</p><ul>${li("/flohmarkt-schilder/", "Schilder &amp; Preisschilder drucken")}${Object.entries(CLUSTERS).map(([c, v]) => li(`/ratgeber/#${c}`, esc(v.t))).join("")}${li("/ratgeber/", "Alle Artikel")}</ul></div>
+<div><p class="menu-h">Ratgeber</p><ul>${li("/flohmarkt-schilder/", "Schilder &amp; Preisschilder drucken")}${li(FEE_P, "Standgebühren im Vergleich")}${Object.entries(CLUSTERS).map(([c, v]) => li(`/ratgeber/#${c}`, esc(v.t))).join("")}${li("/ratgeber/", "Alle Artikel")}</ul></div>
 <div><p class="menu-h">${esc(NAME)}</p><ul>${li("/veranstalter/", "Für Veranstalter")}${INSTA ? `<li>${instaA("Instagram")}</li>` : ""}${li("/impressum/", "Impressum")}${li("/datenschutz/", "Datenschutz")}</ul></div>
 </nav></div></details>`;
 }
@@ -502,9 +506,9 @@ ${body.replace(/<h1>([^<]{3,80}?): ([^<]+)<\/h1>/, '<h1>$1:<span class="h1-sub">
 </main>
 <footer class="wrap site-foot">
 <div>Termine nach öffentlichen Angaben der Veranstalter, Stand ${STAND}. Bitte vor dem Besuch beim Veranstalter prüfen, Märkte können kurzfristig ausfallen. Ratgeber-Artikel ersetzen keine Rechts- oder Steuerberatung.${WX_OK ? ` Wettervorhersage: Deutscher Wetterdienst, Stand ${STAND}.` : ""}</div>
-<nav class="foot-links" aria-label="Flohmarkt Hamburg"><b>Flohmarkt Hamburg</b><a href="/heute/">Heute</a><a href="/morgen/">Morgen</a><a href="/wochenende/">Wochenende</a><a href="/samstag/">Samstag</a><a href="/sonntag/">Sonntag</a>${REGIONS.map(r => `<a href="/flohmarkt-hamburg/${r.k}/">${esc(r.name)}</a>`).join("")}</nav>
+<nav class="foot-links" aria-label="Flohmarkt Hamburg"><b>Flohmarkt Hamburg</b><a href="/heute/">Heute</a><a href="/morgen/">Morgen</a><a href="/wochenende/">Wochenende</a><a href="/samstag/">Samstag</a><a href="/sonntag/">Sonntag</a><a href="${WEEK_P}">Unter der Woche</a>${REGIONS.map(r => `<a href="/flohmarkt-hamburg/${r.k}/">${esc(r.name)}</a>`).join("")}</nav>
 <nav class="foot-links" aria-label="Nach Art und Monat"><b>Nach Art und Monat</b>${CATS_ON.map(c => `<a href="/${c.s}/">${esc(c.chip)}</a>`).join("")}${MONTHS.map(x => `<a href="/${x.s}/">${x.name} ${x.y}</a>`).join("")}</nav>
-<nav class="foot-links" aria-label="${esc(NAME)}"><b>${esc(NAME)}</b><a href="/ratgeber/">Ratgeber</a><a href="/flohmarkt-schilder/">Schilder-Designer</a><a href="/flohmarkt-hamburg-statistik/">Flohmärkte in Zahlen</a><a href="/veranstalter/">Für Veranstalter</a>${INSTA ? instaA("Instagram") : ""}<a href="/impressum/">Impressum</a><a href="/datenschutz/">Datenschutz</a></nav>
+<nav class="foot-links" aria-label="${esc(NAME)}"><b>${esc(NAME)}</b><a href="/ratgeber/">Ratgeber</a><a href="/flohmarkt-schilder/">Schilder-Designer</a><a href="${FEE_P}">Standgebühren im Vergleich</a><a href="/flohmarkt-hamburg-statistik/">Flohmärkte in Zahlen</a><a href="/veranstalter/">Für Veranstalter</a>${INSTA ? instaA("Instagram") : ""}<a href="/impressum/">Impressum</a><a href="/datenschutz/">Datenschutz</a></nav>
 </footer>
 <script src="/assets/site${JS_V ? "." + JS_V.slice(3) : ""}.js" defer></script>
 </body>
@@ -561,7 +565,7 @@ const kbCard = s => { const r = KBY[s]; if (!r) { warn("Ratgeber", `Verweis auf 
 function short(t, n) { t = String(t || ""); if (t.length <= n) return t; const cut = t.slice(0, n); return (cut.lastIndexOf(" ") > n * 0.6 ? cut.slice(0, cut.lastIndexOf(" ")) : cut).replace(/[\s,.;:–-]+$/, "") + " …"; }
 const mCard = m => { const n = nextEv(m); return `<a class="card" href="/flohmarkt/${m.slug}/"><span class="kicker">${esc(m.area)}${neuPill(m)}</span><h3>${esc(m.name)}</h3><p class="ln">${ic("repeat")}<span>${esc(m.rhythm)}</span></p>${n ? `<p class="ln" data-day="${n.k}">${ic("cal")}<span>Nächster Termin ${fmtShortY(n)}</span></p>` : ""}</a>`; };
 const grid = cards => { cards = cards.filter(Boolean); const n = cards.length; return `<div class="news ${n % 3 === 0 ? "cols3" : n % 2 === 0 ? "cols2" : "fit"}">${cards.join("")}</div>`; };
-const regionChips = skip => `<div class="chips">${[["/heute/", "Heute"], ["/morgen/", "Morgen"], ["/wochenende/", "Wochenende"], ["/samstag/", "Samstag"], ["/sonntag/", "Sonntag"]].filter(x => x[0] !== skip).map(([h, l]) => `<a class="chip" href="${h}">${ic(h === "/heute/" ? "sun" : "cal")}${l}</a>`).join("")}${REGIONS.filter(r => `/flohmarkt-hamburg/${r.k}/` !== skip).map(r => `<a class="chip" href="/flohmarkt-hamburg/${r.k}/">${esc(r.name)}</a>`).join("")}</div>`;
+const regionChips = skip => `<div class="chips">${[["/heute/", "Heute"], ["/morgen/", "Morgen"], ["/wochenende/", "Wochenende"], ["/samstag/", "Samstag"], ["/sonntag/", "Sonntag"], [WEEK_P, "Unter der Woche"]].filter(x => x[0] !== skip).map(([h, l]) => `<a class="chip" href="${h}">${ic(h === "/heute/" ? "sun" : "cal")}${l}</a>`).join("")}${REGIONS.filter(r => `/flohmarkt-hamburg/${r.k}/` !== skip).map(r => `<a class="chip" href="/flohmarkt-hamburg/${r.k}/">${esc(r.name)}</a>`).join("")}</div>`;
 const KBMAP = { "Überdacht": ["flohmarkt-bei-regen", "beste-uhrzeit-flohmarkt", "handeln-auf-dem-flohmarkt"], "Umland": ["was-mitnehmen-flohmarkt", "beste-uhrzeit-flohmarkt", "handeln-auf-dem-flohmarkt"], "Kinder & Spielzeug": ["flohmarkt-mit-kindern", "kinderflohmarkt-verkaufen", "handeln-auf-dem-flohmarkt"], "Sammler & Vinyl": ["antiquitaeten-erkennen-flohmarkt", "faelschungen-erkennen-flohmarkt", "handeln-auf-dem-flohmarkt"], "Nachbarschaft": ["flohmarkt-knigge", "flohmarkt-mit-kindern", "handeln-auf-dem-flohmarkt"], "Abends": ["nachtflohmarkt", "bezahlen-auf-dem-flohmarkt", "handeln-auf-dem-flohmarkt"] };
 const kbFor = m => (m.kb.length ? m.kb : KBMAP[m.tags.find(t => KBMAP[t])] || ["beste-uhrzeit-flohmarkt", "handeln-auf-dem-flohmarkt", "was-mitnehmen-flohmarkt"]).filter(s => KBY[s]);
 function whenOf(m) {
@@ -1248,7 +1252,7 @@ ${sxForm()}
 <p class="sx-msg" id="sxMsg" role="status" aria-live="polite"></p>
 <div class="sx-out js-only" id="sxOut" data-src="/assets/maerkte.json?v=${key(TODAY)}"></div>
 <section class="sec sx-az" id="sxAz"><div class="sec-head"><h2>Alle Märkte von A bis Z</h2>${more("/flohmaerkte/", "Nach Bezirk")}</div><div class="qlist sx-azl">${azList}</div></section>
-<section class="sec sx-tip" id="sxTip"><div class="sec-head"><h2>Nach Zeitraum stöbern</h2></div><div class="chips">${[["/heute/", "Heute", "sun"], ["/morgen/", "Morgen", "cal"], ["/wochenende/", "Wochenende", "cal"], ["/termine/", "Alle Termine", "list"]].map(([h, l, i]) => `<a class="chip" href="${h}">${ic(i)}${l}</a>`).join("")}</div>${monthChips()}</section>`;
+<section class="sec sx-tip" id="sxTip"><div class="sec-head"><h2>Nach Zeitraum stöbern</h2></div><div class="chips">${[["/heute/", "Heute", "sun"], ["/morgen/", "Morgen", "cal"], ["/wochenende/", "Wochenende", "cal"], [WEEK_P, "Unter der Woche", "cal"], ["/termine/", "Alle Termine", "list"]].map(([h, l, i]) => `<a class="chip" href="${h}">${ic(i)}${l}</a>`).join("")}</div>${monthChips()}</section>`;
   layout({ p: "/suche/", title: `Flohmarkt suchen | ${NAME}`, desc: `Flohmarkt in Hamburg suchen: nach Name, Stadtteil oder Datum. ${MARKETS.length} Märkte mit allen bekannten Terminen.`, body, noindex: true, nav: "suche" });
 }
 
@@ -1330,7 +1334,7 @@ ${m.oepnv ? `<div><dt>${ic("tram")}Nächste Haltestelle</dt><dd>${esc(m.oepnv)}<
 ${m.intro ? `<section class="block kb-body"><h2>Über den Markt</h2><p>${rich(m.intro)}</p></section>` : ""}
 <section class="block"><h2>Nächste Termine</h2>${nxAll.length ? `<ul class="dates">${nxAll.map(e => `<li${e.cancelled ? ' class="off"' : ""} data-day="${e.k}"><span class="dt">${e.far ? fmtDateY(e.date) : fmtDate(e.date)}</span><span class="tm">${e.cancelled ? "fällt aus" : timeText(e)}</span>${e.note ? `<span class="meta">${esc(e.note)}</span>` : ""}</li>`).join("")}</ul>` : '<p class="meta">Die nächsten Termine sind noch nicht angekündigt.</p>'}</section>
 ${m.tips.length ? `<section class="block kb-body"><h2>Gut zu wissen</h2><ul class="tips">${m.tips.map(t => `<li>${rich(t)}</li>`).join("")}</ul></section>` : ""}
-${m.fee || m.signup || m.signupHint || m.sellers ? `<section class="block sell"><h2>Selbst verkaufen</h2><dl class="facts">${m.fee ? `<div><dt>${ic("tag")}Standgebühr</dt><dd>${esc(m.fee)}</dd></div>` : ""}${m.sellers ? `<div><dt>${ic("user")}Verkäufer</dt><dd>${esc(m.sellers)}</dd></div>` : ""}${m.signupHint ? `<div><dt>${ic("list")}Anmeldung</dt><dd>${esc(m.signupHint)}</dd></div>` : ""}</dl>${m.signup ? `<p class="sell-go"><a class="route" href="${esc(m.signup)}" rel="noopener">Zur Anmeldung beim Veranstalter${ic("chev")}</a></p>` : ""}<p class="meta small">Stand der Angaben: Veranstalter, ohne Gewähr. Preise und Regeln können sich ändern.</p></section>` : ""}
+${m.fee || m.signup || m.signupHint || m.sellers ? `<section class="block sell"><h2>Selbst verkaufen</h2><dl class="facts">${m.fee ? `<div><dt>${ic("tag")}Standgebühr</dt><dd>${nbU(m.fee)}</dd></div>` : ""}${m.sellers ? `<div><dt>${ic("user")}Verkäufer</dt><dd>${esc(m.sellers)}</dd></div>` : ""}${m.signupHint ? `<div><dt>${ic("list")}Anmeldung</dt><dd>${nbU(m.signupHint)}</dd></div>` : ""}</dl>${m.signup ? `<p class="sell-go"><a class="route" href="${esc(m.signup)}" rel="noopener">Zur Anmeldung beim Veranstalter${ic("chev")}</a></p>` : ""}<p class="meta small">Stand der Angaben: Veranstalter, ohne Gewähr. Preise und Regeln können sich ändern. <a href="${FEE_P}">Alle Standgebühren im Vergleich</a></p></section>` : ""}
 ${m.hint ? `<p class="hint">${rich(m.hint)}</p>` : ""}
 ${faqBlock(mFaq, `Häufige Fragen zu ${esc(m.short)}`)}
 <p class="hint">Angaben nach öffentlichen Informationen des Veranstalters${m.web ? ` (<a href="${esc(m.web)}" rel="noopener">Website</a>)` : ""}, ohne Gewähr. Märkte können kurzfristig ausfallen. Du veranstaltest diesen Markt? <a href="/veranstalter/#korrektur">Eintrag ändern oder entfernen lassen</a>.</p>
@@ -1375,6 +1379,8 @@ ${CATS_ON.some(c => c.ms.some(m => m.bez === r.k)) ? `<section class="related"><
   const byDay = new Map(); for (const e of EVENTS) { if (!byDay.has(e.k)) byDay.set(e.k, []); byDay.get(e.k).push(e); }
   const live = k => (byDay.get(k) || []).filter(e => !e.cancelled);
   const names = evs => evs.map(e => e.m.name).join(", ");
+  // „Heute“ und „morgen“ an einem Werktag: Verweis auf die Märkte von Montag bis Freitag
+  const wkLink = k => { const d = k === "heute" ? TODAY : k === "morgen" ? addDays(TODAY, 1) : null; return d && d.getUTCDay() >= 1 && d.getUTCDay() <= 5 ? `<a class="more" href="${WEEK_P}">Flohmärkte unter der Woche: alle Termine von Montag bis Freitag</a>` : ""; };
   const Z = {
     heute: () => {
       let evs = byDay.get(key(TODAY)) || [], ans;
@@ -1389,23 +1395,29 @@ ${CATS_ON.some(c => c.ms.some(m => m.bez === r.k)) ? `<section class="related"><
     wochenende: () => {
       const { sat, sun, sunOnly } = weekendDays(), a = sunOnly ? [] : live(key(sat)), b = live(key(sun));
       const evs = (sunOnly ? [] : (byDay.get(key(sat)) || [])).concat(byDay.get(key(sun)) || []), n = a.length + b.length, c = x => x === 0 ? "keiner" : x === 1 ? "einer" : String(x);
+      // Sonntags ist das laufende Wochenende fast vorbei: Darunter steht schon das nächste (so passt die Seite auch für die Planung unter der Woche)
+      const nSat = addDays(sun, 6), nSun = addDays(sun, 7), nEvs = sunOnly ? (byDay.get(key(nSat)) || []).concat(byDay.get(key(nSun)) || []) : [], nN = nEvs.filter(e => !e.cancelled).length;
+      const span = (x, y) => x.getUTCMonth() === y.getUTCMonth() ? `${x.getUTCDate()}./${y.getUTCDate()}. ${MON[y.getUTCMonth()]}` : `${x.getUTCDate()}.${x.getUTCMonth() + 1}./${y.getUTCDate()}.${y.getUTCMonth() + 1}.`;
       const ans = sunOnly
-        ? `Heute, am Sonntag, ${sun.getUTCDate()}. ${MON[sun.getUTCMonth()]}, ${b.length === 0 ? "findet laut Kalender kein Flohmarkt" : b.length === 1 ? "findet ein Flohmarkt" : "finden " + b.length + " Flohmärkte"} in Hamburg und im Umland statt.${b.length ? " " + names(b) + "." : ""}`
+        ? `Heute, am Sonntag, ${sun.getUTCDate()}. ${MON[sun.getUTCMonth()]}, ${b.length === 0 ? "findet laut Kalender kein Flohmarkt" : b.length === 1 ? "findet ein Flohmarkt" : "finden " + b.length + " Flohmärkte"} in Hamburg und im Umland statt.${b.length ? " " + names(b) + "." : ""}${nN ? ` Am nächsten Wochenende, ${span(nSat, nSun)}, ${nN === 1 ? "steht ein Flohmarkt" : "stehen " + nN + " Flohmärkte"} im Kalender.` : ""}`
         : `Am Wochenende ${sat.getUTCDate()}. und ${sun.getUTCDate()}. ${MON[sun.getUTCMonth()]} ${n === 1 ? "findet ein Flohmarkt" : "finden " + n + " Flohmärkte"} in Hamburg und im Umland statt, ${c(a.length)} am Samstag und ${c(b.length)} am Sonntag.`;
-      return { h: "Flohmarkt Hamburg am Wochenende", sub: sunOnly ? `Sonntag, ${sun.getUTCDate()}. ${MON[sun.getUTCMonth()]}` : `${sat.getUTCDate()}. und ${sun.getUTCDate()}. ${MON[sun.getUTCMonth()]}`, t: "Flohmarkt Hamburg am Wochenende: alle Termine", evs, ans,
-        d: pickDesc(n ? (sunOnly ? `Heute, am Sonntag: ${b.length} Flohmärkte in Hamburg und Umgebung${darunter(b)}. Alle Termine mit Uhrzeit und Adresse.` : `Am Wochenende ${sat.getUTCDate()}./${sun.getUTCDate()}. ${MON[sun.getUTCMonth()]}: ${n} Flohmärkte in Hamburg und Umgebung, ${a.length} am Samstag und ${b.length} am Sonntag. Alle Termine mit Uhrzeit.`) : "",
-          "Alle Flohmärkte in Hamburg am kommenden Wochenende, Samstag und Sonntag, mit Uhrzeiten, Adressen und Links zu jedem Markt. Täglich aktualisiert.") };
+      return { h: "Flohmarkt Hamburg am Wochenende", sub: sunOnly ? `Sonntag, ${sun.getUTCDate()}. ${MON[sun.getUTCMonth()]}` : `${sat.getUTCDate()}. und ${sun.getUTCDate()}. ${MON[sun.getUTCMonth()]}`,
+        t: sunOnly ? `Flohmarkt Hamburg Wochenende: heute & ${span(nSat, nSun)}` : `Flohmarkt Hamburg Wochenende ${span(sat, sun)}: alle Termine`, evs, ans,
+        d: pickDesc(n ? (sunOnly ? `Heute, am Sonntag: ${b.length} Flohmärkte in Hamburg und Umgebung${darunter(b)}.${nN ? ` Am ${span(nSat, nSun)}: ${nN} Termine.` : ""} Mit Uhrzeit und Adresse.` : `Am Wochenende ${span(sat, sun)}: ${n} Flohmärkte in Hamburg und Umgebung, ${a.length} am Samstag und ${b.length} am Sonntag. Alle Termine mit Uhrzeit.`) : "",
+          nN ? `Flohmärkte in Hamburg am Wochenende: heute und am ${span(nSat, nSun)} mit ${nN} Terminen. Alle Märkte mit Uhrzeit, Adresse und Anfahrt.` : "",
+          "Alle Flohmärkte in Hamburg am kommenden Wochenende, Samstag und Sonntag, mit Uhrzeiten, Adressen und Links zu jedem Markt. Täglich aktualisiert."),
+        extra: nEvs.length ? { h: `Nächstes Wochenende: ${nSat.getUTCDate()}. und ${nSun.getUTCDate()}. ${MON[nSun.getUTCMonth()]}`, evs: nEvs } : null };
     },
     sonntag: () => {
       const s0 = addDays(TODAY, (7 - TODAY.getUTCDay()) % 7), ks = [0, 7, 14, 21].map(n => key(addDays(s0, n))), first = live(ks[0]);
-      return { h: "Flohmarkt Hamburg am Sonntag", sub: "ab " + fmtDate(s0), t: "Flohmarkt Hamburg Sonntag: die nächsten Termine", evs: ks.flatMap(k => byDay.get(k) || []),
+      return { h: "Flohmarkt Hamburg am Sonntag", sub: "ab " + fmtDate(s0), t: `Flohmarkt Hamburg Sonntag: Termine ab ${s0.getUTCDate()}. ${MON[s0.getUTCMonth()]}`, evs: ks.flatMap(k => byDay.get(k) || []),
         d: pickDesc(first.length ? `Flohmarkt in Hamburg am Sonntag: Am ${dDate(s0)} öffnen ${first.length === 1 ? "ein Markt" : first.length + " Märkte"}${darunter(first)}. Alle Sonntagstermine mit Uhrzeit.` : "",
           "Flohmarkt in Hamburg am Sonntag: die nächsten Sonntagstermine mit Uhrzeiten und Adressen, in der Stadt und im Umland bis 30 Kilometer."),
         ans: (first.length ? `Am ${fmtDate(s0)} ${first.length === 1 ? "findet ein Flohmarkt" : "finden " + first.length + " Flohmärkte"} in Hamburg und im Umland statt: ${names(first)}.` : "Am kommenden Sonntag steht kein Flohmarkt im Kalender.") + " In der Stadt sind es sonntags vor allem Nachbarschaftsmärkte, im Umland kommen viele Märkte auf Bau- und Supermarktparkplätzen dazu." };
     },
     samstag: () => {
       const s0 = addDays(TODAY, (6 - TODAY.getUTCDay() + 7) % 7), ks = [0, 7, 14, 21].map(n => key(addDays(s0, n))), first = live(ks[0]);
-      return { h: "Flohmarkt Hamburg am Samstag", sub: "ab " + fmtDate(s0), t: "Flohmarkt Hamburg Samstag: die nächsten Termine", evs: ks.flatMap(k => byDay.get(k) || []),
+      return { h: "Flohmarkt Hamburg am Samstag", sub: "ab " + fmtDate(s0), t: `Flohmarkt Hamburg Samstag: Termine ab ${s0.getUTCDate()}. ${MON[s0.getUTCMonth()]}`, evs: ks.flatMap(k => byDay.get(k) || []),
         d: pickDesc(first.length ? `Flohmarkt in Hamburg am Samstag: Am ${dDate(s0)} öffnen ${first.length === 1 ? "ein Markt" : first.length + " Märkte"}${darunter(first)}. Alle Samstagstermine mit Uhrzeit.` : "",
           "Flohmarkt in Hamburg am Samstag: die nächsten Samstagstermine mit Uhrzeiten und Adressen, in der Stadt und im Umland bis 30 Kilometer."),
         ans: (first.length ? `Am ${fmtDate(s0)} ${first.length === 1 ? "findet ein Flohmarkt" : "finden " + first.length + " Flohmärkte"} in Hamburg und im Umland statt: ${names(first)}.` : "Am kommenden Samstag steht kein Flohmarkt im Kalender.") + " Der Samstag ist in Hamburg der wichtigste Flohmarkttag, viele Märkte beginnen schon früh am Morgen." };
@@ -1424,10 +1436,10 @@ ${CATS_ON.some(c => c.ms.some(m => m.bez === r.k)) ? `<section class="related"><
   for (const [k, fn] of Object.entries(Z)) {
     const z = fn();
     const body = crumbs([[NAME, "/"], ["Termine", "/termine/"], [z.h.replace("Flohmarkt Hamburg ", "")]]) + `<article class="kb"><h1>${z.h}</h1><div class="byline"><span>${ic("cal")}${esc(z.sub)}</span><span>${ic("update")}Stand: ${STAND}</span></div>
-<div class="answer"><span class="kicker">Kurz gesagt</span><p>${esc(z.ans)}</p></div>${rainBox(z.evs)}${nearBox()}<section class="block">${groupList(z.evs) || '<p class="meta">Keine Termine im Kalender.</p>'}</section>${z.next ? `<a class="more" href="${z.next[0]}">${z.next[1]}</a>` : ""}
+<div class="answer"><span class="kicker">Kurz gesagt</span><p>${esc(z.ans)}</p></div>${rainBox(z.evs)}${nearBox()}<section class="block">${groupList(z.evs) || '<p class="meta">Keine Termine im Kalender.</p>'}</section>${z.extra ? `<section class="block"><h2>${esc(z.extra.h)}</h2>${groupList(z.extra.evs, 3)}</section>` : ""}${z.next ? `<a class="more" href="${z.next[0]}">${z.next[1]}</a>` : ""}${wkLink(k)}
 <section class="related"><div class="sec-head"><h2>Weitere Zeiträume und Bezirke</h2></div>${regionChips(`/${k}/`)}</section>
 <section class="related"><div class="sec-head"><h2>Vor dem Besuch lesen</h2></div>${grid(["beste-uhrzeit-flohmarkt", "was-mitnehmen-flohmarkt", "flohmarkt-knigge"].filter(s => KBY[s]).map(kbCard))}</section></article>`;
-    layout({ p: `/${k}/`, title: `${z.t} | ${NAME}`, desc: z.d, body, nav: "termine", ld: G([crumbLD([[NAME, "/"], ["Termine", "/termine/"], [z.h]])].concat(z.evs.map(eventLD))) });
+    layout({ p: `/${k}/`, title: `${z.t} | ${NAME}`, desc: z.d, body, nav: "termine", ld: G([crumbLD([[NAME, "/"], ["Termine", "/termine/"], [z.h]])].concat(z.evs.concat(z.extra ? z.extra.evs : []).map(eventLD))) });
   }
 }
 
@@ -1666,6 +1678,9 @@ ${faqHTML(t.f)}
 }
 // Hinweis-Kasten in passenden Ratgeber-Artikeln (wird dort eingefügt)
 const SIGN_CTA = { "preise-festlegen-flohmarkt": "preisschilder", "checkliste-flohmarktstand": "", "reste-nach-dem-flohmarkt": "zu-verschenken", "wechselgeld-flohmarkt": "bar-und-paypal", "bezahlen-auf-dem-flohmarkt": "bar-und-paypal", "handeln-auf-dem-flohmarkt": "handeln-erwuenscht", "zuruecklegen-lassen-flohmarkt": "reserviert-verkauft", "was-verkauft-sich-gut-flohmarkt": "alles-1-euro", "kinderflohmarkt-verkaufen": "preisschilder", "flohmarktstand-anmelden": "" };
+// Verweis auf den Preisvergleich in Artikeln rund um Stand und Standgebühr
+const FEE_CTA = new Set(["standgebuehr-flohmarkt", "flohmarktstand-anmelden", "checkliste-flohmarktstand"]);
+const feeCta = () => MARKETS.filter(m => m.fee).length >= 5 ? `<a class="cta-box" href="${FEE_P}">${ic("tag")}<span><b>Standgebühren im Vergleich</b>Was ein Stand auf den Märkten in Hamburg kostet, mit Link zur Anmeldung.</span>${ic("chev")}</a>` : "";
 const signCta = t => `<a class="cta-box" href="${t ? signUrl(t) : SIGN_BASE}">${ic("printer")}<span><b>${!t ? "Gratis: Schilder für deinen Stand" : t.kind === "tags" ? "Gratis: Preisschilder zum Ausdrucken" : `Gratis-Vorlage: „${esc(t.chip)}“-Schild`}</b>${t ? esc(t.short) : "Preisschilder, „Alles 1 €“ und mehr, direkt drucken."}</span>${ic("chev")}</a>`;
 
 /* ---------------------------------------------------------------- Ratgeber */
@@ -1703,7 +1718,7 @@ for (const a of KB) {
 <div class="byline"><span>${ic("book")}${esc(NAME)} Ratgeber</span><span>${ic("update")}Stand: ${STAND}</span><span>${ic("clock")}${Math.max(2, Math.round(words / 200))} Min. Lesezeit</span></div>
 <div class="answer"><span class="kicker">Kurz gesagt</span><p>${rich(a.a)}</p></div>
 ${/rund/.test(ph[1]) ? "" : clusterImg(a.c, `kb-photo${ph[1] ? " " + ph[1] : ""}`, false, ph[0])}<div class="kb-body">${/rund/.test(ph[1]) ? sideImg(pickImg(ph[0] + "-klein") ? ph[0] + "-klein" : ph[0], ph[1]) : ""}${a.b.map(([h, p]) => `<h2>${esc(h)}</h2><p>${rich(p)}</p>`).join("")}</div>
-${a.s in SIGN_CTA || a.c === "verkaufen" ? signCta(SIGN_BY[SIGN_CTA[a.s]]) : ""}
+${FEE_CTA.has(a.s) ? feeCta() : ""}${a.s in SIGN_CTA || a.c === "verkaufen" ? signCta(SIGN_BY[SIGN_CTA[a.s]]) : ""}
 ${CAT_BY_S[ART_CTA[a.s]] ? catCta(CAT_BY_S[ART_CTA[a.s]]) : ""}
 ${a.f.length ? `<section class="faq"><h2>Häufige Fragen</h2>${a.f.map(([q, x]) => `<details><summary>${esc(q)}</summary><p>${rich(x)}</p></details>`).join("")}</section>` : ""}
 ${a.x ? '<p class="hint">Unser Tipp: Verbindliche Auskünfte für deinen Fall bekommst du bei den zuständigen Stellen, zum Beispiel beim Finanzamt, beim Bezirksamt oder beim Veranstalter des Markts.</p>' : ""}
@@ -1794,6 +1809,105 @@ ${isGitHub
 
 /* ---------------------------------------------------------------- Flohmärkte in Zahlen */
 // Zitierbare Fakten aus dem eigenen Kalender, jede Nacht neu berechnet. Gut für Suchmaschinen und KI-Antworten.
+/* ---------------------------------------------------------------- Flohmarkt unter der Woche (Montag bis Freitag) */
+{
+  const WDA = ["sonntags", "montags", "dienstags", "mittwochs", "donnerstags", "freitags", "samstags"];
+  const evs = EVENTS.filter(e => e.date.getUTCDay() >= 1 && e.date.getUTCDay() <= 5), lv = evs.filter(e => !e.cancelled);
+  const msOf = list => [...new Set(list.map(e => e.m))];
+  const mLink = m => `[${m.name}](/flohmarkt/${m.slug}/)`;
+  const byWd = [1, 2, 3, 4, 5].map(d => ({ d, evs: lv.filter(e => e.date.getUTCDay() === d) })).filter(x => x.evs.length);
+  const topWd = [...byWd].sort((a, b) => b.evs.length - a.evs.length)[0];
+  // Abendmärkte: Beginn ab 16 Uhr
+  const eve = lv.filter(e => e.start && parseInt(e.start, 10) >= 16), eveMs = msOf(eve);
+  const nx = lv[0], night = CAT_BY_S["nachtflohmarkt-hamburg"];
+  const { sat, sun, sunOnly } = weekendDays(), wSat = sunOnly ? addDays(sat, 7) : sat, wSun = addDays(wSat, 1);
+  const wN = EVENTS.filter(e => !e.cancelled && (e.k === key(wSat) || e.k === key(wSun))).length;
+  const wSpan = wSat.getUTCMonth() === wSun.getUTCMonth() ? `${wSat.getUTCDate()}. und ${wSun.getUTCDate()}. ${MON[wSun.getUTCMonth()]}` : `${wSat.getUTCDate()}. ${MON[wSat.getUTCMonth()]} und ${wSun.getUTCDate()}. ${MON[wSun.getUTCMonth()]}`;
+  const parts = byWd.map(x => `${x.evs.length} ${WDA[x.d]}`);
+  const ans = lv.length
+    ? `Unter der Woche gibt es in Hamburg nur wenige Flohmärkte: In den nächsten ${HORIZON} Tagen ${lv.length === 1 ? "steht ein Termin" : "stehen " + lv.length + " Termine"} von Montag bis Freitag im Kalender${parts.length > 1 ? ", " + listNames(parts, 5) : ""}.${nx ? ` Der nächste: ${nx.m.name} am ${fmtDate(nx.date)}${nx.start ? ", " + timeText(nx) : ""}.` : ""}`
+    : `In den nächsten ${HORIZON} Tagen steht kein Flohmarkt von Montag bis Freitag im Kalender. Die meisten Märkte in Hamburg öffnen samstags und sonntags.`;
+  const faq = [
+    ["Gibt es in Hamburg Flohmärkte unter der Woche?", lv.length ? `Ja, aber nur wenige. In den nächsten ${HORIZON} Tagen ${lv.length === 1 ? "steht ein Termin" : "stehen " + lv.length + " Termine"} von Montag bis Freitag im ${NAME}-Kalender${topWd && byWd.length > 1 ? `, die meisten ${WDA[topWd.d]}` : ""}. Die meisten Märkte öffnen samstags und sonntags.` : `Gerade steht kein Termin von Montag bis Freitag im Kalender. Die meisten Märkte öffnen samstags und sonntags: [alle Flohmärkte am Wochenende](/wochenende/).`],
+    ...byWd.slice().sort((a, b) => b.evs.length - a.evs.length).slice(0, 3).map(x => { const ms = msOf(x.evs), f = x.evs[0]; return [`Welcher Flohmarkt ist ${WDA[x.d]} in Hamburg?`, `${ms.length === 1 ? "Im Kalender steht" : "Im Kalender stehen"} ${listMore(ms.map(mLink), 4)}. Der nächste Termin: ${f.m.name} am ${fmtDate(f.date)}${f.start ? ", " + timeText(f) : ""}.`]; }),
+    ...(eveMs.length ? [["Gibt es Flohmärkte am Abend?", `Ja. ${listMore(eveMs.map(mLink), 4)} ${eveMs.length === 1 ? "beginnt" : "beginnen"} erst am späten Nachmittag oder Abend.${night ? ` Alle Abendtermine stehen unter ${catLink("nachtflohmarkt-hamburg", "Nachtflohmarkt Hamburg")}.` : ""}`]] : []),
+    ["Wann ist der nächste Flohmarkt am Wochenende?", wN ? `Am Wochenende ${wSpan} ${wN === 1 ? "steht ein Flohmarkt" : "stehen " + wN + " Flohmärkte"} im Kalender: [alle Termine am Wochenende](/wochenende/).` : `Alle kommenden Termine stehen unter [Flohmarkt Hamburg am Wochenende](/wochenende/) und [alle Termine](/termine/).`]];
+  const wdBox = byWd.length ? `<section class="block"><h2>Nach Wochentag</h2><dl class="facts">${byWd.map(x => `<div><dt>${ic("cal")}${WDL[x.d]} · ${x.evs.length} ${x.evs.length === 1 ? "Termin" : "Termine"}</dt><dd>${msOf(x.evs).map(m => { const f = x.evs.find(e => e.m === m); return `<a href="/flohmarkt/${m.slug}/">${esc(m.name)}</a> <span class="meta">ab ${fmtShort(f.date)}</span>`; }).join("<br>")}</dd></div>`).join("")}</dl>${eveMs.length ? `<p class="meta wk-eve">${ic("moon")}<span>Am Abend: ${listNames(eveMs.map(m => `<a href="/flohmarkt/${m.slug}/">${esc(m.name)}</a>`), 4)} ${eveMs.length === 1 ? "beginnt" : "beginnen"} erst ab ${hmText(eve.map(e => tFirst(e.start)).sort()[0])} Uhr.</span></p>` : ""}</section>` : "";
+  const cr = [[NAME, "/"], ["Termine", "/termine/"], ["Unter der Woche"]];
+  const body = crumbs(cr) + `<article class="kb"><h1>Flohmarkt unter der Woche in Hamburg</h1><div class="byline"><span>${ic("cal")}Montag bis Freitag</span><span>${ic("update")}Stand: ${STAND}</span></div>
+<div class="answer"><span class="kicker">Kurz gesagt</span><p>${esc(ans)}</p></div>${wdBox}${lv.length ? nearBox() : ""}
+<section class="block"><h2>Alle Termine von Montag bis Freitag</h2>${groupList(evs, 3) || '<p class="meta">Gerade keine Termine unter der Woche im Kalender.</p>'}</section>
+${night && night.evs.some(e => !e.cancelled) ? catCta(night) : ""}<a class="more" href="/wochenende/">Schon fürs Wochenende planen: alle Flohmärkte am ${esc(wSpan)}</a>
+${faqBlock(faq)}
+<section class="related"><div class="sec-head"><h2>Weitere Zeiträume und Bezirke</h2></div>${regionChips(WEEK_P)}</section>
+<section class="related"><div class="sec-head"><h2>Vor dem Besuch lesen</h2></div>${grid(["nachtflohmarkt", "bezahlen-auf-dem-flohmarkt", "was-mitnehmen-flohmarkt"].filter(s => KBY[s]).map(kbCard))}</section></article>`;
+  layout({ p: WEEK_P, title: `Flohmarkt unter der Woche in Hamburg: Termine Mo–Fr | ${NAME}`,
+    desc: pickDesc(lv.length ? `Flohmarkt unter der Woche in Hamburg: ${lv.length} Termine von Montag bis Freitag${darunter(lv)}. Mit Uhrzeit, Adresse und Abendmärkten.` : "",
+      lv.length ? `Flohmarkt unter der Woche in Hamburg: ${lv.length} Termine von Montag bis Freitag. Alle Märkte mit Uhrzeit und Adresse, dazu Märkte am Abend.` : "",
+      "Flohmärkte unter der Woche in Hamburg und im Umland: alle Termine von Montag bis Freitag mit Uhrzeit und Adresse, dazu Märkte am Abend."),
+    body, nav: "termine", noindex: !lv.length, ld: G([crumbLD(cr), faqLD(faq)].concat(evs.map(eventLD))) });
+}
+
+/* ---------------------------------------------------------------- Standgebühren im Vergleich */
+// Günstigster Meterpreis aus dem Text der Spalte „Standgebühr“: „13 € pro Meter, mit PKW 15 €“ → 13, „Sa 12 €, Mi 10 € pro Meter“ → 10,
+// „Privat ab 30 € für 3 m“ → 10 (ungefähr). Aufschläge („+3 €“, „2 € pro Meter mehr“) zählen nicht. Kein Meterpreis erkennbar → null.
+const feePerMeter = fee => {
+  const t = String(fee || ""), v = [], N = "(\\d+(?:,\\d+)?)(?:\\s*[–-]\\s*\\d+(?:,\\d+)?)?\\s*€", PM = "pro\\s+(?:Stand|Tisch)?meter", num = x => parseFloat(x.replace(",", "."));
+  for (const x of t.matchAll(new RegExp(`${N}\\s*(?:${PM}|\\/\\s*m(?![a-zäöü]))`, "gi"))) {
+    if (/\+\s*$/.test(t.slice(Math.max(0, x.index - 2), x.index)) || /^\s*mehr/.test(t.slice(x.index + x[0].length))) continue;
+    v.push({ pm: num(x[1]), approx: false });
+  }
+  for (const x of t.matchAll(new RegExp(`${N}\\s*,\\s*[^\\d,;€]{1,14}?\\d+(?:,\\d+)?\\s*€\\s*${PM}`, "gi"))) v.push({ pm: num(x[1]), approx: false });
+  for (const x of t.matchAll(new RegExp(`${N}\\s*(?:pro|für)\\s+(\\d)\\s*m\\b`, "gi"))) v.push({ pm: num(x[1]) / +x[2], approx: num(x[1]) % +x[2] !== 0 });
+  return v.length ? v.sort((a, b) => a.pm - b.pm)[0] : null;
+};
+const FEE_SPONTAN = /restpl|ohne (vor)?anmeldung|keine anmeldung|platzvergabe|oder vor ort|vor ort ab \d/i;
+{
+  const eur = v => (Math.round(v * 100) / 100).toFixed(2).replace(/[.,]00$/, "").replace(".", ",");
+  const eurT = x => x.approx ? `rund ${Math.round(x.pm)} €` : `${eur(x.pm)} €`;
+  const rows = MARKETS.filter(m => m.fee || m.signup || m.signupHint || m.sellers).map(m => {
+    const pm = feePerMeter(m.fee), free = /^(kostenlos|gratis)\b/i.test(m.fee);
+    const sp = FEE_SPONTAN.test(m.signupHint) && !/anwohner/i.test(m.signupHint), priv = /^nur privat/i.test(m.sellers);
+    return { m, pm, free, sp, priv, cheap: free || (pm && pm.pm <= 10), n: nextEv(m) };
+  });
+  const withPm = rows.filter(r => r.pm).map(r => r.pm.pm).sort((a, b) => a - b);
+  const q = f => withPm.length ? withPm[Math.min(withPm.length - 1, Math.max(0, Math.round((withPm.length - 1) * f)))] : 0;
+  const q1 = Math.round(q(.25)), q3 = Math.round(q(.75)), med = q(.5);
+  const sp = rows.filter(r => r.sp), priv = rows.filter(r => r.priv), free = rows.filter(r => r.free), cheap = rows.filter(r => r.cheap);
+  const car = rows.filter(r => /(?:mit\s+(?:pkw|auto|kfz|fahrzeug)|autostand|fahrzeug)\s*(?:\+|zzgl\.)?\s*\d/i.test(r.m.fee));
+  const cheapest = rows.filter(r => r.pm).sort((a, b) => a.pm.pm - b.pm.pm || ((a.n || {}).k || "9").localeCompare((b.n || {}).k || "9")).slice(0, 3);
+  const mLink = m => `[${m.name}](/flohmarkt/${m.slug}/)`;
+  const stats = withPm.length >= 5, nFee = rows.filter(r => r.m.fee).length;
+  const ans = `${stats ? `Ein Meter Standfläche kostet auf den meisten Flohmärkten in Hamburg und im Umland ${q1} bis ${q3} €, typisch sind ${eur(med)} €. ` : ""}Hier stehen die Angaben von ${rows.length} Märkten im Vergleich, mit Standgebühr, Verkäufern und Anmeldung.${sp.length ? ` Bei ${sp.length} Märkten gibt es laut Veranstalter auch Restplätze am Markttag oder keine Voranmeldung.` : ""} Alle Angaben stammen von den Veranstaltern, ohne Gewähr.`;
+  const faq = [
+    ...(stats ? [["Was kostet ein Stand auf dem Flohmarkt in Hamburg?", `Laut Veranstaltern meist ${q1} bis ${q3} € pro Meter, typisch sind ${eur(med)} €. Grundlage sind ${withPm.length} Märkte mit Meterpreis im ${NAME}-Kalender.${car.length ? ` Bei ${car.length} Märkten kostet ein Stand mit Auto mehr.` : ""} Wie du die Kosten wieder reinholst, steht im Ratgeber ${kbL("standgebuehr-flohmarkt", "Was kostet ein Flohmarktstand?")}.`]] : []),
+    ...(cheapest.length ? [["Wo ist ein Flohmarktstand am günstigsten?", `Laut den Angaben im Kalender: ${listNames(cheapest.map(r => `${mLink(r.m)} (ab ${eurT(r.pm)} pro Meter)`), 3)}.${free.length ? ` Ohne Standgebühr: ${listNames(free.map(r => mLink(r.m)), 3)}.` : ""} Oft kommen Müllpfand oder eine Grundgebühr dazu, die Details stehen in der Liste.`]] : []),
+    ...(sp.length ? [["Wo kann ich ohne Voranmeldung verkaufen?", `Bei ${sp.length} Märkten gibt es laut Veranstalter Restplätze am Markttag oder keine Voranmeldung, zum Beispiel ${listNames(sp.slice().sort((a, b) => ((a.n || {}).k || "9").localeCompare((b.n || {}).k || "9")).map(r => mLink(r.m)), 3)}. Sicher ist ein Platz nur mit Anmeldung. Der Filter „Spontan möglich“ oben zeigt alle diese Märkte.`]] : []),
+    ...(priv.length ? [["Welche Flohmärkte sind nur für Privatverkäufer?", `${priv.length} Märkte nehmen laut Veranstalter nur Privatverkäufer, darunter ${listNames(priv.map(r => mLink(r.m)), 3)}. Mehr dazu im Ratgeber ${kbL("gewerblich-oder-privat-flohmarkt", "Privat oder Händler")}.`]] : []),
+    ["Woher stammen die Preise?", `Von den Veranstaltern, etwa von ihrer Website oder aus dem Anmeldeformular. Preise und Regeln können sich ändern. Verbindlich ist, was der Veranstalter bei der Anmeldung nennt.`]];
+  const row = r => { const m = r.m; return `<article class="fee" data-f="${[r.sp && "spontan", r.priv && "privat", r.cheap && "guenstig"].filter(Boolean).join(" ")}">
+<h3><a href="/flohmarkt/${m.slug}/">${esc(m.name)}</a></h3><p class="meta">${esc(m.area)} · ${r.n ? `Nächster Termin ${fmtShortY(r.n)}` : esc(m.rhythm)}</p>
+<p class="fee-v${m.fee ? "" : " none"}">${ic("tag")}<span>${m.fee ? nbU(m.fee) : "Standgebühr beim Veranstalter erfragen"}</span></p>${m.signupHint ? `<p class="fee-h">${nbU(m.signupHint)}</p>` : ""}
+<div class="row">${r.sp ? `<span class="tag">${ic("sunrise")}Spontan möglich</span>` : ""}${m.sellers ? `<span class="tag">${ic("user")}${esc(/^nur privat/i.test(m.sellers) ? "Nur privat" : m.sellers.replace(/ und /, " & "))}</span>` : ""}${m.signup ? `<a class="route" href="${esc(m.signup)}" rel="noopener">Zur Anmeldung${ic("chev")}</a>` : ""}</div></article>`; };
+  const byReg = REGIONS.map(rg => ({ rg, list: rows.filter(r => r.m.bez === rg.k).sort((a, b) => ((a.n || {}).k || "9").localeCompare((b.n || {}).k || "9") || a.m.name.localeCompare(b.m.name, "de")) })).filter(x => x.list.length);
+  const chip = (f, l, n) => `<button class="chip" type="button" data-f="${f}" aria-pressed="${!f}">${l}${n !== undefined ? ` <small>${n}</small>` : ""}</button>`;
+  const cr = [[NAME, "/"], ["Ratgeber", "/ratgeber/"], ["Standgebühren"]];
+  const body = crumbs(cr) + `<article class="kb fee-page"><h1>Standgebühren auf Flohmärkten in Hamburg im Vergleich</h1>
+<div class="byline"><span>${ic("tag")}${rows.length} Märkte</span><span>${ic("update")}Stand: ${STAND}</span></div>
+<div class="answer"><span class="kicker">Kurz gesagt</span><p>${nbU(ans)}</p></div>
+<div class="chips js-only" id="feeF" role="group" aria-label="Märkte filtern">${chip("", "Alle", rows.length)}${sp.length ? chip("spontan", "Spontan möglich", sp.length) : ""}${priv.length ? chip("privat", "Nur Privatverkäufer", priv.length) : ""}${cheap.length ? chip("guenstig", "Bis 10 € pro Meter", cheap.length) : ""}</div>
+${byReg.map(x => `<section class="cluster fee-reg"><div class="sec-head"><h2>${esc(x.rg.name)}</h2>${more(`/flohmarkt-hamburg/${x.rg.k}/`, x.rg.umland ? "Zur Region" : "Zum Bezirk", "Seite " + x.rg.name)}</div><div class="fee-list">${x.list.map(row).join("")}</div></section>`).join("")}
+<div class="empty" id="feeLeer" hidden>Mit diesem Filter ist gerade kein Markt dabei.</div>
+<p class="hint">Die Angaben stammen von den Veranstaltern (Website, Aushang oder Anmeldeformular) und können sich ändern. Verbindlich ist, was der Veranstalter bei der Anmeldung nennt. „Spontan möglich“ heißt: Laut Veranstalter gibt es Restplätze am Markttag oder keine Voranmeldung, ein Platz ist dann aber nicht garantiert.</p>
+${signCta(null)}
+${faqBlock(faq)}
+<section class="related"><div class="sec-head"><h2>Mehr zum Verkaufen</h2></div>${grid(["standgebuehr-flohmarkt", "flohmarktstand-anmelden", "preise-festlegen-flohmarkt"].filter(s => KBY[s]).map(kbCard))}</section></article>`;
+  layout({ p: FEE_P, title: `Flohmarkt Standgebühr Hamburg: alle Preise im Vergleich | ${NAME}`,
+    desc: pickDesc(stats ? `Was kostet ein Flohmarktstand in Hamburg? Standgebühren von ${nFee} Märkten im Vergleich, meist ${q1} bis ${q3} € pro Meter. Mit Anmeldung und Restplätzen.` : "",
+      `Was kostet ein Flohmarktstand in Hamburg? Standgebühren von ${nFee} Märkten im Vergleich, mit Link zur Anmeldung und Märkten mit Restplätzen vor Ort.`),
+    body, nav: "ratgeber", noindex: rows.length < 5, ld: G([crumbLD(cr), faqLD(faq)]) });
+}
+
 const STATS_P = "/flohmarkt-hamburg-statistik/";
 {
   const live = EVENTS.filter(e => !e.cancelled), n = MARKETS.length;
@@ -1826,7 +1940,7 @@ const STATS_P = "/flohmarkt-hamburg-statistik/";
 <div class="tbl"><table><thead><tr><th>Bezirk oder Region</th><th class="num">Märkte</th><th class="num">Termine</th></tr></thead><tbody>${byReg.map(x => row(`<a href="/flohmarkt-hamburg/${x.r.k}/">${esc(x.r.name)}</a>`, x.ms, x.evs)).join("")}${row("<b>Gesamt</b>", `<b>${n}</b>`, `<b>${nf(live.length)}</b>`)}</tbody></table></div>
 <h2>Flohmärkte nach Art</h2><p>Ein Markt kann zu mehreren Arten gehören, zum Beispiel überdacht und groß.</p>
 <div class="tbl"><table><thead><tr><th>Art</th><th class="num">Märkte</th></tr></thead><tbody>${[...CATS_ON].sort((a, b) => b.ms.length - a.ms.length).map(c => row(`<a href="/${c.s}/">${esc(c.chip)}</a>`, c.ms.length)).join("")}</tbody></table></div>
-<h2>Termine nach Wochentag</h2><p>${sa + so} von ${nf(live.length)} Terminen liegen am Wochenende.${topDayEv ? ` Der Tag mit den meisten Flohmärkten im Zeitraum ist ${fmtDateY(topDayEv.date)} mit ${topDay[1]} Märkten.` : ""}</p>
+<h2>Termine nach Wochentag</h2><p>${sa + so} von ${nf(live.length)} Terminen liegen am Wochenende.${topDayEv ? ` Der Tag mit den meisten Flohmärkten im Zeitraum ist ${fmtDateY(topDayEv.date)} mit ${topDay[1]} Märkten.` : ""} Die Termine von Montag bis Freitag stehen unter <a href="${WEEK_P}">Flohmarkt unter der Woche</a>.</p>
 <div class="tbl"><table><thead><tr><th>Wochentag</th><th class="num">Termine</th><th class="num">Anteil</th></tr></thead><tbody>${byDay.map(x => row(WDL[x.d], x.c, pct(x.c, live.length) + " %")).join("")}</tbody></table></div>
 ${topStart ? `<h2>Uhrzeiten</h2><p>Die häufigste Anfangszeit ist ${hmText(topStart[0])} Uhr (${topStart[1]} Termine). ${early} Termine beginnen bis 7 Uhr und sind etwas für <a href="/termine/">Frühaufsteher</a>, ${late} beginnen erst ab 10 Uhr. Wann sich welche Uhrzeit lohnt, steht im Ratgeber ${KBY["beste-uhrzeit-flohmarkt"] ? `<a href="/ratgeber/beste-uhrzeit-flohmarkt/">Wann ist die beste Uhrzeit für den Flohmarkt?</a>` : "zur besten Uhrzeit"}.</p>` : ""}
 <h2>So entstehen die Zahlen</h2><p>Alle Angaben werden jede Nacht aus dem ${esc(NAME)}-Kalender berechnet. Gezählt werden Flohmärkte in Hamburg und im Umkreis von rund 30 km, die im Kalender stehen. Die Termine stammen von den Veranstaltern. Es ist keine amtliche Statistik: Märkte, die wir noch nicht kennen, fehlen. Wer die Zahlen zitiert, nennt bitte ${esc(NAME)} (${esc(SITE.replace(/^https?:\/\//, ""))}) und das Datum als Quelle.</p></div>
@@ -1947,7 +2061,7 @@ Die Termine stammen von den Veranstaltern. Märkte können kurzfristig ausfallen
 ## Termine
 - [Flohmärkte heute](${SITE}/heute/): alle Märkte von heute mit Uhrzeit
 - [Flohmärkte am Wochenende](${SITE}/wochenende/): Samstag und Sonntag
-- [Alle Termine](${SITE}/termine/): die nächsten 60 Tage, filterbar nach Art und Umkreis
+${pages.has(WEEK_P) && !pages.get(WEEK_P).noindex ? `- [Flohmärkte unter der Woche](${SITE}${WEEK_P}): alle Termine von Montag bis Freitag\n` : ""}- [Alle Termine](${SITE}/termine/): die nächsten 60 Tage, filterbar nach Art und Umkreis
 
 ## Märkte
 - [Alle Märkte nach Bezirk](${SITE}/flohmaerkte/): Übersicht aller ${MARKETS.length} Märkte
@@ -1960,7 +2074,7 @@ ${CATS_ON.map(c => `- [${c.chip}](${SITE}/${c.s}/): ${c.ms.length} Märkte`).joi
 
 ## Werkzeuge
 - [Schilder-Designer](${SITE}/flohmarkt-schilder/): Preisschilder und Standschilder kostenlos gestalten und drucken
-- [Für Veranstalter](${SITE}/veranstalter/): Markt kostenlos eintragen
+${pages.has(FEE_P) && !pages.get(FEE_P).noindex ? `- [Standgebühren im Vergleich](${SITE}${FEE_P}): was ein Stand auf den Flohmärkten kostet, mit Anmeldung und Restplätzen\n` : ""}- [Für Veranstalter](${SITE}/veranstalter/): Markt kostenlos eintragen
 
 ## Rechtliches
 ${INSTA ? `- [Instagram](${INSTA}): jede Woche die Flohmärkte am Wochenende\n` : ""}- [Impressum](${SITE}/impressum/)

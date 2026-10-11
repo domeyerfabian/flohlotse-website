@@ -545,23 +545,32 @@ function eventLD(e) {
   return ev;
 }
 function evHTML(e, h = 3) {
-  const m = e.m, q = encodeURIComponent(m.name + ", " + m.addr);
-  const hm = x => x.includes("/") ? hmText(x) : x;
-  // Handy: gelbe Zeile „08:00 bis 16:00“ über dem Namen. Ab Tablet: der runde Zeit-Sticker links.
-  const t = ic("clock") + (e.cancelled ? '<span class="t-lab">Termin</span><span class="t-main">fällt aus</span>' : !e.start ? '<span class="t-lab">Uhrzeit</span><span class="t-main">folgt</span>' : e.end ? `<span class="t-a">${hm(e.start)}</span><span class="t-bis">bis</span><span class="t-b">${hm(e.end)}</span>` : `<span class="t-lab">ab</span><span class="t-main">${hm(e.start)}</span>`);
+  const m = e.m;
+  // Kompakte Karte für Listen: Zeit, Name, Ort, Merken und „Zum Markt“. Beschreibung, Art, Rhythmus und Veranstalter stehen auf der Marktseite.
+  // Zeit als „8–16 Uhr“ (Handy: gelbe Zeile, ab Tablet: runder Sticker mit „8–16“ über „Uhr“)
+  const t = ic("clock") + (e.cancelled ? '<span class="t-lab">Termin</span><span class="t-main">fällt aus</span>' : !e.start ? '<span class="t-lab">Uhrzeit</span><span class="t-main">folgt</span>' : e.end ? `<span class="t-main">${hmText(e.start)}–${hmText(e.end)}</span><span class="t-u">Uhr</span>` : `<span class="t-lab">ab</span><span class="t-main">${hmText(e.start)}</span><span class="t-u">Uhr</span>`);
   return `<article class="ev${e.cancelled ? " off" : ""}" data-tags="${esc([...m.tags, ...timeTags(e)].join("|"))}"${llAttr(m)}${!e.cancelled && e.start ? ` data-s="${tFirst(e.start)}"${e.end ? ` data-e="${tLast(e.end)}"` : ""}` : ""}>${favBtn(m)}<div class="time" aria-label="${esc(e.cancelled ? "Abgesagt" : timeText(e))}">${t}</div><div class="ev-body">
 <h${h}><a href="/flohmarkt/${m.slug}/">${esc(m.name)}</a>${neuPill(m)}</h${h}><p class="meta ln">${ic("pin")}<span><b>${esc(m.area)}</b> · ${addrNb(m.addr)}</span></p>
-${e.cancelled ? `<p class="note warn-text">Dieser Termin fällt aus.${e.note ? " " + esc(e.note.replace(/([^.!?…])$/, "$1.")) : ""}</p>` : m.note ? `<p class="note">${esc(m.note)}${e.note ? " " + esc(e.note.replace(/([^.!?…])$/, "$1.")) : ""}</p>` : ""}
-${m.tags.length ? `<div class="row">${m.tags.map(t => CAT_BY_TAG[t] ? `<a class="tag" href="/${CAT_BY_TAG[t].s}/">${tagIc(t)}${esc(t)}</a>` : `<span class="tag">${tagIc(t)}${esc(t)}</span>`).join("")}</div>` : ""}
-<div class="row foot"><span class="rhythm ln">${ic("repeat")}<span>${esc(m.rhythm)}</span></span><span class="acts"><a class="route go" href="/flohmarkt/${m.slug}/" aria-label="Zum Markt: ${esc(m.name)}">Zum Markt${ic("chev")}</a>${e.cancelled ? "" : shareBtn(m, e)}<a class="route" href="https://www.google.com/maps/search/?api=1&amp;query=${q}" rel="noopener" aria-label="Route zu ${esc(m.name)} planen">${ic("route")}Route</a></span></div>
-${m.org ? `<p class="meta small ln">${ic("user")}<span>Veranstalter: ${esc(m.org)}</span></p>` : ""}</div></article>`;
+${e.cancelled ? `<p class="note warn-text">Dieser Termin fällt aus.${e.note ? " " + esc(e.note.replace(/([^.!?…])$/, "$1.")) : ""}</p>` : e.note ? `<p class="note ev-note">${esc(e.note.replace(/([^.!?…])$/, "$1."))}</p>` : ""}
+<div class="row foot"><a class="route go" href="/flohmarkt/${m.slug}/" aria-label="Zum Markt: ${esc(m.name)}">Zum Markt${ic("chev")}</a></div></div></article>`;
 }
 // lvl = Überschriftenebene der Tage (2 direkt unter der H1, 3 innerhalb eines H2-Abschnitts)
 // anchor: Jeder Tag bekommt eine Sprungmarke wie #24-oktober (Monatsseiten, Ziel der Suche nach Datum)
 const dayId = d => `${d.getUTCDate()}-${MSLUG[d.getUTCMonth()]}`;
+// Tage mit mehr als sechs Märkten in Stadt und Umland bekommen Zwischenüberschriften „Hamburg“ und „Umland“
+const isUm = m => !!(RBY[m.bez] || {}).umland;
+const listOf = (list, lvl) => {
+  const hh = list.filter(e => !isUm(e.m)), um = list.filter(e => isUm(e.m)), card = e => evHTML(e, lvl + 1);
+  if (list.length <= 6 || !hh.length || !um.length) return `<div class="list">${list.map(card).join("")}</div>`;
+  return [["Hamburg", hh], ["Umland", um]].map(([l, a]) => `<div class="sub"><p class="sub-h">${l}</p><div class="list">${a.map(card).join("")}</div></div>`).join("");
+};
+const nMk = n => `${n} ${n === 1 ? "Markt" : "Märkte"}`;
+// Tagesleiste über langen Listen: ein Tag je Feld mit Anzahl, Antippen springt zum Tag (Ziel: Sprungmarken der Tage, siehe groupList mit anchor)
+const dayStrip = evs => { const g = new Map(); for (const e of evs) if (!e.cancelled) g.set(e.k, [...(g.get(e.k) || []), e]);
+  return g.size < 3 ? "" : `<nav class="daystrip" aria-label="Zum Tag springen">${[...g].map(([k, l]) => { const d = l[0].date, we = [0, 6].includes(d.getUTCDay()); return `<a class="ds${we ? " we" : ""}" href="#${dayId(d)}" data-day="${k}"><span class="ds-w">${WD[d.getUTCDay()]}</span><span class="ds-d">${d.getUTCDate()}.${d.getUTCMonth() + 1}.</span><span class="ds-n" aria-label="${nMk(l.length)}">${l.length}</span></a>`; }).join("")}</nav>`; };
 function groupList(evs, lvl = 2, anchor = false) {
   const g = new Map(); for (const e of evs) { if (!g.has(e.k)) g.set(e.k, []); g.get(e.k).push(e); }
-  return [...g].map(([k, list]) => `<div class="group${anchor ? " anc" : ""}" data-day="${k}"${anchor ? ` id="${dayId(list[0].date)}"` : ""}><h${lvl} class="group-h">${ic("cal")}${WDL[list[0].date.getUTCDay()]}, ${pad(list[0].date.getUTCDate())}.${pad(list[0].date.getUTCMonth() + 1)}.${list[0].date.getUTCFullYear()}${HOLI[k] ? ` <span class="hol">${HOLI[k]}</span>` : ""}${wxChip(wxDay(list))}</h${lvl}><div class="list">${list.map(e => evHTML(e, lvl + 1)).join("")}</div></div>`).join("");
+  return [...g].map(([k, list]) => `<div class="group${anchor ? " anc" : ""}" data-day="${k}"${anchor ? ` id="${dayId(list[0].date)}"` : ""}><h${lvl} class="group-h">${ic("cal")}${WDL[list[0].date.getUTCDay()]}, ${pad(list[0].date.getUTCDate())}.${pad(list[0].date.getUTCMonth() + 1)}.${list[0].date.getUTCFullYear()}${list.some(e => !e.cancelled) ? `<span class="gn">· ${nMk(list.filter(e => !e.cancelled).length)}</span>` : ""}${HOLI[k] ? ` <span class="hol">${HOLI[k]}</span>` : ""}${wxChip(wxDay(list))}</h${lvl}>${listOf(list, lvl)}</div>`).join("");
 }
 const kbCard = s => { const r = KBY[s]; if (!r) { warn("Ratgeber", `Verweis auf unbekannten Artikel „${s}“`); return ""; } return `<a class="card" href="/ratgeber/${r.s}/"><span class="kicker">Ratgeber · ${esc(CLUSTERS[r.c]?.t || "")}</span><h3>${brColon(esc(r.h))}</h3><p>${esc(short(plain(r.a), 110))}</p></a>`; };
 function short(t, n) { t = String(t || ""); if (t.length <= n) return t; const cut = t.slice(0, n); return (cut.lastIndexOf(" ") > n * 0.6 ? cut.slice(0, cut.lastIndexOf(" ")) : cut).replace(/[\s,.;:–-]+$/, "") + " …"; }
@@ -758,12 +767,12 @@ function coordOf(m) {
 for (const m of MARKETS) { m.ll = coordOf(m); if (!m.ll && PLZ_ROWS.length) warn("Karte", `${m.name}: Lage unbekannt. Postleitzahl in die Adresse schreiben oder die Spalte „Koordinaten“ füllen.`); }
 const llAttr = m => m.ll ? ` data-ll="${m.ll[0].toFixed(4)},${m.ll[1].toFixed(4)}"` : "";
 // Umkreis-Suche (funktioniert nur mit JavaScript, Postleitzahl und Standort bleiben im Browser)
-const nearBox = (what = "Termine") => PLZ_ROWS.length ? `<div class="near" id="near" hidden><p class="near-h">${ic("pin")}${what} in deiner Nähe</p><form class="near-form" id="nearForm" novalidate>
+const nearBox = (what = "Termine") => PLZ_ROWS.length ? `<div class="near" id="near" hidden><button type="button" class="near-h" id="nearTog" aria-expanded="false" aria-controls="nearIn">${ic("pin")}${what} in deiner Nähe${ic("chev", "i near-chev")}</button><div class="near-in" id="nearIn" hidden><form class="near-form" id="nearForm" novalidate>
 <label class="near-plz"><span>Postleitzahl</span><input id="nearPlz" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="5" placeholder="z. B. 22765" autocomplete="postal-code" enterkeyhint="search"></label>
 <label class="near-km"><span>Umkreis</span><select id="nearKm"><option value="3">3 km</option><option value="5">5 km</option><option value="10" selected>10 km</option><option value="20">20 km</option><option value="30">30 km</option></select></label>
 <button type="submit" class="btn near-go" id="nearGo">Anzeigen</button>
 <button type="button" class="chip near-geo" id="nearGeo">${ic("route")}Mein Standort</button><button type="button" class="chip" id="nearClear" hidden>Zurücksetzen</button></form>
-<p class="near-msg" id="nearMsg" aria-live="polite">Postleitzahl eingeben und auf „Anzeigen“ tippen. Entfernungen sind ungefähr, gerechnet ab der Mitte der Postleitzahl. Deine Eingabe bleibt auf deinem Gerät.</p></div>` : "";
+<p class="near-msg" id="nearMsg" aria-live="polite">Postleitzahl eingeben und auf „Anzeigen“ tippen. Entfernungen sind ungefähr, gerechnet ab der Mitte der Postleitzahl. Deine Eingabe bleibt auf deinem Gerät.</p></div></div>` : "";
 const HAS_MAP = fs.existsSync(path.join(ROOT, "src/leaflet.js")) && fs.existsSync(path.join(ROOT, "src/leaflet.css"));
 
 
@@ -1092,8 +1101,16 @@ const shareBtn = (m, e, cls = "share") => `<button type="button" class="${cls}" 
   const { sat, sun, sunOnly } = weekendDays();
   const weN = EVENTS.filter(e => !e.cancelled && (e.k === key(sat) || e.k === key(sun))).length;
   const weLabel = sunOnly ? `Termine heute, Sonntag ${sun.getUTCDate()}. ${MON[sun.getUTCMonth()].slice(0, 3)}.` : `Termine am Wochenende ${sat.getUTCDate()}.–${sun.getUTCDate()}. ${MON[sun.getUTCMonth()].slice(0, 3)}.`;
-  const next = []; let days = new Set();
-  for (const e of upcoming(14)) { if (next.length >= 8 && !days.has(e.k)) break; next.push(e); days.add(e.k); }
+  // Startseite: von heute bis zum kommenden Sonntag (sonntags bis zum nächsten Sonntag). Heute schon beendete Märkte blendet das Skript aus.
+  const toSun = TODAY.getUTCDay() === 0 ? 7 : 7 - TODAY.getUTCDay(), next = upcoming(toSun + 1);
+  // Sticker abends am Sonntag: Sind alle heutigen Märkte vorbei, zeigt das Skript den nächsten Markttag
+  const tdE = EVENTS.filter(e => !e.cancelled && e.k === key(TODAY)), nk = [...new Set(EVENTS.filter(e => !e.cancelled && e.k > key(TODAY)).map(e => e.k))].sort()[0];
+  let stAlt = "";
+  if (sunOnly && tdE.length && tdE.every(e => e.end) && nk) {
+    const nd = new Date(nk + "T00:00:00Z"), nn = EVENTS.filter(e => !e.cancelled && e.k === nk).length, mo = MONTHS.find(x => x.y === nd.getUTCFullYear() && x.mo === nd.getUTCMonth());
+    const href = nk === key(addDays(TODAY, 1)) ? "/morgen/" : mo ? `/${mo.s}/#${dayId(nd)}` : "/termine/";
+    stAlt = ` data-day="${key(TODAY)}" data-end="${tdE.map(e => tLast(e.end)).sort().pop()}" data-n="${nn}" data-l="${nn === 1 ? "Markt" : "Märkte"} am ${WDL[nd.getUTCDay()]}, ${nd.getUTCDate()}. ${MON[nd.getUTCMonth()].slice(0, 3)}." data-h="${href}"`;
+  }
   const all14 = upcoming(14).length;
   // Text und Fragen für die Startseite, aus den Daten berechnet
   const liveAll = EVENTS.filter(e => !e.cancelled), n30 = upcoming(30).filter(e => !e.cancelled).length;
@@ -1181,14 +1198,15 @@ ${NEWS_TABS.length > 1 ? '<div class="akt-bar js-only" aria-hidden="true"><i id=
 <h1>Flohmarkt Hamburg: alle Termine, aufgeräumt.</h1>
 <p>Alle Flohmärkte in Hamburg und Umgebung: wann, wo und wie lange. Ohne Werbebanner, ohne alte Termine.</p>
 ${sxForm(true)}
-<div class="quick"><a class="chip" href="/heute/">${ic("sun")}Heute</a>${PLZ_ROWS.length ? `<a class="chip" href="/termine/#near">${ic("pin")}In meiner Nähe</a>` : ""}<a class="chip" href="/entdecken/">${ic("heart")}Wischen &amp; merken</a><a class="chip" href="/wochenende/">${ic("cal")}Wochenende</a><a class="chip" href="/sonntag/">${ic("cal")}Sonntag</a><a class="chip" href="/flohmaerkte/">${ic("map")}Märkte nach Bezirk</a>${HAS_MAP ? `<a class="chip" href="/flohmaerkte/#karte">${ic("pin")}Karte</a>` : ""}<a class="chip" href="/ratgeber/">${ic("book")}Ratgeber</a><a class="chip" href="/flohmarkt-schilder/">${ic("printer")}Schilder gestalten</a><a class="chip" href="/veranstalter/">${ic("user")}Für Veranstalter</a></div>
-</div><a class="big-sticker" href="/wochenende/"><b>${weN}</b><span>${weLabel}</span></a></section>
+<div class="quick"><a class="chip" href="/heute/">${ic("sun")}Heute</a>${PLZ_ROWS.length ? `<a class="chip" href="/termine/#near">${ic("pin")}In meiner Nähe</a>` : ""}<a class="chip" href="/wochenende/">${ic("cal")}Wochenende</a>${HAS_MAP ? `<a class="chip" href="/flohmaerkte/#karte">${ic("map")}Karte</a>` : ""}<a class="chip" href="/entdecken/">${ic("heart")}Wischen &amp; merken</a></div>
+<nav class="quick-more" aria-label="Weitere Bereiche"><a href="/sonntag/">Sonntag</a><a href="${WEEK_P}">Unter der Woche</a><a href="/flohmaerkte/">Märkte nach Bezirk</a><a href="/ratgeber/">Ratgeber</a><a href="/flohmarkt-schilder/">Schilder gestalten</a><a href="/veranstalter/">Für Veranstalter</a></nav>
+</div><a class="big-sticker" id="bigSt" href="/wochenende/"${stAlt}><b>${weN}</b><span>${weLabel}</span></a></section>
 ${slider}
 ${newsBox}
-${DK_EVS.length ? `<section class="sec home-deck" id="dkSec"><div class="sec-head"><h2>Wischen &amp; merken</h2>${more("/merkliste/", "Merkliste")}</div><p class="dk-intro">Die Flohmärkte der nächsten vier Wochen: Daumen hoch merkt den Markt, Daumen runter zeigt den nächsten.</p>${deckHTML(true)}</section>` : ""}
-<section class="sec"><div class="sec-head"><h2>Die nächsten Flohmärkte</h2>${more("/termine/", "Alle")}</div>
+<section class="sec home-next"><div class="sec-head"><h2>Die nächsten Flohmärkte</h2>${more("/termine/", "Alle")}</div>
 ${groupList(next, 3) || '<div class="empty">Gerade stehen keine Termine im Kalender.</div>'}
-${all14 > next.length ? `<a class="more" href="/termine/">Alle ${all14} Termine der nächsten 14 Tage anzeigen</a>` : ""}</section>
+${all14 > next.length ? `<a class="more" href="/termine/">Alle ${all14} Termine der nächsten 14 Tage</a>` : ""}</section>
+${DK_EVS.length ? `<section class="sec home-deck" id="dkSec"><div class="sec-head"><h2>Wischen &amp; merken</h2>${more("/merkliste/", "Merkliste")}</div><p class="dk-intro">Die Flohmärkte der nächsten vier Wochen: Daumen hoch merkt den Markt, Daumen runter zeigt den nächsten.</p>${deckHTML(true)}</section>` : ""}
 <section class="sec"><div class="sec-head"><h2>Flohmärkte nach Bezirk und Region</h2>${more("/flohmaerkte/", "Alle", "Alle Märkte")}</div>${regionChips()}</section>
 ${CATS_ON.length ? `<section class="sec"><div class="sec-head"><h2>Flohmärkte nach Art</h2></div>${catChips()}</section>` : ""}
 ${MONTHS.length ? `<section class="sec"><div class="sec-head"><h2>Termine nach Monat</h2>${more("/termine/", "Alle")}</div>${monthChips()}</section>` : ""}
@@ -1208,8 +1226,11 @@ ${INSTA ? `<section class="sec"><a class="follow" href="${INSTA}" rel="noopener 
 {
   const evs = upcoming(60);
   const body = crumbs([[NAME, "/"], ["Termine"]]) + `<section class="hub-head"><h1>Flohmarkt-Termine in Hamburg und Umgebung</h1><p>Alle Termine der nächsten 60 Tage in Hamburg und im Umland bis 30 Kilometer, nach Tagen sortiert.</p>
-<div class="chips js-only" id="filter" role="group" aria-label="Art des Markts"><button class="chip" type="button" data-t="" aria-pressed="true">Alle Arten</button>${[...TIME_TAGS, ...TAGS_ALL].map(t => `<button class="chip" type="button" data-t="${esc(t)}" aria-pressed="false">${tagIc(t)}${esc(t)}</button>`).join("")}</div>${nearBox()}</section>
-<div id="liste">${groupList(evs)}</div><div class="empty" id="leer" hidden>Keine Märkte dieser Art in den nächsten 60 Tagen.</div>
+<div class="chips js-only" id="filter" role="group" aria-label="Art des Markts"><button class="chip" type="button" data-t="" aria-pressed="true">Alle Arten</button>${[...TIME_TAGS, ...TAGS_ALL].map(t => `<button class="chip" type="button" data-t="${esc(t)}" aria-pressed="false">${tagIc(t)}${esc(t)}</button>`).join("")}</div>
+<div class="tools">${nearBox()}${HAS_MAP ? `<div class="view-tog js-only" id="viewTog" role="group" aria-label="Ansicht"><button type="button" class="chip" data-v="liste" aria-pressed="true">${ic("list")}Liste</button><button type="button" class="chip" data-v="karte" aria-pressed="false">${ic("map")}Karte</button></div>` : ""}</div></section>
+${dayStrip(evs)}<div id="liste">${groupList(evs, 2, true)}</div><div class="empty" id="leer" hidden>Keine Märkte dieser Art in den nächsten 60 Tagen.</div>
+${HAS_MAP ? `<section class="map-sec" id="karte" hidden><div class="map-box" id="mapBox"><div class="map-consent"><p><b>Karte laden?</b> Die Karte zeigt alle Märkte mit Terminen in den nächsten 60 Tagen, mit Kartenbildern von OpenStreetMap. Erst beim Laden wird deine IP-Adresse an die OpenStreetMap Foundation übertragen. Mehr dazu in den <a href="/datenschutz/">Datenschutzhinweisen</a>.</p><button class="btn" id="mapLoad" type="button">${ic("map")}Karte laden</button></div></div></section>
+<script type="application/json" id="mapData">${JSON.stringify([...new Set(evs.filter(e => !e.cancelled).map(e => e.m))].filter(m => m.ll).map(m => { const n = nextEv(m); return [m.name, m.slug, m.area, m.ll[0], m.ll[1], n ? fmtShortY(n) + (n.start ? ", " + timeText(n) : "") : "", m.rhythm]; })).replace(/</g, "\\u003c")}</script>` : ""}
 ${MONTHS.length ? `<section class="related"><div class="sec-head"><h2>Termine nach Monat</h2></div>${monthChips()}</section>` : ""}
 <section class="related"><div class="sec-head"><h2>Nach Art des Markts</h2></div>${catChips()}</section>
 <section class="related"><div class="sec-head"><h2>Nach Bezirk und Zeitraum</h2></div>${regionChips("/termine/")}</section>`;
@@ -1486,7 +1507,7 @@ for (const mo of MONTHS) {
     `Flohmarkt Hamburg im ${label}: alle ${live.length} Termine mit Uhrzeit und Adresse.`);
   const body = crumbs(cr) + `<article class="kb"><h1>Flohmarkt Hamburg im ${esc(label)}</h1>
 <div class="byline"><span>${ic("cal")}${live.length} Termine</span><span>${ic("pin")}${mkts.length} Märkte</span><span>${ic("update")}Stand: ${STAND}</span></div>
-<div class="answer"><span class="kicker">Kurz gesagt</span><p>${esc(ans)}</p></div>${nearBox()}
+<div class="answer"><span class="kicker">Kurz gesagt</span><p>${esc(ans)}</p></div>${nearBox()}${dayStrip(mo.evs)}
 <section class="block">${groupList(mo.evs, 2, true)}</section>
 <section class="related"><div class="sec-head"><h2>Andere Monate</h2></div>${monthChips(mo.s) || '<p class="meta">Weitere Monate folgen.</p>'}</section>
 <section class="related"><div class="sec-head"><h2>Nach Art des Markts</h2></div>${catChips()}</section>
@@ -1839,7 +1860,7 @@ ${isGitHub
   const cr = [[NAME, "/"], ["Termine", "/termine/"], ["Unter der Woche"]];
   const body = crumbs(cr) + `<article class="kb"><h1>Flohmarkt unter der Woche in Hamburg</h1><div class="byline"><span>${ic("cal")}Montag bis Freitag</span><span>${ic("update")}Stand: ${STAND}</span></div>
 <div class="answer"><span class="kicker">Kurz gesagt</span><p>${esc(ans)}</p></div>${wdBox}${lv.length ? nearBox() : ""}
-<section class="block"><h2>Alle Termine von Montag bis Freitag</h2>${groupList(evs, 3) || '<p class="meta">Gerade keine Termine unter der Woche im Kalender.</p>'}</section>
+<section class="block"><h2>Alle Termine von Montag bis Freitag</h2>${dayStrip(evs)}${groupList(evs, 3, true) || '<p class="meta">Gerade keine Termine unter der Woche im Kalender.</p>'}</section>
 ${night && night.evs.some(e => !e.cancelled) ? catCta(night) : ""}<a class="more" href="/wochenende/">Schon fürs Wochenende planen: alle Flohmärkte am ${esc(wSpan)}</a>
 ${faqBlock(faq)}
 <section class="related"><div class="sec-head"><h2>Weitere Zeiträume und Bezirke</h2></div>${regionChips(WEEK_P)}</section>

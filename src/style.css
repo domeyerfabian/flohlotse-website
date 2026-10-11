@@ -979,3 +979,14 @@ button.fav[aria-pressed="true"],.btn.fav-big[aria-pressed="true"]{background:var
 .cal-dd > summary.route .i,button.route .i{width:17px;height:17px}
 .cal-dd > summary.route{min-height:44px;padding:10px 18px;font-size:16px;font-weight:700}
 .tour-actions button.route{min-height:44px;font-size:16px;font-weight:700;justify-content:center}
+.tour li.pause{padding-bottom:10px}
+.tour .n.pz{background:var(--paper);color:var(--ink);border:2px dashed var(--line)}
+.tour .c.pz{background:transparent;border:1px dashed var(--muted);display:grid;gap:8px}
+.tour .c.pz h3{font-size:16px}
+.tour .pz-t{display:flex;gap:8px;align-items:flex-start;color:var(--ink)!important}
+.tour .pz-t .i{flex:none;width:17px;height:17px;margin-top:2px;color:var(--muted)}
+.pz-l{list-style:none;margin:0 0 2px;padding:0 0 0 25px;display:grid;gap:8px}
+.tour .pz-l li{display:flex;flex-wrap:wrap;align-items:center;gap:2px 8px;padding:0;font-size:14px}
+.pz-l li a{font-weight:700;color:var(--ink)}
+.pz-l li span{color:var(--muted);font-size:13px}
+.pz-l .tadd{padding:4px 10px;font-size:13px;font-weight:600;min-height:32px}

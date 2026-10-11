@@ -496,18 +496,50 @@
         '<div id="tOut" aria-live="polite"></div>';
       tourEl.hidden = false; merk.hidden = true; tools.hidden = true;
       var out = document.getElementById("tOut");
+      var dur = function (m) { m = Math.round(m / 15) * 15; var hh = Math.floor(m / 60), mm = m % 60; return hh ? (mm ? "rund " + hh + " Std. " + mm + " Min." : "rund " + hh + (hh === 1 ? " Stunde" : " Stunden")) : "rund " + mm + " Minuten"; };
+      // Märkte, die in die Pause passen: am selben Tag geöffnet, nicht weit weg, und man schafft danach noch pünktlich den nächsten Markt
+      var fillers = function (pv, st) {
+        var res = [];
+        Object.keys(DATA).forEach(function (s2) {
+          var d = DATA[s2], tz = d[12] && d[12][k]; if (!tz || !d[11] || ms.indexOf(s2) >= 0) return;
+          var near = Math.min(km(pv.m.ll, d[11]), km(st.m.ll, d[11])); if (near > 12) return;
+          var op = toMin(tz[0]), cl = tz[1] ? toMin(tz[1]) : op + 240, t1 = travel(pv.m.ll, d[11], o.mode, d[13] || 0), t2 = travel(d[11], st.m.ll, o.mode, st.m.flag);
+          var a = Math.max(pv.leave + t1, op), l = a + o.stay;
+          if (l > cl || l + t2 > st.start) return;
+          res.push({ s: s2, d: d, op: op, cl: cl, km: near, det: t1 + t2 });
+        });
+        return res.sort(function (x, y) { return x.det - y.det; }).slice(0, 3);
+      };
+      var pauseRow = function (pv, st, gap) {
+        var h2 = '<li class="pause"><span class="n pz">' + svg("cup", "") + '</span><div class="c pz"><h3>' + dur(gap - st.tt) + " Pause</h3>";
+        var f = fillers(pv, st), alt = f.length > 0;
+        if (f.length) h2 += '<p class="pz-t">' + svg("route", "") + "<span>Diese Flohmärkte haben in der Zeit auch offen:</span></p><ul class=\"pz-l\">" + f.map(function (x) { return '<li><a href="' + ROOT + "/flohmarkt/" + x.s + '/">' + esc2(x.d[0]) + "</a><span>" + esc2(x.d[1]) + " · " + fmtT(x.op).replace(/:00$/, "") + "–" + fmtT(x.cl).replace(/:00$/, "") + ' Uhr</span><button type="button" class="chip tadd" data-s="' + x.s + '">+ Zur Tour</button></li>'; }).join("") + "</ul>";
+        if (o.origin) {
+          var back = travel(pv.m.ll, o.origin, o.mode, 0), there = travel(o.origin, st.m.ll, o.mode, st.m.flag), home = gap - back - there;
+          if (home >= 60) alt = true, h2 += '<p class="pz-t">' + svg("home", "") + "<span>Zeit genug, um zwischendurch nach Hause zu fahren: " + dur(home).replace("rund ", "gut ") + " daheim, wieder losfahren um " + fmtT(st.start - there) + " Uhr.</span></p>";
+        }
+        if (!o.origin) h2 += '<p class="pz-t">' + svg("home", "") + "<span>Gib oben deinen Startpunkt ein, dann siehst du, ob du zwischendurch nach Hause fahren kannst.</span></p>";
+        h2 += '<p class="pz-t">' + svg("map", "") + "<span>" + (alt ? "Oder nutz" : "Nutz") + " die Zeit für einen Bummel durch " + esc2(st.m.d[1]) + ", bevor es weitergeht.</span></p>";
+        return h2 + "</div></li>";
+      };
       var draw = function () {
         o.from = +document.getElementById("tFrom").value; o.to = +document.getElementById("tTo").value; o.stay = +document.getElementById("tStay").value;
         var r = o.to <= o.from ? null : plan(k, ms, o), h = "";
         if (!r || !r.stops.length) { out.innerHTML = '<p class="tsum"><b>Das passt so nicht.</b> Im gewählten Zeitfenster schaffst du keinen der Märkte. Wähl eine andere Uhrzeit.</p>'; return; }
         var free = o.to - r.end, dep = o.from;
+        // Lange Pausen zwischen zwei Märkten (z. B. Morgenmarkt und Nachtflohmarkt): Vorschläge statt Warten
+        var PAUSE = 60, longP = 0;
+        r.stops.forEach(function (st, i) { if (i && st.start - r.stops[i - 1].leave - st.tt >= PAUSE) longP = Math.max(longP, st.start - r.stops[i - 1].leave - st.tt); });
         // Mit Startpunkt: nicht zu früh losschicken, sondern so, dass man pünktlich zur Öffnung des ersten Markts da ist
         if (o.origin && r.stops[0].start > r.stops[0].arr) { dep = r.stops[0].start - r.stops[0].tt; r.stops[0].arr = r.stops[0].start; }
-        h += '<p class="tsum"><b>' + (r.miss.length ? r.stops.length + " von " + ms.length + " Märkten passen." : (ms.length === 2 ? "Beide Märkte passen." : "Alle " + ms.length + " Märkte passen.")) + "</b> Fertig gegen " + fmtT(r.end) + " Uhr" + (free >= 30 && free <= 180 ? ", danach bleiben dir " + (free >= 90 ? Math.round(free / 60) + " Stunden" : free + " Minuten") + " Puffer." : ".") + "</p><ol class=\"tour\">";
+        h += '<p class="tsum"><b>' + (r.miss.length ? r.stops.length + " von " + ms.length + " Märkten passen." : (ms.length === 2 ? "Beide Märkte passen." : "Alle " + ms.length + " Märkte passen.")) + "</b> Fertig gegen " + fmtT(r.end) + " Uhr" + (free >= 30 && free <= 180 ? ", danach bleiben dir " + (free >= 90 ? Math.round(free / 60) + " Stunden" : free + " Minuten") + " Puffer." : ".") + (longP ? " Dazwischen hast du " + dur(longP) + " Pause." : "") + "</p><ol class=\"tour\">";
         if (o.origin) h += '<li><span class="n home">' + svg("pin", "") + '</span><div class="c home"><h3>Start: ' + esc2(o.label) + " · losfahren um " + fmtT(dep) + " Uhr</h3></div></li>";
         r.stops.forEach(function (st, i) {
           var d = st.m.d;
-          if (st.from) h += '<li class="legrow"><span class="leg">↓ ca. ' + Math.max(1, Math.round(st.km)) + " km · rund " + st.tt + ' Min. <a href="' + gmaps(st.from, st.m.ll, o.mode) + '" rel="noopener">Genau prüfen</a></span></li>';
+          var pv = i ? r.stops[i - 1] : null, gap = pv ? st.start - pv.leave : 0, isP = pv && gap - st.tt >= PAUSE;
+          if (isP) h += pauseRow(pv, st, gap);
+          if (st.from) h += '<li class="legrow"><span class="leg">↓ ca. ' + Math.max(1, Math.round(st.km)) + " km · rund " + st.tt + " Min." + (isP ? " · losfahren um " + fmtT(st.start - st.tt) + " Uhr" : "") + ' <a href="' + gmaps(st.from, st.m.ll, o.mode) + '" rel="noopener">Genau prüfen</a></span></li>';
+          if (isP) st.arr = st.start;
           h += '<li><span class="n">' + (i + 1) + '</span><div class="c"><h3><a href="' + ROOT + "/flohmarkt/" + st.m.s + '/">' + esc2(d[0]) + "</a></h3><p><b>" + esc2(d[1]) + "</b> · geöffnet " + fmtT(st.m.open).replace(/:00$/, "") + " bis " + fmtT(st.m.close).replace(/:00$/, "") + ' Uhr</p><p class="arr"><span class="time">' + svg("clock", "") + '<span class="t-main">' + fmtT(st.start) + "–" + fmtT(st.leave) + '</span><span class="t-u">Uhr</span></span>' + (st.start > st.arr + 4 ? '<span class="meta">Ankunft ' + fmtT(st.arr) + (st.start - st.arr > 15 ? ", öffnet um " + fmtT(st.start) + " Uhr" : ", kurz warten") + "</span>" : "") + "</p></div></li>";
         });
         h += "</ol>";
@@ -516,6 +548,7 @@
         h += '<div class="tour-actions">' + (whole ? '<a class="btn" href="' + whole + '" rel="noopener">' + svg("route", "") + "Ganze Tour in Google Maps öffnen</a>" : "") + '<button type="button" class="route" id="tShare">' + svg("share", "") + "Tour teilen</button></div>";
         h += '<p class="tour-note">' + (o.mode === "bahn" ? "Mit der Bahn bitte jeden Abschnitt über „Genau prüfen“ ansehen, dort steht die genaue Verbindung. " : "") + "Fahrzeiten sind grob geschätzt" + (o.mode === "auto" ? ", inklusive Parkplatzsuche" : "") + ". Die genaue Route zeigt Google Maps. " + (o.origin ? "Dein Standort bleibt auf deinem Gerät." : "Ohne Startpunkt beginnt die Tour am ersten Markt.") + "</p>";
         out.innerHTML = h;
+        out.querySelectorAll(".tadd").forEach(function (b) { b.addEventListener("click", function () { var s2 = b.getAttribute("data-s"), a2 = favGet(); if (a2.indexOf(s2) < 0) a2.push(s2); if (favSet(a2)) { favSync(); toast(DATA[s2][0] + " ist jetzt auf deiner Merkliste und in der Tour."); if (ms.indexOf(s2) < 0) ms.push(s2); var mt = tourEl.querySelector(".tour-h + .meta"); if (mt) mt.textContent = ms.length + " gemerkte Märkte"; draw(); } }); });
         document.getElementById("tShare").addEventListener("click", function () {
           var txt = "Meine Flohmarkt-Tour am " + kLab(k).replace(",", "") + ":\n" + r.stops.map(function (st, i) { return (i + 1) + ". " + fmtT(st.start) + " Uhr " + st.m.d[0] + " (" + st.m.d[1] + ")"; }).join("\n") + "\n" + location.origin + ROOT + "/termine/";
           if (navigator.share) { navigator.share({ title: "Meine Flohmarkt-Tour", text: txt }).catch(function () {}); return; }

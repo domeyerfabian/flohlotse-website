@@ -2,11 +2,10 @@
 
 Stand 11.10.2026 · 211 Seiten (205 für Google) · 119 Märkte · 189 Termine in den nächsten 120 Tagen · 42 Ratgeber-Artikel · 787 Event-Auszeichnungen
 
-## Zu erledigen: 4 Hinweise
+## Zu erledigen: 3 Hinweise
 
 | Bereich | Hinweis |
 |---|---|
-| Termine | Markt „hof-zu-hof-flohmarkt-helvesiek“ ist unbekannt oder nicht aktiv. |
 | Uhrzeit fehlt | Ein Termin in den nächsten drei Wochen ohne Uhrzeit: Flohmarkt Marktkauf-Center Prisdorf am Samstag, 31. Oktober. Uhrzeit beim Veranstalter nachsehen und im Blatt „Termine“ (oder „Serien“) eintragen. |
 | Termin-Wächter | HNT Flohmarkt: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 17.10.2026, 18.10.2026, 19.10.2026, 24.10.2026. Bitte prüfen: https://www.hntonline.de/flohmarkt |
 | Termin-Wächter | Flohmarkt famila Winsen (Luhe): Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 18.10.2026. Bitte prüfen: https://flohmaxx.de/flohmarkt/winsen-famila/2026-10-03 |

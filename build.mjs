@@ -589,10 +589,8 @@ function weekendDays() {
 }
 const upcoming = (days, filter = () => true) => EVENTS.filter(e => (e.date - TODAY) / 864e5 < days && filter(e));
 // Wischen & merken (Seite /entdecken/ und Hinweis auf der Startseite)
-const DK_KEYS = [key(TODAY), key(addDays(TODAY, 1)), key(addDays(TODAY, 2))];
-// Für die Seite drei Tage: Fällt ein nächtlicher Bau aus, bleiben „heute“ und „morgen“ trotzdem gefüllt. Das Skript zeigt nur heute und morgen.
-const DK_EVS = EVENTS.filter(e => !e.cancelled && DK_KEYS.includes(e.k));
-const DK_N = DK_EVS.filter(e => e.k !== DK_KEYS[2]).length;
+// Die Märkte der nächsten vier Wochen (höchstens 80 Karten). Das Skript blendet vergangene Tage und heute schon beendete Märkte aus.
+const DK_EVS = EVENTS.filter(e => !e.cancelled && (e.date - TODAY) / 864e5 < 29).slice(0, 80);
 const deckCard = e => {
   const m = e.m, hm = x => x.includes("/") ? hmText(x) : x;
   const t = !e.start ? "Uhrzeit folgt" : e.end ? `${hm(e.start)} bis ${hm(e.end)}` : `ab ${hm(e.start)}`;
@@ -611,7 +609,7 @@ const deckHTML = mini => `<section class="deck${mini ? " mini" : ""}" id="deck"$
 <div class="dk-btns js-only" id="dkBtns"><span class="dk-bw"><button type="button" class="dk-b no" id="dkNo" aria-label="Nein, nicht merken">${ic("thumbsdown")}</button><span class="dk-bl" aria-hidden="true">← Nein</span></span><span class="dk-bw"><button type="button" class="dk-b undo" id="dkUndo" aria-label="Rückgängig" disabled>${ic("undo")}</button><span class="dk-bl" aria-hidden="true">Zurück</span></span><span class="dk-bw"><button type="button" class="dk-b yes" id="dkYes" aria-label="Merken">${ic("thumbsup")}</button><span class="dk-bl" aria-hidden="true">Merken →</span></span></div>
 ${mini ? "" : '<p class="dk-hint js-only">Am Computer gehen auch die Pfeiltasten ← und →.</p>'}
 </section>
-<div class="empty" id="dkEmpty"${DK_EVS.length ? " hidden" : ""}>Heute und morgen steht gerade kein Flohmarkt im Kalender. ${more("/termine/", "Alle Termine")}</div>`;
+<div class="empty" id="dkEmpty"${DK_EVS.length ? " hidden" : ""}>In den nächsten vier Wochen steht gerade kein Flohmarkt im Kalender. ${more("/termine/", "Alle Termine")}</div>`;
 
 /* ---------------------------------------------------------------- SEO-Bausteine
    Seiten nach Art des Markts, Monatsseiten, Feiertage und Hilfen für Titel und Beschreibungen.
@@ -1183,11 +1181,11 @@ ${NEWS_TABS.length > 1 ? '<div class="akt-bar js-only" aria-hidden="true"><i id=
 <h1>Flohmarkt Hamburg: alle Termine, aufgeräumt.</h1>
 <p>Alle Flohmärkte in Hamburg und Umgebung: wann, wo und wie lange. Ohne Werbebanner, ohne alte Termine.</p>
 ${sxForm(true)}
-<div class="quick"><a class="chip" href="/heute/">${ic("sun")}Heute</a>${PLZ_ROWS.length ? `<a class="chip" href="/termine/#near">${ic("pin")}In meiner Nähe</a>` : ""}<a class="chip" href="/entdecken/">${ic("heart")}Wischen &amp; merken</a><a class="chip" href="/wochenende/">${ic("cal")}Wochenende</a><a class="chip" href="/sonntag/">${ic("cal")}Sonntag</a><a class="chip" href="/flohmaerkte/">${ic("map")}Märkte nach Bezirk</a>${HAS_MAP ? `<a class="chip" href="/flohmaerkte/#karte">${ic("pin")}Karte</a>` : ""}<a class="chip" href="/ratgeber/">${ic("book")}Ratgeber</a><a class="chip" href="/flohmarkt-schilder/">${ic("printer")}Schilder gestalten</a></div>
+<div class="quick"><a class="chip" href="/heute/">${ic("sun")}Heute</a>${PLZ_ROWS.length ? `<a class="chip" href="/termine/#near">${ic("pin")}In meiner Nähe</a>` : ""}<a class="chip" href="/entdecken/">${ic("heart")}Wischen &amp; merken</a><a class="chip" href="/wochenende/">${ic("cal")}Wochenende</a><a class="chip" href="/sonntag/">${ic("cal")}Sonntag</a><a class="chip" href="/flohmaerkte/">${ic("map")}Märkte nach Bezirk</a>${HAS_MAP ? `<a class="chip" href="/flohmaerkte/#karte">${ic("pin")}Karte</a>` : ""}<a class="chip" href="/ratgeber/">${ic("book")}Ratgeber</a><a class="chip" href="/flohmarkt-schilder/">${ic("printer")}Schilder gestalten</a><a class="chip" href="/veranstalter/">${ic("user")}Für Veranstalter</a></div>
 </div><a class="big-sticker" href="/wochenende/"><b>${weN}</b><span>${weLabel}</span></a></section>
 ${slider}
 ${newsBox}
-${DK_EVS.length ? `<section class="sec home-deck" id="dkSec"><div class="sec-head"><h2>Wischen &amp; merken</h2>${more("/merkliste/", "Merkliste")}</div><p class="dk-intro">Die Flohmärkte von heute und morgen: Daumen hoch merkt den Markt, Daumen runter zeigt den nächsten.</p>${deckHTML(true)}</section>` : ""}
+${DK_EVS.length ? `<section class="sec home-deck" id="dkSec"><div class="sec-head"><h2>Wischen &amp; merken</h2>${more("/merkliste/", "Merkliste")}</div><p class="dk-intro">Die Flohmärkte der nächsten vier Wochen: Daumen hoch merkt den Markt, Daumen runter zeigt den nächsten.</p>${deckHTML(true)}</section>` : ""}
 <section class="sec"><div class="sec-head"><h2>Die nächsten Flohmärkte</h2>${more("/termine/", "Alle")}</div>
 ${groupList(next, 3) || '<div class="empty">Gerade stehen keine Termine im Kalender.</div>'}
 ${all14 > next.length ? `<a class="more" href="/termine/">Alle ${all14} Termine der nächsten 14 Tage anzeigen</a>` : ""}</section>
@@ -1223,9 +1221,9 @@ ${MONTHS.length ? `<section class="related"><div class="sec-head"><h2>Termine na
    Die Merkliste liegt nur im Browser (Local Storage) und wird erst angelegt, wenn jemand auf ein Herz tippt.
    Beide Seiten sind persönlich bzw. tagesaktuell und deshalb nicht für Google bestimmt (noindex, nicht in der Sitemap). */
 {
-  const body = crumbs([[NAME, "/"], ["Wischen & merken"]]) + `<section class="hub-head dk-head"><h1>Wischen und merken: Flohmärkte heute und morgen</h1><p>Daumen hoch oder nach rechts wischen: Der Markt kommt auf deine Merkliste. Daumen runter oder nach links: weiter zum nächsten.</p></section>
+  const body = crumbs([[NAME, "/"], ["Wischen & merken"]]) + `<section class="hub-head dk-head"><h1>Wischen und merken: Flohmärkte der nächsten vier Wochen</h1><p>Daumen hoch oder nach rechts wischen: Der Markt kommt auf deine Merkliste. Daumen runter oder nach links: weiter zum nächsten.</p></section>
 ${deckHTML(false)}`;
-  layout({ p: "/entdecken/", title: `Wischen und merken: Flohmärkte heute und morgen | ${NAME}`, desc: "Die Flohmärkte von heute und morgen in Hamburg und Umgebung zum Durchwischen: nach rechts merken, nach links weiter.", body, noindex: true, nav: "entdecken" });
+  layout({ p: "/entdecken/", title: `Wischen und merken: Flohmärkte der nächsten Wochen | ${NAME}`, desc: "Die Flohmärkte der nächsten vier Wochen in Hamburg und Umgebung zum Durchwischen: nach rechts merken, nach links weiter.", body, noindex: true, nav: "entdecken" });
 }
 {
   const body = crumbs([[NAME, "/"], ["Merkliste"]]) + `<section class="hub-head"><h1>Deine Merkliste</h1><p>Hier stehen die Märkte, die du mit dem Herz gemerkt hast, mit ihren nächsten Terminen.</p></section>

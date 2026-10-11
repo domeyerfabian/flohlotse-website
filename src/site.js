@@ -153,6 +153,8 @@
     });
     if (location.hash === "#karte") setTimeout(function () { var k = document.getElementById("karte"); if (k) k.scrollIntoView(); }, 50);
   }
+  // Kalender-Abo: Android-Handys kennen „webcal://“ oft nicht, dort geht das Abo über Google Kalender
+  if (/Android/i.test(navigator.userAgent || "")) document.querySelectorAll("a[data-gcal]").forEach(function (a) { a.href = a.getAttribute("data-gcal"); a.rel = "noopener"; });
   // Terminliste: Umschalter Liste | Karte (die Karte lädt erst nach Klick auf „Karte laden“)
   var vTog = document.getElementById("viewTog");
   if (vTog) {
@@ -377,7 +379,12 @@
       var s = b.getAttribute("data-fav"), n = b.getAttribute("data-name") || "Markt", on = favToggle(s);
       if (on === null) return;
       if (b.classList.contains("fav")) { b.classList.remove("pop"); void b.offsetWidth; if (on) b.classList.add("pop"); }
-      if (!document.getElementById("merk")) toast(on ? "„" + n + "“ ist auf deiner Merkliste." : "„" + n + "“ ist nicht mehr auf der Merkliste.", on ? "Ansehen" : "Rückgängig", on ? ROOT + "/merkliste/" : function () { favToggle(s, true); });
+      if (document.getElementById("merk")) return;
+      var grp = on && b.closest(".group"), same = grp ? grp.querySelectorAll('button[data-fav][aria-pressed="true"]').length : 0;
+      if (same > 1) { var gk = grp.getAttribute("data-day"); toast(same + " Märkte am " + ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"][new Date(gk + "T12:00:00Z").getUTCDay()] + " gemerkt", "Als Tour planen", ROOT + "/merkliste/#tour-" + gk); return; }
+      var calA = on && document.querySelector(".cal-dd .cal-pop a"), calSeen = false; try { calSeen = !!localStorage.getItem("flohlotse-kal-tipp"); } catch (x) {}
+      if (calA && !calSeen) { try { localStorage.setItem("flohlotse-kal-tipp", "1"); } catch (x) {} toast("Gemerkt. Neue Termine automatisch in deinen Kalender?", "Abonnieren", calA.getAttribute("href")); return; }
+      toast(on ? "„" + n + "“ ist auf deiner Merkliste." : "„" + n + "“ ist nicht mehr auf der Merkliste.", on ? "Ansehen" : "Rückgängig", on ? ROOT + "/merkliste/" : function () { favToggle(s, true); });
     });
     window.addEventListener("storage", function (e) { if (e.key === FK || e.key === null) { favSync(); try { document.dispatchEvent(new CustomEvent("flfav")); } catch (x) {} } });
     favSync();
@@ -413,13 +420,127 @@
       }
       var nx = function (s) { var x = DATA[s][3].filter(function (y) { return y[0] >= TODAY && y[1] !== "fällt aus"; })[0]; return x ? x[0] : "9999"; };
       known.sort(function (p, q) { return nx(p) < nx(q) ? -1 : nx(p) > nx(q) ? 1 : DATA[p][0].localeCompare(DATA[q][0], "de"); });
-      out += known.length ? '<p class="mk-n">' + (known.length === 1 ? "1 Markt" : known.length + " Märkte") + ", sortiert nach dem nächsten Termin.</p>" + '<div class="mk-list">' + known.map(card).join("") + "</div>"
+      out += known.length ? tourCards(known) + '<p class="mk-n">' + (known.length === 1 ? "1 Markt" : known.length + " Märkte") + ", sortiert nach dem nächsten Termin.</p>" + '<div class="mk-list">' + known.map(card).join("") + "</div>"
         : '<div class="empty mk-empty"><p><b>Noch nichts gemerkt.</b></p><p>Tipp bei einem Termin auf das Herz oder wisch dich durch die Märkte der nächsten Wochen.</p><div class="share-row"><a class="btn" href="' + ROOT + '/entdecken/">Wischen &amp; merken</a><a class="route" href="' + ROOT + '/termine/">Alle Termine</a></div></div>';
       merk.innerHTML = out; tools.hidden = !known.length;
       var y = document.getElementById("mkImpYes");
       if (y) { y.addEventListener("click", function () { var a2 = favGet(); imp.forEach(function (s) { if (DATA[s] && a2.indexOf(s) < 0) a2.push(s); }); if (favSet(a2)) { favSync(); say("Übernommen."); } imp = null; try { history.replaceState(null, "", location.pathname); } catch (e) {} render(); });
         document.getElementById("mkImpNo").addEventListener("click", function () { imp = null; try { history.replaceState(null, "", location.pathname); } catch (e) {} render(); }); }
     };
+
+    /* Flohmarkt-Tour: Ab zwei gemerkten Märkten am selben Tag plant die Merkliste eine Route.
+       Alles wird im Browser berechnet. Fahrzeiten sind Schätzungen für Hamburg (Stadt/Umland, Elbquerung, Parkplatzsuche, Umsteigen);
+       die genaue Route zeigt Google Maps per Link. Gespeichert werden nur die Einstellungen (ohne Standort) im Browser. */
+    var tourEl = document.getElementById("tour"), TK = "flohlotse-tour";
+    var tSet = (function () { try { return JSON.parse(localStorage.getItem(TK) || "{}") || {}; } catch (e) { return {}; } })();
+    var tSave = function () { try { localStorage.setItem(TK, JSON.stringify({ mode: tSet.mode, stay: tSet.stay, plz: tSet.plz })); } catch (e) {} };
+    var WDN = ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"];
+    var kDate = function (k) { var p = k.split("-"); return new Date(Date.UTC(+p[0], +p[1] - 1, +p[2])); };
+    var kLab = function (k) { var p = k.split("-"); return WDN[kDate(k).getUTCDay()] + ", " + p[2] + "." + p[1] + "."; };
+    var toMin = function (t) { var p = String(t).split(":"); return +p[0] * 60 + (+p[1] || 0); };
+    var fmtT = function (m) { m = Math.round(m); return Math.floor(m / 60) + ":" + String(m % 60).padStart(2, "0"); };
+    var km = function (a, b) { var R = 6371, r = Math.PI / 180, x = (b[0] - a[0]) * r, y = (b[1] - a[1]) * r; var h = Math.pow(Math.sin(x / 2), 2) + Math.cos(a[0] * r) * Math.cos(b[0] * r) * Math.pow(Math.sin(y / 2), 2); return 2 * R * Math.asin(Math.sqrt(h)); };
+    // grobe Fahrzeit in Minuten
+    var travel = function (a, b, mode, flagB) {
+      var d = km(a, b), road = d * 1.3, inHH = function (p) { return p[0] > 53.39 && p[0] < 53.74 && p[1] > 9.73 && p[1] < 10.33; };
+      var elbe = (a[0] - 53.535) * (b[0] - 53.535) < 0 && a[1] > 9.75 && a[1] < 10.15 && b[1] > 9.75 && b[1] < 10.15;
+      var t;
+      if (mode === "rad") t = road / 15 * 60 + 2 + (elbe ? 4 : 0);
+      else if (mode === "bahn") t = 10 + road / 25 * 60 + (d > 5 ? 8 : 0) + (elbe ? 4 : 0);
+      else t = road / (!(inHH(a) && inHH(b)) && d > 8 ? 45 : road > 6 ? 30 : 22) * 60 + (elbe ? 8 : 0) + ((flagB & 1) ? 8 : 3);
+      return Math.max(5, Math.round(t / 5) * 5);
+    };
+    var dayTours = function (known) {
+      var by = {}, lim = dayAdd(TODAY, 28);
+      known.forEach(function (s) { var d = DATA[s], tz = d && d[12]; if (!tz || !d[11]) return; Object.keys(tz).forEach(function (k) { if (k >= TODAY && k <= lim) (by[k] = by[k] || []).push(s); }); });
+      return Object.keys(by).filter(function (k) { return by[k].length > 1; }).sort().slice(0, 3).map(function (k) { return { k: k, ms: by[k] }; });
+    };
+    var tourCards = function (known) {
+      var ts = dayTours(known); if (!ts.length) return "";
+      var t = ts[0], first = Math.min.apply(null, t.ms.map(function (s) { return toMin(DATA[s][12][t.k][0]); }));
+      return '<a class="tour-card" href="#tour-' + t.k + '"><span class="k">' + svg("route", "") + "Deine Tour</span><h2>" + kLab(t.k) + ": " + t.ms.length + " Märkte</h2><p>Ab " + fmtT(first).replace(/:00$/, "") + " Uhr · " + t.ms.map(function (s) { return esc2(DATA[s][7] || DATA[s][0]); }).join(", ") + '</p><span class="go">Tour planen' + svg("chev", "") + "</span></a>" +
+        (ts.length > 1 ? '<p class="tour-more">Auch planbar: ' + ts.slice(1).map(function (x) { return '<a href="#tour-' + x.k + '">' + kLab(x.k) + "</a>"; }).join(" · ") + "</p>" : "");
+    };
+    // beste Reihenfolge: alle Reihenfolgen durchprobieren (höchstens 7 Märkte), Märkte, die nicht ins Zeitfenster passen, fallen raus
+    var plan = function (k, ms, o) {
+      var mk = ms.map(function (s) { var d = DATA[s], tz = d[12][k]; return { s: s, d: d, ll: d[11], open: toMin(tz[0]), close: tz[1] ? toMin(tz[1]) : toMin(tz[0]) + 240, flag: d[13] || 0 }; }).slice(0, 7);
+      var best = null, perm = function (arr, used, res) {
+        if (res.length === arr.length) { test(res.slice()); return; }
+        for (var i = 0; i < arr.length; i++) if (!used[i]) { used[i] = true; res.push(arr[i]); perm(arr, used, res); res.pop(); used[i] = false; }
+      };
+      var test = function (order) {
+        var t = o.from, pos = o.origin, stops = [], miss = [], dist = 0, wait = 0;
+        order.forEach(function (m) {
+          var tt = pos ? travel(pos, m.ll, o.mode, m.flag) : 0, arr = t + tt, start = Math.max(arr, m.open), leave = start + o.stay;
+          if (leave > m.close || leave > o.to) { miss.push({ m: m, arr: arr }); return; }
+          stops.push({ m: m, tt: tt, km: pos ? km(pos, m.ll) * 1.3 : 0, arr: arr, start: start, leave: leave, from: pos });
+          dist += tt; if (pos) wait += start - arr; t = leave; pos = m.ll;
+        });
+        var sc = [stops.length, -(dist + wait * 0.3), -t];
+        if (!best || sc[0] > best.sc[0] || (sc[0] === best.sc[0] && (sc[1] > best.sc[1] || (sc[1] === best.sc[1] && sc[2] > best.sc[2])))) best = { sc: sc, stops: stops, miss: miss, end: t };
+      };
+      perm(mk, [], []);
+      return best;
+    };
+    var gmaps = function (a, b, mode) { return "https://www.google.com/maps/dir/?api=1" + (a ? "&origin=" + a[0] + "," + a[1] : "") + "&destination=" + b[0] + "," + b[1] + "&travelmode=" + ({ rad: "bicycling", bahn: "transit" }[mode] || "driving"); };
+    var tourOpen = function (k) {
+      var known = favGet().filter(function (s) { return DATA[s]; }), t = dayTours(known).filter(function (x) { return x.k === k; })[0];
+      if (!t) { tourEl.hidden = true; merk.hidden = false; return; }
+      var ms = t.ms, opens = ms.map(function (s) { return toMin(DATA[s][12][k][0]); }), closes = ms.map(function (s) { var z = DATA[s][12][k]; return z[1] ? toMin(z[1]) : toMin(z[0]) + 240; });
+      var o = { from: Math.min.apply(null, opens), to: Math.max.apply(null, closes), stay: tSet.stay || 45, mode: tSet.mode || "auto", origin: null, label: "" };
+      var opt = function (v, sel) { var h = ""; for (var m = 300; m <= 1320; m += 30) h += '<option value="' + m + '"' + (m === sel ? " selected" : "") + ">" + fmtT(m) + " Uhr</option>"; return h; };
+      tourEl.innerHTML = '<p class="tour-back"><a href="#" id="tourBack">' + svg("chev", "flip") + 'Zur Merkliste</a></p><h2 class="tour-h">Deine Tour am ' + kLab(k).replace(",", "") + '</h2><p class="meta">' + ms.length + " gemerkte Märkte</p>" +
+        '<div class="tplan"><div><p class="lab">Wo startest du?</p><div class="tstart"><button type="button" class="chip" id="tGeo">' + svg("route", "") + 'Mein Standort</button><span class="meta">oder</span><input id="tPlz" inputmode="numeric" maxlength="5" placeholder="PLZ" aria-label="Postleitzahl" value="' + esc2(tSet.plz || "") + '"></div></div>' +
+        '<div class="row2"><label>Los geht\'s um<select id="tFrom">' + opt(0, Math.floor(o.from / 30) * 30) + '</select></label><label>Zeit bis<select id="tTo">' + opt(0, Math.ceil(o.to / 30) * 30) + "</select></label></div>" +
+        '<div class="row2"><label>Pro Markt stöbern<select id="tStay">' + [30, 45, 60, 90].map(function (v) { return '<option value="' + v + '"' + (v === o.stay ? " selected" : "") + ">" + v + " Minuten</option>"; }).join("") + '</select></label><div><p class="lab">Unterwegs mit</p><div class="seg" id="tMode">' + [["auto", "Auto"], ["rad", "Rad"], ["bahn", "Bahn"]].map(function (x) { return '<button type="button" class="chip" data-m="' + x[0] + '" aria-pressed="' + (x[0] === o.mode) + '">' + x[1] + "</button>"; }).join("") + "</div></div></div></div>" +
+        '<div id="tOut" aria-live="polite"></div>';
+      tourEl.hidden = false; merk.hidden = true; tools.hidden = true;
+      var out = document.getElementById("tOut");
+      var draw = function () {
+        o.from = +document.getElementById("tFrom").value; o.to = +document.getElementById("tTo").value; o.stay = +document.getElementById("tStay").value;
+        var r = o.to <= o.from ? null : plan(k, ms, o), h = "";
+        if (!r || !r.stops.length) { out.innerHTML = '<p class="tsum"><b>Das passt so nicht.</b> Im gewählten Zeitfenster schaffst du keinen der Märkte. Wähl eine andere Uhrzeit.</p>'; return; }
+        var free = o.to - r.end, dep = o.from;
+        // Mit Startpunkt: nicht zu früh losschicken, sondern so, dass man pünktlich zur Öffnung des ersten Markts da ist
+        if (o.origin && r.stops[0].start > r.stops[0].arr) { dep = r.stops[0].start - r.stops[0].tt; r.stops[0].arr = r.stops[0].start; }
+        h += '<p class="tsum"><b>' + (r.miss.length ? r.stops.length + " von " + ms.length + " Märkten passen." : (ms.length === 2 ? "Beide Märkte passen." : "Alle " + ms.length + " Märkte passen.")) + "</b> Fertig gegen " + fmtT(r.end) + " Uhr" + (free >= 30 && free <= 180 ? ", danach bleiben dir " + (free >= 90 ? Math.round(free / 60) + " Stunden" : free + " Minuten") + " Puffer." : ".") + "</p><ol class=\"tour\">";
+        if (o.origin) h += '<li><span class="n home">' + svg("pin", "") + '</span><div class="c home"><h3>Start: ' + esc2(o.label) + " · losfahren um " + fmtT(dep) + " Uhr</h3></div></li>";
+        r.stops.forEach(function (st, i) {
+          var d = st.m.d;
+          if (st.from) h += '<li class="legrow"><span class="leg">↓ ca. ' + Math.max(1, Math.round(st.km)) + " km · rund " + st.tt + ' Min. <a href="' + gmaps(st.from, st.m.ll, o.mode) + '" rel="noopener">Genau prüfen</a></span></li>';
+          h += '<li><span class="n">' + (i + 1) + '</span><div class="c"><h3><a href="' + ROOT + "/flohmarkt/" + st.m.s + '/">' + esc2(d[0]) + "</a></h3><p><b>" + esc2(d[1]) + "</b> · geöffnet " + fmtT(st.m.open).replace(/:00$/, "") + " bis " + fmtT(st.m.close).replace(/:00$/, "") + ' Uhr</p><p class="arr"><span class="time">' + svg("clock", "") + '<span class="t-main">' + fmtT(st.start) + "–" + fmtT(st.leave) + '</span><span class="t-u">Uhr</span></span>' + (st.start > st.arr + 4 ? '<span class="meta">Ankunft ' + fmtT(st.arr) + (st.start - st.arr > 15 ? ", öffnet um " + fmtT(st.start) + " Uhr" : ", kurz warten") + "</span>" : "") + "</p></div></li>";
+        });
+        h += "</ol>";
+        if (r.miss.length) h += '<div class="tour-miss">' + r.miss.map(function (x) { return "<b>" + esc2(x.m.d[0]) + "</b> passt zeitlich nicht mehr (geöffnet bis " + fmtT(x.m.close) + " Uhr)."; }).join("<br>") + "</div>";
+        var pts = r.stops.map(function (st) { return st.m.ll; }), whole = o.mode === "bahn" ? "" : "https://www.google.com/maps/dir/?api=1" + (o.origin ? "&origin=" + o.origin[0] + "," + o.origin[1] : "&origin=" + pts[0][0] + "," + pts[0][1]) + "&destination=" + pts[pts.length - 1][0] + "," + pts[pts.length - 1][1] + (pts.length > (o.origin ? 1 : 2) ? "&waypoints=" + pts.slice(o.origin ? 0 : 1, -1).map(function (p) { return p[0] + "," + p[1]; }).join("|") : "") + "&travelmode=" + (o.mode === "rad" ? "bicycling" : "driving");
+        h += '<div class="tour-actions">' + (whole ? '<a class="btn" href="' + whole + '" rel="noopener">' + svg("route", "") + "Ganze Tour in Google Maps öffnen</a>" : "") + '<button type="button" class="route" id="tShare">' + svg("share", "") + "Tour teilen</button></div>";
+        h += '<p class="tour-note">' + (o.mode === "bahn" ? "Mit der Bahn bitte jeden Abschnitt über „Genau prüfen“ ansehen, dort steht die genaue Verbindung. " : "") + "Fahrzeiten sind grob geschätzt" + (o.mode === "auto" ? ", inklusive Parkplatzsuche" : "") + ". Die genaue Route zeigt Google Maps. " + (o.origin ? "Dein Standort bleibt auf deinem Gerät." : "Ohne Startpunkt beginnt die Tour am ersten Markt.") + "</p>";
+        out.innerHTML = h;
+        document.getElementById("tShare").addEventListener("click", function () {
+          var txt = "Meine Flohmarkt-Tour am " + kLab(k).replace(",", "") + ":\n" + r.stops.map(function (st, i) { return (i + 1) + ". " + fmtT(st.start) + " Uhr " + st.m.d[0] + " (" + st.m.d[1] + ")"; }).join("\n") + "\n" + location.origin + ROOT + "/termine/";
+          if (navigator.share) { navigator.share({ title: "Meine Flohmarkt-Tour", text: txt }).catch(function () {}); return; }
+          if (navigator.clipboard) navigator.clipboard.writeText(txt).then(function () { toast("Tour kopiert. Jetzt einfügen und verschicken."); }, function () {}); });
+      };
+      ["tFrom", "tTo", "tStay"].forEach(function (id) { document.getElementById(id).addEventListener("change", function () { if (id === "tStay") { tSet.stay = +this.value; tSave(); } draw(); }); });
+      document.getElementById("tMode").addEventListener("click", function (e) { var b = e.target.closest("button"); if (!b) return; o.mode = tSet.mode = b.getAttribute("data-m"); tSave(); this.querySelectorAll("button").forEach(function (x) { x.setAttribute("aria-pressed", String(x === b)); }); draw(); });
+      var geoB = document.getElementById("tGeo"), plzI = document.getElementById("tPlz");
+      var setO = function (ll, lab, isGeo) { o.origin = ll; o.label = lab; geoB.setAttribute("aria-pressed", String(!!isGeo)); draw(); };
+      geoB.addEventListener("click", function () {
+        if (geoB.getAttribute("aria-pressed") === "true") { setO(null, "", false); return; }
+        if (!navigator.geolocation) { toast("Dein Browser kann den Standort nicht bestimmen. Gib stattdessen deine Postleitzahl ein."); return; }
+        navigator.geolocation.getCurrentPosition(function (p) { plzI.value = ""; setO([p.coords.latitude, p.coords.longitude], "dein Standort", true); }, function () { toast("Standort nicht verfügbar. Gib stattdessen deine Postleitzahl ein."); }, { timeout: 10000, maximumAge: 600000 });
+      });
+      var byPlz = function () {
+        var v = plzI.value.replace(/\D/g, "").slice(0, 5); plzI.value = v; if (v.length < 5) { if (!v && geoB.getAttribute("aria-pressed") !== "true") setO(null, "", false); return; }
+        fetch(ROOT + "/assets/plz.json").then(function (r) { return r.json(); }).then(function (j) { if (!j[v]) { toast("Die Postleitzahl " + v + " liegt außerhalb unseres Gebiets."); return; } tSet.plz = v; tSave(); setO(j[v], "PLZ " + v, false); }).catch(function () {});
+      };
+      plzI.addEventListener("input", function () { if (plzI.value.replace(/\D/g, "").length === 5 || !plzI.value) byPlz(); });
+      document.getElementById("tourBack").addEventListener("click", function (e) { e.preventDefault(); try { history.pushState(null, "", location.pathname); } catch (x) {} tourEl.hidden = true; merk.hidden = false; render(); window.scrollTo(0, 0); });
+      if (tSet.plz && tSet.plz.length === 5) byPlz(); else draw();
+      tourEl.scrollIntoView ? window.scrollTo(0, 0) : 0;
+    };
+    var tourHash = function () { var m = /^#tour-(\d{4}-\d{2}-\d{2})$/.exec(location.hash); if (m && DATA) tourOpen(m[1]); else if (tourEl && !tourEl.hidden) { tourEl.hidden = true; merk.hidden = false; render(); } };
+    window.addEventListener("hashchange", tourHash);
     // Herz auf der Merkliste: Markt entfernen, mit „Rückgängig“
     merk.addEventListener("click", function (e) {
       var b = e.target.closest("button[data-fav]"); if (!b) return;
@@ -438,7 +559,7 @@
       if (!confirm("Merkliste wirklich leeren? Das lässt sich nicht rückgängig machen.")) return;
       favSet([]); favSync(); say("Die Merkliste ist leer."); render();
     });
-    fetch(merk.getAttribute("data-src")).then(function (r) { if (!r.ok) throw new Error(); return r.json(); }).then(function (j) { DATA = j.m || {}; render(); })
+    fetch(merk.getAttribute("data-src")).then(function (r) { if (!r.ok) throw new Error(); return r.json(); }).then(function (j) { DATA = j.m || {}; render(); tourHash(); })
       .catch(function () { merk.innerHTML = '<div class="empty">Die Merkliste konnte gerade nicht geladen werden. Versuch es gleich noch einmal.</div>'; });
   }
 

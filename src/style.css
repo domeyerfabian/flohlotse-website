@@ -228,7 +228,7 @@ a.more{display:block;text-align:center;text-decoration:none}
 .hub-head h1{margin-top:12px}
 [hidden]{display:none!important}
 
-h1,h2,h3,h4{overflow-wrap:break-word;hyphens:auto}
+h1,h2,h3,h4{overflow-wrap:break-word;hyphens:manual}
 .skip{position:absolute;left:-9999px;top:8px;z-index:20;background:var(--ink);color:var(--paper);padding:8px 14px;border-radius:8px;font-weight:600;text-decoration:none}
 .skip:focus{left:16px}
 
@@ -915,3 +915,66 @@ button.fav[aria-pressed="true"],.btn.fav-big[aria-pressed="true"]{background:var
 .to-top:hover{border-color:var(--ink)}
 .to-top .i{width:20px;height:20px;transform:rotate(-90deg)}
 .to-top[hidden]{display:none}
+
+/* Mehr Luft zwischen den Themen (Startseite und Unterseiten), feine Linie als Trenner */
+.sec{padding-top:64px}
+.sec + .sec{border-top:1px solid var(--line);margin-top:28px;padding-top:44px}
+.related{margin-top:52px}
+.group{margin-top:30px}
+.group:first-child{margin-top:0}
+/* Kalender auf der Marktseite */
+.cal-dd{margin-top:10px}
+.cal-dd > summary{list-style:none;cursor:pointer;display:inline-flex;margin:0}
+.cal-dd > summary::-webkit-details-marker{display:none}
+.cal-dd > summary .cal-chev{width:16px;height:16px;transform:rotate(90deg);transition:transform .2s}
+.cal-dd[open] > summary{border-color:var(--ink)}
+.cal-dd[open] > summary .cal-chev{transform:rotate(-90deg)}
+.cal-pop{margin-top:10px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:6px;display:grid;gap:2px;max-width:440px}
+.cal-pop a{display:flex;align-items:flex-start;gap:12px;padding:12px;border-radius:12px;color:var(--ink);text-decoration:none}
+.cal-pop a:hover{background:var(--paper)}
+.cal-pop b{display:block;font-size:15px}.cal-pop small{display:block;color:var(--muted);font-size:13px;margin-top:2px}
+.cal-pop .i{width:20px;height:20px;margin-top:2px;flex:none}
+.cal-pop a.cal-file{font-size:13px;color:var(--muted);text-decoration:underline;text-underline-offset:3px;padding:8px 12px 10px}
+/* Flohmarkt-Tour (Merkliste) */
+.tour-card{display:block;background:var(--surface);border:1px solid var(--ink);border-radius:18px;padding:16px 18px;margin:6px 0 14px;color:var(--ink);text-decoration:none}
+.tour-card .k{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.tour-card .k .i{width:15px;height:15px}
+.tour-card h2{font-size:21px;margin:4px 0 6px}
+.tour-card p{margin:0;color:var(--muted);font-size:15px}
+.tour-card .go{display:inline-flex;align-items:center;gap:4px;margin-top:10px;font-weight:700}
+.tour-card .go .i{width:17px;height:17px}
+.tour-back{margin:0 0 6px}.tour-back a{display:inline-flex;align-items:center;gap:4px;font-weight:600;text-decoration:none;color:var(--ink)}
+.tour-back .i{width:16px;height:16px}.i.flip{transform:rotate(180deg)}
+.tour-h{font-size:26px;margin:4px 0 2px}
+.tplan{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:14px 16px;margin-top:14px;display:grid;gap:12px}
+.tplan .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tplan label{display:grid;gap:4px;font-size:13px;font-weight:600}
+.tplan .lab{font-size:13px;font-weight:600;margin:0 0 4px}
+.tplan select,.tplan input{font:inherit;font-size:16px;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--paper);color:var(--ink);width:100%}
+.tplan .tstart{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.tplan .tstart input{width:110px}
+.tplan .seg{display:flex;gap:6px;flex-wrap:wrap}
+.tsum{margin:18px 0 0;font-size:15px}.tsum b{font-size:17px}
+.tour{list-style:none;margin:16px 0 0;padding:0;display:grid;gap:0}
+.tour li{display:grid;grid-template-columns:40px 1fr;gap:12px;position:relative;padding-bottom:6px}
+.tour li.legrow{display:block;padding:2px 0 8px 52px}
+.tour .leg{font-size:13px;color:var(--muted)}
+.tour .leg a{margin-left:6px;color:var(--ink);font-weight:600}
+.tour .n{width:40px;height:40px;border-radius:50%;background:var(--ink);color:var(--paper);display:grid;place-content:center;font-weight:800;font-size:17px}
+.tour .n.home{background:var(--surface);color:var(--ink);border:2px solid var(--ink)}
+.tour .n .i{width:18px;height:18px}
+.tour .c{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px 14px;min-width:0}
+.tour .c h3{font-size:18px;margin:0 0 2px}.tour .c h3 a{color:var(--ink);text-decoration:none}
+.tour .c p{margin:0;font-size:14px;color:var(--muted)}
+.tour .c.home h3{font-size:16px}
+.tour .arr{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;margin-top:8px!important}
+.tour .arr .time{display:inline-flex}
+.tour-miss{margin-top:8px;border:1px dashed var(--line);border-radius:14px;padding:10px 14px;font-size:14px;color:var(--muted)}
+.tour-actions{display:grid;gap:10px;margin-top:16px}
+.tour-actions .btn,.tour-actions .route{justify-content:center;margin-left:0;text-decoration:none;justify-self:stretch}
+.tour-note{font-size:13px;color:var(--muted);margin-top:12px}
+.tour-more{margin:-6px 0 16px;font-size:14px;color:var(--muted)}.tour-more a{color:var(--ink);font-weight:600}
+.cal-dd > summary.route,button.route{display:inline-flex;align-items:center;gap:6px;font:inherit;font-weight:600;font-size:14px;color:var(--ink);text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:6px 12px;min-height:36px;background:var(--surface);cursor:pointer}
+.cal-dd > summary.route .i,button.route .i{width:17px;height:17px}
+.cal-dd > summary.route{min-height:44px;padding:10px 18px;font-size:16px;font-weight:700}
+.tour-actions button.route{min-height:44px;font-size:16px;font-weight:700;justify-content:center}

@@ -158,8 +158,15 @@ function checkEnd(start, end, ctx) {
 
 /* ---------------------------------------------------------------- Laden und aufbereiten */
 const data = {};
-const loaded = await Promise.all(TABS.map(loadTab));
+// Freiwillige Blätter: Fehlt das Blatt (oder liefert Google ein anderes Blatt), entfällt der Bereich ohne Fehler.
+async function loadOpt(name, need) {
+  if (!process.env.SHEET_ID && !fs.existsSync(path.join(ROOT, "daten", name + ".csv"))) return [];
+  try { const rows = await loadTab(name); if (rows.length && need.every(c => c in rows[0])) return rows; } catch (e) { /* Blatt fehlt */ }
+  warn(name, `Tabellenblatt „${name}“ nicht gefunden oder ohne die Spalten ${need.join(", ")}. Der Bereich wird ausgelassen.`, true); return [];
+}
+const [loaded, kcRows] = await Promise.all([Promise.all(TABS.map(loadTab)), loadOpt("Kauf-Check", ["Kennung", "Aktiv", "Bereich", "Artikel", "Kurz gesagt"])]);
 TABS.forEach((t, i) => { data[t] = loaded[i]; });
+data["Kauf-Check"] = kcRows;
 const S = Object.fromEntries(data.Einstellungen.map(r => [r["Einstellung"], r["Wert"]]));
 const siteRaw = (S["Website-Adresse"] || "").replace(/\/+$/, "");
 const SITE = /^https?:\/\/[a-z0-9.-]+(?::\d+)?$/i.test(siteRaw) ? siteRaw : "https://www.example.org";
@@ -301,6 +308,38 @@ const KB = data.Ratgeber.filter(r => yes(r["Aktiv"]) && r["Kennung"] && validSlu
 assertUnique(KB.map(a => a.s), "Ratgeber");
 const KBY = Object.fromEntries(KB.map(a => [a.s, a]));
 if (!KB.length) warn("Ratgeber", "Keine aktiven Ratgeber-Artikel gefunden.");
+/* Kauf-Check: Prüfpunkte für häufige Flohmarkt-Artikel (Blatt „Kauf-Check“). Eine Zeile pro Artikel, ein Prüfpunkt pro Zeile in der Zelle.
+   „Stichwort: Text“ wird zu fettem Stichwort; Zeilen mit „Tipp…:“ sind Hinweise ohne Ankreuzfeld. */
+const KC_P = "/kauf-check/";
+const KC_AREAS = {
+  mode: { t: "Mode", p: "Jeans, Jacken, Polos und Trikots: Woran du Markenware und Fälschungen unterscheidest und worauf du beim Zustand achtest.", kb: ["vintage-kleidung-flohmarkt", "faelschungen-erkennen-flohmarkt"], cat: "frauenflohmarkt-hamburg" },
+  schuhe: { t: "Schuhe", p: "Sneaker werden massenhaft gefälscht. Mit dem Code in der Zunge und ein paar Blicken prüfst du sie direkt am Stand.", kb: ["faelschungen-erkennen-flohmarkt", "vintage-kleidung-flohmarkt"] },
+  taschen: { t: "Taschen & Accessoires", p: "Designertaschen und Sonnenbrillen gehören zu den meistgefälschten Dingen auf dem Flohmarkt. Diese Details verraten viel.", kb: ["faelschungen-erkennen-flohmarkt"] },
+  schmuck: { t: "Uhren & Schmuck", p: "Stempel, Magnet, Gewicht: So unterscheidest du Gold und Silber von vergoldet und versilbert und erkennst falsche Luxusuhren.", kb: ["antiquitaeten-erkennen-flohmarkt", "faelschungen-erkennen-flohmarkt"] },
+  spielzeug: { t: "Spielzeug", p: "LEGO, Pokémon-Karten, Steiff und Tonies: Was echt ist, was komplett ist und worauf du bei gebrauchtem Spielzeug achtest.", kb: ["flohmarkt-mit-kindern", "faelschungen-erkennen-flohmarkt"], cat: "kinderflohmarkt-hamburg" },
+  elektronik: { t: "Moderne Elektronik", p: "Handys, Laptops, Kopfhörer und Konsolen: Neben Fälschungen ist das größte Risiko ein gesperrtes oder gestohlenes Gerät. So prüfst du beides.", kb: ["elektrogeraete-flohmarkt", "faelschungen-erkennen-flohmarkt"], tip: "Auf den meisten Flohmärkten gibt es keinen Strom. Nimm eine Powerbank und ein USB-C-Kabel mit und lass dir das Gerät eingeschaltet zeigen. Lässt es sich nicht einschalten oder nicht vor deinen Augen zurücksetzen, lieber Finger weg." },
+  retro: { t: "Retro-Technik & Games", p: "Game Boy, alte Konsolen, Analogkameras und Plattenspieler: Nachbauten erkennen und Technik prüfen, auch ohne Steckdose.", kb: ["elektrogeraete-flohmarkt", "schallplatten-flohmarkt"] },
+  medien: { t: "Musik, Bücher & Medien", p: "Schallplatten, Erstausgaben, Comics und Autogramme: Original, Nachdruck oder Kopie?", kb: ["schallplatten-flohmarkt", "antiquitaeten-erkennen-flohmarkt"], cat: "antikmarkt-hamburg" },
+  kueche: { t: "Porzellan, Glas & Küche", p: "Bodenmarken lesen, Silber von versilbert unterscheiden, Haarrisse finden: der Check für Geschirr, Besteck und Töpfe.", kb: ["antiquitaeten-erkennen-flohmarkt"], cat: "antikmarkt-hamburg" },
+  wohnen: { t: "Möbel & Wohnen", p: "Designerstühle, Teakmöbel, Teppiche und Bilder: Original oder Nachbau, Druck oder Gemälde?", kb: ["antiquitaeten-erkennen-flohmarkt", "zuruecklegen-lassen-flohmarkt"] },
+  sammeln: { t: "Sammeln", p: "Münzen, Briefmarken, Emailleschilder und Füller: Wo Nachbauten häufig sind und woran du sie erkennst.", kb: ["antiquitaeten-erkennen-flohmarkt"], cat: "antikmarkt-hamburg" },
+  sport: { t: "Fahrrad & Sport", p: "Gebrauchte Fahrräder sind ein guter Kauf, aber auch häufiges Diebesgut. So prüfst du Herkunft und Zustand.", kb: ["gekauft-wie-gesehen"], cat: "fahrradflohmarkt-hamburg" },
+  kinder: { t: "Kinder & Baby", p: "Kinderwagen, Kindersitz und Babytrage: Bei Kindersachen zählt vor allem die Sicherheit.", kb: ["flohmarkt-mit-kindern", "kinderflohmarkt-verkaufen"], cat: "kinderflohmarkt-hamburg" },
+  sonstiges: { t: "Beauty & Sonstiges", p: "Parfum, Messing und Kupfer: Was sonst noch häufig angeboten wird.", kb: ["faelschungen-erkennen-flohmarkt"] }
+};
+const kcPts = v => lines(v).map(l => { const m = /^([^:]{2,40}):\s+(.+)$/.exec(l); return { l: m ? m[1] : "", x: m ? m[2] : l, tip: /^Tipp\b/.test(l) }; });
+const KC = data["Kauf-Check"].filter(r => yes(r["Aktiv"]) && r["Kennung"] && r["Artikel"] && validSlug(r["Kennung"], "Kauf-Check", r["Artikel"])).map(r => ({
+  s: r["Kennung"], a: r["Bereich"], n: r["Artikel"], own: yes(r["Eigene Seite"]), kw: r["Suchwörter"] || "", k: r["Kurz gesagt"],
+  e: kcPts(r["Echt"]), g: kcPts(r["Gesperrt oder gestohlen"]), z: kcPts(r["Zustand"]), f: lines(r["Fragen"]), m: list(r["Passende Märkte"]), t: r["SEO-Titel"] || "", d: r["SEO-Beschreibung"] || ""
+})).filter(i => { if (KC_AREAS[i.a]) return true; warn("Kauf-Check", `${i.n}: Bereich „${i.a}“ ist unbekannt. Möglich: ${Object.keys(KC_AREAS).join(", ")}.`); return false; });
+assertUnique(KC.map(i => i.s).concat(Object.keys(KC_AREAS)), "Kauf-Check");
+const KC_ON = KC.length > 0;
+const kcUrl = i => i.own ? `${KC_P}${i.s}/` : `${KC_P}${i.a}/#${i.s}`;
+const kcCnt = i => [...i.e, ...i.g, ...i.z].filter(x => !x.tip).length;
+// Hinweisbox auf passenden Seiten (Ratgeber, Arten, Märkte)
+const kcCta = (area, txt) => KC_ON && KC.some(i => i.a === area) ? `<a class="cta-box" href="${KC_P}${area}/">${ic("search")}<span><b>Kauf-Check: ${esc(KC_AREAS[area].t)}</b>${esc(txt || `Echt oder Fälschung, in Ordnung oder nicht? ${KC.filter(i => i.a === area).length} Artikel mit Prüfpunkten zum Abhaken am Stand.`)}</span>${ic("chev")}</a>` : "";
+const KC_ART = { "faelschungen-erkennen-flohmarkt": "", "vintage-kleidung-flohmarkt": "mode", "schallplatten-flohmarkt": "medien", "antiquitaeten-erkennen-flohmarkt": "kueche", "elektrogeraete-flohmarkt": "elektronik", "flohmarkt-mit-kindern": "kinder", "gekauft-wie-gesehen": "", "haendler-erkennen-flohmarkt": "" };
+const kcHubCta = () => KC_ON ? `<a class="cta-box" href="${KC_P}">${ic("search")}<span><b>Kauf-Check für ${KC.length} Artikel</b>Von Levi's bis LEGO, von iPhone bis Meissen: Prüfpunkte zum Abhaken direkt am Stand.</span>${ic("chev")}</a>` : "";
 const NEWS = data.Neuigkeiten.filter(r => r["Titel"] && (!r["Anzeigen bis"] || (parseDate(r["Anzeigen bis"], "Neuigkeiten") || END) >= TODAY));
 
 /* ---------------------------------------------------------------- Text mit Links */
@@ -453,7 +492,7 @@ function menuHTML() {
 <div><p class="menu-h">Nach Art</p><ul>${CATS_ON.map(c => li(`/${c.s}/`, esc(c.chip))).join("")}</ul></div>
 <div><p class="menu-h">Hamburg</p><ul>${REGIONS.filter(r => !r.umland).map(r => li(`/flohmarkt-hamburg/${r.k}/`, `${esc(r.name)} <small>${cnt(r.k)}</small>`)).join("")}</ul></div>
 <div><p class="menu-h">Umland bis 30 km</p><ul>${REGIONS.filter(r => r.umland).map(r => li(`/flohmarkt-hamburg/${r.k}/`, `${esc(r.name)} <small>${cnt(r.k)}</small>`)).join("")}</ul></div>
-<div><p class="menu-h">Ratgeber</p><ul>${li("/flohmarkt-schilder/", "Schilder &amp; Preisschilder drucken")}${li(FEE_P, "Standgebühren im Vergleich")}${Object.entries(CLUSTERS).map(([c, v]) => li(`/ratgeber/#${c}`, esc(v.t))).join("")}${li("/ratgeber/", "Alle Artikel")}</ul></div>
+<div><p class="menu-h">Ratgeber</p><ul>${KC_ON ? li(KC_P, "Kauf-Check: echt oder Fälschung?") : ""}${li("/flohmarkt-schilder/", "Schilder &amp; Preisschilder drucken")}${li(FEE_P, "Standgebühren im Vergleich")}${Object.entries(CLUSTERS).map(([c, v]) => li(`/ratgeber/#${c}`, esc(v.t))).join("")}${li("/ratgeber/", "Alle Artikel")}</ul></div>
 <div><p class="menu-h">${esc(NAME)}</p><ul>${li("/veranstalter/", "Für Veranstalter")}${INSTA ? `<li>${instaA("Instagram")}</li>` : ""}${li("/impressum/", "Impressum")}${li("/datenschutz/", "Datenschutz")}</ul></div>
 </nav></div></details>`;
 }
@@ -510,7 +549,7 @@ ${body.replace(/<h1>([^<]{3,80}?): ([^<]+)<\/h1>/, '<h1>$1:<span class="h1-sub">
 <div>Termine nach öffentlichen Angaben der Veranstalter, Stand ${STAND}. Bitte vor dem Besuch beim Veranstalter prüfen, Märkte können kurzfristig ausfallen. Ratgeber-Artikel ersetzen keine Rechts- oder Steuerberatung.${WX_OK ? ` Wettervorhersage: Deutscher Wetterdienst, Stand ${STAND}.` : ""}</div>
 <nav class="foot-links" aria-label="Flohmarkt Hamburg"><b>Flohmarkt Hamburg</b><a href="/heute/">Heute</a><a href="/morgen/">Morgen</a><a href="/wochenende/">Wochenende</a><a href="/samstag/">Samstag</a><a href="/sonntag/">Sonntag</a><a href="${WEEK_P}">Unter der Woche</a>${REGIONS.map(r => `<a href="/flohmarkt-hamburg/${r.k}/">${esc(r.name)}</a>`).join("")}</nav>
 <nav class="foot-links" aria-label="Nach Art und Monat"><b>Nach Art und Monat</b>${CATS_ON.map(c => `<a href="/${c.s}/">${esc(c.chip)}</a>`).join("")}${MONTHS.map(x => `<a href="/${x.s}/">${x.name} ${x.y}</a>`).join("")}</nav>
-<nav class="foot-links" aria-label="${esc(NAME)}"><b>${esc(NAME)}</b><a href="/ratgeber/">Ratgeber</a><a href="/flohmarkt-schilder/">Schilder-Designer</a><a href="${FEE_P}">Standgebühren im Vergleich</a><a href="/flohmarkt-hamburg-statistik/">Flohmärkte in Zahlen</a><a href="/veranstalter/">Für Veranstalter</a>${INSTA ? instaA("Instagram") : ""}<a href="/impressum/">Impressum</a><a href="/datenschutz/">Datenschutz</a></nav>
+<nav class="foot-links" aria-label="${esc(NAME)}"><b>${esc(NAME)}</b><a href="/ratgeber/">Ratgeber</a>${KC_ON ? `<a href="${KC_P}">Kauf-Check</a>` : ""}<a href="/flohmarkt-schilder/">Schilder-Designer</a><a href="${FEE_P}">Standgebühren im Vergleich</a><a href="/flohmarkt-hamburg-statistik/">Flohmärkte in Zahlen</a><a href="/veranstalter/">Für Veranstalter</a>${INSTA ? instaA("Instagram") : ""}<a href="/impressum/">Impressum</a><a href="/datenschutz/">Datenschutz</a></nav>
 </footer>
 <script src="/assets/site${JS_V ? "." + JS_V.slice(3) : ""}.js" defer></script>
 </body>
@@ -1223,7 +1262,7 @@ ${NEWS_TABS.length > 1 ? '<div class="akt-bar js-only" aria-hidden="true"><i id=
 <p>Alle Flohmärkte in Hamburg und Umgebung: wann, wo und wie lange. Ohne Werbebanner, ohne alte Termine.</p>
 ${sxForm(true)}
 <div class="quick"><a class="chip" href="/heute/">${ic("sun")}Heute</a>${PLZ_ROWS.length ? `<a class="chip" href="/termine/#near">${ic("pin")}In meiner Nähe</a>` : ""}<a class="chip" href="/wochenende/">${ic("cal")}Wochenende</a>${HAS_MAP ? `<a class="chip" href="/flohmaerkte/#karte">${ic("map")}Karte</a>` : ""}<a class="chip" href="/entdecken/">${ic("heart")}Wischen &amp; merken</a></div>
-<nav class="quick-more" aria-label="Weitere Bereiche"><a href="/sonntag/">Sonntag</a><a href="${WEEK_P}">Unter der Woche</a><a href="/flohmaerkte/">Märkte nach Bezirk</a><a href="/ratgeber/">Ratgeber</a><a href="/flohmarkt-schilder/">Schilder gestalten</a><a href="/veranstalter/">Für Veranstalter</a></nav>
+<nav class="quick-more" aria-label="Weitere Bereiche"><a href="/sonntag/">Sonntag</a><a href="${WEEK_P}">Unter der Woche</a><a href="/flohmaerkte/">Märkte nach Bezirk</a><a href="/ratgeber/">Ratgeber</a>${KC_ON ? `<a href="${KC_P}">Kauf-Check</a>` : ""}<a href="/flohmarkt-schilder/">Schilder gestalten</a><a href="/veranstalter/">Für Veranstalter</a></nav>
 </div><a class="big-sticker" id="bigSt" href="/wochenende/"${stAlt}><b>${weN}</b><span>${weLabel}</span></a></section>
 ${slider}
 ${newsBox}
@@ -1387,6 +1426,7 @@ ${m.fee || m.signup || m.signupHint || m.sellers ? `<section class="block sell">
 ${m.hint ? `<p class="hint">${rich(m.hint)}</p>` : ""}
 ${faqBlock(mFaq, `Häufige Fragen zu ${esc(m.short)}`)}
 <p class="hint">Angaben nach öffentlichen Informationen des Veranstalters${m.web ? ` (<a href="${esc(m.web)}" rel="noopener">Website</a>)` : ""}, ohne Gewähr. Märkte können kurzfristig ausfallen. Du veranstaltest diesen Markt? <a href="/veranstalter/#korrektur">Eintrag ändern oder entfernen lassen</a>.</p>
+${(() => { const its = KC.filter(i => i.m.includes(m.slug)); return its.length ? `<section class="related"><div class="sec-head"><h2>Kauf-Check für diesen Markt</h2>${more(KC_P, "Alle Checks")}</div><div class="qlist">${its.map(i => `<a href="${kcUrl(i)}"><span>${esc(i.n)}: echt und in Ordnung?</span>${ic("chev")}</a>`).join("")}</div></section>` : ""; })()}
 <section class="related"><div class="sec-head"><h2>Tipps für deinen Besuch</h2>${more("/ratgeber/", "Ratgeber")}</div>${grid(kbFor(m).map(kbCard))}</section>
 ${(() => { const nb = nearOf(m), allLink = more(`/flohmarkt-hamburg/${r.k}/`, `Alle ${r.umland ? "in der Region" : "im Bezirk"}`, "Alle Märkte " + r.im);
   if (nb.length) return `<section class="related"><div class="sec-head"><h2>${first || far ? "Flohmärkte in der Nähe" : "Bald geöffnet in der Nähe"}</h2>${allLink}</div>${grid(nb.map(nearCard))}</section>`;
@@ -1514,6 +1554,7 @@ for (const c of CATS_ON) {
 <section class="related"><div class="sec-head"><h2>Alle Märkte im Überblick</h2></div>${grid(ms.map(mCard))}</section>
 <div class="kb-body">${sideImg(`seite-${c.s}`, CAT_FORM[c.s] ?? ["", "rund", "links", "rund links"][CATS_ON.indexOf(c) % 4])}<p class="intro">${esc(c.lead)}</p>${c.b().map(([h, x]) => `<h2>${esc(h)}</h2><p>${rich(x)}</p>`).join("")}</div>
 ${faqBlock(faq)}
+${Object.keys(KC_AREAS).filter(x => KC_AREAS[x].cat === c.s).map(x => kcCta(x)).join("")}
 <section class="related"><div class="sec-head"><h2>Weitere Arten von Flohmärkten</h2></div>${catChips(c.s)}</section>
 <section class="related"><div class="sec-head"><h2>Aus dem Ratgeber</h2></div>${grid(c.kb.filter(s => KBY[s]).map(kbCard))}</section></article>`;
   layout({ p, title: `${c.t(Y)} | ${NAME}`, desc, body, nav: "maerkte", ld: G([crumbLD(cr), { "@type": "ItemList", itemListElement: ms.map((m, i) => ({ "@type": "ListItem", position: i + 1, name: m.name, url: `${SITE}/flohmarkt/${m.slug}/` })) }, faqLD(faq)].concat(ev60.slice(0, 40).map(eventLD))) });
@@ -1756,7 +1797,7 @@ const clusterThumb = (c, i) => { const x = pickImg(`ratgeber-${c}-klein`) || pic
   const body = crumbs([[NAME, "/"], ["Ratgeber"]]) + `<section class="hub-head"><h1>Flohmarkt-Ratgeber: Antworten auf die häufigsten Fragen</h1>
 <p>Unsere Empfehlungen zum Kaufen, Verkaufen, Handeln und Organisieren. Jeder Artikel beginnt mit einer kurzen Antwort, danach folgen die Details.</p>
 <div class="search js-only"><label for="kbSearch" class="kicker">Frage suchen</label><input id="kbSearch" type="search" placeholder="z. B. handeln, Steuern, Standgebühr" autocomplete="off"></div></section>
-${Object.entries(CLUSTERS).map(([c, info], i) => { const items = KB.filter(a => a.c === c); return items.length ? `<section class="cluster" id="${c}"><div class="cl-head${i % 2 ? " flip" : ""}"><div><h2>${esc(info.t)}</h2><p>${esc(info.p)}</p></div>${clusterThumb(c, i)}</div><div class="qlist">${items.map(a => `<a href="/ratgeber/${a.s}/" data-q="${esc((a.h + " " + a.kw + " " + plain(a.a)).toLowerCase())}"><span>${brColon(esc(a.h))}</span>${ic("chev")}</a>`).join("")}</div></section>` : ""; }).join("")}
+${kcHubCta()}${Object.entries(CLUSTERS).map(([c, info], i) => { const items = KB.filter(a => a.c === c); return items.length ? `<section class="cluster" id="${c}"><div class="cl-head${i % 2 ? " flip" : ""}"><div><h2>${esc(info.t)}</h2><p>${esc(info.p)}</p></div>${clusterThumb(c, i)}</div><div class="qlist">${items.map(a => `<a href="/ratgeber/${a.s}/" data-q="${esc((a.h + " " + a.kw + " " + plain(a.a)).toLowerCase())}"><span>${brColon(esc(a.h))}</span>${ic("chev")}</a>`).join("")}</div></section>` : ""; }).join("")}
 ${CRED_SRC ? `<p class="meta cl-cred">Symbolfotos: ${credLink()}${S["Bildnachweis"] ? " · " + esc(String(S["Bildnachweis"]).replace(/^Fotos:\s*/, "").replace(/\.$/, "")) : ""}</p>` : ""}
 <div class="empty" id="kbLeer" hidden>Dazu gibt es noch keinen Artikel. Versuch einen anderen Begriff, etwa „Steuern“ oder „Stand“.</div>`;
   layout({ p: "/ratgeber/", title: `Flohmarkt-Ratgeber: Die wichtigsten Fragen | ${NAME}`, desc: "Kaufen, verkaufen, handeln, Knigge und Tipps für Veranstalter: Der Ratgeber beantwortet die häufigsten Fragen rund um den Flohmarkt, kurz und verständlich.", body, nav: "ratgeber", ld: G([crumbLD([[NAME, "/"], ["Ratgeber"]]), { "@type": "CollectionPage", name: "Flohmarkt-Ratgeber", hasPart: KB.map(a => ({ "@type": "Article", headline: a.h, url: `${SITE}/ratgeber/${a.s}/` })) }]) });
@@ -1769,7 +1810,7 @@ for (const a of KB) {
 <div class="answer"><span class="kicker">Kurz gesagt</span><p>${rich(a.a)}</p></div>
 ${/rund/.test(ph[1]) ? "" : clusterImg(a.c, `kb-photo${ph[1] ? " " + ph[1] : ""}`, false, ph[0])}<div class="kb-body">${/rund/.test(ph[1]) ? sideImg(pickImg(ph[0] + "-klein") ? ph[0] + "-klein" : ph[0], ph[1]) : ""}${a.b.map(([h, p]) => `<h2>${esc(h)}</h2><p>${rich(p)}</p>`).join("")}</div>
 ${FEE_CTA.has(a.s) ? feeCta() : ""}${a.s in SIGN_CTA || a.c === "verkaufen" ? signCta(SIGN_BY[SIGN_CTA[a.s]]) : ""}
-${CAT_BY_S[ART_CTA[a.s]] ? catCta(CAT_BY_S[ART_CTA[a.s]]) : ""}
+${CAT_BY_S[ART_CTA[a.s]] ? catCta(CAT_BY_S[ART_CTA[a.s]]) : ""}${a.s in KC_ART ? (KC_ART[a.s] ? kcCta(KC_ART[a.s]) : kcHubCta()) : ""}
 ${a.f.length ? `<section class="faq"><h2>Häufige Fragen</h2>${a.f.map(([q, x]) => `<details><summary>${esc(q)}</summary><p>${rich(x)}</p></details>`).join("")}</section>` : ""}
 ${a.x ? '<p class="hint">Unser Tipp: Verbindliche Auskünfte für deinen Fall bekommst du bei den zuständigen Stellen, zum Beispiel beim Finanzamt, beim Bezirksamt oder beim Veranstalter des Markts.</p>' : ""}
 <p class="ai-note">Dieser Text ist mit Unterstützung von künstlicher Intelligenz entstanden.</p>
@@ -1778,6 +1819,80 @@ ${a.x ? '<p class="hint">Unser Tipp: Verbindliche Auskünfte für deinen Fall be
     { "@type": "Article", headline: a.h, description: a.d, dateModified: key(TODAY), author: { "@type": "Organization", name: NAME }, publisher: { "@type": "Organization", name: NAME }, mainEntityOfPage: `${SITE}/ratgeber/${a.s}/` },
     ...(a.f.length ? [{ "@type": "FAQPage", mainEntity: a.f.map(([q, x]) => ({ "@type": "Question", name: q, acceptedAnswer: { "@type": "Answer", text: plain(x) } })) }] : []),
     crumbLD([[NAME, "/"], ["Ratgeber", "/ratgeber/"], [cl.t, `/ratgeber/#${a.c}`], [a.h]])]) });
+}
+
+/* ---------------------------------------------------------------- Kauf-Check */
+if (KC_ON) {
+  const kcLine = x => `${x.l ? `<b>${esc(x.l)}:</b> ` : ""}${nbU(x.x)}`;
+  const kcList = (pts, kind) => `<ul class="kc-list">${pts.map(x => x.tip ? `<li class="kc-tip"><span>${kcLine(x)}</span></li>` : `<li><label class="kc-pt"><input type="checkbox" data-k="${kind}"><span class="kc-box" aria-hidden="true"></span><span>${kcLine(x)}</span></label></li>`).join("")}</ul>`;
+  const kcBody = (i, hl) => {
+    const sec = (h, sub, pts, kind) => pts.length ? `<div class="kc-blk"><h${hl}>${h}</h${hl}>${sub ? `<p class="kc-sub">${sub}</p>` : ""}${kcList(pts, kind)}</div>` : "";
+    return `<div class="kc-check">${sec("Echt oder Fälschung?", "Tipp an, was dir verdächtig vorkommt.", i.e, "e")}${sec("Gesperrt oder gestohlen?", "Tipp an, was nicht passt.", i.g, "g")}${sec("In Ordnung?", "Tipp an, was dir als Mangel auffällt.", i.z, "z")}
+<div class="kc-res js-only" aria-live="polite"><p>Noch nichts angetippt. Hier erscheint deine Einschätzung.</p></div>
+${i.f.length ? `<div class="kc-blk kc-ask"><h${hl}>Frag am Stand</h${hl}><ul>${i.f.map(q => `<li>${esc(q)}</li>`).join("")}</ul></div>` : ""}</div>`;
+  };
+  const lupeBtn = `<button type="button" class="route kc-lupe js-only" data-lupe>${ic("search")}Lupe öffnen</button>`;
+  const kcHint = `<p class="hint">Der Kauf-Check hilft beim genauen Hinsehen. Er ersetzt keine Echtheitsprüfung durch Fachleute, und gute Fälschungen sind auch für Kenner schwer zu erkennen.</p><p class="ai-note">Die Prüfpunkte sind mit Unterstützung von künstlicher Intelligenz entstanden.</p>`;
+  const shortN = i => i.n.replace(/\s*\([^)]*\)/g, "");
+  const areaItems = a => KC.filter(i => i.a === a);
+  const areaTip = a => KC_AREAS[a].tip ? `<p class="hint kc-areatip"><b>Wichtig bei Elektronik:</b> ${esc(KC_AREAS[a].tip)}</p>` : "";
+  const qItem = i => `<a href="${kcUrl(i)}" data-q="${esc((i.n + " " + i.kw + " " + KC_AREAS[i.a].t).toLowerCase())}"><span>${esc(i.n)}</span>${ic("chev")}</a>`;
+  // Übersicht
+  {
+    const AREAS_ON = Object.keys(KC_AREAS).filter(a => areaItems(a).length);
+    const body = crumbs([[NAME, "/"], ["Kauf-Check"]]) + `<section class="hub-head"><h1>Kauf-Check: Echt und in Ordnung?</h1>
+<p>Für ${KC.length} typische Flohmarkt-Artikel: Woran du Fälschungen erkennst, ob ein Gerät gesperrt sein könnte und worauf du beim Zustand achtest. Am Stand tippst du einfach an, was dir auffällt, und bekommst eine Einschätzung.</p>
+<div class="search js-only"><label for="kbSearch" class="kicker">Was willst du kaufen?</label><input id="kbSearch" type="search" placeholder="z. B. Levi's, iPhone, LEGO, Silber" autocomplete="off"></div>
+<div class="kc-tools js-only">${lupeBtn}<span class="meta">Kamera mit Zoom und Licht, um winzige Stempel und Nummern zu lesen.</span></div></section>
+${AREAS_ON.map(a => `<section class="cluster" id="${a}"><div class="cl-head"><div><h2>${esc(KC_AREAS[a].t)}</h2><p>${esc(KC_AREAS[a].p)}</p></div></div><div class="qlist">${areaItems(a).map(qItem).join("")}</div><p class="kc-all">${more(`${KC_P}${a}/`, `Alle ${areaItems(a).length} Checks: ${esc(KC_AREAS[a].t)}`)}</p></section>`).join("")}
+<div class="empty" id="kbLeer" hidden>Dazu gibt es noch keinen Check. Versuch einen anderen Begriff, etwa „Uhr“, „Jacke“ oder „Handy“.</div>
+${kcHint}`;
+    layout({ p: KC_P, title: `Kauf-Check: Fälschungen erkennen auf dem Flohmarkt | ${NAME}`, desc: pickDesc(`Echt oder Fake, gesperrt oder in Ordnung? Prüfpunkte für ${KC.length} Flohmarkt-Artikel von Levi's bis LEGO, von iPhone bis Meissen. Direkt am Stand abhaken.`), body, nav: "ratgeber",
+      ld: G([crumbLD([[NAME, "/"], ["Kauf-Check"]]), { "@type": "CollectionPage", name: "Kauf-Check", hasPart: AREAS_ON.map(a => ({ "@type": "WebPage", name: KC_AREAS[a].t, url: `${SITE}${KC_P}${a}/` })) }]) });
+  }
+  // Bereichsseiten
+  for (const [a, A] of Object.entries(KC_AREAS)) {
+    const its = areaItems(a); if (!its.length) continue;
+    const cr = [[NAME, "/"], ["Kauf-Check", KC_P], [A.t]];
+    const cats = A.cat && CAT_BY_S[A.cat] ? catCta(CAT_BY_S[A.cat]) : "";
+    const body = crumbs(cr) + `<article class="kb"><h1>${esc(A.t)}: Echtheit und Zustand prüfen</h1>
+<div class="byline"><span>${ic("search")}${its.length} Artikel</span><span>${ic("list")}${its.reduce((n, i) => n + kcCnt(i), 0)} Prüfpunkte</span><span>${ic("update")}Stand: ${STAND}</span></div>
+<div class="answer"><span class="kicker">Kurz gesagt</span><p>${esc(A.p)}</p></div>${areaTip(a)}
+<div class="kc-tools js-only">${lupeBtn}</div>
+<nav class="chips kc-toc" aria-label="Artikel in diesem Bereich">${its.map(i => `<a class="chip" href="${i.own ? kcUrl(i) : "#" + i.s}">${esc(i.n)}</a>`).join("")}</nav>
+${its.map(i => `<section class="kc-item" id="${i.s}"><h2>${esc(i.n)}</h2><p class="kc-k">${esc(i.k)}</p>${i.own ? `<p><a class="route kc-go" href="${kcUrl(i)}">Zum Check mit ${kcCnt(i)} Prüfpunkten${ic("chev")}</a></p>` : kcBody(i, 3)}</section>`).join("")}
+${cats}
+<section class="related"><div class="sec-head"><h2>Weitere Bereiche</h2>${more(KC_P, "Alle")}</div><nav class="chips">${Object.keys(KC_AREAS).filter(x => x !== a && areaItems(x).length).map(x => `<a class="chip" href="${KC_P}${x}/">${esc(KC_AREAS[x].t)}</a>`).join("")}</nav></section>
+${A.kb.some(k => KBY[k]) ? `<section class="related"><div class="sec-head"><h2>Aus dem Ratgeber</h2></div>${grid(A.kb.filter(k => KBY[k]).map(kbCard))}</section>` : ""}
+${kcHint}</article>`;
+    layout({ p: `${KC_P}${a}/`, title: `${[`${A.t} gebraucht kaufen: echt und in Ordnung?`, `${A.t}: echt und in Ordnung?`].find(x => x.length <= 60) || A.t} | ${NAME}`, desc: pickDesc(`${A.p} ${its.length} Artikel mit Prüfpunkten zum Abhaken am Stand.`, A.p), body, nav: "ratgeber",
+      ld: G([crumbLD(cr), { "@type": "ItemList", itemListElement: its.map((i, n) => ({ "@type": "ListItem", position: n + 1, name: i.n, url: SITE + kcUrl(i) })) }]) });
+  }
+  // Eigene Seiten für die gefragtesten Artikel
+  for (const i of KC.filter(x => x.own)) {
+    const A = KC_AREAS[i.a], cr = [[NAME, "/"], ["Kauf-Check", KC_P], [A.t, `${KC_P}${i.a}/`], [i.n]], n = kcCnt(i), sn = shortN(i);
+    const h1 = i.e.length ? `${i.n}: echt und in Ordnung?` : i.g.length ? `${i.n} gebraucht kaufen: gesperrt oder in Ordnung?` : `${i.n} gebraucht kaufen: darauf achten`;
+    const fit = (...c) => c.find(x => x.length <= 60) || c[c.length - 1];
+    const title = i.t || (i.e.length ? fit(`${sn}: Fälschung erkennen & gebraucht prüfen`, `${sn}: Fälschung erkennen & prüfen`, `${sn}: Fälschung erkennen`, `${sn}: echt oder Fake?`) : i.g.length ? fit(`${sn} gebraucht: Sperre & Zustand prüfen`, `${sn} gebraucht prüfen`) : fit(`${sn} gebraucht kaufen: darauf achten`, `${sn} gebraucht kaufen`));
+    const labs = [...i.e, ...i.g, ...i.z].filter(x => x.l && !x.tip).map(x => x.l);
+    const dOf = k => `${i.e.length ? "Echt oder Fake? " : ""}${n} Prüfpunkte für ${sn} vom Flohmarkt${k ? ": " + labs.slice(0, k).join(", ") : ""}. Direkt am Stand abhaken, kostenlos.`;
+    const desc = i.d || pickDesc(dOf(4), dOf(3), dOf(2), dOf(1), dOf(0));
+    const ms = i.m.map(x => MBY[x]).filter(Boolean);
+    i.m.filter(x => !MBY[x]).forEach(x => warn("Kauf-Check", `${i.n}: Markt „${x}“ unter „Passende Märkte“ gibt es nicht.`));
+    const sib = KC.filter(x => x.a === i.a && x !== i);
+    const body = crumbs(cr) + `<article class="kb kc-page"><h1>${esc(h1)}</h1>
+<div class="byline"><span>${ic("search")}Kauf-Check</span><span>${ic("list")}${n} Prüfpunkte</span><span>${ic("update")}Stand: ${STAND}</span></div>
+<div class="answer"><span class="kicker">Kurz gesagt</span><p>${esc(i.k)}</p></div>${areaTip(i.a)}
+<div class="kc-tools js-only">${lupeBtn}<span class="meta">Zum Lesen kleiner Stempel, Codes und Nummern.</span></div>
+${kcBody(i, 2)}
+${ms.length ? `<section class="related"><div class="sec-head"><h2>Hier wirst du fündig</h2></div>${grid(ms.map(mCard))}</section>` : ""}
+${sib.length ? `<section class="related"><div class="sec-head"><h2>Weitere Checks: ${esc(A.t)}</h2>${more(`${KC_P}${i.a}/`, "Alle")}</div><div class="qlist">${sib.map(qItem).join("")}</div></section>` : ""}
+${A.kb.some(k => KBY[k]) ? `<section class="related"><div class="sec-head"><h2>Aus dem Ratgeber</h2></div>${grid(A.kb.filter(k => KBY[k]).map(kbCard))}</section>` : ""}
+${kcHint}</article>`;
+    layout({ p: kcUrl(i), title: `${title} | ${NAME}`, desc, body, nav: "ratgeber", ld: G([
+      { "@type": "Article", headline: h1, description: desc, dateModified: key(TODAY), author: { "@type": "Organization", name: NAME }, publisher: { "@type": "Organization", name: NAME }, mainEntityOfPage: SITE + kcUrl(i) },
+      crumbLD(cr)]) });
+  }
 }
 
 /* ---------------------------------------------------------------- Für Veranstalter */
@@ -1850,7 +1965,7 @@ ${isGitHub
 <h2>6. Kontakt per E-Mail</h2><p>Schreibst du uns eine E-Mail, verarbeiten wir deine Angaben, um die Anfrage zu beantworten (Art. 6 Abs. 1 lit. b oder f DSGVO), und löschen sie, sobald die Anfrage erledigt ist und keine gesetzlichen Aufbewahrungspflichten entgegenstehen.${f("Datenschutz: E-Mail-Anbieter") ? ` Unser E-Mail-Postfach liegt bei ${esc(f("Datenschutz: E-Mail-Anbieter"))}.` : ""}</p>
 <h2>7. Links zu anderen Websites</h2><p>Links wie „Route planen“ führen zu Google Maps oder zu Websites der Veranstalter. Erst wenn du einen solchen Link anklickst, werden Daten an den jeweiligen Anbieter übertragen. Das gilt auch für „Teilen“: Erst wenn du darauf tippst, öffnet sich die Teilen-Funktion deines Geräts mit einer vorformulierten Nachricht. Welche App du dann wählst, entscheidest du. Vorher werden keine Daten an andere Dienste übertragen.</p>
 <h2>8. Angaben zu Märkten und Veranstaltern</h2><p>Im Kalender nennen wir zu jedem Markt den Namen des Veranstalters, manchmal ist das eine Einzelperson. Diese Angaben stammen aus öffentlich zugänglichen Quellen, in der Regel von der Website des Veranstalters oder aus dessen eigener Ankündigung, oder der Veranstalter hat sie uns selbst geschickt. Wir veröffentlichen sie, damit Besucher wissen, wer hinter einem Markt steht und an wen sie sich wenden können. Rechtsgrundlage ist unser berechtigtes Interesse an einem vollständigen und überprüfbaren Flohmarkt-Kalender (Art. 6 Abs. 1 lit. f DSGVO). Verarbeitet werden der Name des Veranstalters, die Angaben zum Markt und, soweit öffentlich, die Adresse seiner Website. Die Angaben bleiben veröffentlicht, solange der Markt im Kalender steht. Empfänger sind unser Hoster (Abschnitt 2) und Google Ireland Limited, Gordon House, Barrow Street, Dublin 4, Irland, weil wir den Kalender in einer Tabelle bei Google pflegen. Du bist Veranstalter und möchtest, dass ein Eintrag geändert oder entfernt wird? Dann schreib uns an die E-Mail-Adresse in Abschnitt 1. Du kannst der Veröffentlichung jederzeit widersprechen (Art. 21 DSGVO), wir ändern oder entfernen den Eintrag dann umgehend.</p>
-<h2>9. Suche, Umkreissuche und Karte</h2><p>Die Suche nach Märkten und Terminen läuft vollständig in deinem Browser. Deine Suchbegriffe werden nicht an uns übertragen und nicht gespeichert. Die Umkreissuche nach Postleitzahl oder Standort läuft ebenfalls vollständig in deinem Browser. Postleitzahl und Standort werden nicht an uns übertragen und nicht gespeichert. Deinen Standort fragt der Browser nur ab, wenn du auf „Mein Standort“ tippst und der Abfrage in deinem Browser zustimmst. Wie dein Gerät den Standort ermittelt, legt dein Browser oder Betriebssystem fest; je nach Gerät nutzt es dafür einen eigenen Ortungsdienst seines Herstellers.</p><p>Die Flohmarkt-Tour auf der Merkliste wird ebenfalls vollständig in deinem Browser berechnet. Startpunkt, Postleitzahl und Zeiten werden nicht an uns übertragen; deine Einstellungen (ohne Standort) bleiben nur im Speicher deines Browsers. Erst wenn du auf „In Google Maps öffnen“ oder „Genau prüfen“ tippst, öffnet sich Google Maps mit der Route, dabei gelten die Datenschutzhinweise von Google.</p><p>Beim Kalender-Abo ruft dein Kalenderprogramm die Kalenderdatei des Markts regelmäßig von unserem Server ab. Dabei fallen nur die üblichen Server-Protokolle an (siehe Abschnitt zum Hosting). Wir erfahren nicht, wer ein Abo nutzt.</p>${HAS_MAP ? `<p>Die Karte auf der Seite „Alle Märkte“ lädt erst, wenn du auf „Karte laden“ tippst. Dann werden Kartenbilder von Servern der OpenStreetMap Foundation (St John’s Innovation Centre, Cowley Road, Cambridge, CB4 0WS, Vereinigtes Königreich) geladen, dabei wird deine IP-Adresse übertragen. Rechtsgrundlage ist deine Einwilligung durch den Klick (Art. 6 Abs. 1 lit. a DSGVO, § 25 Abs. 1 TDDDG). Die Einwilligung gilt nur für den aktuellen Seitenaufruf und wird nicht gespeichert: Nach dem Neuladen der Seite bleibt die Karte wieder aus. Du kannst sie also jederzeit für die Zukunft widerrufen, indem du die Seite verlässt oder neu lädst. Für das Vereinigte Königreich gilt ein Angemessenheitsbeschluss der EU-Kommission (Art. 45 DSGVO). Die Kartensoftware (Leaflet) gehört zur Website selbst und wird nicht von OpenStreetMap geladen. Mehr dazu in der <a href="https://osmfoundation.org/wiki/Privacy_Policy" rel="noopener">Datenschutzerklärung der OpenStreetMap Foundation</a>.</p>` : ""}
+<h2>9. Suche, Umkreissuche und Karte</h2><p>Die Suche nach Märkten und Terminen läuft vollständig in deinem Browser. Deine Suchbegriffe werden nicht an uns übertragen und nicht gespeichert. Die Umkreissuche nach Postleitzahl oder Standort läuft ebenfalls vollständig in deinem Browser. Postleitzahl und Standort werden nicht an uns übertragen und nicht gespeichert. Deinen Standort fragt der Browser nur ab, wenn du auf „Mein Standort“ tippst und der Abfrage in deinem Browser zustimmst. Wie dein Gerät den Standort ermittelt, legt dein Browser oder Betriebssystem fest; je nach Gerät nutzt es dafür einen eigenen Ortungsdienst seines Herstellers.</p><p>Die Flohmarkt-Tour auf der Merkliste wird ebenfalls vollständig in deinem Browser berechnet. Startpunkt, Postleitzahl und Zeiten werden nicht an uns übertragen; deine Einstellungen (ohne Standort) bleiben nur im Speicher deines Browsers. Erst wenn du auf „In Google Maps öffnen“ oder „Genau prüfen“ tippst, öffnet sich Google Maps mit der Route, dabei gelten die Datenschutzhinweise von Google.</p><p>Die Lupe im Kauf-Check nutzt die Kamera deines Geräts erst, wenn du auf „Lupe öffnen“ tippst und der Abfrage in deinem Browser zustimmst. Das Kamerabild wird nur auf deinem Bildschirm angezeigt, nicht an uns übertragen und nicht gespeichert. Mit „Schließen“ wird die Kamera sofort wieder ausgeschaltet. Was du im Kauf-Check antippst, bleibt ebenfalls nur auf deinem Gerät und ist nach dem Neuladen der Seite weg.</p><p>Beim Kalender-Abo ruft dein Kalenderprogramm die Kalenderdatei des Markts regelmäßig von unserem Server ab. Dabei fallen nur die üblichen Server-Protokolle an (siehe Abschnitt zum Hosting). Wir erfahren nicht, wer ein Abo nutzt.</p>${HAS_MAP ? `<p>Die Karte auf der Seite „Alle Märkte“ lädt erst, wenn du auf „Karte laden“ tippst. Dann werden Kartenbilder von Servern der OpenStreetMap Foundation (St John’s Innovation Centre, Cowley Road, Cambridge, CB4 0WS, Vereinigtes Königreich) geladen, dabei wird deine IP-Adresse übertragen. Rechtsgrundlage ist deine Einwilligung durch den Klick (Art. 6 Abs. 1 lit. a DSGVO, § 25 Abs. 1 TDDDG). Die Einwilligung gilt nur für den aktuellen Seitenaufruf und wird nicht gespeichert: Nach dem Neuladen der Seite bleibt die Karte wieder aus. Du kannst sie also jederzeit für die Zukunft widerrufen, indem du die Seite verlässt oder neu lädst. Für das Vereinigte Königreich gilt ein Angemessenheitsbeschluss der EU-Kommission (Art. 45 DSGVO). Die Kartensoftware (Leaflet) gehört zur Website selbst und wird nicht von OpenStreetMap geladen. Mehr dazu in der <a href="https://osmfoundation.org/wiki/Privacy_Policy" rel="noopener">Datenschutzerklärung der OpenStreetMap Foundation</a>.</p>` : ""}
 <h2>10. Deine Rechte</h2><p>Soweit wir personenbezogene Daten von dir verarbeiten, hast du diese Rechte:</p><ul><li>Auskunft über deine Daten (Art. 15 DSGVO)</li><li>Berichtigung unrichtiger Daten (Art. 16 DSGVO)</li><li>Löschung (Art. 17 DSGVO)</li><li>Einschränkung der Verarbeitung (Art. 18 DSGVO)</li><li>Datenübertragbarkeit (Art. 20 DSGVO)</li><li>Widerruf einer Einwilligung mit Wirkung für die Zukunft (Art. 7 Abs. 3 DSGVO)</li></ul><p><b>Widerspruchsrecht (Art. 21 DSGVO):</b> Stützen wir eine Verarbeitung auf unser berechtigtes Interesse (Art. 6 Abs. 1 lit. f DSGVO), kannst du ihr aus Gründen, die sich aus deiner besonderen Situation ergeben, jederzeit widersprechen.</p><p>Um ein Recht auszuüben, genügt eine formlose Nachricht an die E-Mail-Adresse in Abschnitt 1.</p><p><b>Beschwerde:</b> Du kannst dich bei einer Datenschutz-Aufsichtsbehörde beschweren (Art. 77 DSGVO), zum Beispiel beim <a href="https://datenschutz-hamburg.de" rel="noopener">Hamburgischen Beauftragten für Datenschutz und Informationsfreiheit</a>.</p>
 <h2>11. Pflicht zur Angabe von Daten, automatisierte Entscheidungen</h2><p>Du kannst diese Website nutzen, ohne Angaben zu deiner Person zu machen. Es besteht keine gesetzliche oder vertragliche Pflicht, uns Daten bereitzustellen. Automatisierte Entscheidungen oder Profiling (Art. 22 DSGVO) finden nicht statt.</p>
 <p>Stand: ${ph("Datenschutz: Stand", "Datum")}</p></div></article>`;
@@ -2012,7 +2127,7 @@ for (const [p, pg] of pages) {
   }
   for (const m of pg.html.matchAll(/href="(\/[^"#]*)(#[^"]*)?"/g)) {
     const target = m[1];
-    if (target.startsWith("/assets/") || target.startsWith("/fonts/") || /^\/(favicon\.ico|apple-touch-icon\.png|manifest\.webmanifest)$/.test(target)) continue;
+    if (target.startsWith("/assets/") || target.startsWith("/fonts/") || target.startsWith("/kalender/") || /^\/(favicon\.ico|apple-touch-icon\.png|manifest\.webmanifest)$/.test(target)) continue;
     if (!existing.has(target)) warn("Links", `${p} verlinkt auf ${target}, diese Seite gibt es nicht.`);
   }
 }

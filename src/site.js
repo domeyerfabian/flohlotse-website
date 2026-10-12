@@ -248,6 +248,7 @@
       else { sc.scrollLeft = (img.offsetWidth - sc.clientWidth) / 2; sc.scrollTop = (img.offsetHeight - sc.clientHeight) / 2; }
     };
     img.onload = function () { zoom(false); };
+    img.onerror = function () { wrap.querySelector(".lupe-msg").textContent = "Dieses Foto kann dein Browser nicht anzeigen. Tipp auf „Neues Foto“ und versuch es nochmal."; };
     img.src = url;
     rng.addEventListener("input", function () { zoom(true); });
     wrap.querySelector(".lupe-x").addEventListener("click", close);

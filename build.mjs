@@ -1832,7 +1832,11 @@ if (KC_ON) {
 ${i.f.length ? `<div class="kc-blk kc-ask"><h${hl}>Frag am Stand</h${hl}><ul>${i.f.map(q => `<li>${esc(q)}</li>`).join("")}</ul></div>` : ""}</div>`;
   };
   const lupeBtn = `<button type="button" class="route kc-lupe js-only" data-lupe>${ic("search")}Lupe öffnen</button>`;
-  const kcHint = `<p class="hint">Der Kauf-Check hilft beim genauen Hinsehen. Er ersetzt keine Echtheitsprüfung durch Fachleute, und gute Fälschungen sind auch für Kenner schwer zu erkennen.</p><p class="ai-note">Die Prüfpunkte sind mit Unterstützung von künstlicher Intelligenz entstanden.</p>`;
+  // Fehler melden: per E-Mail an die Impressum-Adresse, sonst über das Impressum
+  const kcMail = /^[^\s@<>"]+@[^\s@<>"]+\.[a-z]{2,}$/i.test(IMP_MAIL);
+  const kcFix = subj => kcMail ? `<a href="mailto:${esc(IMP_MAIL)}?subject=${encodeURIComponent("Kauf-Check: " + subj)}">Schreib uns</a>` : `<a href="/impressum/">Schreib uns</a>`;
+  const kcHint = (subj = "Hinweis") => `<p class="hint"><b>Alle Angaben ohne Gewähr. Die Nutzung des Kauf-Checks erfolgt auf eigenes Risiko. Für Kaufentscheidungen, die auf Grundlage dieser Hinweise getroffen werden, übernehmen wir keine Haftung.</b> Der Kauf-Check hilft beim genauen Hinsehen, ist aber kein Echtheitsnachweis und ersetzt keine Prüfung durch Fachleute. Gute Fälschungen sind auch für Kenner schwer zu erkennen. Dir ist ein Fehler aufgefallen? ${kcFix(subj)}, wir korrigieren ihn.</p><p class="ai-note">Die Prüfpunkte sind mit Unterstützung von künstlicher Intelligenz entstanden und anhand öffentlicher Quellen geprüft.</p>`;
+  const kcTop = `<p class="kc-top">Hinweise ohne Gewähr, Nutzung auf eigenes Risiko. Eine Einschätzung, kein Echtheitsnachweis.</p>`;
   const shortN = i => i.n.replace(/\s*\([^)]*\)/g, "");
   const areaItems = a => KC.filter(i => i.a === a);
   const areaTip = a => KC_AREAS[a].tip ? `<p class="hint kc-areatip"><b>Wichtig bei Elektronik:</b> ${esc(KC_AREAS[a].tip)}</p>` : "";
@@ -1846,7 +1850,7 @@ ${i.f.length ? `<div class="kc-blk kc-ask"><h${hl}>Frag am Stand</h${hl}><ul>${i
 <div class="kc-tools js-only">${lupeBtn}<span class="meta">Kamera mit Zoom und Licht, um winzige Stempel und Nummern zu lesen.</span></div></section>
 ${AREAS_ON.map(a => `<section class="cluster" id="${a}"><div class="cl-head"><div><h2>${esc(KC_AREAS[a].t)}</h2><p>${esc(KC_AREAS[a].p)}</p></div></div><div class="qlist">${areaItems(a).map(qItem).join("")}</div><p class="kc-all">${more(`${KC_P}${a}/`, `Alle ${areaItems(a).length} Checks: ${esc(KC_AREAS[a].t)}`)}</p></section>`).join("")}
 <div class="empty" id="kbLeer" hidden>Dazu gibt es noch keinen Check. Versuch einen anderen Begriff, etwa „Uhr“, „Jacke“ oder „Handy“.</div>
-${kcHint}`;
+${kcHint()}`;
     layout({ p: KC_P, title: `Kauf-Check: Fälschungen erkennen auf dem Flohmarkt | ${NAME}`, desc: pickDesc(`Echt oder Fake, gesperrt oder in Ordnung? Prüfpunkte für ${KC.length} Flohmarkt-Artikel von Levi's bis LEGO, von iPhone bis Meissen. Direkt am Stand abhaken.`), body, nav: "ratgeber",
       ld: G([crumbLD([[NAME, "/"], ["Kauf-Check"]]), { "@type": "CollectionPage", name: "Kauf-Check", hasPart: AREAS_ON.map(a => ({ "@type": "WebPage", name: KC_AREAS[a].t, url: `${SITE}${KC_P}${a}/` })) }]) });
   }
@@ -1857,14 +1861,14 @@ ${kcHint}`;
     const cats = A.cat && CAT_BY_S[A.cat] ? catCta(CAT_BY_S[A.cat]) : "";
     const body = crumbs(cr) + `<article class="kb"><h1>${esc(A.t)}: Echtheit und Zustand prüfen</h1>
 <div class="byline"><span>${ic("search")}${its.length} Artikel</span><span>${ic("list")}${its.reduce((n, i) => n + kcCnt(i), 0)} Prüfpunkte</span><span>${ic("update")}Stand: ${STAND}</span></div>
-<div class="answer"><span class="kicker">Kurz gesagt</span><p>${esc(A.p)}</p></div>${areaTip(a)}
+<div class="answer"><span class="kicker">Kurz gesagt</span><p>${esc(A.p)}</p></div>${areaTip(a)}${kcTop}
 <div class="kc-tools js-only">${lupeBtn}</div>
 <nav class="chips kc-toc" aria-label="Artikel in diesem Bereich">${its.map(i => `<a class="chip" href="${i.own ? kcUrl(i) : "#" + i.s}">${esc(i.n)}</a>`).join("")}</nav>
 ${its.map(i => `<section class="kc-item" id="${i.s}"><h2>${esc(i.n)}</h2><p class="kc-k">${esc(i.k)}</p>${i.own ? `<p><a class="route kc-go" href="${kcUrl(i)}">Zum Check mit ${kcCnt(i)} Prüfpunkten${ic("chev")}</a></p>` : kcBody(i, 3)}</section>`).join("")}
 ${cats}
 <section class="related"><div class="sec-head"><h2>Weitere Bereiche</h2>${more(KC_P, "Alle")}</div><nav class="chips">${Object.keys(KC_AREAS).filter(x => x !== a && areaItems(x).length).map(x => `<a class="chip" href="${KC_P}${x}/">${esc(KC_AREAS[x].t)}</a>`).join("")}</nav></section>
 ${A.kb.some(k => KBY[k]) ? `<section class="related"><div class="sec-head"><h2>Aus dem Ratgeber</h2></div>${grid(A.kb.filter(k => KBY[k]).map(kbCard))}</section>` : ""}
-${kcHint}</article>`;
+${kcHint(A.t)}</article>`;
     layout({ p: `${KC_P}${a}/`, title: `${[`${A.t} gebraucht kaufen: echt und in Ordnung?`, `${A.t}: echt und in Ordnung?`].find(x => x.length <= 60) || A.t} | ${NAME}`, desc: pickDesc(`${A.p} ${its.length} Artikel mit Prüfpunkten zum Abhaken am Stand.`, A.p), body, nav: "ratgeber",
       ld: G([crumbLD(cr), { "@type": "ItemList", itemListElement: its.map((i, n) => ({ "@type": "ListItem", position: n + 1, name: i.n, url: SITE + kcUrl(i) })) }]) });
   }
@@ -1882,13 +1886,13 @@ ${kcHint}</article>`;
     const sib = KC.filter(x => x.a === i.a && x !== i);
     const body = crumbs(cr) + `<article class="kb kc-page"><h1>${esc(h1)}</h1>
 <div class="byline"><span>${ic("search")}Kauf-Check</span><span>${ic("list")}${n} Prüfpunkte</span><span>${ic("update")}Stand: ${STAND}</span></div>
-<div class="answer"><span class="kicker">Kurz gesagt</span><p>${esc(i.k)}</p></div>${areaTip(i.a)}
+<div class="answer"><span class="kicker">Kurz gesagt</span><p>${esc(i.k)}</p></div>${areaTip(i.a)}${kcTop}
 <div class="kc-tools js-only">${lupeBtn}<span class="meta">Zum Lesen kleiner Stempel, Codes und Nummern.</span></div>
 ${kcBody(i, 2)}
 ${ms.length ? `<section class="related"><div class="sec-head"><h2>Hier wirst du fündig</h2></div>${grid(ms.map(mCard))}</section>` : ""}
 ${sib.length ? `<section class="related"><div class="sec-head"><h2>Weitere Checks: ${esc(A.t)}</h2>${more(`${KC_P}${i.a}/`, "Alle")}</div><div class="qlist">${sib.map(qItem).join("")}</div></section>` : ""}
 ${A.kb.some(k => KBY[k]) ? `<section class="related"><div class="sec-head"><h2>Aus dem Ratgeber</h2></div>${grid(A.kb.filter(k => KBY[k]).map(kbCard))}</section>` : ""}
-${kcHint}</article>`;
+${kcHint(i.n)}</article>`;
     layout({ p: kcUrl(i), title: `${title} | ${NAME}`, desc, body, nav: "ratgeber", ld: G([
       { "@type": "Article", headline: h1, description: desc, dateModified: key(TODAY), author: { "@type": "Organization", name: NAME }, publisher: { "@type": "Organization", name: NAME }, mainEntityOfPage: SITE + kcUrl(i) },
       crumbLD(cr)]) });

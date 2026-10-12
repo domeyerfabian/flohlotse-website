@@ -203,6 +203,60 @@
       document.getElementById("kbLeer").hidden = any;
     });
   }
+  // Kauf-Check: angetippte Punkte zählen und eine Einschätzung zeigen. Nichts wird gespeichert.
+  // Schwebender Hinweis unten, solange das Ergebnis außer Sicht ist
+  var kcF = null, kcCur = null, kcVis = [];
+  var kcFlt = function () { if (kcF) kcF.hidden = !kcCur || !kcCur.t || kcVis.indexOf(kcCur.res) > -1; };
+  var kcIO = window.IntersectionObserver ? new IntersectionObserver(function (es) { es.forEach(function (en) { var i = kcVis.indexOf(en.target); if (en.isIntersecting && i < 0) kcVis.push(en.target); if (!en.isIntersecting && i > -1) kcVis.splice(i, 1); }); kcFlt(); }) : null;
+  document.querySelectorAll(".kc-check").forEach(function (box) {
+    var res = box.querySelector(".kc-res"); if (!res) return;
+    if (kcIO) kcIO.observe(res);
+    var cnt = function (k) { return box.querySelectorAll('input[data-k="' + k + '"]:checked').length; };
+    var upd = function () {
+      var e = cnt("e"), g = cnt("g"), z = cnt("z"), h = [];
+      var t = [e ? e + " Warnzeichen" : "", g ? g + "× Herkunft" : "", z ? (z === 1 ? "1 Mangel" : z + " Mängel") : ""].filter(Boolean).join(" · ");
+      if (kcIO) {
+        if (!kcF) { kcF = document.createElement("button"); kcF.type = "button"; kcF.className = "kc-float"; kcF.hidden = true; document.body.appendChild(kcF); kcF.addEventListener("click", function () { if (kcCur) kcCur.res.scrollIntoView({ behavior: "smooth", block: "center" }); }); }
+        kcCur = { res: res, t: t }; kcF.textContent = t + " · Ergebnis ↓"; kcFlt();
+      }
+      if (!e && !g && !z) { res.innerHTML = "<p>Noch nichts angetippt. Hier erscheint deine Einschätzung.</p>"; return; }
+      if (g) h.push("<p><b>" + (g === 1 ? "1 Punkt" : g + " Punkte") + " zu Sperre oder Herkunft " + (g === 1 ? "passt" : "passen") + " nicht.</b> Ohne Klärung lieber Finger weg.</p>");
+      if (e) h.push("<p><b>" + e + " Warnzeichen zur Echtheit.</b> " + (e === 1 ? "Schau genauer hin und frag nach." : e === 2 ? "Genauer hinschauen, im Zweifel lieber nicht kaufen." : "Das spricht deutlich gegen ein Original. Lieber Finger weg.") + "</p>");
+      else if (!g && box.querySelector('input[data-k="e"]')) h.push("<p><b>Keine Warnzeichen zur Echtheit angetippt.</b> Ein gutes Zeichen, aber keine Garantie.</p>");
+      if (z) h.push("<p><b>" + (z === 1 ? "1 Mangel" : z + " Mängel") + " beim Zustand.</b> " + (e || g ? "" : "Gute Argumente für einen besseren Preis. ") + '<a href="' + ROOT + '/ratgeber/handeln-auf-dem-flohmarkt/">So handelst du freundlich</a>.</p>');
+      h.push('<button type="button" class="kc-reset">Zurücksetzen</button>');
+      res.innerHTML = h.join("");
+    };
+    box.addEventListener("change", upd);
+    res.addEventListener("click", function (ev) { if (ev.target.closest(".kc-reset")) { box.querySelectorAll("input[data-k]").forEach(function (i) { i.checked = false; }); upd(); } });
+  });
+  // Lupe: Handykamera mit Zoom, Licht und Standbild, um kleine Stempel zu lesen. Das Bild bleibt auf dem Gerät.
+  document.querySelectorAll("[data-lupe]").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { toast("Dein Browser kann die Kamera hier nicht nutzen."); return; }
+      var wrap = document.createElement("div"); wrap.className = "lupe"; wrap.setAttribute("role", "dialog"); wrap.setAttribute("aria-modal", "true"); wrap.setAttribute("aria-label", "Lupe");
+      wrap.innerHTML = '<div class="lupe-v"><video playsinline autoplay muted></video><button type="button" class="lupe-x">Schließen</button></div><div class="lupe-bar"><div class="lupe-row"><label>Zoom<input type="range" min="1" max="5" step="0.1" value="2"></label></div><div class="lupe-row"><button type="button" class="lupe-l" aria-pressed="false" hidden>Licht</button><button type="button" class="lupe-f" aria-pressed="false">Standbild</button></div><p class="lupe-msg">Das Kamerabild bleibt auf deinem Gerät und wird nicht gespeichert.</p></div>';
+      document.body.appendChild(wrap); document.documentElement.style.overflow = "hidden";
+      var v = wrap.querySelector("video"), rng = wrap.querySelector("input"), lb = wrap.querySelector(".lupe-l"), fb = wrap.querySelector(".lupe-f"), stream = null, track = null, hw = null;
+      var onKey = function (e) { if (e.key === "Escape") close(); };
+      var close = function () { if (stream) stream.getTracks().forEach(function (t) { t.stop(); }); stream = null; wrap.remove(); document.documentElement.style.overflow = ""; document.removeEventListener("keydown", onKey); btn.focus(); };
+      document.addEventListener("keydown", onKey);
+      wrap.querySelector(".lupe-x").addEventListener("click", close);
+      wrap.querySelector(".lupe-x").focus();
+      var zoom = function () { var z = +rng.value; if (hw) { track.applyConstraints({ advanced: [{ zoom: Math.min(hw.max, Math.max(hw.min, z * hw.base)) }] }).catch(function () {}); v.style.transform = ""; } else v.style.transform = "scale(" + z + ")"; };
+      rng.addEventListener("input", zoom);
+      fb.addEventListener("click", function () { var on = fb.getAttribute("aria-pressed") !== "true"; fb.setAttribute("aria-pressed", String(on)); if (on) v.pause(); else v.play(); });
+      lb.addEventListener("click", function () { var on = lb.getAttribute("aria-pressed") !== "true"; track.applyConstraints({ advanced: [{ torch: on }] }).then(function () { lb.setAttribute("aria-pressed", String(on)); }, function () {}); });
+      navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" }, width: { ideal: 1920 }, height: { ideal: 1080 } }, audio: false }).then(function (s) {
+        if (!wrap.isConnected) { s.getTracks().forEach(function (t) { t.stop(); }); return; }
+        stream = s; track = s.getVideoTracks()[0]; v.srcObject = s;
+        var cap = track.getCapabilities ? track.getCapabilities() : {};
+        if (cap.zoom && cap.zoom.max > cap.zoom.min) { hw = { min: cap.zoom.min, max: cap.zoom.max, base: Math.max(1, cap.zoom.min) }; rng.max = String(Math.max(2, Math.min(10, cap.zoom.max / hw.base))); }
+        if (cap.torch) lb.hidden = false;
+        zoom();
+      }, function () { close(); toast("Kein Zugriff auf die Kamera. Du kannst ihn in den Einstellungen deines Browsers erlauben."); });
+    });
+  });
   // Live-Status für heutige Termine: „Jetzt geöffnet“, „Öffnet heute um …“, „Heute schon vorbei“ (Hamburger Uhrzeit)
   var liveEvs = document.querySelectorAll(".group .ev[data-s]");
   if (liveEvs.length && NOW) {

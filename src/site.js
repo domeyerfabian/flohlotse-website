@@ -230,33 +230,61 @@
     box.addEventListener("change", upd);
     res.addEventListener("click", function (ev) { if (ev.target.closest(".kc-reset")) { box.querySelectorAll("input[data-k]").forEach(function (i) { i.checked = false; }); upd(); } });
   });
-  // Lupe: Handykamera mit Zoom, Licht und Standbild, um kleine Stempel zu lesen. Das Bild bleibt auf dem Gerät.
+  // Lupe: öffnet die Kamera-App des Handys, das Foto erscheint groß mit Zoom. Es bleibt auf dem Gerät.
+  var lupeIn = null;
+  var lupeShow = function (file, btn) {
+    var url = URL.createObjectURL(file);
+    var wrap = document.createElement("div"); wrap.className = "lupe"; wrap.setAttribute("role", "dialog"); wrap.setAttribute("aria-modal", "true"); wrap.setAttribute("aria-label", "Lupe");
+    wrap.innerHTML = '<div class="lupe-v"><div class="lupe-sc"><img alt="Dein Foto"></div><button type="button" class="lupe-x">Schließen</button></div><div class="lupe-bar"><div class="lupe-row"><label>Zoom<input type="range" min="1" max="6" step="0.1" value="2.5"></label></div><div class="lupe-row"><button type="button" class="lupe-new">Neues Foto</button></div><p class="lupe-msg">Mit dem Finger verschieben. Das Foto bleibt auf deinem Handy.</p></div>';
+    document.body.appendChild(wrap); document.documentElement.style.overflow = "hidden";
+    var img = wrap.querySelector("img"), sc = wrap.querySelector(".lupe-sc"), rng = wrap.querySelector("input");
+    var onKey = function (e) { if (e.key === "Escape") close(); };
+    var close = function () { URL.revokeObjectURL(url); wrap.remove(); document.documentElement.style.overflow = ""; document.removeEventListener("keydown", onKey); if (btn) btn.focus(); };
+    var zoom = function (keep) {
+      var cx = sc.scrollLeft + sc.clientWidth / 2, cy = sc.scrollTop + sc.clientHeight / 2, ow = img.offsetWidth || 1;
+      img.style.width = (+rng.value * 100) + "%";
+      var f = img.offsetWidth / ow;
+      if (keep) { sc.scrollLeft = cx * f - sc.clientWidth / 2; sc.scrollTop = cy * f - sc.clientHeight / 2; }
+      else { sc.scrollLeft = (img.offsetWidth - sc.clientWidth) / 2; sc.scrollTop = (img.offsetHeight - sc.clientHeight) / 2; }
+    };
+    img.onload = function () { zoom(false); };
+    img.src = url;
+    rng.addEventListener("input", function () { zoom(true); });
+    wrap.querySelector(".lupe-x").addEventListener("click", close);
+    wrap.querySelector(".lupe-new").addEventListener("click", function () { close(); lupeIn.click(); });
+    document.addEventListener("keydown", onKey);
+    wrap.querySelector(".lupe-x").focus();
+  };
   document.querySelectorAll("[data-lupe]").forEach(function (btn) {
     btn.addEventListener("click", function () {
-      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { toast("Dein Browser kann die Kamera hier nicht nutzen."); return; }
-      var wrap = document.createElement("div"); wrap.className = "lupe"; wrap.setAttribute("role", "dialog"); wrap.setAttribute("aria-modal", "true"); wrap.setAttribute("aria-label", "Lupe");
-      wrap.innerHTML = '<div class="lupe-v"><video playsinline autoplay muted></video><button type="button" class="lupe-x">Schließen</button></div><div class="lupe-bar"><div class="lupe-row"><label>Zoom<input type="range" min="1" max="5" step="0.1" value="2"></label></div><div class="lupe-row"><button type="button" class="lupe-l" aria-pressed="false" hidden>Licht</button><button type="button" class="lupe-f" aria-pressed="false">Standbild</button></div><p class="lupe-msg">Das Kamerabild bleibt auf deinem Gerät und wird nicht gespeichert.</p></div>';
-      document.body.appendChild(wrap); document.documentElement.style.overflow = "hidden";
-      var v = wrap.querySelector("video"), rng = wrap.querySelector("input"), lb = wrap.querySelector(".lupe-l"), fb = wrap.querySelector(".lupe-f"), stream = null, track = null, hw = null;
-      var onKey = function (e) { if (e.key === "Escape") close(); };
-      var close = function () { if (stream) stream.getTracks().forEach(function (t) { t.stop(); }); stream = null; wrap.remove(); document.documentElement.style.overflow = ""; document.removeEventListener("keydown", onKey); btn.focus(); };
-      document.addEventListener("keydown", onKey);
-      wrap.querySelector(".lupe-x").addEventListener("click", close);
-      wrap.querySelector(".lupe-x").focus();
-      var zoom = function () { var z = +rng.value; if (hw) { track.applyConstraints({ advanced: [{ zoom: Math.min(hw.max, Math.max(hw.min, z * hw.base)) }] }).catch(function () {}); v.style.transform = ""; } else v.style.transform = "scale(" + z + ")"; };
-      rng.addEventListener("input", zoom);
-      fb.addEventListener("click", function () { var on = fb.getAttribute("aria-pressed") !== "true"; fb.setAttribute("aria-pressed", String(on)); if (on) v.pause(); else v.play(); });
-      lb.addEventListener("click", function () { var on = lb.getAttribute("aria-pressed") !== "true"; track.applyConstraints({ advanced: [{ torch: on }] }).then(function () { lb.setAttribute("aria-pressed", String(on)); }, function () {}); });
-      navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" }, width: { ideal: 1920 }, height: { ideal: 1080 } }, audio: false }).then(function (s) {
-        if (!wrap.isConnected) { s.getTracks().forEach(function (t) { t.stop(); }); return; }
-        stream = s; track = s.getVideoTracks()[0]; v.srcObject = s;
-        var cap = track.getCapabilities ? track.getCapabilities() : {};
-        if (cap.zoom && cap.zoom.max > cap.zoom.min) { hw = { min: cap.zoom.min, max: cap.zoom.max, base: Math.max(1, cap.zoom.min) }; rng.max = String(Math.max(2, Math.min(10, cap.zoom.max / hw.base))); }
-        if (cap.torch) lb.hidden = false;
-        zoom();
-      }, function () { close(); toast("Kein Zugriff auf die Kamera. Du kannst ihn in den Einstellungen deines Browsers erlauben."); });
+      if (!lupeIn) {
+        lupeIn = document.createElement("input"); lupeIn.type = "file"; lupeIn.accept = "image/*"; lupeIn.setAttribute("capture", "environment"); lupeIn.hidden = true;
+        document.body.appendChild(lupeIn);
+        lupeIn.addEventListener("change", function () { var f = lupeIn.files && lupeIn.files[0]; if (f) lupeShow(f, lupeIn._btn); lupeIn.value = ""; });
+      }
+      lupeIn._btn = btn; lupeIn.click();
     });
   });
+  // Kauf-Check-Suche: Treffer klappen direkt unter dem Suchfeld auf, „Los“ öffnet den ersten Treffer
+  var kcQ = document.getElementById("kcSearch");
+  if (kcQ) {
+    var kcBox = document.getElementById("kcSugg"), kcSeen = {}, kcIdx = [];
+    document.querySelectorAll(".cluster .qlist a[data-q]").forEach(function (a) { var h = a.getAttribute("href"); if (kcSeen[h]) return; kcSeen[h] = 1; kcIdx.push({ h: h, t: a.textContent.trim(), q: a.getAttribute("data-q"), a: (a.closest(".cluster").querySelector("h2") || {}).textContent || "" }); });
+    var norm = function (v) { return v.toLowerCase().replace(/[’']/g, "").trim(); };
+    var kcRun = function () {
+      var v = norm(kcQ.value), any = false, hits = [];
+      document.querySelectorAll(".cluster").forEach(function (c) { var n = 0; c.querySelectorAll(".qlist a").forEach(function (a) { var ok = !v || norm(a.getAttribute("data-q")).indexOf(v) > -1; a.hidden = !ok; if (ok) n++; }); c.hidden = n === 0; if (n) any = true; });
+      document.getElementById("kcLeer").hidden = any || !v;
+      if (!v) { kcBox.hidden = true; kcBox.innerHTML = ""; return; }
+      kcIdx.forEach(function (x) { var t = norm(x.t), q = norm(x.q), sc = t.indexOf(v) === 0 ? 0 : t.indexOf(v) > -1 ? 1 : q.indexOf(v) > -1 ? 2 : -1; if (sc > -1) hits.push([sc, x]); });
+      hits.sort(function (a, b) { return a[0] - b[0]; });
+      kcBox.innerHTML = hits.length ? hits.slice(0, 6).map(function (h) { return '<a role="option" href="' + h[1].h + '"><b>' + esc2(h[1].t) + '</b><span>' + esc2(h[1].a) + "</span></a>"; }).join("") : '<p class="kc-none">Dazu gibt es noch keinen Check.</p>';
+      kcBox.hidden = false;
+    };
+    kcQ.addEventListener("input", kcRun);
+    kcQ.addEventListener("focus", function () { var r = kcQ.getBoundingClientRect(); if (r.top > 120) window.scrollTo({ top: window.scrollY + r.top - 90, behavior: "smooth" }); });
+    kcQ.addEventListener("keydown", function (e) { if (e.key === "Enter") { var f = kcBox.querySelector("a"); if (f) { e.preventDefault(); location.href = f.getAttribute("href"); } } });
+  }
   // Live-Status für heutige Termine: „Jetzt geöffnet“, „Öffnet heute um …“, „Heute schon vorbei“ (Hamburger Uhrzeit)
   var liveEvs = document.querySelectorAll(".group .ev[data-s]");
   if (liveEvs.length && NOW) {

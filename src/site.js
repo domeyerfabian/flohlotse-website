@@ -224,7 +224,7 @@
       if (e) h.push("<p><b>" + e + " Warnzeichen zur Echtheit.</b> " + (e === 1 ? "Schau genauer hin und frag nach." : e === 2 ? "Genauer hinschauen, im Zweifel lieber nicht kaufen." : "Das spricht deutlich gegen ein Original. Lieber Finger weg.") + "</p>");
       else if (!g && box.querySelector('input[data-k="e"]')) h.push("<p><b>Keine Warnzeichen zur Echtheit angetippt.</b> Ein gutes Zeichen, aber keine Garantie.</p>");
       if (z) h.push("<p><b>" + (z === 1 ? "1 Mangel" : z + " Mängel") + " beim Zustand.</b> " + (e || g ? "" : "Gute Argumente für einen besseren Preis. ") + '<a href="' + ROOT + '/ratgeber/handeln-auf-dem-flohmarkt/">So handelst du freundlich</a>.</p>');
-      h.push('<button type="button" class="kc-reset">Zurücksetzen</button>');
+      h.push('<p class="kc-res-note">Eine Einschätzung, kein Urteil über Echtheit.</p><button type="button" class="kc-reset">Zurücksetzen</button>');
       res.innerHTML = h.join("");
     };
     box.addEventListener("change", upd);

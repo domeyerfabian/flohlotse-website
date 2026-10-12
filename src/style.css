@@ -1034,3 +1034,5 @@ a.route.kc-go{margin:10px 0 0;min-height:44px;font-size:15px;padding:8px 16px}
 .kc-float{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:15;background:var(--ink);color:var(--paper);border:0;border-radius:999px;padding:12px 18px;min-height:44px;font:inherit;font-weight:700;font-size:15px;box-shadow:0 6px 24px rgba(0,0,0,.22);cursor:pointer;max-width:calc(100vw - 92px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .kc-float[hidden]{display:none}
 .kc-toc .chip{font-size:14px;padding:5px 11px}
+.kc-top{font-size:13px;color:var(--muted);margin:10px 0 0}
+.kc-res .kc-res-note{font-size:13px;opacity:.8}

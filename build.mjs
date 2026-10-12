@@ -2260,7 +2260,7 @@ if (process.env.CNAME) fs.writeFileSync(path.join(OUT, "CNAME"), process.env.CNA
 {
   const host = new URL(SITE).hostname, bare = host.replace(/^www\./, ""), rx = bare.replace(/\./g, "\\.");
   // Was die Seite laden darf. Wer später etwas von außen einbindet (z. B. ein Video), muss die Quelle hier ergänzen.
-  const CSP = ["default-src 'self'", "script-src 'self'", "style-src 'self' 'unsafe-inline'", "img-src 'self' data: https://tile.openstreetmap.org", "font-src 'self'", "connect-src 'self'", "manifest-src 'self'", "object-src 'none'", "base-uri 'self'", "form-action 'self'", "frame-ancestors 'self'"].join("; ");
+  const CSP = ["default-src 'self'", "script-src 'self'", "style-src 'self' 'unsafe-inline'", "img-src 'self' data: blob: https://tile.openstreetmap.org", "font-src 'self'", "connect-src 'self'", "manifest-src 'self'", "object-src 'none'", "base-uri 'self'", "form-action 'self'", "frame-ancestors 'self'"].join("; ");
   fs.writeFileSync(path.join(OUT, ".htaccess"), `# Automatisch erzeugt von build.mjs. Änderungen hier gehen beim nächsten Bau verloren.
 Options -Indexes
 ErrorDocument 404 /404.html

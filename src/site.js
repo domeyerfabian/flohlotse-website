@@ -230,42 +230,6 @@
     box.addEventListener("change", upd);
     res.addEventListener("click", function (ev) { if (ev.target.closest(".kc-reset")) { box.querySelectorAll("input[data-k]").forEach(function (i) { i.checked = false; }); upd(); } });
   });
-  // Lupe: öffnet die Kamera-App des Handys, das Foto erscheint groß mit Zoom. Es bleibt auf dem Gerät.
-  var lupeIn = null;
-  var lupeShow = function (file, btn) {
-    var url = URL.createObjectURL(file);
-    var wrap = document.createElement("div"); wrap.className = "lupe"; wrap.setAttribute("role", "dialog"); wrap.setAttribute("aria-modal", "true"); wrap.setAttribute("aria-label", "Lupe");
-    wrap.innerHTML = '<div class="lupe-v"><div class="lupe-sc"><img alt="Dein Foto"></div><button type="button" class="lupe-x">Schließen</button></div><div class="lupe-bar"><div class="lupe-row"><label>Zoom<input type="range" min="1" max="6" step="0.1" value="2.5"></label></div><div class="lupe-row"><button type="button" class="lupe-new">Neues Foto</button></div><p class="lupe-msg">Mit dem Finger verschieben. Das Foto bleibt auf deinem Handy.</p></div>';
-    document.body.appendChild(wrap); document.documentElement.style.overflow = "hidden";
-    var img = wrap.querySelector("img"), sc = wrap.querySelector(".lupe-sc"), rng = wrap.querySelector("input");
-    var onKey = function (e) { if (e.key === "Escape") close(); };
-    var close = function () { URL.revokeObjectURL(url); wrap.remove(); document.documentElement.style.overflow = ""; document.removeEventListener("keydown", onKey); if (btn) btn.focus(); };
-    var zoom = function (keep) {
-      var cx = sc.scrollLeft + sc.clientWidth / 2, cy = sc.scrollTop + sc.clientHeight / 2, ow = img.offsetWidth || 1;
-      img.style.width = (+rng.value * 100) + "%";
-      var f = img.offsetWidth / ow;
-      if (keep) { sc.scrollLeft = cx * f - sc.clientWidth / 2; sc.scrollTop = cy * f - sc.clientHeight / 2; }
-      else { sc.scrollLeft = (img.offsetWidth - sc.clientWidth) / 2; sc.scrollTop = (img.offsetHeight - sc.clientHeight) / 2; }
-    };
-    img.onload = function () { zoom(false); };
-    img.onerror = function () { wrap.querySelector(".lupe-msg").textContent = "Dieses Foto kann dein Browser nicht anzeigen. Tipp auf „Neues Foto“ und versuch es nochmal."; };
-    img.src = url;
-    rng.addEventListener("input", function () { zoom(true); });
-    wrap.querySelector(".lupe-x").addEventListener("click", close);
-    wrap.querySelector(".lupe-new").addEventListener("click", function () { close(); lupeIn.click(); });
-    document.addEventListener("keydown", onKey);
-    wrap.querySelector(".lupe-x").focus();
-  };
-  document.querySelectorAll("[data-lupe]").forEach(function (btn) {
-    btn.addEventListener("click", function () {
-      if (!lupeIn) {
-        lupeIn = document.createElement("input"); lupeIn.type = "file"; lupeIn.accept = "image/*"; lupeIn.setAttribute("capture", "environment"); lupeIn.hidden = true;
-        document.body.appendChild(lupeIn);
-        lupeIn.addEventListener("change", function () { var f = lupeIn.files && lupeIn.files[0]; if (f) lupeShow(f, lupeIn._btn); lupeIn.value = ""; });
-      }
-      lupeIn._btn = btn; lupeIn.click();
-    });
-  });
   // Kauf-Check-Suche: Treffer klappen direkt unter dem Suchfeld auf, „Los“ öffnet den ersten Treffer
   var kcQ = document.getElementById("kcSearch");
   if (kcQ) {
@@ -696,27 +660,30 @@
     if (!all.length) { deck.hidden = true; document.getElementById("dkEmpty").hidden = false; var dkSec = document.getElementById("dkSec"); if (dkSec) dkSec.hidden = true; }
     else {
       deck.classList.add("on");
-      var cnt = document.getElementById("dkCount"), btnY = document.getElementById("dkYes"), btnN = document.getElementById("dkNo"), btnU = document.getElementById("dkUndo"), done = document.getElementById("dkDone"), hist = [], idx = 0, busy = false;
-      all.forEach(function (c) { if (favHas(c.getAttribute("data-fav"))) { var h = document.createElement("span"); h.className = "dk-had"; h.textContent = "Schon auf deiner Merkliste"; c.insertBefore(h, c.firstChild); } });
+      var cnt = document.getElementById("dkCount"), btnY = document.getElementById("dkYes"), btnN = document.getElementById("dkNo"), btnU = document.getElementById("dkUndo"), done = document.getElementById("dkDone"), hist = [], idx = 0, busy = false, pend = null, pendT = 0;
       var fit = function () { var h = 0; stack.style.height = ""; deck.classList.add("measure"); all.forEach(function (c) { h = Math.max(h, c.offsetHeight); }); deck.classList.remove("measure"); if (h) stack.style.height = (h + 18) + "px"; };
+      // Läuft noch eine Karte raus, wird sie sofort fertig gemacht: So geht beim schnellen Wischen keine Karte verloren
+      var flush = function () { if (!pend) return; clearTimeout(pendT); var f = pend; pend = null; f(); };
+      var grew = false, had = function (c) { var h = c.querySelector(".dk-had"), on = favHas(c.getAttribute("data-fav")); if (on && !h) { h = document.createElement("span"); h.className = "dk-had"; h.textContent = "Schon auf deiner Merkliste"; c.insertBefore(h, c.firstChild); grew = true; } else if (!on && h) h.remove(); };
       var lay = function () {
-        all.forEach(function (c, i) { var r = i - idx; c.className = "dk-card " + (r < 0 ? "gone" : r === 0 ? "c0" : r === 1 ? "c1" : r === 2 ? "c2" : "cx"); if (r !== 0) { c.style.transform = ""; c.style.opacity = ""; } c.setAttribute("aria-hidden", String(r !== 0)); c.querySelectorAll("a").forEach(function (a) { a.tabIndex = r === 0 ? 0 : -1; }); });
+        all.forEach(function (c, i) { var r = i - idx; if (r >= 0 && r < 3) had(c); c.className = "dk-card " + (r < 0 ? "gone" : r === 0 ? "c0" : r === 1 ? "c1" : r === 2 ? "c2" : "cx"); if (r !== 0) { c.style.transform = ""; c.style.opacity = ""; } c.setAttribute("aria-hidden", String(r !== 0)); c.querySelectorAll("a").forEach(function (a) { a.tabIndex = r === 0 ? 0 : -1; }); });
+        if (grew) { grew = false; if (stack.style.height) fit(); }
         var end = idx >= all.length; done.hidden = !end; stack.hidden = end; document.getElementById("dkBtns").hidden = end; btnU.disabled = !hist.length;
         if (!end) cnt.textContent = (idx + 1) + " von " + all.length;
         else { var n = hist.filter(function (x) { return x.dir > 0; }).length; cnt.textContent = ""; document.getElementById("dkDoneP").textContent = n ? "Du hast " + (n === 1 ? "einen Markt" : n + " Märkte") + " gemerkt. Alle stehen auf deiner Merkliste." : "Diesmal war nichts für dich dabei. Alle Termine der nächsten Wochen findest du im Kalender."; }
       };
       var stamp = function (c, dx) { var y = c.querySelector(".dk-stamp.yes"), n = c.querySelector(".dk-stamp.no"), v = Math.max(-1, Math.min(1, dx / 90)); y.style.opacity = v > 0 ? v : 0; n.style.opacity = v < 0 ? -v : 0; c.classList.toggle("to-yes", v > 0.35); c.classList.toggle("to-no", v < -0.35); };
       var decide = function (dir) {
-        if (busy || idx >= all.length) return; var c = all[idx], s = c.getAttribute("data-fav"), was = favHas(s);
+        flush(); if (busy || idx >= all.length) return; var c = all[idx], s = c.getAttribute("data-fav"), was = favHas(s);
         if (dir > 0 && favToggle(s, true) === null) return;
         hist.push({ dir: dir, was: was }); busy = true; stamp(c, dir * 120);
-        var fin = function () { busy = false; idx++; lay(); };
+        var fin = function () { pend = null; busy = false; idx++; lay(); };
         if (RM) return fin();
         c.style.transition = "transform .32s ease-in, opacity .32s ease-in"; c.style.transform = "translate(" + (dir * 1.4 * stack.offsetWidth) + "px, 30px) rotate(" + (dir * 24) + "deg)"; c.style.opacity = "0";
-        setTimeout(fin, 330);
+        pend = fin; pendT = setTimeout(fin, 330);
       };
       var undo = function () {
-        if (busy || !hist.length) return; var h = hist.pop(); idx--; var c = all[idx];
+        flush(); if (busy || !hist.length) return; var h = hist.pop(); idx--; var c = all[idx];
         if (h.dir > 0 && !h.was) favToggle(c.getAttribute("data-fav"), false);
         c.style.transition = "none"; c.style.transform = ""; c.style.opacity = ""; stamp(c, 0); lay();
       };
@@ -729,18 +696,18 @@
       var drag = null, noClick = 0;
       stack.addEventListener("click", function (e) { if (Date.now() - noClick < 450) { e.preventDefault(); e.stopPropagation(); } }, true);
       stack.addEventListener("pointerdown", function (e) {
-        var c = e.target.closest(".dk-card.c0"); if (!c || busy || (e.pointerType === "mouse" && e.button !== 0)) return;
+        if (e.pointerType === "mouse" && e.button !== 0) return; flush(); var c = all[idx]; if (!c || busy) return;
         drag = { c: c, x: e.clientX, y: e.clientY, t: Date.now(), dx: 0, dy: 0, id: e.pointerId, moved: false };
       });
       stack.addEventListener("pointermove", function (e) {
         if (!drag || e.pointerId !== drag.id) return; drag.dx = e.clientX - drag.x; drag.dy = e.clientY - drag.y;
-        if (!drag.moved) { if (Math.abs(drag.dx) < 8) return; if (Math.abs(drag.dy) > Math.abs(drag.dx)) { drag = null; return; } drag.moved = true; try { drag.c.setPointerCapture(e.pointerId); } catch (x) {} drag.c.style.transition = "none"; }
+        if (!drag.moved) { if (Math.abs(drag.dx) < 8) return; if (Math.abs(drag.dy) > Math.abs(drag.dx) * 1.4) { drag = null; return; } drag.moved = true; try { drag.c.setPointerCapture(e.pointerId); } catch (x) {} drag.c.style.transition = "none"; }
         drag.c.style.transform = "translate(" + drag.dx + "px," + (drag.dy * 0.2) + "px) rotate(" + (drag.dx / 18) + "deg)"; stamp(drag.c, drag.dx);
       });
       var end = function (e) {
         if (!drag || e.pointerId !== drag.id) return; var d = drag; drag = null; if (!d.moved) return;
-        var v = Math.abs(d.dx) / Math.max(1, Date.now() - d.t), thr = Math.min(100, stack.offsetWidth * 0.25);
-        if (Math.abs(d.dx) > thr || (v > 0.6 && Math.abs(d.dx) > 40)) decide(d.dx > 0 ? 1 : -1);
+        var v = Math.abs(d.dx) / Math.max(1, Date.now() - d.t), thr = Math.min(80, stack.offsetWidth * 0.22);
+        if (Math.abs(d.dx) > thr || (v > 0.45 && Math.abs(d.dx) > 35)) decide(d.dx > 0 ? 1 : -1);
         else { d.c.style.transition = RM ? "none" : "transform .2s ease-out"; d.c.style.transform = ""; stamp(d.c, 0); }
         noClick = Date.now();
       };

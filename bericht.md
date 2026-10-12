@@ -1,14 +1,14 @@
 # Flohlotse: Website gebaut
 
-Stand 12.10.2026 · 283 Seiten (277 für Google) · 127 Märkte · 188 Termine in den nächsten 120 Tagen · 42 Ratgeber-Artikel · 829 Event-Auszeichnungen
+Stand 13.10.2026 · 282 Seiten (276 für Google) · 126 Märkte · 189 Termine in den nächsten 120 Tagen · 42 Ratgeber-Artikel · 834 Event-Auszeichnungen
 
 ## Zu erledigen: 5 Hinweise
 
 | Bereich | Hinweis |
 |---|---|
+| Links | /flohmarkt-hamburg/altona/ verlinkt auf /flohmarkt/kugu-flohmarkt-ottensen/, diese Seite gibt es nicht. |
 | Uhrzeit fehlt | Ein Termin in den nächsten drei Wochen ohne Uhrzeit: Flohmarkt famila Wedel am Sonntag, 1. November. Uhrzeit beim Veranstalter nachsehen und im Blatt „Termine“ (oder „Serien“) eintragen. |
-| Termin-Wächter | Hallenflohmarkt in der Halle 15: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 13.10.2026. Bitte prüfen: https://www.asb-halle15.de/ |
-| Termin-Wächter | KUGU Flohmarkt: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 15.10.2026. Bitte prüfen: https://kugu.space/ |
+| Termin-Wächter | Hallenflohmarkt in der Halle 15: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 15.10.2026. Bitte prüfen: https://www.asb-halle15.de/ |
 | Termin-Wächter | HNT Flohmarkt: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 30.10.2026. Bitte prüfen: https://www.hntonline.de/flohmarkt |
 | Termin-Wächter | Flohmarkt famila Winsen (Luhe): Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 25.10.2026. Bitte prüfen: https://flohmaxx.de/flohmarkt/winsen-famila/2026-10-03 |
 
@@ -25,5 +25,5 @@ Quellen:
 
 ## Zur Kenntnis
 
-- 48 Märkte haben in den nächsten 120 Tagen keinen Termin (Saisonpause oder noch nicht angekündigt): altonale Flohmarkt an der Museumstraße, Fietsenbörse am Spielbudenplatz, Flohmarkt EDEKA Center Struve Bramfeld, Flohmarkt EDEKA Center Struve Eidelstedt, Flohmarkt Eppendorfer Weg, Flohmarkt famila Ahrensburg, Flohmarkt famila Bargteheide, Flohmarkt famila Buchholz, Flohmarkt famila Geesthacht, Flohmarkt famila Steilshoop, Flohmarkt famila Trittau, Flohmarkt famila Winsen (Luhe), Flohmarkt GLOBUS Lurup, Flohmarkt Hansaplatz, Flohmarkt Heidesiedlung Neu Wulmstorf, Flohmarkt Höffner Barsbüttel, Flohmarkt Hoheluftchaussee, Flohmarkt IKEA Altona, Flohmarkt IKEA Moorfleet, Flohmarkt IKEA Schnelsen, Flohmarkt im Barmbek°Basch, Flohmarkt Isestraße, Flohmarkt Kaufland Henstedt-Ulzburg, Flohmarkt Körber (ehemals Hauni) Bergedorf, Flohmarkt Langenhorner Markt, Flohmarkt Lehmweg, Flohmarkt Marktplatz Glinde, Flohmarkt Metro Harburg, Flohmarkt Metro Niendorf, Flohmarkt mit Hofcafé am Kreativhaus, Flohmarkt Moorwegsiedlung Wedel, Flohmarkt Norderstedt Schmuggelstieg, Flohmarkt Uetersen bei Lüchau Baustoffe, Flohmarkt Uetersen City, FlohZinn in den Wilhelmsburger Zinnwerken, Hallenflohmarkt in der Halle 15, Kinderflohmarkt im kulturtreff Bergedorf Süd, KUGU Flohmarkt, Kultur-Flohmarkt am Museum der Arbeit, Langschläfer Flohmarkt, Langschläfer Flohmarkt Überseeboulevard, Nachbarschaftsflohmarkt HausDrei, Nachbarschaftsflohmarkt Herthastraße, Nachbarschaftsflohmarkt Wilhelmsburg, Pen & Time Port, Quickborner famila-Flohmarkt, Rellinger Hagebau-Flohmarkt, Turmweg-Flohmarkt.
+- 47 Märkte haben in den nächsten 120 Tagen keinen Termin (Saisonpause oder noch nicht angekündigt): altonale Flohmarkt an der Museumstraße, Fietsenbörse am Spielbudenplatz, Flohmarkt EDEKA Center Struve Bramfeld, Flohmarkt EDEKA Center Struve Eidelstedt, Flohmarkt Eppendorfer Weg, Flohmarkt famila Ahrensburg, Flohmarkt famila Bargteheide, Flohmarkt famila Buchholz, Flohmarkt famila Geesthacht, Flohmarkt famila Steilshoop, Flohmarkt famila Trittau, Flohmarkt famila Winsen (Luhe), Flohmarkt GLOBUS Lurup, Flohmarkt Hansaplatz, Flohmarkt Heidesiedlung Neu Wulmstorf, Flohmarkt Höffner Barsbüttel, Flohmarkt Hoheluftchaussee, Flohmarkt IKEA Altona, Flohmarkt IKEA Moorfleet, Flohmarkt IKEA Schnelsen, Flohmarkt im Barmbek°Basch, Flohmarkt Isestraße, Flohmarkt Kaufland Henstedt-Ulzburg, Flohmarkt Körber (ehemals Hauni) Bergedorf, Flohmarkt Langenhorner Markt, Flohmarkt Lehmweg, Flohmarkt Marktplatz Glinde, Flohmarkt Metro Harburg, Flohmarkt Metro Niendorf, Flohmarkt mit Hofcafé am Kreativhaus, Flohmarkt Moorwegsiedlung Wedel, Flohmarkt Norderstedt Schmuggelstieg, Flohmarkt Uetersen bei Lüchau Baustoffe, Flohmarkt Uetersen City, FlohZinn in den Wilhelmsburger Zinnwerken, Hallenflohmarkt in der Halle 15, Kinderflohmarkt im kulturtreff Bergedorf Süd, Kultur-Flohmarkt am Museum der Arbeit, Langschläfer Flohmarkt, Langschläfer Flohmarkt Überseeboulevard, Nachbarschaftsflohmarkt HausDrei, Nachbarschaftsflohmarkt Herthastraße, Nachbarschaftsflohmarkt Wilhelmsburg, Pen & Time Port, Quickborner famila-Flohmarkt, Rellinger Hagebau-Flohmarkt, Turmweg-Flohmarkt.
 - Eine Bilddatei im Ordner bilder wird auf keiner Seite verwendet und deshalb nicht hochgeladen: start-4.webp.

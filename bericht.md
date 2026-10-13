@@ -1,8 +1,8 @@
 # Flohlotse: Website gebaut
 
-Stand 13.10.2026 · 283 Seiten (277 für Google) · 127 Märkte · 190 Termine in den nächsten 120 Tagen · 42 Ratgeber-Artikel · 839 Event-Auszeichnungen
+Stand 13.10.2026 · 287 Seiten (281 für Google) · 131 Märkte · 193 Termine in den nächsten 120 Tagen · 42 Ratgeber-Artikel · 850 Event-Auszeichnungen
 
-## Zu erledigen: 5 Hinweise
+## Zu erledigen: 6 Hinweise
 
 | Bereich | Hinweis |
 |---|---|
@@ -10,17 +10,22 @@ Stand 13.10.2026 · 283 Seiten (277 für Google) · 127 Märkte · 190 Termine i
 | Termin-Wächter | Hallenflohmarkt in der Halle 15: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 15.10.2026. Bitte prüfen: https://www.asb-halle15.de/ |
 | Termin-Wächter | HNT Flohmarkt: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 30.10.2026. Bitte prüfen: https://www.hntonline.de/flohmarkt |
 | Termin-Wächter | Flohmarkt famila Winsen (Luhe): Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 25.10.2026. Bitte prüfen: https://flohmaxx.de/flohmarkt/winsen-famila/2026-10-03 |
-| Termin-Wächter | Connect Queer Indoor Flohmarkt: Die Website des Veranstalters möchte nicht automatisch abgerufen werden (robots.txt). Diese Seite bitte weiter von Hand prüfen: https://www.instagram.com/connectqueer/ |
+| Termin-Wächter | Antik- und Designmarkt Colonnaden: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 17.10.2026, 18.10.2026, 01.11.2026, 20.03.2027, 21.03.2027. Bitte prüfen: https://www.marktundkultur.de/ |
+| Termin-Wächter | Kinderflohmarkt im EKiZ Schilleroper: Die Website des Veranstalters möchte nicht automatisch abgerufen werden (robots.txt). Diese Seite bitte weiter von Hand prüfen: https://www.instagram.com/hausderfamiliestpauli/ |
 
-## Termin-Wächter: 1 Vorschlag zum Einfügen
+## Termin-Wächter: 4 Vorschläge zum Einfügen
 
 Diese Tage stehen neu auf Veranstalterseiten und fehlen in der Tabelle. **Erst auf der Seite des Veranstalters prüfen**, ob es wirklich ein Markttermin ist und ob die Uhrzeit stimmt (eingesetzt ist die übliche Uhrzeit des Markts; ist sie leer, kennt die Tabelle noch keine). Dann die Zeilen markieren, kopieren und im Blatt „Termine“ in die erste freie Zeile einfügen. Die Spalten sind: Markt, Datum, Beginn, Ende, Status, Hinweis. Ein Vorschlag bleibt sieben Tage stehen und verschwindet, sobald der Tag in der Tabelle steht.
 
 ```
+antik-design-markt-colonnaden	18.10.2026	09:00	16:00	Findet statt	
+antik-design-markt-colonnaden	01.11.2026	09:00	16:00	Findet statt	
+antik-design-markt-colonnaden	21.03.2027	09:00	16:00	Findet statt	
 flohmarkt-famila-winsen	25.10.2026	11:00	16:00	Findet statt	
 ```
 
 Quellen:
+- https://www.marktundkultur.de/
 - https://flohmaxx.de/flohmarkt/winsen-famila/2026-10-03
 
 ## Zur Kenntnis

@@ -2,11 +2,10 @@
 
 Stand 13.10.2026 · 282 Seiten (276 für Google) · 126 Märkte · 189 Termine in den nächsten 120 Tagen · 42 Ratgeber-Artikel · 834 Event-Auszeichnungen
 
-## Zu erledigen: 5 Hinweise
+## Zu erledigen: 4 Hinweise
 
 | Bereich | Hinweis |
 |---|---|
-| Links | /flohmarkt-hamburg/altona/ verlinkt auf /flohmarkt/kugu-flohmarkt-ottensen/, diese Seite gibt es nicht. |
 | Uhrzeit fehlt | Ein Termin in den nächsten drei Wochen ohne Uhrzeit: Flohmarkt famila Wedel am Sonntag, 1. November. Uhrzeit beim Veranstalter nachsehen und im Blatt „Termine“ (oder „Serien“) eintragen. |
 | Termin-Wächter | Hallenflohmarkt in der Halle 15: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 15.10.2026. Bitte prüfen: https://www.asb-halle15.de/ |
 | Termin-Wächter | HNT Flohmarkt: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 30.10.2026. Bitte prüfen: https://www.hntonline.de/flohmarkt |

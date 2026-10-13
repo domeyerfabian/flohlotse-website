@@ -1,8 +1,8 @@
 # Flohlotse: Website gebaut
 
-Stand 13.10.2026 · 282 Seiten (276 für Google) · 126 Märkte · 189 Termine in den nächsten 120 Tagen · 42 Ratgeber-Artikel · 834 Event-Auszeichnungen
+Stand 13.10.2026 · 283 Seiten (277 für Google) · 127 Märkte · 190 Termine in den nächsten 120 Tagen · 42 Ratgeber-Artikel · 839 Event-Auszeichnungen
 
-## Zu erledigen: 4 Hinweise
+## Zu erledigen: 5 Hinweise
 
 | Bereich | Hinweis |
 |---|---|
@@ -10,6 +10,7 @@ Stand 13.10.2026 · 282 Seiten (276 für Google) · 126 Märkte · 189 Termine i
 | Termin-Wächter | Hallenflohmarkt in der Halle 15: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 15.10.2026. Bitte prüfen: https://www.asb-halle15.de/ |
 | Termin-Wächter | HNT Flohmarkt: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 30.10.2026. Bitte prüfen: https://www.hntonline.de/flohmarkt |
 | Termin-Wächter | Flohmarkt famila Winsen (Luhe): Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 25.10.2026. Bitte prüfen: https://flohmaxx.de/flohmarkt/winsen-famila/2026-10-03 |
+| Termin-Wächter | Connect Queer Indoor Flohmarkt: Die Website des Veranstalters möchte nicht automatisch abgerufen werden (robots.txt). Diese Seite bitte weiter von Hand prüfen: https://www.instagram.com/connectqueer/ |
 
 ## Termin-Wächter: 1 Vorschlag zum Einfügen
 

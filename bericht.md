@@ -1,8 +1,8 @@
 # Flohlotse: Website gebaut
 
-Stand 13.10.2026 · 287 Seiten (281 für Google) · 131 Märkte · 193 Termine in den nächsten 120 Tagen · 42 Ratgeber-Artikel · 850 Event-Auszeichnungen
+Stand 14.10.2026 · 287 Seiten (281 für Google) · 131 Märkte · 193 Termine in den nächsten 120 Tagen · 42 Ratgeber-Artikel · 853 Event-Auszeichnungen
 
-## Zu erledigen: 6 Hinweise
+## Zu erledigen: 5 Hinweise
 
 | Bereich | Hinweis |
 |---|---|
@@ -11,7 +11,6 @@ Stand 13.10.2026 · 287 Seiten (281 für Google) · 131 Märkte · 193 Termine i
 | Termin-Wächter | HNT Flohmarkt: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 30.10.2026. Bitte prüfen: https://www.hntonline.de/flohmarkt |
 | Termin-Wächter | Flohmarkt famila Winsen (Luhe): Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 25.10.2026. Bitte prüfen: https://flohmaxx.de/flohmarkt/winsen-famila/2026-10-03 |
 | Termin-Wächter | Antik- und Designmarkt Colonnaden: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 17.10.2026, 18.10.2026, 01.11.2026, 20.03.2027, 21.03.2027. Bitte prüfen: https://www.marktundkultur.de/ |
-| Termin-Wächter | Kinderflohmarkt im EKiZ Schilleroper: Die Website des Veranstalters möchte nicht automatisch abgerufen werden (robots.txt). Diese Seite bitte weiter von Hand prüfen: https://www.instagram.com/hausderfamiliestpauli/ |
 
 ## Termin-Wächter: 4 Vorschläge zum Einfügen
 

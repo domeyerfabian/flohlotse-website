@@ -2,17 +2,18 @@
 
 Stand 14.10.2026 · 287 Seiten (281 für Google) · 131 Märkte · 193 Termine in den nächsten 120 Tagen · 42 Ratgeber-Artikel · 853 Event-Auszeichnungen
 
-## Zu erledigen: 5 Hinweise
+## Zu erledigen: 6 Hinweise
 
 | Bereich | Hinweis |
 |---|---|
 | Uhrzeit fehlt | Ein Termin in den nächsten drei Wochen ohne Uhrzeit: Flohmarkt famila Wedel am Sonntag, 1. November. Uhrzeit beim Veranstalter nachsehen und im Blatt „Termine“ (oder „Serien“) eintragen. |
+| Termin-Wächter | Rellinger Hagebau-Flohmarkt: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 27.12.2026. Bitte prüfen: https://flohmarkt-horst.de/termine.php |
 | Termin-Wächter | Hallenflohmarkt in der Halle 15: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 15.10.2026. Bitte prüfen: https://www.asb-halle15.de/ |
 | Termin-Wächter | HNT Flohmarkt: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 30.10.2026. Bitte prüfen: https://www.hntonline.de/flohmarkt |
 | Termin-Wächter | Flohmarkt famila Winsen (Luhe): Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 25.10.2026. Bitte prüfen: https://flohmaxx.de/flohmarkt/winsen-famila/2026-10-03 |
 | Termin-Wächter | Antik- und Designmarkt Colonnaden: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 17.10.2026, 18.10.2026, 01.11.2026, 20.03.2027, 21.03.2027. Bitte prüfen: https://www.marktundkultur.de/ |
 
-## Termin-Wächter: 4 Vorschläge zum Einfügen
+## Termin-Wächter: 5 Vorschläge zum Einfügen
 
 Diese Tage stehen neu auf Veranstalterseiten und fehlen in der Tabelle. **Erst auf der Seite des Veranstalters prüfen**, ob es wirklich ein Markttermin ist und ob die Uhrzeit stimmt (eingesetzt ist die übliche Uhrzeit des Markts; ist sie leer, kennt die Tabelle noch keine). Dann die Zeilen markieren, kopieren und im Blatt „Termine“ in die erste freie Zeile einfügen. Die Spalten sind: Markt, Datum, Beginn, Ende, Status, Hinweis. Ein Vorschlag bleibt sieben Tage stehen und verschwindet, sobald der Tag in der Tabelle steht.
 
@@ -21,11 +22,13 @@ antik-design-markt-colonnaden	18.10.2026	09:00	16:00	Findet statt
 antik-design-markt-colonnaden	01.11.2026	09:00	16:00	Findet statt	
 antik-design-markt-colonnaden	21.03.2027	09:00	16:00	Findet statt	
 flohmarkt-famila-winsen	25.10.2026	11:00	16:00	Findet statt	
+hagebau-flohmarkt-rellingen	27.12.2026	08:00	16:00	Findet statt	
 ```
 
 Quellen:
 - https://www.marktundkultur.de/
 - https://flohmaxx.de/flohmarkt/winsen-famila/2026-10-03
+- https://flohmarkt-horst.de/termine.php
 
 ## Zur Kenntnis
 

@@ -1,14 +1,13 @@
 # Flohlotse: Website gebaut
 
-Stand 14.10.2026 · 287 Seiten (281 für Google) · 131 Märkte · 193 Termine in den nächsten 120 Tagen · 42 Ratgeber-Artikel · 853 Event-Auszeichnungen
+Stand 15.10.2026 · 287 Seiten (281 für Google) · 131 Märkte · 191 Termine in den nächsten 120 Tagen · 42 Ratgeber-Artikel · 856 Event-Auszeichnungen
 
-## Zu erledigen: 6 Hinweise
+## Zu erledigen: 5 Hinweise
 
 | Bereich | Hinweis |
 |---|---|
 | Uhrzeit fehlt | Ein Termin in den nächsten drei Wochen ohne Uhrzeit: Flohmarkt famila Wedel am Sonntag, 1. November. Uhrzeit beim Veranstalter nachsehen und im Blatt „Termine“ (oder „Serien“) eintragen. |
 | Termin-Wächter | Rellinger Hagebau-Flohmarkt: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 27.12.2026. Bitte prüfen: https://flohmarkt-horst.de/termine.php |
-| Termin-Wächter | Hallenflohmarkt in der Halle 15: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 15.10.2026. Bitte prüfen: https://www.asb-halle15.de/ |
 | Termin-Wächter | HNT Flohmarkt: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 30.10.2026. Bitte prüfen: https://www.hntonline.de/flohmarkt |
 | Termin-Wächter | Flohmarkt famila Winsen (Luhe): Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 25.10.2026. Bitte prüfen: https://flohmaxx.de/flohmarkt/winsen-famila/2026-10-03 |
 | Termin-Wächter | Antik- und Designmarkt Colonnaden: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 17.10.2026, 18.10.2026, 01.11.2026, 20.03.2027, 21.03.2027. Bitte prüfen: https://www.marktundkultur.de/ |

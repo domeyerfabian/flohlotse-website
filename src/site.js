@@ -310,11 +310,106 @@
       if (navigator.clipboard) navigator.clipboard.writeText(code.value).then(ok, function () { document.execCommand("copy"); ok(); }); else { document.execCommand("copy"); ok(); }
     });
   }
+  // QR-Code direkt im Browser erzeugen (Byte-Modus, Fehlerkorrektur M, Version 1 bis 6, also bis 106 Zeichen). Nichts verlässt das Gerät.
+  var qrMake = function (text) {
+    var data = unescape(encodeURIComponent(text)), bytes = [], i, j;
+    for (i = 0; i < data.length; i++) bytes.push(data.charCodeAt(i));
+    // [Datenwörter gesamt, Fehlerkorrekturwörter je Block, Blöcke] für Stufe M
+    var T = [null, [16, 10, 1], [28, 16, 1], [44, 26, 1], [64, 18, 2], [86, 24, 2], [108, 16, 4]], AL = [null, [], [6, 18], [6, 22], [6, 26], [6, 30], [6, 34]];
+    var v = 1; while (v <= 6 && T[v][0] < bytes.length + 2) v++;
+    if (v > 6) return null;
+    var n = 17 + 4 * v, cap = T[v][0], bits = [];
+    var put = function (val, len) { for (var k = len - 1; k >= 0; k--) bits.push((val >>> k) & 1); };
+    put(4, 4); put(bytes.length, 8); bytes.forEach(function (b) { put(b, 8); });
+    put(0, Math.min(4, cap * 8 - bits.length)); while (bits.length % 8) bits.push(0);
+    var cw = []; for (i = 0; i < bits.length; i += 8) { var b = 0; for (j = 0; j < 8; j++) b = (b << 1) | bits[i + j]; cw.push(b); }
+    for (i = 0; cw.length < cap; i++) cw.push(i % 2 ? 0x11 : 0xEC);
+    // Reed-Solomon über GF(256)
+    var EXP = [], LOG = [], x = 1;
+    for (i = 0; i < 255; i++) { EXP[i] = x; LOG[x] = i; x <<= 1; if (x & 256) x ^= 0x11D; }
+    var mul = function (a, c) { return a && c ? EXP[(LOG[a] + LOG[c]) % 255] : 0; };
+    var ecn = T[v][1], div = [], root = 1;
+    for (i = 0; i < ecn - 1; i++) div.push(0); div.push(1);
+    for (i = 0; i < ecn; i++) { for (j = 0; j < div.length; j++) { div[j] = mul(div[j], root); if (j + 1 < div.length) div[j] ^= div[j + 1]; } root = mul(root, 2); }
+    var rem = function (d) { var r = div.map(function () { return 0; }); d.forEach(function (c) { var f = c ^ r.shift(); r.push(0); div.forEach(function (q, k) { r[k] ^= mul(q, f); }); }); return r; };
+    var nb = T[v][2], per = cap / nb, blocks = [], ecs = [];
+    for (i = 0; i < nb; i++) { var blk = cw.slice(i * per, (i + 1) * per); blocks.push(blk); ecs.push(rem(blk)); }
+    var all = [];
+    for (i = 0; i < per; i++) blocks.forEach(function (bl) { all.push(bl[i]); });
+    for (i = 0; i < ecn; i++) ecs.forEach(function (e) { all.push(e[i]); });
+    // Raster mit festen Mustern
+    var M = [], F = [];
+    for (i = 0; i < n; i++) { M.push([]); F.push([]); for (j = 0; j < n; j++) { M[i].push(0); F[i].push(0); } }
+    var set = function (cx, cy, dark) { M[cy][cx] = dark ? 1 : 0; F[cy][cx] = 1; };
+    for (i = 0; i < n; i++) { set(6, i, i % 2 === 0); set(i, 6, i % 2 === 0); }
+    var finder = function (cx, cy) { for (var dy = -4; dy <= 4; dy++) for (var dx = -4; dx <= 4; dx++) { var xx = cx + dx, yy = cy + dy, d = Math.max(Math.abs(dx), Math.abs(dy)); if (xx >= 0 && xx < n && yy >= 0 && yy < n) set(xx, yy, d !== 2 && d !== 4); } };
+    finder(3, 3); finder(n - 4, 3); finder(3, n - 4);
+    var al = AL[v];
+    al.forEach(function (ay, ai) { al.forEach(function (ax, aj) { if ((ai === 0 && aj === 0) || (ai === 0 && aj === al.length - 1) || (ai === al.length - 1 && aj === 0)) return; for (var dy = -2; dy <= 2; dy++) for (var dx = -2; dx <= 2; dx++) set(ax + dx, ay + dy, Math.max(Math.abs(dx), Math.abs(dy)) !== 1); }); });
+    var fmt = function (mask) {
+      var d = mask, r = d; for (var k = 0; k < 10; k++) r = (r << 1) ^ ((r >>> 9) * 0x537);
+      var f = ((d << 10) | r) ^ 0x5412, bit = function (k2) { return (f >>> k2) & 1; };
+      for (k = 0; k <= 5; k++) set(8, k, bit(k));
+      set(8, 7, bit(6)); set(8, 8, bit(7)); set(7, 8, bit(8));
+      for (k = 9; k < 15; k++) set(14 - k, 8, bit(k));
+      for (k = 0; k < 8; k++) set(n - 1 - k, 8, bit(k));
+      for (k = 8; k < 15; k++) set(8, n - 15 + k, bit(k));
+      set(8, n - 8, 1);
+    };
+    fmt(0);
+    // Daten im Zickzack einsetzen
+    var bi = 0, total = all.length * 8;
+    for (var right = n - 1; right >= 1; right -= 2) {
+      if (right === 6) right = 5;
+      for (var vert = 0; vert < n; vert++) for (j = 0; j < 2; j++) {
+        var cx = right - j, up = ((right + 1) & 2) === 0, cy = up ? n - 1 - vert : vert;
+        if (!F[cy][cx] && bi < total) { M[cy][cx] = (all[bi >>> 3] >>> (7 - (bi & 7))) & 1; bi++; }
+      }
+    }
+    var maskF = [function (a, c) { return (a + c) % 2 === 0; }, function (a, c) { return c % 2 === 0; }, function (a) { return a % 3 === 0; }, function (a, c) { return (a + c) % 3 === 0; },
+      function (a, c) { return (Math.floor(a / 3) + Math.floor(c / 2)) % 2 === 0; }, function (a, c) { return a * c % 2 + a * c % 3 === 0; },
+      function (a, c) { return (a * c % 2 + a * c % 3) % 2 === 0; }, function (a, c) { return ((a + c) % 2 + a * c % 3) % 2 === 0; }];
+    var apply = function (m) { for (var yy = 0; yy < n; yy++) for (var xx = 0; xx < n; xx++) if (!F[yy][xx] && maskF[m](xx, yy)) M[yy][xx] ^= 1; };
+    var score = function () {
+      var p = 0, yy, xx, k, run, dark = 0, line = function (get) {
+        for (var a = 0; a < n; a++) { run = 1; for (var c = 1; c <= n; c++) { if (c < n && get(a, c) === get(a, c - 1)) run++; else { if (run >= 5) p += run - 2; run = 1; } }
+          for (c = 0; c + 10 < n + 1; c++) { var s = ""; for (k = 0; k < 11 && c + k < n; k++) s += get(a, c + k); if (s === "10111010000" || s === "00001011101") p += 40; } }
+      };
+      line(function (a, c) { return M[a][c]; }); line(function (a, c) { return M[c][a]; });
+      for (yy = 0; yy < n - 1; yy++) for (xx = 0; xx < n - 1; xx++) { var q = M[yy][xx]; if (q === M[yy][xx + 1] && q === M[yy + 1][xx] && q === M[yy + 1][xx + 1]) p += 3; }
+      for (yy = 0; yy < n; yy++) for (xx = 0; xx < n; xx++) dark += M[yy][xx];
+      return p + 10 * Math.floor(Math.abs(dark * 20 / (n * n) - 10));
+    };
+    var best = 0, bestS = Infinity;
+    for (var m = 0; m < 8; m++) { apply(m); fmt(m); var s = score(); if (s < bestS) { bestS = s; best = m; } apply(m); }
+    apply(best); fmt(best);
+    var d = ""; for (cy = 0; cy < n; cy++) for (cx = 0; cx < n; cx++) if (M[cy][cx]) d += "M" + cx + " " + cy + "h1v1h-1z";
+    return { n: n, d: d };
+  };
   // Schildgenerator: Vorschau live aktualisieren, Text einpassen, nur das Schild drucken. Nichts wird gespeichert oder verschickt.
   var gen = document.getElementById("gen");
   if (gen) {
     var wrap = document.getElementById("sheetWrap"), $ = function (id) { return document.getElementById(id); };
-    var st = { kind: gen.getAttribute("data-kind"), fmt: gen.getAttribute("data-fmt"), top: $("fTop").value, main: $("fMain").value, bot: $("fBot").value, price: $("fPrice").value, vb: true, save: false };
+    var st = { kind: gen.getAttribute("data-kind"), fmt: gen.getAttribute("data-fmt"), top: $("fTop").value, main: $("fMain").value, bot: $("fBot").value, price: $("fPrice").value, vb: true, save: false, pay: null };
+    // PayPal.me-Name: auch ein eingefügter Link wird verstanden. Der QR-Code entsteht hier im Browser.
+    var payIn = $("fPay"), payNote = $("payNote");
+    var payRead = function () {
+      var v = payIn.value.trim().replace(/^https?:\/\//i, "").replace(/^www\./i, ""), m = /^(?:paypal\.me\/|paypal\.com\/paypalme\/)?@?([^\/?#\s]*)/i.exec(v), name = m ? m[1] : "";
+      if (!v) { st.pay = null; payNote.textContent = ""; return; }
+      if (/\s/.test(v) || !/^[A-Za-z0-9]{1,20}$/.test(name)) { st.pay = null; payNote.textContent = "Nur Buchstaben und Zahlen, so wie in deinem PayPal.me-Link."; return; }
+      st.pay = { name: name, qr: qrMake("https://paypal.me/" + name) };
+      payNote.textContent = "QR-Code führt zu paypal.me/" + name + ". Prüf ihn vor dem Drucken einmal mit dem Handy.";
+    };
+    if (payIn) { payIn.addEventListener("input", function () { payRead(); render(); }); payIn.addEventListener("change", function () { if (st.pay && payIn.value !== st.pay.name) payIn.value = st.pay.name; }); if (payIn.value) payRead(); }
+    var NS = "http://www.w3.org/2000/svg";
+    var payFill = function (unit) {
+      var svg = unit.querySelector(".sg-payqr"), q = st.pay.qr, w = q.n + 8;
+      while (svg.firstChild) svg.removeChild(svg.firstChild);
+      svg.setAttribute("viewBox", "-4 -4 " + w + " " + w);
+      var r = document.createElementNS(NS, "rect"); r.setAttribute("x", "-4"); r.setAttribute("y", "-4"); r.setAttribute("width", w); r.setAttribute("height", w); r.setAttribute("fill", "#fff"); svg.appendChild(r);
+      var pth = document.createElementNS(NS, "path"); pth.setAttribute("d", q.d); pth.setAttribute("fill", "#15211B"); svg.appendChild(pth);
+      unit.querySelector(".sg-payurl").textContent = "paypal.me/" + st.pay.name;
+    };
     var lastSignFmt = st.kind === "tags" ? "quer" : st.fmt;
     var over = function (b) { return b.scrollWidth > b.clientWidth + 1 || b.scrollHeight > b.clientHeight + 1; };
     // passt, wenn weder der Kasten noch der Text selbst überläuft (lange Wörter werden so kleiner statt abgeschnitten)
@@ -338,6 +433,7 @@
       for (var i = 0; i < n; i++) sheet.appendChild(tpl.cloneNode(true));
       wrap.innerHTML = ""; wrap.appendChild(sheet);
       var units = sheet.children, u = units[0];
+      if (!tags && st.pay) { sheet.classList.add("pay"); for (i = 0; i < n; i++) payFill(units[i]); }
       if (tags) {
         var box = u.querySelector(".tg-price"), sp = box.firstElementChild;
         box.classList.toggle("blank", !st.price); sp.textContent = st.price || "€";
@@ -864,16 +960,16 @@
     };
     var tval = function (t) { var m = /(\d{1,2})(?::(\d{2}))?/.exec(t || ""); return m ? +m[1] + (+m[2] || 0) / 60 : 99; };
     // Märkte an einem Tag
-    var onDay = function (k) {
+    var onDay = function (k, only) {
       var rows = [];
-      IDX.forEach(function (it) { (it.x[4] || []).forEach(function (e) { if (e[0] === k) rows.push({ it: it, e: e }); }); });
+      IDX.forEach(function (it) { if (only && !only[it.s]) return; (it.x[4] || []).forEach(function (e) { if (e[0] === k) rows.push({ it: it, e: e }); }); });
       return rows.sort(function (a, b) { var oa = a.e[1] === "fällt aus" ? 1 : 0, ob = b.e[1] === "fällt aus" ? 1 : 0; return oa - ob || tval(a.e[1]) - tval(b.e[1]) || a.it.x[0].localeCompare(b.it.x[0], "de"); });
     };
     var nextDaysWith = function (from, n) { var seen = {}, list = []; IDX.forEach(function (it) { (it.x[4] || []).forEach(function (e) { if (e[0] > from && e[1] !== "fällt aus" && !seen[e[0]]) { seen[e[0]] = 1; list.push(e[0]); } }); }); return list.sort().slice(0, n); };
     var dayChips = function (ks) { return '<div class="chips">' + ks.map(function (k) { return '<button type="button" class="chip" data-q="' + qOf(k) + '">' + svg("cal") + esc2(dayLab(k)) + "</button>"; }).join("") + "</div>"; };
     var qOf = function (k) { var p = k.split("-"); return (+p[2]) + "." + (+p[1]) + "." + (p[0] !== TODAY.slice(0, 4) ? p[0] : ""); };
-    var renderDay = function (k) {
-      var rows = onDay(k), open = rows.filter(function (r) { return r.e[1] !== "fällt aus"; }).length, lk = dayLink(k), h = '<section class="sx-day"><div class="sx-dh"><h2>' + esc2(longDay(k)) + "</h2>";
+    var renderDay = function (k, only) {
+      var rows = onDay(k, only), open = rows.filter(function (r) { return r.e[1] !== "fällt aus"; }).length, lk = dayLink(k), h = '<section class="sx-day"><div class="sx-dh"><h2>' + esc2(longDay(k)) + "</h2>";
       if (k < TODAY) return h + '</div><div class="empty sx-empty"><p><b>Dieser Tag ist schon vorbei.</b></p><p>Die nächsten Flohmärkte:</p>' + dayChips(nextDaysWith(dayAdd(TODAY, -1), 4)) + "</div></section>";
       if (!rows.length) {
         var far = BIS && k > BIS;
@@ -884,6 +980,34 @@
         return '<article class="sx-row' + (off ? " off" : "") + '"><span class="sx-t' + (off ? " off" : r.e[1] ? "" : " na") + '">' + esc2(off ? "fällt aus" : r.e[1] ? short(r.e[1]) : "Uhrzeit folgt") + '</span><div class="sx-rb"><a href="' + ROOT + "/flohmarkt/" + r.it.s + '/">' + esc2(x[0]) + '</a><span class="meta">' + esc2(x[1]) + (r.e[2] ? " · " + esc2(r.e[2]) : "") + "</span></div>" + favB(r.it.s, x[7] || x[0]) + "</article>";
       }).join("") + "</div>" + (lk ? '<a class="more-link" href="' + lk[0] + '">' + lk[1] + svg("chev") + "</a>" : "") + "</section>";
     };
+    // Kalender-Ansicht: Monatsraster mit den Tagen, an denen die gefundenen Märkte stattfinden. Antippen zeigt den Tag darunter.
+    var view = null, CAL = null;
+    var calOpen = function (only, months) {
+      var by = {};
+      IDX.forEach(function (it) { if (only && !only[it.s]) return; (it.x[4] || []).forEach(function (e) { if (e[0] < TODAY || e[1] === "fällt aus") return; by[e[0]] = (by[e[0]] || 0) + 1; }); });
+      var ks = Object.keys(by).sort(), ms = months || ks.map(function (k) { return k.slice(0, 7); }).filter(function (m, i, a) { return a.indexOf(m) === i; });
+      if (!ks.length || !ms.length) return false;
+      CAL = { only: only, by: by, ms: ms, mi: 0, sel: null };
+      return true;
+    };
+    var calFirst = function (m) { var ks = Object.keys(CAL.by).sort().filter(function (k) { return k.slice(0, 7) === m; }); return ks[0] || null; };
+    var calHTML = function () {
+      var m = CAL.ms[CAL.mi], y = +m.slice(0, 4), mo = +m.slice(5), first = ymd(y, mo, 1), lead = (wdOf(first) + 6) % 7, dim = new Date(Date.UTC(y, mo, 0)).getUTCDate(), n = 0, cells = "";
+      if (!CAL.sel || CAL.sel.slice(0, 7) !== m) CAL.sel = calFirst(m);
+      for (var i = 0; i < lead; i++) cells += '<span class="cal-c nil" aria-hidden="true"></span>';
+      for (var d = 1; d <= dim; d++) {
+        var k = ymd(y, mo, d), c = CAL.by[k] || 0, cls = (k === TODAY ? " today" : "") + (k < TODAY ? " past" : "");
+        n += c;
+        cells += c ? '<button type="button" class="cal-c has' + cls + (k === CAL.sel ? " sel" : "") + '" data-cal-d="' + k + '" aria-pressed="' + (k === CAL.sel) + '" aria-label="' + esc2(longDay(k)) + ": " + (c === 1 ? "1 Flohmarkt" : c + " Flohmärkte") + '"><b>' + d + "</b><i>" + c + "</i></button>"
+          : '<span class="cal-c' + cls + '"><b>' + d + "</b></span>";
+      }
+      var nav = function (dir, lab) { var off = dir < 0 ? CAL.mi === 0 : CAL.mi === CAL.ms.length - 1; return '<button type="button" class="cal-nav' + (dir < 0 ? " prev" : "") + '" data-cal-m="' + dir + '" aria-label="' + lab + '"' + (off ? " disabled" : "") + ">" + svg("chev") + "</button>"; };
+      return '<section class="cal" aria-label="Kalender"><div class="cal-h">' + nav(-1, "Vorheriger Monat") + "<div><h2>" + MONN[mo - 1] + " " + y + '</h2><p class="meta">' + (n === 1 ? "1 Termin" : n + " Termine") + " · Tipp auf einen Tag</p></div>" + nav(1, "Nächster Monat") + "</div>" +
+        '<div class="cal-wd" aria-hidden="true"><span>Mo</span><span>Di</span><span>Mi</span><span>Do</span><span>Fr</span><span>Sa</span><span>So</span></div><div class="cal-g">' + cells + "</div></section>" +
+        '<div class="cal-day" id="calDay">' + (CAL.sel ? renderDay(CAL.sel, CAL.only) : "") + "</div>";
+    };
+    var calDraw = function (focusSel) { var box = document.getElementById("sxCal"); if (!box || !CAL) return; box.innerHTML = calHTML(); favSync(); if (focusSel) { var b = box.querySelector(".cal-c.sel"); if (b) b.focus(); } };
+    var viewBar = function (v) { return '<div class="chips sx-view" role="group" aria-label="Ansicht"><button type="button" class="chip" data-view="cal" aria-pressed="' + (v === "cal") + '">' + svg("cal") + 'Kalender</button><button type="button" class="chip" data-view="list" aria-pressed="' + (v === "list") + '">' + svg("list") + "Liste</button></div>"; };
     // Antwort auf „Findet … statt?“: nächster Termin oder der gefragte Tag
     var card = function (it, p, kinds) {
       var x = it.x, fu = future(x), ans = "", rest = fu, note = "";
@@ -946,6 +1070,7 @@
         var mp = MO[p.month], seen = {}, ks = [], mn = MONN[+p.month.slice(5) - 1] + " " + p.month.slice(0, 4);
         IDX.forEach(function (it) { (it.x[4] || []).forEach(function (e) { if (e[0].slice(0, 7) === p.month && e[0] >= TODAY && e[1] !== "fällt aus") { if (!seen[e[0]]) ks.push(e[0]); seen[e[0]] = (seen[e[0]] || 0) + 1; } }); });
         ks.sort();
+        if (ks.length && calOpen(null, [p.month])) { out.innerHTML = '<div id="sxCal"></div>' + (mp ? '<a class="more-link sx-mlink" href="' + ROOT + mp + '">Alle Termine im ' + esc2(mn) + svg("chev") + "</a>" : ""); calDraw(); msg.textContent = ""; return; }
         out.innerHTML = '<section class="sx-day"><div class="sx-dh"><h2>Flohmärkte im ' + esc2(mn) + "</h2></div>" + (ks.length ? "<p class=\"meta\">Tipp auf einen Tag:</p>" + dayChips(ks) + (mp ? '<a class="more-link" href="' + ROOT + mp + '">Alle Termine im ' + esc2(mn) + svg("chev") + "</a>" : "") : '<div class="empty sx-empty"><p><b>Für diesen Monat stehen noch keine Termine im Kalender.</b></p></div>') + "</section>";
         msg.textContent = ""; return;
       }
@@ -965,21 +1090,31 @@
           '<div class="chips"><a class="chip" href="' + ROOT + '/veranstalter/">' + svg("mail") + 'Markt melden</a><a class="chip" href="' + ROOT + '/flohmaerkte/">' + svg("map") + "Alle Märkte</a></div></div>";
         msg.textContent = "Keine Treffer."; return;
       }
+      var only = {}; hits.forEach(function (r) { only[r.it.s] = 1; });
+      var canCal = calOpen(only), v2 = canCal ? (view || (hits.length > 1 ? "cal" : "list")) : "list";
+      msg.textContent = loose ? "" : hits.length === 1 ? "1 Markt gefunden." : hits.length + " Märkte gefunden.";
+      if (v2 === "cal") {
+        out.innerHTML = viewBar("cal") + (loose ? '<p class="sx-sub">Keine genaue Übereinstimmung. Ähnliche Märkte:</p>' : "") + '<div id="sxCal"></div>' +
+          '<p class="sx-x meta">Nicht dabei? <a href="' + ROOT + '/veranstalter/">Markt melden</a> · <a href="' + ROOT + '/flohmaerkte/">Alle Märkte</a></p>';
+        calDraw(); return;
+      }
       var shown = showAll ? hits : hits.slice(0, LIMIT);
-      out.innerHTML = (loose ? '<p class="sx-sub">Keine genaue Übereinstimmung. Ähnliche Märkte:</p>' : "") + '<div class="sx-hits">' + shown.map(function (r) { return card(r.it, p, r.kinds); }).join("") + "</div>" +
+      out.innerHTML = (canCal ? viewBar("list") : "") + (loose ? '<p class="sx-sub">Keine genaue Übereinstimmung. Ähnliche Märkte:</p>' : "") + '<div class="sx-hits">' + shown.map(function (r) { return card(r.it, p, r.kinds); }).join("") + "</div>" +
         (hits.length > shown.length ? '<button type="button" class="more" id="sxMore">Alle ' + hits.length + " Treffer anzeigen</button>" : "") +
         '<p class="sx-x meta">Nicht dabei? <a href="' + ROOT + '/veranstalter/">Markt melden</a> · <a href="' + ROOT + '/flohmaerkte/">Alle Märkte</a></p>';
-      msg.textContent = loose ? "" : hits.length === 1 ? "1 Markt gefunden." : hits.length + " Märkte gefunden.";
       favSync();
     };
     var t = 0;
     q.addEventListener("input", function () { showAll = false; clearTimeout(t); t = setTimeout(run, 120); });
     form.addEventListener("submit", function (e) { e.preventDefault(); clearTimeout(t); run(); q.blur(); });
-    clr.addEventListener("click", function () { q.value = ""; showAll = false; run(); q.focus(); });
+    clr.addEventListener("click", function () { q.value = ""; showAll = false; view = null; run(); q.focus(); });
     var setQ = function (v) { q.value = v; showAll = false; run(); };
     out.addEventListener("click", function (e) {
       var c = e.target.closest("[data-q]"); if (c) { setQ(c.getAttribute("data-q")); window.scrollTo({ top: 0, behavior: "smooth" }); return; }
-      if (e.target.closest("#sxMore")) { showAll = true; run(); }
+      if (e.target.closest("#sxMore")) { showAll = true; run(); return; }
+      var vb = e.target.closest("button[data-view]"); if (vb) { view = vb.getAttribute("data-view"); run(); var nb = out.querySelector('button[data-view="' + view + '"]'); if (nb) nb.focus(); return; }
+      var cm = e.target.closest("button[data-cal-m]"); if (cm && CAL) { CAL.mi = Math.max(0, Math.min(CAL.ms.length - 1, CAL.mi + +cm.getAttribute("data-cal-m"))); CAL.sel = null; calDraw(); var nv = out.querySelector('button[data-cal-m="' + cm.getAttribute("data-cal-m") + '"]'); if (nv && !nv.disabled) nv.focus(); return; }
+      var cd = e.target.closest("button[data-cal-d]"); if (cd && CAL) { CAL.sel = cd.getAttribute("data-cal-d"); calDraw(true); var dp = document.getElementById("calDay"); if (dp && dp.getBoundingClientRect().top > window.innerHeight - 120) dp.scrollIntoView({ behavior: "smooth", block: "start" }); }
     });
     if (days) days.addEventListener("click", function (e) {
       var b = e.target.closest("button[data-d]"); if (!b) return;

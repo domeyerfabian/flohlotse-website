@@ -46,11 +46,15 @@
     var dated = document.querySelectorAll("main [data-day]"), old = 0;
     dated.forEach(function (el) { if (el.getAttribute("data-day") < NOW.day) { el.remove(); old++; } });
     document.querySelectorAll("main ul.dates").forEach(function (l) { if (!l.children.length) { var p = document.createElement("p"); p.className = "meta"; p.textContent = "Die nächsten Termine werden gerade aktualisiert."; l.parentNode.replaceChild(p, l); } });
-    if (dated.length || document.documentElement.hasAttribute("data-rel")) {
-      var main = document.querySelector("main"), d = stand.split("-"), note = document.createElement("p");
+    // Hinweis nur, wo er nötig ist: auf Seiten mit „heute“/„morgen“ oder wenn ein Neubau ausgefallen ist (Stand älter als gestern).
+    // Sonst verschwinden die vergangenen Termine einfach still.
+    var dOf = function (k) { var q = k.split("-"); return Date.UTC(+q[0], +q[1] - 1, +q[2]); }, behind = Math.round((dOf(NOW.day) - dOf(stand)) / 864e5), rel = document.documentElement.hasAttribute("data-rel");
+    if (rel || (behind > 1 && dated.length)) {
+      var main = document.querySelector("main"), fmt = function (k) { var q = k.split("-"); return (+q[2]) + "." + (+q[1]) + "."; }, note = document.createElement("p");
       note.className = "stale"; note.setAttribute("role", "status"); note.setAttribute("data-nosnippet", "");
-      note.textContent = "Stand dieser Seite: " + (+d[2]) + "." + (+d[1]) + "." + d[0] + ". Sie wird gerade aktualisiert" + (old ? ", vergangene Termine sind ausgeblendet" : "") + ". Angaben wie „heute“ und „morgen“ beziehen sich auf den Stand. ";
-      if (location.pathname.slice(-9) !== "/termine/") { var more = document.createElement("a"); more.href = ROOT0 + "/termine/"; more.textContent = "Zu den kommenden Terminen"; note.appendChild(more); }
+      var dot = document.createElement("span"); dot.className = behind > 1 ? "stale-dot still" : "stale-dot"; dot.setAttribute("aria-hidden", "true"); note.appendChild(dot);
+      note.appendChild(document.createTextNode(behind > 1 ? "Stand " + fmt(stand) + (old ? " · vergangene Termine ausgeblendet" : "") : "Wird für den " + fmt(NOW.day) + " aktualisiert"));
+      if (location.pathname.slice(-9) !== "/termine/") { var more = document.createElement("a"); more.href = ROOT0 + "/termine/"; more.textContent = "Termine"; note.appendChild(more); }
       if (main) main.insertBefore(note, main.firstChild);
     }
   }

@@ -625,8 +625,6 @@ button.share.copied,.share-row .btn.copied{background:var(--ink);color:var(--pap
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .ticker{background:var(--surface);color:var(--ink);box-shadow:inset 0 0 0 1px var(--line)}}
 :root[data-theme="dark"] .ticker{background:var(--surface);color:var(--ink);box-shadow:inset 0 0 0 1px var(--line)}
 /* Hinweis, wenn die Seite beim Aufruf von gestern ist (kurz nach Mitternacht oder nach einem ausgefallenen Neubau) */
-.stale{margin:16px 0 0;padding:10px 14px;border-radius:12px;background:var(--ink);color:var(--paper);font-size:14px;line-height:1.4}
-.stale a{color:inherit;font-weight:600;text-decoration:underline;text-decoration-color:var(--sticker);text-decoration-thickness:2px;text-underline-offset:2px;white-space:nowrap}
 
 /* „Neu“-Schild für frisch eingetragene Märkte (schwarz = Hinweis) und die Zeile „Der Kalender wächst“ auf der Startseite */
 .neu{display:inline-block;vertical-align:middle;background:var(--ink);color:var(--paper);border-radius:999px;padding:2px 9px;font:700 11px/1.4 var(--f-body);letter-spacing:.04em;text-transform:uppercase;white-space:nowrap}
@@ -1052,3 +1050,10 @@ a.route.kc-go{margin:10px 0 0;min-height:44px;font-size:15px;padding:8px 16px}
 .kc-pt .kc-x{font-weight:400}
 .kc-photo{display:flex;width:fit-content;max-width:100%;align-items:center;gap:8px;background:var(--sticker);color:var(--sticker-ink);border-radius:999px;padding:8px 16px;margin:14px 0 4px;font-weight:700;font-size:15px;line-height:1.3}
 .kc-photo .i{width:20px;height:20px;flex:none}
+.stale{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;width:fit-content;max-width:100%;margin:14px 0 0;padding:5px 14px 5px 12px;border:1px solid var(--line);border-radius:999px;color:var(--muted);font-size:13px;line-height:1.4}
+.stale-dot{width:8px;height:8px;border-radius:50%;background:var(--sticker);flex:none;animation:stalePulse 1.6s ease-in-out infinite}
+.stale a{color:var(--ink);font-weight:600;text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:3px}
+.stale a:hover{text-decoration-color:var(--ink)}
+@keyframes stalePulse{0%,100%{opacity:1}50%{opacity:.35}}
+.stale-dot.still{animation:none;background:var(--muted)}
+@media (prefers-reduced-motion:reduce){.stale-dot{animation:none}}

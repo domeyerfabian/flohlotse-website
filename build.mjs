@@ -947,7 +947,9 @@ const knownDays = m => new Set([...m.events.map(e => e.k), ...(ROW_DAYS[m.slug] 
     // Randbereiche weglassen, außer die Seite hätte dann gar kein Datum mehr (dann lieber alles lesen, als einen echten Termin zu übersehen)
     const txt = hat(ohneRand) || !hat(voll) ? ohneRand : voll;
     let occ = [];
-    const push = (t, m) => occ.push({ t, i: m.index, j: m.index + m[0].length });
+    // Fristen sind keine Markttage: „Anmeldeschluss ist der 29.10.“, „Stornierung … nur bis zum 29.10. möglich“ (ohne Satzende dazwischen)
+    const FRIST = /(?:anmeldeschluss|anmeldefrist|meldeschluss|einsendeschluss|bewerbungsschluss|stornier\S*|storno\S*|abbuchung|zuletzt aktualisiert|zuletzt geändert)[^0-9.!?]{0,90}$/i;
+    const push = (t, m) => { if (FRIST.test(txt.slice(Math.max(0, m.index - 100), m.index))) return; occ.push({ t, i: m.index, j: m.index + m[0].length }); };
     // Jahr: vierstellig (auch nach Leerzeichen) oder zweistellig direkt angehängt und plausibel. „25.10. 10–16 Uhr“ ist keine Jahreszahl.
     for (const m of txt.matchAll(/\b(\d{1,2})\.\s?(\d{1,2})\.(?:\s?((?:19|20)\d{2})\b|(\d{2})\b(?![.:]\d))?/g)) { const d = +m[1], mo = +m[2], y2 = m[4] ? 2000 + +m[4] : 0;
       if (d >= 1 && d <= 31 && mo >= 1 && mo <= 12) push(`${p2(d)}.${p2(mo)}.${m[3] || (y2 >= Y0 - 5 && y2 <= Y0 + 3 ? y2 : "")}`, m); }
@@ -1029,7 +1031,12 @@ const knownDays = m => new Set([...m.events.map(e => e.k), ...(ROW_DAYS[m.slug] 
     }
     // Der Wächter liest fremde Seiten. Stolpert er dabei, darf das den Bau nicht aufhalten: Dann bleibt der Stand der letzten Nacht, und der Bericht nennt den Fehler.
     try {
-    const todo = [...urls.keys()], today = key(TODAY), got = {};
+    // Startseite eines Veranstalters, dessen andere Märkte bei uns mit eigener Unterseite stehen (z. B. www.marktundkultur.de/ neben …/?p=50):
+    // Dort stehen die Termine aller seiner Märkte. Diese Seite prüft der Wächter nicht, sonst landen fremde Termine beim falschen Markt.
+    const hostN = u => new URL(u).host.replace(/^www\./, ""), rootU = u => { const l = new URL(u); return /^\/?$/.test(l.pathname) && !l.search; };
+    const overview = new Set([...urls.keys()].filter(u => rootU(u) && [...urls.keys()].some(v => v !== u && hostN(v) === hostN(u) && !rootU(v))));
+    for (const u of overview) warn("Termin-Wächter", `${listNamesPlain(urls.get(u))}: Als Veranstalter-Website steht nur die Startseite ${u}. Dort stehen auch die Termine anderer Märkte des Veranstalters, deshalb prüft der Termin-Wächter diese Seite nicht. Soll er den Markt mitprüfen, die Seite des Markts eintragen.`, true);
+    const todo = [...urls.keys()].filter(u => !overview.has(u)), today = key(TODAY), got = {};
     // Schritt 1: alle Seiten abrufen (höchstens vier gleichzeitig)
     const work = async () => { for (let u; (u = todo.shift());) {
       try { got[u] = (await allowed(u)) ? datesOf(await get(u)) : { gesperrt: true }; } catch { got[u] = { fehler: true }; }

@@ -678,7 +678,9 @@ const listNames = (arr, n = 3) => { const a = [...new Set(arr)].slice(0, n); ret
 // Erste Beschreibung, die in die ideale Länge passt (Google zeigt etwa 120 bis 155 Zeichen)
 const pickDesc = (...c) => { c = c.filter(Boolean).map(x => x.replace(/\s+/g, " ").trim()); return c.find(x => x.length >= 115 && x.length <= 158) || c.find(x => x.length <= 158) || c[0]; };
 // Beschreibungen aus dem Sheet mit festem Datum veralten, die ersetzen wir durch berechnete
-const STALE = new RegExp(`\\b(${MON.join("|")})\\b|\\b\\d{1,2}\\.\\d{1,2}\\.`, "i");
+// Veraltet wirkt ein Sheet-Text nur mit konkretem Datum („31. Oktober“, „Oktober 2026“, „im Oktober“, „Ende Oktober“, „31.10.“).
+// Eine Saisonangabe wie „März bis Oktober“ bleibt stehen.
+const STALE = new RegExp(`\\b\\d{1,2}\\.\\s*(${MON.join("|")})\\b|\\b(${MON.join("|")})\\s+20\\d\\d\\b|\\b(im|Anfang|Mitte|Ende)\\s+(${MON.join("|")})\\b|\\b\\d{1,2}\\.\\d{1,2}\\.`, "i");
 const fresh = t => t && !STALE.test(t) ? t : "";
 
 // Gesetzliche Feiertage in Hamburg (für Hinweise an den Tagen und auf den Monatsseiten)
@@ -1551,7 +1553,14 @@ for (const c of CATS_ON) {
   const ans = `${c.ansStart || "In Hamburg und Umgebung"} ${c.ms.length === 1 ? "steht ein Markt" : `stehen ${c.ms.length} ${c.plKurz || c.pl}`} im ${NAME}-Kalender${withEv.length < c.ms.length ? `, ${withEv.length} davon mit angekündigten Terminen` : ""}.${nx ? ` Der nächste Termin: ${nx.m.name} am ${fmtDate(nx.date)}${nx.start ? ", " + timeText(nx) : ""}.` : " Neue Termine folgen, sobald die Veranstalter sie veröffentlichen."}`;
   const faq = [...(nx ? [[`Wann ist der nächste Termin?`, `${nx.m.name} am ${fmtDate(nx.date)}${nx.start ? ", " + timeText(nx) : ""}. Alle weiteren Termine stehen oben in der Liste.`]] : []),
     [`Welche ${c.plW || c.pl} gibt es${c.ort === false ? "" : " in Hamburg"}?`, `${listMore(ms.map(m => `[${m.name}](/flohmarkt/${m.slug}/)`), 6)}.`], ...c.f];
+  // Marktnamen ins Snippet: Wer sucht, erkennt seinen Markt. Zuerst Namen mit dem Stichwort der Seite (Nacht…, Kinder…), dann bekannte Märkte, sonst nach nächstem Termin.
+  const stem = c.s.split("-")[0].slice(0, 5), nmS = m => 2 * m.short.toLowerCase().includes(stem) + m.tags.includes("Groß & bekannt");
+  const nmA = [...new Set([...withEv].sort((a, b) => nmS(b) - nmS(a)).map(m => m.short))];
+  const nmT = n => nmA.length > n ? `${nmA.slice(0, n).join(", ")} und ${nmA.length - n === 1 ? "ein weiterer" : `${nmA.length - n} weitere`}` : listNames(nmA, n);
+  const nmD = nmA.length < 2 ? [] : [3, 2].flatMap(n => [`${cap(c.pl)}${c.ort === false ? "" : " in Hamburg"}: ${nmT(n)}.${nx ? ` Nächster Termin ${dDate(nx.date)}.` : ""} Alle Termine ${Y} mit Uhrzeit und Adresse.`,
+    `${cap(c.pl)}${c.ort === false ? "" : " in Hamburg"}: ${nmT(n)}. Alle Termine ${Y} mit Uhrzeit und Adresse.`]).filter(x => x.replace(/\s+/g, " ").length <= 158);
   const desc = pickDesc(
+    ...nmD,
     `${cap(c.pl)}${c.ort === false ? "" : " in Hamburg und Umgebung"}: ${c.ms.length} Märkte${nx ? `, nächster Termin ${dDate(nx.date)}` : ""}. Alle Termine ${Y} mit Uhrzeit, Adresse und Anfahrt.`,
     `${cap(c.pl)}${c.ort === false ? "" : " in Hamburg und Umgebung"}: ${c.ms.length} Märkte mit allen Terminen ${Y}, Uhrzeiten und Adressen. Täglich aktualisiert.`,
     `Alle ${c.plW || c.pl}${c.ort === false ? "" : " in Hamburg"}: ${c.ms.length} Märkte mit Terminen ${Y}, Uhrzeiten und Adressen.`);
@@ -1600,8 +1609,8 @@ const SIGN_BASE = "/flohmarkt-schilder/";
 const kl = (s, t) => KBY[s] ? `<a href="/ratgeber/${s}/">${t}</a>` : t; // Ratgeber-Link, falls der Artikel existiert
 const SIGNS = [
   { s: "preisschilder", kind: "tags", chip: "Preisschilder", short: "24 Preisschilder pro A4-Blatt, auch für Etiketten 70 × 37 mm.",
-    h1: "Preisschilder für den Flohmarkt: Vorlage zum Ausdrucken", title: "Preisschilder Flohmarkt: kostenlos, auch als PDF",
-    desc: "Kostenlose Preisschilder für den Flohmarkt zum Ausdrucken oder als PDF: 24 Stück pro A4-Blatt, zum Beschriften oder mit festem Preis. Ohne Anmeldung.",
+    h1: "Preisschilder für den Flohmarkt: Vorlage zum Ausdrucken", title: "Preisschilder Flohmarkt zum Ausdrucken: PDF-Vorlage",
+    desc: "Preisschilder für den Flohmarkt kostenlos zum Ausdrucken oder als PDF: 24 Stück pro A4-Blatt, passend für Etiketten 70 × 37 mm. Leer oder mit festem Preis.",
     ans: "Hier druckst du 24 Preisschilder auf ein A4-Blatt. Lass das Preisfeld leer, wenn du mit Stift beschriften willst, oder tipp einen festen Preis ein. Die Felder messen 70 × 37 mm und passen auf gängige Etikettenbögen in diesem Format.",
     v: [{ l: "Zum Beschriften", price: "" }, { l: "50 Cent", price: "50 Cent" }, { l: "1 €", price: "1 €" }, { l: "2 €", price: "2 €" }, { l: "5 €", price: "5 €" }],
     b: () => [["Preise, die man von Weitem liest", `Schreib Preise groß und mit dickem Filzstift, dann sieht man sie auch von der anderen Tischseite. Ein Kreuz bei „VB“ zeigt, dass du über den Preis redest. Wie du sinnvolle Preise findest, steht im Ratgeber ${kl("preise-festlegen-flohmarkt", "Preise auf dem Flohmarkt festlegen")}.`],
@@ -1611,7 +1620,7 @@ const SIGNS = [
       ["Hinterlässt Klebeband Spuren?", "Kreppband lässt sich meist sauber abziehen. Auf empfindlichen Buchumschlägen und Schallplattenhüllen legst du das Schild trotzdem besser lose ein."]],
     kb: ["preise-festlegen-flohmarkt", "checkliste-flohmarktstand", "was-verkauft-sich-gut-flohmarkt"] },
   { s: "alles-1-euro", fmt: "quer", chip: "Alles 1 €", short: "Das Schild für die Wühlkiste, auch als 50 Cent, 2 € oder 5 €.",
-    h1: "Alles-1-Euro-Schild für den Flohmarkt: kostenlos drucken", title: "Alles 1 Euro Schild für den Flohmarkt: kostenlos",
+    h1: "Alles-1-Euro-Schild für den Flohmarkt: kostenlos drucken", title: "Alles 1 Euro Schild zum Ausdrucken: kostenlos",
     desc: "Schild „Alles 1 €“ für deine Flohmarkt-Kiste: kostenlos gestalten und drucken, auch für 50 Cent, 2 € oder 5 €. Als A4 oder acht kleine Schilder.",
     ans: "Ein „Alles 1 €“-Schild auf der Wühlkiste ist eines der wirkungsvollsten Schilder am Stand: Die Leute greifen zu, ohne erst nach dem Preis zu fragen. Wähl unten den Betrag, druck das Schild aus und klemm es gut sichtbar an die Kiste.",
     v: [{ l: "1 €", top: "Alles", main: "1 €", bot: "pro Teil" }, { l: "50 Cent", top: "Alles", main: "50 Cent", bot: "pro Teil" }, { l: "2 €", top: "Alles", main: "2 €", bot: "pro Teil" }, { l: "5 €", top: "Alles", main: "5 €", bot: "pro Teil" }],
@@ -1631,8 +1640,8 @@ const SIGNS = [
       ["Was heißt VB?", "VB steht für Verhandlungsbasis. Der Preis ist ein Vorschlag, über den man reden kann."]],
     kb: ["handeln-auf-dem-flohmarkt", "preise-festlegen-flohmarkt", "flohmarkt-knigge"] },
   { s: "bar-und-paypal", fmt: "quer", chip: "Bar & PayPal", short: "Zeigt sofort, wie man bei dir bezahlen kann.",
-    h1: "Zahlungsschild für den Flohmarkt: Bar, PayPal oder per App", title: "Zahlungsschild Flohmarkt: Bar & PayPal zum Drucken",
-    desc: "Kostenloses Zahlungsschild für den Flohmarkt: Zeig deiner Kundschaft, ob du Bargeld, PayPal oder andere Bezahl-Apps annimmst. Anpassen und drucken.",
+    h1: "Zahlungsschild für den Flohmarkt: Bar, PayPal oder per App", title: "PayPal-Schild Flohmarkt: mit QR-Code zum Ausdrucken",
+    desc: "Schild „Bar & PayPal“ für deinen Flohmarktstand, auf Wunsch mit QR-Code zu deinem PayPal.me-Link. Kostenlos anpassen, drucken oder als PDF speichern.",
     ans: "Ein Zahlungsschild beantwortet die häufigste Frage am Stand, bevor sie gestellt wird. Trag ein, was du annimmst, zum Beispiel Bargeld und PayPal, und häng das Schild an deine Kasse.",
     v: [{ l: "Bar & PayPal", top: "Bei mir zahlst du", main: "Bar & PayPal", bot: "Kleingeld ist willkommen" }, { l: "Nur Bargeld", top: "", main: "Nur Bargeld", bot: "Danke für passendes Kleingeld" }, { l: "Bar & per App", top: "Bei mir zahlst du", main: "Bar & per App", bot: "Frag einfach nach" }],
     b: () => [["Warum das Schild Zeit spart", "Nicht alle haben genug Bargeld dabei. Wer sieht, dass er per App zahlen kann, kauft eher, statt zum Geldautomaten zu laufen. Umgekehrt vermeidet ein „Nur Bargeld“ enttäuschte Gesichter an der Kasse."],
@@ -1661,8 +1670,8 @@ const SIGNS = [
       ["Kann ich den Namen direkt eintippen?", "Ja, schreib ihn in die kleine Zeile unten. Oder lass die Linien stehen und füll sie am Stand mit Stift aus."]],
     kb: ["zuruecklegen-lassen-flohmarkt", "diebstahl-am-flohmarktstand", "checkliste-flohmarktstand"] },
   { s: "zu-verschenken", fmt: "quer", chip: "Zu verschenken", short: "Für Restkisten, Hausflur oder Gartenzaun.",
-    h1: "Zu-verschenken-Schild: kostenlos gestalten und drucken", title: "Zu verschenken Schild: kostenlos zum Ausdrucken",
-    desc: "Schild „Zu verschenken“ für Flohmarkt-Reste, Hausflur oder Gartenzaun: kostenlos gestalten und drucken, als A4 oder acht kleine Schilder pro Blatt.",
+    h1: "Zu-verschenken-Schild: kostenlos gestalten und drucken", title: "Zu verschenken Schild zum Ausdrucken (PDF)",
+    desc: "Schild „Zu verschenken“ kostenlos zum Ausdrucken oder als PDF: für Flohmarkt-Reste, Hausflur oder Gartenzaun. Als A4 oder acht kleine Schilder pro Blatt.",
     ans: "Am Ende des Markttags bleibt fast immer etwas übrig. Statt alles wieder einzupacken, stellst du eine Kiste mit „Zu verschenken“ an den Stand. Das Schild funktioniert genauso im Hausflur oder am Gartenzaun.",
     v: [{ l: "Zu verschenken", top: "Kostenlos", main: "Zu verschenken", bot: "Nimm mit, was dir gefällt" }, { l: "Gratis mitnehmen", top: "", main: "Gratis zum Mitnehmen", bot: "Viel Freude damit!" }, { l: "Bitte nur eins", top: "Kostenlos", main: "Zu verschenken", bot: "Bitte nimm nur, was du brauchst" }],
     b: () => [["Reste sinnvoll loswerden", `Was nach dem Markt übrig ist, findet in einer Verschenkkiste oft noch dankbare Abnehmer. Was danach noch bleibt, kannst du spenden. Ideen dafür findest du im Ratgeber ${kl("reste-nach-dem-flohmarkt", "Nach dem Flohmarkt: Wohin mit den Resten?")}.`],
@@ -1760,7 +1769,7 @@ ${sideImg("seite-schilder", "quer kante")}<h2>So hält dein Schild den ganzen Ta
 <h2>Drucken ohne eigenen Drucker</h2><p>Tipp auf „Drucken oder als PDF speichern“ und wähl im Druckfenster „Als PDF speichern“. Das PDF druckst du im Copyshop oder bei Freunden aus. Für die gelbe Fläche reicht ein normaler Farbdrucker, im Sparmodus genügt Schwarzweiß.</p></div>
 ${faqHTML(faq)}
 <section class="related"><div class="sec-head"><h2>Aus dem Ratgeber</h2>${more("/ratgeber/#verkaufen", "Verkaufen")}</div>${grid(["checkliste-flohmarktstand", "preise-festlegen-flohmarkt", "flohmarktstand-anmelden"].filter(s => KBY[s]).map(kbCard))}</section></article>`;
-  layout({ p, title: `Flohmarkt-Schilder & Preisschilder: kostenlos als PDF | ${NAME}`, desc: "Kostenlose Schilder und Preisschilder für deinen Flohmarktstand: Vorlage wählen, Text eintippen, drucken oder als PDF speichern. Ohne Anmeldung.", body, nav: "schilder", ld: signLD(p, cr, faq) });
+  layout({ p, title: `Flohmarkt-Schilder & Preisschilder zum Ausdrucken | ${NAME}`, desc: "Kostenlose Vorlagen für deinen Flohmarktstand: Preisschilder, Bar & PayPal mit QR-Code, Alles 1 €, Reserviert und mehr. Drucken oder als PDF speichern.", body, nav: "schilder", ld: signLD(p, cr, faq) });
   SIGN_PAGE_IMGS.set(p, SIGNS.map(t => [signImg(t), signAlt(t)]));
 }
 // Eine Seite je Vorlage

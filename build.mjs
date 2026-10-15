@@ -470,6 +470,9 @@ const ic = (n, cls = "i") => `<svg class="${cls}" aria-hidden="true" focusable="
 const TAG_ICON = { "Frühaufsteher": "sunrise", "Langschläfer": "bed", "Groß & bekannt": "star", "Abends": "moon", "Nachbarschaft": "home", "Sammler & Vinyl": "disc", "Kinder & Spielzeug": "smile", "Überdacht": "umbrella", "Umland": "tree", "Fahrräder": "bike" };
 const tagIc = t => ic(TAG_ICON[t] || "tag");
 // Logischer Umbruch nach dem Doppelpunkt („Handeln auf dem Flohmarkt:“ / „So feilschst du fair“)
+// Lange Wörter in Überschriften: weiches Trennzeichen an der Wortfuge („Nachbarschafts-flohmarkt“), damit das Handy nicht mitten im Wort umbricht.
+const SHY_RX = /(?<=\p{L}{4})(?<!floh)(?=(?:flohm[aä]rkt|m[aä]rkt|börse|basar|schild|gebühr|platten|kleider|feld|nachbar|rekorder|automat|erklärung|streit|beilegung|schutz))/giu;
+const shyHeads = html => html.replace(/<(h[1-4])\b([^>]*)>([\s\S]*?)<\/\1>/g, (m, t, a, inner) => `<${t}${a}>${inner.replace(/(^|>)([^<]+)/g, (x, pre, txt) => pre + txt.replace(SHY_RX, "&shy;"))}</${t}>`);
 const brColon = h => h.replace(/^(.{3,70}?): (.+)$/, '$1:<span class="br"> $2</span>');
 // Adresse: Hausnummer bleibt bei der Straße, PLZ beim Ort. Umbrochen wird nach dem Komma.
 const addrNb = a => esc(a).replace(/ (\d+\s?[a-zA-Z]?(?:[-–]\d+[a-zA-Z]?)?)(?=,|$)/g, "&nbsp;$1").replace(/(\d{5}) /g, "$1&nbsp;");
@@ -544,7 +547,7 @@ ${ld ? `<script type="application/ld+json">${JSON.stringify(ld).replace(/</g, "\
 ${MENU()}
 </div></header>
 <main class="wrap" id="inhalt">
-${body.replace(/<h1>([^<]{3,80}?): ([^<]+)<\/h1>/, '<h1>$1:<span class="h1-sub"> $2</span></h1>')}
+${shyHeads(body.replace(/<h1>([^<]{3,80}?): ([^<]+)<\/h1>/, '<h1>$1:<span class="h1-sub"> $2</span></h1>'))}
 </main>
 <footer class="wrap site-foot">
 <div>Termine nach öffentlichen Angaben der Veranstalter, Stand ${STAND}. Bitte vor dem Besuch beim Veranstalter prüfen, Märkte können kurzfristig ausfallen. Ratgeber-Artikel ersetzen keine Rechts- oder Steuerberatung.${WX_OK ? ` Wettervorhersage: Deutscher Wetterdienst, Stand ${STAND}.` : ""}</div>

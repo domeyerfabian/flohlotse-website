@@ -1685,7 +1685,7 @@ function sheetHTML(st) {
 function genHTML(st, presets, heading, pay) {
   const pj = p => esc(JSON.stringify(p));
   const fmtBtn = (f, l) => `<button type="button" class="chip" data-fmt="${f}" aria-pressed="${st.fmt === f}">${l}</button>`;
-  return `<section class="gen" id="gen" data-kind="${st.kind}" data-fmt="${st.fmt}" aria-labelledby="genH">
+  return `<section class="gen" id="gen" data-kind="${st.kind}" data-fmt="${st.fmt}"${pay === "auto" ? ' data-pay="0"' : ""} aria-labelledby="genH">
 <h2 id="genH">${heading}</h2>
 ${presets.length > 1 ? `<div class="chips gen-presets js-only" role="group" aria-label="Vorlage wählen">${presets.map((p, i) => `<button type="button" class="chip" data-set="${pj(p.set)}" aria-pressed="${i === 0}">${esc(p.l)}</button>`).join("")}</div>` : ""}
 <div class="sheet-wrap" id="sheetWrap">${sheetHTML(st)}</div>
@@ -1738,7 +1738,7 @@ const faqHTML = f => `<section class="faq"><h2>Häufige Fragen</h2>${f.map(([q, 
 // Übersichtsseite
 {
   const p = SIGN_BASE, cr = [[NAME, "/"], ["Schilder"]];
-  const presets = SIGNS.map(t => ({ l: t.chip, set: signState(t) })).concat([{ l: "Eigener Text", set: { kind: "sign", fmt: "quer", top: "", main: "Dein Text", bot: "" } }]);
+  const presets = SIGNS.map(t => ({ l: t.chip, set: t.s === "bar-und-paypal" ? { ...signState(t), pay: 1 } : signState(t) })).concat([{ l: "Eigener Text", set: { kind: "sign", fmt: "quer", top: "", main: "Dein Text", bot: "" } }]);
   const first = SIGN_BY["alles-1-euro"]; presets.sort((a, b) => (b.l === first.chip) - (a.l === first.chip));
   const faq = [["Kostet der Schilder-Designer etwas?", "Nein. Du kannst so viele Schilder gestalten und drucken, wie du möchtest, ohne Anmeldung."],
     ["Werden meine Texte gespeichert?", "Nein. Das Schild entsteht direkt in deinem Browser. Wir sehen nicht, was du eintippst."],
@@ -1746,7 +1746,7 @@ const faqHTML = f => `<section class="faq"><h2>Häufige Fragen</h2>${f.map(([q, 
     ["Warum steht unten flohlotse.de?", "Damit deine Kundschaft weitere Flohmärkte in Hamburg findet. Der Hinweis ist klein und stört das Schild nicht."]];
   const body = crumbs(cr) + `<article class="kb"><h1>Flohmarkt-Schilder und Preisschilder zum Ausdrucken</h1>${signByline}
 <p class="lead">Der Schilder-Designer für deinen Stand: Vorlage wählen, Text eintippen, drucken. Ohne Drucker speicherst du das Schild als PDF und druckst es im Copyshop.</p>
-${genHTML(signState(first), presets, "Schild gestalten und drucken")}
+${genHTML(signState(first), presets, "Schild gestalten und drucken", "auto")}
 <section class="related"><div class="sec-head"><h2>Alle Vorlagen</h2></div>${grid(SIGNS.map(signCard))}</section>
 <div class="kb-body"><h2>Welche Schilder lohnen sich am Stand?</h2><p>Ein großes Schild für die Wühlkiste wie <a href="${signUrl(first)}">„Alles 1 €“</a> erspart dir an einem vollen Markttag Dutzende Fragen. Ein <a href="${signUrl(SIGN_BY["bar-und-paypal"])}">Zahlungsschild</a> verhindert peinliche Momente an der Kasse, und <a href="${signUrl(SIGN_BY["handeln-erwuenscht"])}">„Handeln erwünscht“</a> holt Leute ins Gespräch, die sonst nur gucken. Für einzelne Stücke nimmst du <a href="${signUrl(SIGN_BY.preisschilder)}">kleine Preisschilder</a>.</p>
 ${sideImg("seite-schilder", "quer kante")}<h2>So hält dein Schild den ganzen Tag</h2><p>Steck das Blatt in eine Klarsichthülle, dann übersteht es Nieselregen und Kaffeeflecken. Mit Wäscheklammern oder Kreppband hält es an Kisten und Tischkanten, bei Wind hilft ein Stück Pappe dahinter. Was sonst noch in die Tasche gehört, steht in der ${kl("checkliste-flohmarktstand", "Checkliste für deinen Flohmarktstand")}.</p>

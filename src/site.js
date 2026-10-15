@@ -238,7 +238,7 @@
   var kcQ = document.getElementById("kcSearch");
   if (kcQ) {
     var kcBox = document.getElementById("kcSugg"), kcSeen = {}, kcIdx = [];
-    document.querySelectorAll(".cluster .qlist a[data-q]").forEach(function (a) { var h = a.getAttribute("href"); if (kcSeen[h]) return; kcSeen[h] = 1; kcIdx.push({ h: h, t: a.textContent.trim(), q: a.getAttribute("data-q"), a: (a.closest(".cluster").querySelector("h2") || {}).textContent || "" }); });
+    document.querySelectorAll(".cluster .qlist a[data-q]").forEach(function (a) { var h = a.getAttribute("href"); if (kcSeen[h]) return; kcSeen[h] = 1; kcIdx.push({ h: h, t: a.textContent.trim(), q: a.getAttribute("data-q"), a: ((a.closest(".cluster").querySelector("h2") || {}).textContent || "").replace(/\u00AD/g, "") }); });
     var norm = function (v) { return v.toLowerCase().replace(/[’']/g, "").trim(); };
     var kcRun = function () {
       var v = norm(kcQ.value), any = false, hits = [];

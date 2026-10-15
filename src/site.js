@@ -433,7 +433,7 @@
       for (var i = 0; i < n; i++) sheet.appendChild(tpl.cloneNode(true));
       wrap.innerHTML = ""; wrap.appendChild(sheet);
       var units = sheet.children, u = units[0];
-      if (!tags && st.pay) { sheet.classList.add("pay"); for (i = 0; i < n; i++) payFill(units[i]); }
+      if (!tags && st.pay && gen.getAttribute("data-pay") !== "0") { sheet.classList.add("pay"); for (i = 0; i < n; i++) payFill(units[i]); }
       if (tags) {
         var box = u.querySelector(".tg-price"), sp = box.firstElementChild;
         box.classList.toggle("blank", !st.price); sp.textContent = st.price || "€";
@@ -465,6 +465,7 @@
         var d = JSON.parse(p.getAttribute("data-set"));
         st.kind = d.kind; st.top = d.top || ""; st.main = d.main || ""; st.bot = d.bot || ""; st.price = d.price || "";
         st.fmt = d.kind === "tags" ? "tags" : lastSignFmt;
+        if (gen.hasAttribute("data-pay")) gen.setAttribute("data-pay", d.pay ? "1" : "0");
         $("fTop").value = st.top; $("fMain").value = st.main; $("fBot").value = st.bot; $("fPrice").value = st.price;
         setPressed("button[data-set]", p); setPressed("button[data-fmt]", gen.querySelector('button[data-fmt="' + st.fmt + '"]')); render();
       }

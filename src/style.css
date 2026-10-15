@@ -1097,3 +1097,4 @@ a.route.kc-go{margin:10px 0 0;min-height:44px;font-size:15px;padding:8px 16px}
 .cal-day{margin-top:22px;scroll-margin-top:90px}
 .sx-mlink{display:inline-flex;margin-top:14px;font-weight:700}
 @media (min-width:700px){.cal{padding:18px 20px 20px}.cal-wd,.cal-g{gap:6px}.cal-c{aspect-ratio:auto;min-height:62px}.cal-c b{font-size:16px}}
+.gen[data-pay="0"] .gen-pay{display:none}

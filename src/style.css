@@ -1177,7 +1177,7 @@ a.route.kc-go{margin:10px 0 0;min-height:44px;font-size:15px;padding:8px 16px}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .fab{--fab-bg:#E9D63A;--fab-fg:#161503}}
 :root[data-theme="dark"] .fab{--fab-bg:#E9D63A;--fab-fg:#161503}
 .fab[hidden],.fab-menu[hidden],.fab-dim[hidden]{display:none}
-.fab-btn{position:relative;z-index:2;width:58px;height:58px;border-radius:50%;background:var(--fab-bg);border:0;display:grid;place-items:center;box-shadow:0 8px 22px rgba(0,0,0,.25);cursor:pointer}
+.fab-btn{position:relative;z-index:2;min-width:58px;height:58px;border-radius:999px;background:var(--fab-bg);border:0;display:inline-flex;align-items:center;justify-content:center;gap:0;padding:0;box-shadow:0 8px 22px rgba(0,0,0,.25);cursor:pointer}
 .fab-btn:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
 .fab-plus{position:relative;width:22px;height:22px;transition:transform .2s ease}
 .fab-plus::before,.fab-plus::after{content:"";position:absolute;left:50%;top:50%;width:22px;height:3px;border-radius:2px;background:var(--fab-fg);transform:translate(-50%,-50%)}
@@ -1193,3 +1193,46 @@ a.route.kc-go{margin:10px 0 0;min-height:44px;font-size:15px;padding:8px 16px}
 .fab ~ .kc-float{right:88px}
 .fab.open ~ .kc-float{visibility:hidden}
 @media (prefers-reduced-motion:reduce){.fab-plus{transition:none}}
+/* Suche: Werkzeuge als Treffer */
+.sx-tools{margin-top:22px}
+.sx-th{font-family:var(--f-display);font-size:20px;letter-spacing:-.01em;margin:0 0 10px}
+.sx-tl{display:grid;gap:8px}
+.sx-tl .cta-box{margin:0}
+/* Marktseiten: Schilder-Kasten im Bereich „Selbst verkaufen“ */
+.sell .cta-box{margin-top:14px}
+/* Startseite auf dem Handy: Chips in einer wischbaren Zeile, kein großer Sticker (die Anzahl steht im Antwort-Kasten) */
+@media (max-width:640px){
+  .hero > div{min-width:0}
+  .hero .quick{flex-wrap:nowrap;overflow-x:auto;margin-inline:-16px;padding:2px 16px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  .hero .quick .chip{flex:none;white-space:nowrap}
+  .hero .quick::-webkit-scrollbar{display:none}
+  .hero .big-sticker{display:none}
+}
+
+/* Startseite: Antwort-Kasten im ersten Bildschirm */
+.ab{margin-top:14px;background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:6px 6px 4px;max-width:560px}
+.ab-tabs{display:flex;gap:4px;padding:2px}
+.ab-tabs button{flex:1;display:inline-flex;align-items:center;justify-content:center;gap:6px;border:0;background:transparent;color:var(--muted);font:inherit;font-weight:700;font-size:14px;padding:9px 6px;border-radius:14px;cursor:pointer}
+.ab-tabs button[aria-selected="true"]{background:var(--ink);color:var(--paper)}
+.ab-c{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 5px;border-radius:999px;background:var(--line);color:var(--ink);font-size:11.5px;font-weight:800}
+.ab-tabs button[aria-selected="true"] .ab-c{background:var(--sticker);color:var(--sticker-ink)}
+.ab ul{list-style:none;margin:4px 0 0;padding:0}
+.ab li a{display:flex;align-items:center;gap:12px;padding:10px 10px;border-top:1px solid var(--line);color:var(--ink);text-decoration:none}
+.ab li:first-child a{border-top:0}
+.ab li a:hover b{text-decoration:underline}
+.ab-t{flex:none;min-width:58px;display:grid;justify-items:center;background:var(--sticker);color:var(--sticker-ink);border-radius:10px;padding:5px 6px;font-weight:800;font-size:14px;font-variant-numeric:tabular-nums;line-height:1.1}
+.ab-t small{font-size:10.5px;font-weight:700;opacity:.8}
+.ab-n{display:grid;min-width:0;flex:1}
+.ab-n b{font-size:15.5px;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ab-n small{font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ab li .i{flex:none;width:16px;height:16px;color:var(--muted)}
+.ab-all{display:flex;align-items:center;justify-content:center;gap:4px;padding:11px;border-top:1px solid var(--line);font-weight:700;font-size:14px;color:var(--ink);text-decoration:none}
+.hero-p{font-size:14px}
+@media (max-width:640px){.hl-photo{display:none}.hl-dots button:first-child{display:none}}
+.fab.away{visibility:hidden;opacity:0}
+/* Plus-Knopf: einmaliger Hinweis als Pille, schrumpft dann zum Kreis */
+.fab-btn{transition:padding .35s ease,gap .35s ease}
+.fab-lab{max-width:0;overflow:hidden;white-space:nowrap;opacity:0;color:var(--fab-fg);font-family:var(--f-body);font-weight:800;font-size:14.5px;transition:max-width .35s ease,opacity .25s ease}
+.fab.hint .fab-btn{gap:10px;padding:0 20px 0 18px}
+.fab.hint .fab-lab{max-width:280px;opacity:1}
+@media (prefers-reduced-motion:reduce){.fab-btn,.fab-lab{transition:none}}

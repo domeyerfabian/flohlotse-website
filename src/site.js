@@ -65,14 +65,39 @@
   var fab = document.getElementById("fab");
   if (fab) {
     var fBtn = document.getElementById("fabBtn"), fMenu = document.getElementById("fabMenu"), fDim = document.getElementById("fabDim"), fOpen = false, fT;
-    var fSet = function (on) { fOpen = on; fMenu.hidden = !on; fDim.hidden = !on; fab.classList.toggle("open", on); fBtn.setAttribute("aria-expanded", String(on)); if (on) { var a = fMenu.querySelector("a"); if (a) a.focus({ preventScroll: true }); } };
-    var fShow = function () { if (!fOpen) fab.hidden = window.scrollY < 240; };
+    var fSet = function (on) { if (on) fHintOff(); fOpen = on; fMenu.hidden = !on; fDim.hidden = !on; fab.classList.toggle("open", on); fBtn.setAttribute("aria-expanded", String(on)); if (on) { var a = fMenu.querySelector("a"); if (a) a.focus({ preventScroll: true }); } };
+    // Kurzer Hinweis am Knopf, nur wer von außen kommt (Suchmaschine, Link, direkt) und nur beim ersten Erscheinen. Beim Klicken innerhalb von Flohlotse kommt er nicht wieder. Nichts wird gespeichert.
+    var fHint = true; try { fHint = !document.referrer || new URL(document.referrer).host !== location.host; } catch (e) {}
+    var fY0 = 0, fHT;
+    var fHintOff = function () { clearTimeout(fHT); fab.classList.remove("hint"); };
+    var fShow = function () {
+      if (fOpen) return;
+      var was = fab.hidden; fab.hidden = window.scrollY < 240;
+      if (was && !fab.hidden && fHint) { fHint = false; fY0 = window.scrollY; fab.classList.add("hint"); fHT = setTimeout(fHintOff, 3200); }
+      else if (fab.classList.contains("hint") && Math.abs(window.scrollY - fY0) > 260) fHintOff();
+    };
     fBtn.addEventListener("click", function () { fSet(!fOpen); if (!fOpen) fBtn.focus(); });
     fDim.addEventListener("click", function () { fSet(false); });
     document.addEventListener("keydown", function (e) { if (fOpen && e.key === "Escape") { fSet(false); fBtn.focus(); } });
     document.getElementById("fabTop").addEventListener("click", function () { fSet(false); window.scrollTo({ top: 0, behavior: window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" }); fBtn.blur(); });
     window.addEventListener("scroll", function () { if (fT) return; fT = setTimeout(function () { fT = 0; fShow(); }, 100); }, { passive: true });
+    // Nicht über den Wisch-Knöpfen oder der Karte (dort stehen Bedienung und Kartenhinweis unten rechts)
+    var fAway = {};
+    if ("IntersectionObserver" in window) [document.getElementById("dkBtns"), document.getElementById("mapBox")].forEach(function (el, n) { if (!el) return; new IntersectionObserver(function (en) { fAway[n] = en[0].isIntersecting; fab.classList.toggle("away", fAway[0] || fAway[1]); if (fab.classList.contains("away") && fOpen) fSet(false); }).observe(el); });
     fShow();
+  }
+  // Startseite: Antwort-Kasten (Heute | Morgen | Wochenende). Heute schon beendete Märkte raus, dann den ersten Reiter mit Einträgen wählen.
+  var ab = document.getElementById("ab");
+  if (ab) {
+    var abT = [].slice.call(ab.querySelectorAll('[role="tab"]')), abP = [].slice.call(ab.querySelectorAll('[role="tabpanel"]'));
+    abP.forEach(function (pn, i) {
+      pn.querySelectorAll("li[data-day]").forEach(function (li) { var k = li.getAttribute("data-day"), e = li.getAttribute("data-e"); if (k < NOW.day || (k === NOW.day && e && NOW.hm >= e)) li.remove(); });
+      var n = pn.querySelectorAll("li").length, c = abT[i].querySelector(".ab-c"); if (c) c.textContent = n; abT[i].hidden = !n;
+      pn.querySelectorAll("li").forEach(function (li, j) { if (j >= 4) li.hidden = true; });
+    });
+    var abSel = function (i, focus) { abT.forEach(function (t, j) { t.setAttribute("aria-selected", String(i === j)); t.tabIndex = i === j ? 0 : -1; abP[j].hidden = i !== j; }); if (focus) abT[i].focus(); };
+    abT.forEach(function (t, i) { t.addEventListener("click", function () { abSel(i); }); t.addEventListener("keydown", function (e) { var d = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0; if (!d) return; var j = i; do { j = (j + d + abT.length) % abT.length; } while (abT[j].hidden && j !== i); abSel(j, true); }); });
+    var first = abT.findIndex(function (t) { return !t.hidden; }); if (first > -1) abSel(first);
   }
   // Startseite: Kauf-Check-Beispiel zum Antippen
   document.querySelectorAll("[data-kc]").forEach(function (f) {
@@ -195,7 +220,7 @@
     if (location.hash === "#karte") vSet("karte");
   }
   // Lange Listen: Knopf „Nach oben“, erscheint erst nach dem Scrollen
-  if (document.querySelectorAll("main .ev").length > 12) {
+  if (document.querySelectorAll("main .ev").length > 12 && !document.getElementById("fab")) {
     var up = document.createElement("button"); up.type = "button"; up.className = "to-top"; up.hidden = true; up.setAttribute("aria-label", "Nach oben");
     up.innerHTML = '<svg class="i" aria-hidden="true" focusable="false"><use href="' + ROOT0 + '/assets/icons.svg#i-chev"/></svg>';
     var useEl = document.querySelector("svg use[href*='icons.svg']"); if (useEl) up.querySelector("use").setAttribute("href", useEl.getAttribute("href").replace(/#.*$/, "#i-chev"));
@@ -299,6 +324,11 @@
   if (bigSt && NOW && bigSt.getAttribute("data-day") === NOW.day && NOW.hm >= bigSt.getAttribute("data-end")) {
     bigSt.querySelector("b").textContent = bigSt.getAttribute("data-n"); bigSt.querySelector("span").textContent = bigSt.getAttribute("data-l"); bigSt.href = bigSt.getAttribute("data-h");
   }
+  // Auf dem Handy ohne Symbolfoto: Der Slider beginnt direkt mit den Wochen-Highlights
+  (function () { var t = document.getElementById("hlTrack"), d = document.getElementById("hlDots"), ph = t && t.querySelector(".hl-photo");
+    if (!ph || t.children.length < 2 || !window.matchMedia || !matchMedia("(max-width: 640px)").matches) return;
+    var i = [].indexOf.call(t.children, ph); ph.remove();
+    if (d) { if (d.children[i]) d.children[i].remove(); var n = d.children.length; [].forEach.call(d.children, function (b, j) { b.setAttribute("aria-label", "Bild " + (j + 1) + " von " + n); if (j) b.removeAttribute("aria-current"); else b.setAttribute("aria-current", "true"); }); if (n < 2) d.hidden = true; } })();
   // Slider auf der Startseite: Punkte zeigen die Position und springen zum Bild
   var hlT = document.getElementById("hlTrack"), hlD = document.getElementById("hlDots");
   if (hlT && hlD) {
@@ -948,6 +978,20 @@
       }
       return d[a.length][b.length];
     };
+    // Werkzeuge (Kauf-Check, Schilder, Ratgeber) als zusätzliche Treffer: jedes Suchwort muss am Wortanfang passen
+    var TL = null, TICON = { kc: "search", sign: "printer", kb: "book" }, TSUB = { kc: "Kauf-Check: Prüfpunkte zum Abhaken", sign: "Schilder-Designer: gratis drucken", kb: "Ratgeber: kurze Antwort und Tipps" };
+    var toolHits = function (toks) {
+      if (!TL || !toks.length || toks.some(function (k) { return k.length < 3; })) return [];
+      return TL.map(function (t) { var ok = toks.every(function (k) { return t.k.indexOf(" " + k) > -1; }); if (!ok) return null; var sc = toks.filter(function (k) { return t.n.indexOf(" " + k) > -1; }).length * 3 + (t.hub ? 1 : 0); return { t: t, sc: sc }; })
+        .filter(Boolean).sort(function (a, b) { return b.sc - a.sc; }).slice(0, 4).map(function (r) { return r.t; });
+    };
+    var toolBlock = function (th, head) {
+      return th.length ? '<section class="sx-tools"><h2 class="sx-th">' + head + '</h2><div class="sx-tl">' + th.map(function (t) { return '<a class="cta-box" href="' + ROOT + t.u + '">' + svg(TICON[t.a] || "chev") + "<span><b>" + esc2(t.x) + "</b>" + TSUB[t.a] + "</span>" + svg("chev") + "</a>"; }).join("") + "</div></section>" : "";
+    };
+    var tsrc = out.getAttribute("data-tools");
+    if (tsrc) fetch(tsrc).then(function (r) { if (!r.ok) throw new Error(); return r.json(); }).then(function (j) {
+      TL = j.map(function (w) { return { a: w[0], x: w[1], u: w[2], n: " " + norm(w[1]), k: " " + norm(w[3]), hub: /^(Schilder-Designer|Kauf-Check: Echt)/.test(w[1]) }; }); if (q.value.trim() && D) run();
+    }).catch(function () {});
     var build = function () {
       IDX = Object.keys(D).map(function (s) {
         var x = D[s], f = [[x[0], 10, "n"], [x[7], 10, "n"], [x[1], 6, "a"], [x[8], 5, "a"], [x[6], 4, "b"], [x[5], 4, "o"], [x[9], 2, "a"], [(x[10] || []).join(" "), 3, "t"], [s.replace(/-/g, " "), 2, "n"]];
@@ -1107,6 +1151,11 @@
       var hits = scored.filter(function (r) { return r.all && r.sc > 0; }), loose = false;
       if (!hits.length && p.toks.length > 1) { hits = scored.filter(function (r) { return r.any > 0; }); loose = hits.length > 0; }
       hits.sort(function (a, b) { return (b.any - a.any) || (b.sc - a.sc) || (nextK(a.it) < nextK(b.it) ? -1 : nextK(a.it) > nextK(b.it) ? 1 : 0); });
+      var th = toolHits(p.toks);
+      if (!hits.length && th.length) {
+        out.innerHTML = toolBlock(th, "Gefunden in Kauf-Check, Schildern und Ratgeber") + '<p class="sx-x meta">Im Kalender gibt es keinen Markt dazu. <a href="' + ROOT + '/veranstalter/">Markt melden</a> · <a href="' + ROOT + '/flohmaerkte/">Alle Märkte</a></p>';
+        msg.textContent = th.length === 1 ? "1 Treffer." : th.length + " Treffer."; return;
+      }
       if (!hits.length) {
         out.innerHTML = '<div class="empty sx-empty"><p><b>Nichts gefunden für „' + esc2(v) + "“.</b></p><p>Prüf die Schreibweise oder such nach dem Stadtteil. Fehlt ein Markt im Kalender? Sag uns Bescheid, dann tragen wir ihn ein.</p>" +
           "<p>Termine gibt es bisher nur für Hamburg und 30 km Umland. Ratgeber, Schilder und Kauf-Check funktionieren aber auf jedem Flohmarkt.</p>" +
@@ -1118,13 +1167,13 @@
       msg.textContent = loose ? "" : hits.length === 1 ? "1 Markt gefunden." : hits.length + " Märkte gefunden.";
       if (v2 === "cal") {
         out.innerHTML = viewBar("cal") + (loose ? '<p class="sx-sub">Keine genaue Übereinstimmung. Ähnliche Märkte:</p>' : "") + '<div id="sxCal"></div>' +
-          '<p class="sx-x meta">Nicht dabei? <a href="' + ROOT + '/veranstalter/">Markt melden</a> · <a href="' + ROOT + '/flohmaerkte/">Alle Märkte</a></p>';
+          '<p class="sx-x meta">Nicht dabei? <a href="' + ROOT + '/veranstalter/">Markt melden</a> · <a href="' + ROOT + '/flohmaerkte/">Alle Märkte</a></p>' + toolBlock(th, "Auch interessant");
         calDraw(); return;
       }
       var shown = showAll ? hits : hits.slice(0, LIMIT);
       out.innerHTML = (canCal ? viewBar("list") : "") + (loose ? '<p class="sx-sub">Keine genaue Übereinstimmung. Ähnliche Märkte:</p>' : "") + '<div class="sx-hits">' + shown.map(function (r) { return card(r.it, p, r.kinds); }).join("") + "</div>" +
         (hits.length > shown.length ? '<button type="button" class="more" id="sxMore">Alle ' + hits.length + " Treffer anzeigen</button>" : "") +
-        '<p class="sx-x meta">Nicht dabei? <a href="' + ROOT + '/veranstalter/">Markt melden</a> · <a href="' + ROOT + '/flohmaerkte/">Alle Märkte</a></p>';
+        '<p class="sx-x meta">Nicht dabei? <a href="' + ROOT + '/veranstalter/">Markt melden</a> · <a href="' + ROOT + '/flohmaerkte/">Alle Märkte</a></p>' + toolBlock(th, "Auch interessant");
       favSync();
     };
     var t = 0;

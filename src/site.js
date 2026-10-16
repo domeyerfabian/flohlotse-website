@@ -102,11 +102,14 @@
     var sync = function () { try { var h = F.origin && F.label.indexOf("PLZ") === 0 ? "#plz=" + plzIn.value + "&km=" + F.km : " "; history.replaceState(null, "", h === " " ? location.pathname + location.search : h); } catch (e) {} };
     var loadPlz = function (cb) { if (plzData) return cb(plzData); fetch(ROOT + "/assets/plz.json").then(function (r) { return r.json(); }).then(function (j) { plzData = j; cb(j); }).catch(function () { document.getElementById("nearMsg").textContent = "Die Postleitzahlen konnten gerade nicht geladen werden."; }); };
     var say = function (t, on) { var m = document.getElementById("nearMsg"); m.textContent = t; m.classList.toggle("on", !!on); };
+    // Postleitzahl oder Standort weit weg von Hamburg: Hinweis auf die Werkzeuge, die überall funktionieren
+    var sayFar = function (lead) { var m = document.getElementById("nearMsg"); m.innerHTML = lead + ' Termine gibt es bisher nur für Hamburg und 30 km Umland. <a href="' + ROOT + '/ratgeber/">Ratgeber</a>, <a href="' + ROOT + '/flohmarkt-schilder/">Schilder</a> und <a href="' + ROOT + '/kauf-check/">Kauf-Check</a> funktionieren aber auf jedem Flohmarkt.'; m.classList.add("on"); };
+    var hhKm = function (o) { var r = Math.PI / 180, x = (o[0] - 53.5503) * r, y = (o[1] - 9.9930) * r, h = Math.pow(Math.sin(x / 2), 2) + Math.cos(53.5503 * r) * Math.cos(o[0] * r) * Math.pow(Math.sin(y / 2), 2); return 12742 * Math.asin(Math.sqrt(h)); };
     var byPlz = function () {
       var v = plzIn.value.replace(/\D/g, "").slice(0, 5); plzIn.value = v;
       if (v.length < 5) { say("Bitte gib eine Postleitzahl mit fünf Ziffern ein.", true); plzIn.focus(); return; }
       loadPlz(function (j) {
-        if (!j[v]) { say("Die Postleitzahl " + v + " liegt außerhalb unseres Gebiets (Hamburg und 30 km Umland).", true); return; }
+        if (!j[v]) { sayFar("Die Postleitzahl " + v + " liegt außerhalb unseres Kalenders."); return; }
         F.origin = j[v]; F.label = "PLZ " + v; clr.hidden = false; apply(); sync(); plzIn.blur();
       });
     };
@@ -118,7 +121,7 @@
     geo.addEventListener("click", function () {
       if (!navigator.geolocation) { document.getElementById("nearMsg").textContent = "Dein Browser kann den Standort nicht bestimmen."; return; }
       document.getElementById("nearMsg").textContent = "Standort wird bestimmt …";
-      navigator.geolocation.getCurrentPosition(function (p) { F.origin = [p.coords.latitude, p.coords.longitude]; F.label = "deinen Standort"; plzIn.value = ""; clr.hidden = false; apply(); sync(); },
+      navigator.geolocation.getCurrentPosition(function (p) { F.origin = [p.coords.latitude, p.coords.longitude]; F.label = "deinen Standort"; plzIn.value = ""; clr.hidden = false; apply(); sync(); if (hhKm(F.origin) > 60) sayFar("Dein Standort liegt außerhalb unseres Kalenders."); },
         function () { document.getElementById("nearMsg").textContent = "Standort nicht verfügbar. Gib stattdessen deine Postleitzahl ein."; }, { timeout: 10000, maximumAge: 600000 });
     });
     // Startseite „In meiner Nähe“ (/termine/#near): Umkreis zeigen und gleich den Standort abfragen
@@ -1086,7 +1089,8 @@
       hits.sort(function (a, b) { return (b.any - a.any) || (b.sc - a.sc) || (nextK(a.it) < nextK(b.it) ? -1 : nextK(a.it) > nextK(b.it) ? 1 : 0); });
       if (!hits.length) {
         out.innerHTML = '<div class="empty sx-empty"><p><b>Nichts gefunden für „' + esc2(v) + "“.</b></p><p>Prüf die Schreibweise oder such nach dem Stadtteil. Fehlt ein Markt im Kalender? Sag uns Bescheid, dann tragen wir ihn ein.</p>" +
-          '<div class="chips"><a class="chip" href="' + ROOT + '/veranstalter/">' + svg("mail") + 'Markt melden</a><a class="chip" href="' + ROOT + '/flohmaerkte/">' + svg("map") + "Alle Märkte</a></div></div>";
+          "<p>Termine gibt es bisher nur für Hamburg und 30 km Umland. Ratgeber, Schilder und Kauf-Check funktionieren aber auf jedem Flohmarkt.</p>" +
+          '<div class="chips"><a class="chip" href="' + ROOT + '/veranstalter/">' + svg("mail") + 'Markt melden</a><a class="chip" href="' + ROOT + '/flohmaerkte/">' + svg("map") + 'Alle Märkte</a><a class="chip" href="' + ROOT + '/flohmarkt-schilder/">' + svg("printer") + 'Schilder</a><a class="chip" href="' + ROOT + '/kauf-check/">' + svg("search") + "Kauf-Check</a></div></div>";
         msg.textContent = "Keine Treffer."; return;
       }
       var only = {}; hits.forEach(function (r) { only[r.it.s] = 1; });

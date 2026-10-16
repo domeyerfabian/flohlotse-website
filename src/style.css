@@ -885,6 +885,9 @@ button.fav[aria-pressed="true"],.btn.fav-big[aria-pressed="true"]{background:var
 .quick-more{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:12px;font-size:14px}
 .quick-more a{color:var(--muted);text-decoration:underline;text-underline-offset:3px}
 .quick-more a:hover{color:var(--ink)}
+.quick-all{margin-top:6px}
+.quick-all span{color:var(--ink);font-weight:600}
+#nearMsg a{color:inherit;text-decoration:underline;text-underline-offset:3px}
 /* Terminliste: Werkzeugzeile (Umkreis, Liste | Karte) */
 .tools{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-start;margin-top:14px}
 .tools .near{margin-top:0}

@@ -522,7 +522,7 @@ const TOOLS = () => [["sign", "/flohmarkt-schilder/", "printer", "Schilder-Desig
   ["kb", "/ratgeber/", "book", "Ratgeber", `${KB.length} Artikel mit kurzen Antworten zu Handeln, Preisen und Wechselgeld.`]];
 const toolOf = p => p.startsWith("/flohmarkt-schilder/") ? "sign" : KC_ON && p.startsWith(KC_P) ? "kc" : p.startsWith("/ratgeber/") ? "kb" : "";
 const moreTools = cur => `<section class="sec more-tools"><div class="sec-head"><h2>Mehr für deinen Flohmarkt</h2></div><div class="mt-grid">${TOOLS().filter(x => x[0] !== cur).map(([, h, i, b, x]) => `<a class="cta-box" href="${h}">${ic(i)}<span><b>${b}</b>${esc(x)}</span>${ic("chev")}</a>`).join("")}</div></section>`;
-const fabHTML = cur => `<div class="fab" id="fab" hidden><div class="fab-dim" id="fabDim" hidden></div><nav class="fab-menu" id="fabMenu" aria-label="Werkzeuge" hidden>${TOOLS().map(([k, h, i, b]) => `<a href="${h}"${k === cur ? ' class="cur" aria-current="true"' : ""}>${ic(i)}${b}</a>`).join("")}<button type="button" id="fabTop">${ic("chev", "i fab-up")}Nach oben</button></nav><button type="button" class="fab-btn" id="fabBtn" aria-expanded="false" aria-controls="fabMenu" aria-label="Werkzeuge: Schilder, Kauf-Check, Ratgeber"><span class="fab-plus" aria-hidden="true"></span><span class="fab-lab" aria-hidden="true">Schilder · Kauf-Check · Ratgeber</span></button></div>`;
+const fabHTML = cur => `<div class="fab" id="fab" hidden><div class="fab-dim" id="fabDim" hidden></div><nav class="fab-menu" id="fabMenu" aria-label="Schnellzugriff" hidden>${[...TOOLS(), ["dk", "/entdecken/", "heart", "Wischen &amp; merken"]].map(([k, h, i, b]) => `<a href="${h}"${k === cur ? ' class="cur" aria-current="true"' : ""}>${ic(i)}${b}</a>`).join("")}</nav><button type="button" class="fab-btn" id="fabBtn" aria-expanded="false" aria-controls="fabMenu" aria-label="Schnellzugriff: Schilder, Kauf-Check, Ratgeber, Wischen und merken"><span class="fab-plus" aria-hidden="true"></span><span class="fab-lab" aria-hidden="true">Schilder · Kauf-Check · Ratgeber</span></button></div>`;
 function layout({ p, title, desc, body, ld, noindex, nav, extraHead = "", img = OG_IMG }) {
   const toolK = toolOf(p); if (toolK && p !== "/ratgeber/") body += moreTools(toolK); // Die Ratgeber-Übersicht zeigt die Werkzeuge schon oben
   const url = SITE + p;
@@ -568,7 +568,7 @@ ${shyHeads(body.replace(/<h1>([^<]{3,80}?): ([^<]+)<\/h1>/, '<h1>$1:<span class=
 <details class="foot-grp"><summary>Für jeden Flohmarkt</summary><nav class="foot-links" aria-label="Für jeden Flohmarkt"><a href="/ratgeber/">Ratgeber</a>${KC_ON ? `<a href="${KC_P}">Kauf-Check</a>` : ""}<a href="/flohmarkt-schilder/">Schilder-Designer</a></nav></details>
 <details class="foot-grp"><summary>${esc(NAME)}</summary><nav class="foot-links" aria-label="${esc(NAME)}"><a href="${ABOUT_P}">Über Flohlotse</a><a href="/veranstalter/">Für Veranstalter</a>${INSTA ? instaA("Instagram") : ""}<a href="/impressum/">Impressum</a><a href="/datenschutz/">Datenschutz</a></nav></details>
 </footer>
-${fabHTML(toolK)}
+${fabHTML(toolK || (p === "/entdecken/" ? "dk" : ""))}
 <script src="/assets/site${JS_V ? "." + JS_V.slice(3) : ""}.js" defer></script>
 </body>
 </html>`;
@@ -624,7 +624,9 @@ const listOf = (list, lvl) => {
 const nMk = n => `${n} ${n === 1 ? "Markt" : "Märkte"}`;
 // Tagesleiste über langen Listen: ein Tag je Feld mit Anzahl, Antippen springt zum Tag (Ziel: Sprungmarken der Tage, siehe groupList mit anchor)
 const dayStrip = evs => { const g = new Map(); for (const e of evs) if (!e.cancelled) g.set(e.k, [...(g.get(e.k) || []), e]);
-  return g.size < 3 ? "" : `<nav class="daystrip" aria-label="Zum Tag springen">${[...g].map(([k, l]) => { const d = l[0].date, we = [0, 6].includes(d.getUTCDay()); return `<a class="ds${we ? " we" : ""}" href="#${dayId(d)}" data-day="${k}"><span class="ds-w">${WD[d.getUTCDay()]}</span><span class="ds-d">${d.getUTCDate()}.${d.getUTCMonth() + 1}.</span><span class="ds-n" aria-label="${nMk(l.length)}">${l.length}</span></a>`; }).join("")}</nav>`; };
+  // Statt Wochentag steht „Heute“ und „Morgen“ da, darunter die Anzahl als Wort („3 Märkte“). Das Skript zieht beides am nächsten Tag nach.
+  const rel = { [key(TODAY)]: "Heute", [key(addDays(TODAY, 1))]: "Morgen" };
+  return g.size < 3 ? "" : `<nav class="daystrip" aria-label="Zum Tag springen">${[...g].map(([k, l]) => { const d = l[0].date; return `<a class="ds${rel[k] ? " now" : ""}" href="#${dayId(d)}" data-day="${k}" data-wd="${WD[d.getUTCDay()]}"><span class="ds-w">${rel[k] || WD[d.getUTCDay()]}</span><span class="ds-d">${d.getUTCDate()}.${d.getUTCMonth() + 1}.</span><span class="ds-n">${nMk(l.length)}</span></a>`; }).join("")}</nav>`; };
 function groupList(evs, lvl = 2, anchor = false) {
   const g = new Map(); for (const e of evs) { if (!g.has(e.k)) g.set(e.k, []); g.get(e.k).push(e); }
   return [...g].map(([k, list]) => `<div class="group${anchor ? " anc" : ""}" data-day="${k}"${anchor ? ` id="${dayId(list[0].date)}"` : ""}><h${lvl} class="group-h">${ic("cal")}${WDL[list[0].date.getUTCDay()]}, ${pad(list[0].date.getUTCDate())}.${pad(list[0].date.getUTCMonth() + 1)}.${list[0].date.getUTCFullYear()}${list.some(e => !e.cancelled) ? `<span class="gn">· ${nMk(list.filter(e => !e.cancelled).length)}</span>` : ""}${HOLI[k] ? ` <span class="hol">${HOLI[k]}</span>` : ""}${wxChip(wxDay(list))}</h${lvl}>${listOf(list, lvl)}</div>`).join("");
@@ -1202,6 +1204,9 @@ const shareBtn = (m, e, cls = "share") => `<button type="button" class="${cls}" 
     stAlt = ` data-day="${key(TODAY)}" data-end="${tdE.map(e => tLast(e.end)).sort().pop()}" data-n="${nn}" data-l="${nn === 1 ? "Markt" : "Märkte"} am ${WDL[nd.getUTCDay()]}, ${nd.getUTCDate()}. ${MON[nd.getUTCMonth()].slice(0, 3)}." data-h="${href}"`;
   }
   const all14 = upcoming(14).length;
+  // Startseite: höchstens sechs Karten bei „Die nächsten Flohmärkte“. Alle bis Sonntag stehen im Code, die übrigen tragen „cap“ (ausgeblendet).
+  // Das Skript zählt neu, wenn heute schon beendete Märkte wegfallen, damit immer sechs zu sehen sind.
+  const HOME_N = 6, homeList = () => { let i = 0; return groupList(next, 3).replace(/<article class="ev/g, m => i++ < HOME_N ? m : '<article class="ev cap'); };
   // Text und Fragen für die Startseite, aus den Daten berechnet
   const liveAll = EVENTS.filter(e => !e.cancelled), n30 = upcoming(30).filter(e => !e.cancelled).length;
   const weShare = liveAll.length ? liveAll.filter(e => [0, 6].includes(e.date.getUTCDay())).length / liveAll.length : 0;
@@ -1268,11 +1273,11 @@ const shareBtn = (m, e, cls = "share") => `<button type="button" class="${cls}" 
       ? { lab: "Neu", icon: "update", title: `Neu im Kalender: ${NEU_MS.length === 1 ? "ein Markt" : NEU_MS.length + " Märkte"}`, body: `${NEU_MS.slice(0, 5).map(m => `<a href="/flohmarkt/${m.slug}/">${esc(m.short)}</a>`).join(", ")}${NEU_MS.length > 5 ? ` und ${NEU_MS.length - 5} weitere` : ""}. Der Kalender wächst ständig, schau gern wieder rein.`, link: null }
       : { lab: "Neu", icon: "update", title: "Der Kalender wächst ständig.", body: `Schon ${MARKETS.length} Märkte und ${n60} Termine in den nächsten 60 Tagen. Neue Märkte und Termine kommen laufend dazu, schau gern wieder rein.`, link: ["/flohmaerkte/", "Alle Märkte"] });
     if (wx && !wx.first) NEWS_TABS.push(wx); }
-  const newsBox = !NEWS_TABS.length ? "" : `<section class="akt" id="news" aria-label="Aktuell">
+  const newsBox = !NEWS_TABS.length ? "" : `<section class="sec akt-sec" aria-labelledby="aktH"><div class="sec-head"><h2 id="aktH">Aktuell</h2></div><div class="akt" id="news">
 <div class="akt-head js-only"><div class="akt-tabs" role="tablist" aria-label="Aktuell">${NEWS_TABS.map((t, i) => `<button type="button" role="tab" class="akt-tab" id="nt${i}" aria-controls="np${i}" aria-selected="${i === 0}"${i ? ' tabindex="-1"' : ""}>${ic(t.icon)}<span>${t.lab}</span></button>`).join("")}</div>${NEWS_TABS.length > 1 ? `<button type="button" class="akt-pause" id="newsPause" aria-pressed="false" aria-label="Automatisches Weiterblättern anhalten">${ic("pause", "i np-pause")}${ic("play", "i np-play")}</button>` : ""}</div>
 ${NEWS_TABS.length > 1 ? '<div class="akt-bar js-only" aria-hidden="true"><i id="newsBar"></i></div>' : ""}
 <div class="akt-panels" id="newsPanels">${NEWS_TABS.map((t, i) => `<div class="akt-p" role="tabpanel" id="np${i}" aria-labelledby="nt${i}">${ic(t.icon)}<div><b>${esc(t.title)}</b><p>${t.body}</p>${t.link ? `<a class="more-link" href="${t.link[0]}">${t.link[1]}${ic("chev")}</a>` : ""}</div></div>`).join("")}</div>
-</section>`;
+</div></section>`;
   // Slider: ein großes Symbolfoto, dazu bis zu zwei große Märkte der nächsten Tage als „Wochen-Highlight“.
   const hlEvs = []; for (const e of upcoming(8, e => !e.cancelled && e.m.tags.includes("Groß & bekannt"))) if (hlEvs.length < 2 && !hlEvs.some(x => x.m === e.m)) hlEvs.push(e);
   const sImg = pickImg("start"), sSmall = pickImg("start-klein"), sMini = pickImg("start-mini");
@@ -1281,7 +1286,11 @@ ${NEWS_TABS.length > 1 ? '<div class="akt-bar js-only" aria-hidden="true"><i id=
     ...hlEvs.map(e => `<a class="hl-slide hl-card" href="/flohmarkt/${e.m.slug}/"><span class="kicker">${ic("star")}Wochen-Highlight</span><b>${esc(e.m.short)}</b><span class="hl-when">${esc(fmtDate(e.date))}${e.start ? " · " + esc(timeText(e)) : ""}</span><span class="hl-where">${ic("pin")}${esc(e.m.area || e.m.place)}</span><span class="promo-go">Zum Markt${ic("chev")}</span></a>`)].filter(Boolean);
   const slider = slides.length ? `<section class="hl" aria-label="Highlights"><div class="hl-track" id="hlTrack">${slides.join("")}</div>${slides.length > 1 ? `<div class="hl-dots js-only" id="hlDots">${slides.map((_, i) => `<button type="button" aria-label="Bild ${i + 1} von ${slides.length}"${i ? "" : ' aria-current="true"'}></button>`).join("")}</div>` : ""}</section>` : "";
   // Laufband über der Startseite mit dem Instagram-Hinweis. Bei „Bewegung reduzieren“ steht es still.
-  // Bühne „Für jeden Flohmarkt“: die drei Werkzeuge mit echten Inhalten statt Fotos.
+  // Zweiter Weg auf der Startseite, gleich nach dem Wochen-Highlight: Schilder, Kauf-Check und Ratgeber als drei Kacheln.
+  const helpers = () => `<section class="sec helpers" id="helfer" aria-labelledby="helferH"><span class="kicker">Auch außerhalb Hamburgs</span><h2 id="helferH">Gut vorbereitet auf jeden Flohmarkt</h2><p class="hp-intro">Fürs Verkaufen und fürs Kaufen. Kostenlos und ohne Anmeldung.</p>
+<div class="hp-grid">${TOOLS().map(([k, h, i, b, x]) => `<a class="hp-tile hp-${k}" href="${h}"><span class="hp-ic">${ic(i)}</span><span class="hp-t"><b>${b}</b><span>${esc(x)}</span></span>${ic("chev")}</a>`).join("")}</div></section>`;
+  // Große Bühne „Für jeden Flohmarkt“ mit echten Inhalten (Schilder, Kauf-Check zum Antippen, Ratgeber-Fragen).
+  // Seit 17.10. nicht mehr auf der Startseite, dort stehen die drei Kacheln oben. Bleibt hier, falls sie woanders gebraucht wird.
   // Kauf-Check-Artikel und Ratgeber-Frage wechseln jede Woche, bei Regen in den nächsten Tagen kommt die Regen-Frage nach vorn.
   const toolsStage = () => {
     const wk = Math.floor((TODAY.getTime() / 864e5 + 3) / 7), hh = a => /hamburg/i.test(`${a.h} ${a.t}`);
@@ -1322,7 +1331,7 @@ ${tabs.map(([id, l, ks, href, ev], i) => `<div class="ab-p" role="tabpanel" id="
   const tickItems = INSTA ? [tIns, ...(KC_ON ? [`<a href="${KC_P}"><i aria-hidden="true">+++</i>Echt oder Fake? Der Kauf-Check</a>`] : []), `<a href="/flohmarkt-schilder/"><i aria-hidden="true">+++</i>Schilder für deinen Stand: gratis drucken</a>`, tIns] : [];
   const ticker = tickItems.length ? `<div class="ticker" role="region" aria-label="Neuigkeiten"><div class="ticker-view"><div class="ticker-run"><div class="ticker-set">${tickItems[0]}${tickItems.slice(1).join("").replace(/<a /g, '<a tabindex="-1" aria-hidden="true" ')}</div><div class="ticker-set" aria-hidden="true">${tickItems.join("").replace(/<a /g, '<a tabindex="-1" ')}</div></div></div>${INSTA ? `<a class="ticker-cta" href="${INSTA}" rel="noopener me" aria-label="${esc(NAME)} auf Instagram folgen">Folgen${ic("chev")}</a>` : ""}</div>` : "";
   const body = ticker + `<section class="hero"><div>
-<span class="proto">${esc(REGION)}</span>
+<span class="kicker hello">Willkommen bei ${esc(NAME)}</span>
 <h1>Flohmarkt Hamburg: alle Termine, aufgeräumt.</h1>
 ${sxForm(true)}
 ${answerBox()}
@@ -1330,18 +1339,18 @@ ${answerBox()}
 <p class="hero-p">Alle Flohmärkte in Hamburg und Umgebung: wann, wo und wie lange. Ohne Werbebanner, ohne alte Termine.</p>
 </div><a class="big-sticker" id="bigSt" href="/wochenende/"${stAlt}><b>${weN}</b><span>${weLabel}</span></a></section>
 ${slider}
+${helpers()}
 ${newsBox}
 ${DK_EVS.length ? `<section class="sec home-deck" id="dkSec"><div class="sec-head"><h2>Wischen &amp; merken</h2>${more("/merkliste/", "Merkliste")}</div><p class="dk-intro">Die Flohmärkte der nächsten vier Wochen: Daumen hoch merkt den Markt, Daumen runter zeigt den nächsten.</p>${deckHTML(true)}</section>` : ""}
 <section class="sec home-next"><div class="sec-head"><h2>Die nächsten Flohmärkte</h2>${more("/termine/", "Alle")}</div>
-${groupList(next, 3) || '<div class="empty">Gerade stehen keine Termine im Kalender.</div>'}
-${all14 > next.length ? `<a class="more" href="/termine/">Alle ${all14} Termine der nächsten 14 Tage</a>` : ""}</section>
+${homeList() || '<div class="empty">Gerade stehen keine Termine im Kalender.</div>'}
+${all14 > HOME_N ? `<a class="more" href="/termine/">Alle ${all14} Termine der nächsten 14 Tage</a>` : ""}</section>
 <section class="sec"><div class="sec-head"><h2>Flohmärkte nach Bezirk und Region</h2>${more("/flohmaerkte/", "Alle", "Alle Märkte")}</div>${regionChips()}</section>
 ${CATS_ON.length ? `<section class="sec"><div class="sec-head"><h2>Flohmärkte nach Art</h2></div>${catChips()}</section>` : ""}
 ${MONTHS.length ? `<section class="sec"><div class="sec-head"><h2>Termine nach Monat</h2>${more("/termine/", "Alle")}</div>${monthChips()}</section>` : ""}
 ${NEWS.length ? `<section class="sec"><div class="sec-head"><h2>Neuigkeiten</h2></div>${grid(NEWS.map(n => `<a class="card" href="${esc(safeHref(n["Link"], "Neuigkeiten: " + n["Titel"]) || "/")}"><span class="kicker">${esc(n["Kicker"])}</span><h3>${esc(n["Titel"])}</h3><p>${esc(n["Text"])}</p></a>`))}</section>` : ""}
 <section class="sec kb-body home-seo"><h2>Flohmarkt in Hamburg: das Wichtigste</h2>${homeText.map(x => `<p>${rich(x)}</p>`).join("")}</section>
 ${faqBlock(homeFaq, "Häufige Fragen zu Flohmärkten in Hamburg")}
-${toolsStage()}
 ${INSTA ? `<section class="sec"><a class="follow" href="${INSTA}" rel="noopener me"><span class="follow-at" aria-hidden="true">@</span><span class="follow-txt"><span class="kicker">Neu auf Instagram</span><b>Jeden Donnerstag: dein Flohmarkt-Wochenende</b><span>Alle Märkte fürs Wochenende in drei Bildern. Zum Speichern und Weiterschicken.</span></span><span class="btn">${esc(INSTA_AT)} folgen${ic("chev")}</span></a></section>` : ""}
 <section class="sec" id="veranstalter"><div class="org"><h2>Du veranstaltest einen Flohmarkt?</h2><p>Trag deinen Termin kostenlos ein. Wir prüfen jeden Eintrag, bevor er erscheint.</p><a class="btn" href="/veranstalter/">Termin eintragen${ic("chev")}</a></div></section>`;
   layout({ p: "/", title: `Flohmarkt Hamburg: Alle Flohmärkte & Termine ${YEAR} | ${NAME}`,
@@ -2037,12 +2046,12 @@ ${f("Impressum: Register") || f("Impressum: USt-IdNr.") ? `<h2>Register und Umsa
       ...(KC_ON ? [`der <a href="${KC_P}">Kauf-Check</a> hilft dir bei ${KC.length} typischen Artikeln, Fälschungen und Mängel zu erkennen`] : [])];
     const body = crumbs(cr) + `<article class="kb"><h1>Über ${esc(NAME)}</h1>
 <div class="byline"><span>${ic("update")}Stand: ${STAND}</span></div>
-<div class="answer"><span class="kicker">Kurz gesagt</span><p>${esc(NAME)} hat zwei Teile: einen Kalender mit den Flohmärkten in Hamburg und bis 30 Kilometer drumherum, und Werkzeuge, die auf jedem Flohmarkt in Deutschland helfen. Alles ist kostenlos und ohne Anmeldung.</p></div>
+<div class="answer"><span class="kicker">Kurz gesagt</span><p>${esc(NAME)} hat zwei Teile: einen Kalender mit den Flohmärkten in Hamburg und bis 30 Kilometer drumherum, und Hilfen fürs Kaufen und Verkaufen, die auf jedem Flohmarkt in Deutschland funktionieren. Alles ist kostenlos und ohne Anmeldung.</p></div>
 <div class="kb-body">
 <h2>Termine für Hamburg und Umgebung</h2>
 <p>Im Kalender stehen ${MARKETS.length} Märkte mit ihren Terminen. Die Angaben stammen aus öffentlichen Quellen der Veranstalter, vor allem aus ihren Websites. Die Seite wird jede Nacht neu erstellt, vergangene Termine verschwinden dabei von selbst.</p>
 <p>Ein automatischer Abgleich schaut regelmäßig auf die Websites der Veranstalter und meldet uns, wenn sich dort etwas geändert hat. Übernommen wird davon nichts automatisch. Märkte können trotzdem kurzfristig ausfallen, schau vor dem Besuch am besten noch einmal beim Veranstalter nach.</p>
-<h2>Werkzeuge für jeden Flohmarkt</h2>
+<h2>Gut vorbereitet auf jeden Flohmarkt</h2>
 <p>${tools.map(cap).join(". ")}. Das alles funktioniert auf jedem Flohmarkt, nicht nur in Hamburg.</p>
 <h2>Kostenlos, ohne Konto, ohne Tracking</h2>
 <p>${esc(NAME)} kostet nichts und zeigt keine Werbebanner. Es gibt kein Konto und keine Analyse-Werkzeuge. Deine Merkliste bleibt nur in deinem Browser. Mehr dazu in der <a href="/datenschutz/">Datenschutzerklärung</a>.</p>
@@ -2356,7 +2365,7 @@ ${CATS_ON.map(c => `- [${c.chip}](${SITE}/${c.s}/): ${c.ms.length} Märkte`).joi
 - [Flohmärkte in Hamburg in Zahlen](${SITE}${STATS_P}): Anzahl der Märkte und Termine nach Bezirk, Art, Wochentag und Uhrzeit
 - [Ratgeber](${SITE}/ratgeber/): ${KB.length} Artikel zu Kaufen, Verkaufen, Handeln und Organisieren
 
-## Werkzeuge
+## Praktisches
 - [Schilder-Designer](${SITE}/flohmarkt-schilder/): Preisschilder und Standschilder kostenlos gestalten und drucken
 ${pages.has(FEE_P) && !pages.get(FEE_P).noindex ? `- [Standgebühren im Vergleich](${SITE}${FEE_P}): was ein Stand auf den Flohmärkten kostet, mit Anmeldung und Restplätzen\n` : ""}- [Für Veranstalter](${SITE}/veranstalter/): Markt kostenlos eintragen
 

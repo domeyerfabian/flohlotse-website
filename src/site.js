@@ -36,9 +36,13 @@
       var n = g.querySelectorAll(".ev:not([hidden]):not(.off)").length, gn = g.querySelector(".gn");
       if (gn) gn.textContent = n ? "· " + n + (n === 1 ? " Markt" : " Märkte") : "";
       var a = document.querySelector('.daystrip a[data-day="' + g.getAttribute("data-day") + '"]');
-      if (a) { a.hidden = !n || g.hidden; var c = a.querySelector(".ds-n"); if (c) { c.textContent = n; c.setAttribute("aria-label", n + (n === 1 ? " Markt" : " Märkte")); } }
+      if (a) { a.hidden = !n || g.hidden; var c = a.querySelector(".ds-n"); if (c) c.textContent = n + (n === 1 ? " Markt" : " Märkte"); }
     });
   };
+  // Tagesleiste: „Heute“ und „Morgen“ nach der Uhr in Hamburg, auch wenn die Seite noch von gestern ist
+  if (NOW) (function () { var t = new Date(NOW.day + "T12:00:00Z"); t.setUTCDate(t.getUTCDate() + 1); var mo = t.toISOString().slice(0, 10);
+    document.querySelectorAll(".daystrip a[data-wd]").forEach(function (a) { var k = a.getAttribute("data-day"), r = k === NOW.day ? "Heute" : k === mo ? "Morgen" : "", w = a.querySelector(".ds-w");
+      if (w) w.textContent = r || a.getAttribute("data-wd"); a.classList.toggle("now", !!r); }); })();
   // Die Seite wird jede Nacht neu gebaut. Zwischen Mitternacht und dem Neubau (oder wenn ein Neubau ausfällt) ist sie von gestern:
   // Dann verschwinden die vergangenen Tage, und ein Hinweis sagt, von wann der Stand ist.
   var stand = document.documentElement.getAttribute("data-stand"), me0 = document.querySelector('script[src*="/assets/site."]'), ROOT0 = me0 ? me0.getAttribute("src").replace(/\/assets\/site\..*$/, "") : "";
@@ -72,18 +76,15 @@
     var fHintOff = function () { clearTimeout(fHT); fab.classList.remove("hint"); };
     var fShow = function () {
       if (fOpen) return;
-      var was = fab.hidden; fab.hidden = window.scrollY < 240;
+      var was = fab.hidden; fab.hidden = false;
       if (was && !fab.hidden && fHint) { fHint = false; fY0 = window.scrollY; fab.classList.add("hint"); fHT = setTimeout(fHintOff, 3200); }
       else if (fab.classList.contains("hint") && Math.abs(window.scrollY - fY0) > 260) fHintOff();
     };
     fBtn.addEventListener("click", function () { fSet(!fOpen); if (!fOpen) fBtn.focus(); });
     fDim.addEventListener("click", function () { fSet(false); });
     document.addEventListener("keydown", function (e) { if (fOpen && e.key === "Escape") { fSet(false); fBtn.focus(); } });
-    document.getElementById("fabTop").addEventListener("click", function () { fSet(false); window.scrollTo({ top: 0, behavior: window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" }); fBtn.blur(); });
     window.addEventListener("scroll", function () { if (fT) return; fT = setTimeout(function () { fT = 0; fShow(); }, 100); }, { passive: true });
-    // Nicht über den Wisch-Knöpfen oder der Karte (dort stehen Bedienung und Kartenhinweis unten rechts)
-    var fAway = {};
-    if ("IntersectionObserver" in window) [document.getElementById("dkBtns"), document.getElementById("mapBox")].forEach(function (el, n) { if (!el) return; new IntersectionObserver(function (en) { fAway[n] = en[0].isIntersecting; fab.classList.toggle("away", fAway[0] || fAway[1]); if (fab.classList.contains("away") && fOpen) fSet(false); }).observe(el); });
+    // Der Knopf bleibt immer sichtbar (auch über Wisch-Knöpfen und Karte). Der Kartenhinweis steht deshalb unten links.
     fShow();
   }
   // Startseite: Antwort-Kasten (Heute | Morgen | Wochenende). Heute schon beendete Märkte raus, dann den ersten Reiter mit Einträgen wählen.
@@ -183,7 +184,7 @@
       js.onload = function () {
         box.innerHTML = ""; var L = window.L, data = JSON.parse(document.getElementById("mapData").textContent);
         var map = L.map(box, { scrollWheelZoom: false, tap: true }).setView([53.55, 10.0], 10);
-        map.attributionControl.setPrefix('<a href="https://leafletjs.com">Leaflet</a>');
+        map.attributionControl.setPrefix('<a href="https://leafletjs.com">Leaflet</a>'); map.attributionControl.setPosition("bottomleft");
         L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 18, attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>-Mitwirkende' }).addTo(map);
         var groups = {}; data.forEach(function (d) { var k = d[3].toFixed(4) + "," + d[4].toFixed(4); (groups[k] = groups[k] || []).push(d); });
         var esc = function (t) { return String(t).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); };
@@ -319,6 +320,11 @@
       var body = ev.querySelector(".ev-body"); if (body) body.insertBefore(b, body.firstChild);
     });
   }
+  // Startseite: immer die nächsten sechs Karten zeigen, auch wenn heutige schon vorbei sind. Leere Tage und Teilbereiche verschwinden.
+  var homeNext = document.querySelector(".home-next");
+  if (homeNext) (function () { var n = 0;
+    homeNext.querySelectorAll(".ev").forEach(function (ev) { if (ev.hidden) return; ev.classList.toggle("cap", n >= 6); n++; });
+    homeNext.querySelectorAll(".sub, .group").forEach(function (g) { g.hidden = !g.querySelector(".ev:not([hidden]):not(.cap)"); }); })();
   // Sticker auf der Startseite: Sonntagabend, wenn alle heutigen Märkte vorbei sind, zeigt er den nächsten Markttag
   var bigSt = document.getElementById("bigSt");
   if (bigSt && NOW && bigSt.getAttribute("data-day") === NOW.day && NOW.hm >= bigSt.getAttribute("data-end")) {

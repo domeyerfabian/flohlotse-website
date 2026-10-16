@@ -897,13 +897,12 @@ button.fav[aria-pressed="true"],.btn.fav-big[aria-pressed="true"]{background:var
 /* Tagesleiste */
 .daystrip{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin:18px -16px 6px;padding:2px 16px 6px}
 .daystrip::-webkit-scrollbar{display:none}
-.ds{flex:none;display:grid;justify-items:center;gap:1px;min-width:56px;padding:8px 6px;border:1px solid var(--line);border-radius:14px;background:var(--surface);color:var(--ink);text-decoration:none;line-height:1.2}
-.ds:hover{border-color:var(--ink)}
+.ds{flex:none;display:grid;justify-items:center;gap:1px;min-width:66px;padding:8px 6px;border:1px solid var(--line);border-radius:14px;background:var(--surface);color:var(--ink);text-decoration:none;line-height:1.2}
+@media (hover:hover){.ds:hover{border-color:var(--ink)}}
 .ds-w{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
 .ds-d{font-weight:700;font-size:15px;font-variant-numeric:tabular-nums}
-.ds-n{font-size:12px;color:var(--muted)}
-.ds.we{border-color:var(--ink)}
-.ds.we .ds-w{color:var(--ink)}
+.ds-n{font-size:12px;color:var(--muted);white-space:nowrap}
+.ds.now .ds-w{color:var(--ink);font-weight:800}
 @media (min-width:800px){.daystrip{margin-left:0;margin-right:0;padding-left:0;padding-right:0}}
 /* Anzahl in der Tagesüberschrift, Zwischenüberschriften an vollen Tagen */
 .group-h .gn{font-weight:400;font-size:14px;color:var(--muted)}
@@ -1189,7 +1188,6 @@ a.route.kc-go{margin:10px 0 0;min-height:44px;font-size:15px;padding:8px 16px}
 .fab-menu a:hover,.fab-menu button:hover{border-color:var(--ink)}
 .fab-menu a.cur{border-color:var(--ink);box-shadow:0 6px 18px rgba(0,0,0,.14),inset 0 0 0 1px var(--ink)}
 .fab-menu .i{width:20px;height:20px}
-.fab-menu .fab-up{transform:rotate(-90deg)}
 .fab ~ .kc-float{right:88px}
 .fab.open ~ .kc-float{visibility:hidden}
 @media (prefers-reduced-motion:reduce){.fab-plus{transition:none}}
@@ -1203,9 +1201,9 @@ a.route.kc-go{margin:10px 0 0;min-height:44px;font-size:15px;padding:8px 16px}
 /* Startseite auf dem Handy: Chips in einer wischbaren Zeile, kein großer Sticker (die Anzahl steht im Antwort-Kasten) */
 @media (max-width:640px){
   .hero > div{min-width:0}
-  .hero .quick{flex-wrap:nowrap;overflow-x:auto;margin-inline:-16px;padding:2px 16px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
-  .hero .quick .chip{flex:none;white-space:nowrap}
-  .hero .quick::-webkit-scrollbar{display:none}
+  .hero .quick{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:8px}
+  .hero .quick .chip{flex-direction:column;justify-content:center;gap:4px;min-width:0;min-height:62px;padding:8px 4px;border-radius:14px;text-align:center;font-size:13px;font-weight:600;line-height:1.2;text-wrap:balance}
+  .hero .quick .chip .i{width:20px;height:20px}
   .hero .big-sticker{display:none}
 }
 
@@ -1228,11 +1226,40 @@ a.route.kc-go{margin:10px 0 0;min-height:44px;font-size:15px;padding:8px 16px}
 .ab li .i{flex:none;width:16px;height:16px;color:var(--muted)}
 .ab-all{display:flex;align-items:center;justify-content:center;gap:4px;padding:11px;border-top:1px solid var(--line);font-weight:700;font-size:14px;color:var(--ink);text-decoration:none}
 .hero-p{font-size:14px}
-@media (max-width:640px){.hl-photo{display:none}.hl-dots button:first-child{display:none}}
-.fab.away{visibility:hidden;opacity:0}
+@media (max-width:640px){.hl-photo{display:none}.hl:has(.hl-photo) .hl-dots button:first-child{display:none}}
 /* Plus-Knopf: einmaliger Hinweis als Pille, schrumpft dann zum Kreis */
 .fab-btn{transition:padding .35s ease,gap .35s ease}
 .fab-lab{max-width:0;overflow:hidden;white-space:nowrap;opacity:0;color:var(--fab-fg);font-family:var(--f-body);font-weight:800;font-size:14.5px;transition:max-width .35s ease,opacity .25s ease}
 .fab.hint .fab-btn{gap:10px;padding:0 20px 0 18px}
 .fab.hint .fab-lab{max-width:280px;opacity:1}
 @media (prefers-reduced-motion:reduce){.fab-btn,.fab-lab{transition:none}}
+/* Startseite: Begrüßung über der Hauptüberschrift */
+.hero .hello{display:block;margin-bottom:8px;color:var(--ink)}
+/* Startseite: zweiter Weg „Gut vorbereitet auf jeden Flohmarkt“ als drei Kacheln */
+.home-next .ev.cap{display:none}
+.home-next .group:not(:has(.ev:not(.cap):not([hidden]))),.home-next .sub:not(:has(.ev:not(.cap):not([hidden]))){display:none}
+.akt-sec .akt{margin-top:0}
+.hero .ab{margin-top:16px}
+.hero .quick{margin-top:20px}
+.hero .hero-p{margin-top:16px}
+.hl{margin-top:16px}
+.helpers h2{margin-top:4px}
+.helpers .hp-intro{margin:6px 0 0;color:var(--muted);font-size:15px}
+.hp-grid{display:grid;gap:10px;margin-top:16px}
+.hp-tile{display:flex;align-items:center;gap:14px;padding:14px 14px 14px 12px;background:var(--surface);border:1px solid var(--line);border-radius:16px;color:var(--ink);text-decoration:none}
+.hp-tile > .i{flex:none;width:18px;height:18px;color:var(--muted)}
+.hp-ic{flex:none;display:grid;place-items:center;width:46px;height:46px;border-radius:12px;background:var(--sticker);color:var(--sticker-ink)}
+.hp-ic .i{width:24px;height:24px}
+.hp-kc .hp-ic{background:var(--ink);color:var(--surface)}
+.hp-kb .hp-ic{background:var(--paper);color:var(--ink);box-shadow:inset 0 0 0 1px var(--line)}
+.hp-t{display:grid;align-content:start;gap:2px;min-width:0;flex:1}
+.hp-t b{font-size:16.5px;line-height:1.25}
+.hp-t span{font-size:13.5px;line-height:1.35;color:var(--muted)}
+@media (hover:hover){.hp-tile:hover{border-color:var(--ink)}}
+@media (min-width:760px){.hp-grid{grid-template-columns:repeat(3,1fr)}.hp-tile{flex-direction:column;align-items:flex-start;gap:12px;padding:18px}.hp-tile > .i{display:none}}
+/* Startseite: ruhige, gleichmäßige Abstände zwischen den Abschnitten, ohne Trennlinien (gilt nur hier, die Unterseiten bleiben wie sie sind) */
+.hero ~ .sec{border-top:0;margin-top:0;padding-top:40px}
+.hero ~ .faq{margin-top:40px}
+@media (min-width:800px){.hero ~ .sec{padding-top:48px}.hero ~ .faq{margin-top:48px}}
+/* Wisch-Knöpfe am Handy etwas enger, damit das Plus (immer sichtbar) nie am „Merken“-Knopf klebt */
+@media (max-width:640px){.dk-btns{gap:18px}.dk-b.no,.dk-b.yes{width:64px;height:64px}.dk-b .i{width:28px;height:28px}}

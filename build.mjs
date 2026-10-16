@@ -2184,7 +2184,9 @@ for (const [p, pg] of pages) {
 }
 fs.mkdirSync(path.join(OUT, "assets"), { recursive: true });
 fs.writeFileSync(path.join(OUT, "assets/style.css"), withBase(fontCSS) + CSS_SRC.slice(fontCSS.length));
-fs.copyFileSync(path.join(ROOT, "src/site.js"), path.join(OUT, "assets/site.js"));
+// Skript schlanker ausliefern: Kommentare und Einrückung raus (der Code selbst bleibt unverändert, Zeilenumbrüche bleiben).
+const JS_OUT = fs.readFileSync(path.join(ROOT, "src/site.js"), "utf8").replace(/^[ \t]*\/\*[\s\S]*?\*\/[ \t]*$/gm, "").split("\n").map(l => l.trim()).filter(l => l && !l.startsWith("//")).join("\n") + "\n";
+fs.writeFileSync(path.join(OUT, "assets/site.js"), JS_OUT);
 fs.writeFileSync(path.join(OUT, "assets/maerkte.json"), MERK_JSON);
 // Kalenderdateien je Markt: alle bekannten Termine (Abo) und nur der nächste Termin
 { fs.mkdirSync(path.join(OUT, "kalender"), { recursive: true });
@@ -2192,7 +2194,7 @@ fs.writeFileSync(path.join(OUT, "assets/maerkte.json"), MERK_JSON);
     fs.writeFileSync(path.join(OUT, `kalender/${m.slug}.ics`), icsOf(m, evs, `${m.short || m.name} (${NAME})`));
     fs.writeFileSync(path.join(OUT, `kalender/${m.slug}-naechster.ics`), icsOf(m, evs.filter(e => !e.cancelled).slice(0, 1), `${m.short || m.name} (${NAME})`)); } }
 // Das Skript liegt zusätzlich unter einem Namen mit Versionskürzel: Diese Datei ändert sich nie und darf ein Jahr gespeichert werden.
-if (JS_V) fs.copyFileSync(path.join(ROOT, "src/site.js"), path.join(OUT, `assets/site.${JS_V.slice(3)}.js`));
+if (JS_V) fs.writeFileSync(path.join(OUT, `assets/site.${JS_V.slice(3)}.js`), JS_OUT);
 fs.copyFileSync(path.join(ROOT, "src/icon.svg"), path.join(OUT, "assets/icon.svg"));
 if (HAS_ICONS) {
   // favicon.ico und apple-touch-icon.png suchen Browser von sich aus ganz oben, die übrigen liegen bei den anderen Dateien

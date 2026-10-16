@@ -1225,7 +1225,7 @@ a.route.kc-go{margin:10px 0 0;min-height:44px;font-size:15px;padding:8px 16px}
 .ab-n small{font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ab li .i{flex:none;width:16px;height:16px;color:var(--muted)}
 .ab-all{display:flex;align-items:center;justify-content:center;gap:4px;padding:11px;border-top:1px solid var(--line);font-weight:700;font-size:14px;color:var(--ink);text-decoration:none}
-.hero-p{font-size:14px}
+.hero-p{font-size:15px}
 @media (max-width:640px){.hl-photo{display:none}.hl:has(.hl-photo) .hl-dots button:first-child{display:none}}
 /* Plus-Knopf: einmaliger Hinweis als Pille, schrumpft dann zum Kreis */
 .fab-btn{transition:padding .35s ease,gap .35s ease}
@@ -1241,7 +1241,8 @@ a.route.kc-go{margin:10px 0 0;min-height:44px;font-size:15px;padding:8px 16px}
 .akt-sec .akt{margin-top:0}
 .hero .ab{margin-top:16px}
 .hero .quick{margin-top:20px}
-.hero .hero-p{margin-top:16px}
+.hero .hero-p{margin:10px 0 0}
+.hero .hero-p + .sx-home{margin-top:16px}
 .hl{margin-top:16px}
 .helpers h2{margin-top:4px}
 .helpers .hp-intro{margin:6px 0 0;color:var(--muted);font-size:15px}
@@ -1263,3 +1264,5 @@ a.route.kc-go{margin:10px 0 0;min-height:44px;font-size:15px;padding:8px 16px}
 @media (min-width:800px){.hero ~ .sec{padding-top:48px}.hero ~ .faq{margin-top:48px}}
 /* Wisch-Knöpfe am Handy etwas enger, damit das Plus (immer sichtbar) nie am „Merken“-Knopf klebt */
 @media (max-width:640px){.dk-btns{gap:18px}.dk-b.no,.dk-b.yes{width:64px;height:64px}.dk-b .i{width:28px;height:28px}}
+/* Plus-Menü bei wenig Höhe (Handy quer): etwas kompakter, damit alle fünf Einträge ganz zu sehen sind */
+@media (max-height:480px){.fab-menu{gap:6px}.fab-menu a{padding:7px 14px}.fab-menu .i{width:18px;height:18px}}

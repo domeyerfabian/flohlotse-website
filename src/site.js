@@ -59,6 +59,13 @@
     }
   }
   // Pfad der Website (falls sie in einem Unterordner liegt), abgeleitet aus dem Pfad dieses Skripts
+  // Fußzeile: am PC sind alle Linkgruppen offen, auf dem Handy zum Aufklappen
+  if (window.matchMedia && matchMedia("(min-width: 860px)").matches) document.querySelectorAll(".foot-grp").forEach(function (d) { d.open = true; });
+  // Startseite: Kauf-Check-Beispiel zum Antippen
+  document.querySelectorAll("[data-kc]").forEach(function (f) {
+    var res = f.querySelector(".st-res"), t0 = res.textContent;
+    f.addEventListener("change", function () { var n = f.querySelectorAll("input:checked").length; res.textContent = !n ? t0 : n === 1 ? "1 Punkt fällt auf: Schau genauer hin." : n + " Punkte fallen auf: Lieber genau prüfen."; res.classList.toggle("on", n > 0); });
+  });
   var me = document.querySelector('script[src*="/assets/site."]'), ROOT = me ? me.getAttribute("src").replace(/\/assets\/site\..*$/, "") : "";
   // Filter: Art des Markts (Termine-Seite) und Umkreis nach Postleitzahl oder Standort. Alles passiert im Browser.
   var filter = document.getElementById("filter"), near = document.getElementById("near");

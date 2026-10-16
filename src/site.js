@@ -61,6 +61,19 @@
   // Pfad der Website (falls sie in einem Unterordner liegt), abgeleitet aus dem Pfad dieses Skripts
   // Fußzeile: am PC sind alle Linkgruppen offen, auf dem Handy zum Aufklappen
   if (window.matchMedia && matchMedia("(min-width: 860px)").matches) document.querySelectorAll(".foot-grp").forEach(function (d) { d.open = true; });
+  // Werkzeug-Seiten: schwebender Plus-Knopf mit Schilder, Kauf-Check, Ratgeber und „Nach oben“. Erscheint nach dem ersten Scrollen.
+  var fab = document.getElementById("fab");
+  if (fab) {
+    var fBtn = document.getElementById("fabBtn"), fMenu = document.getElementById("fabMenu"), fDim = document.getElementById("fabDim"), fOpen = false, fT;
+    var fSet = function (on) { fOpen = on; fMenu.hidden = !on; fDim.hidden = !on; fab.classList.toggle("open", on); fBtn.setAttribute("aria-expanded", String(on)); if (on) { var a = fMenu.querySelector("a"); if (a) a.focus({ preventScroll: true }); } };
+    var fShow = function () { if (!fOpen) fab.hidden = window.scrollY < 240; };
+    fBtn.addEventListener("click", function () { fSet(!fOpen); if (!fOpen) fBtn.focus(); });
+    fDim.addEventListener("click", function () { fSet(false); });
+    document.addEventListener("keydown", function (e) { if (fOpen && e.key === "Escape") { fSet(false); fBtn.focus(); } });
+    document.getElementById("fabTop").addEventListener("click", function () { fSet(false); window.scrollTo({ top: 0, behavior: window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" }); fBtn.blur(); });
+    window.addEventListener("scroll", function () { if (fT) return; fT = setTimeout(function () { fT = 0; fShow(); }, 100); }, { passive: true });
+    fShow();
+  }
   // Startseite: Kauf-Check-Beispiel zum Antippen
   document.querySelectorAll("[data-kc]").forEach(function (f) {
     var res = f.querySelector(".st-res"), t0 = res.textContent;

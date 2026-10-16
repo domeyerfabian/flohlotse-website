@@ -1168,3 +1168,28 @@ a.route.kc-go{margin:10px 0 0;min-height:44px;font-size:15px;padding:8px 16px}
   .foot-grp summary{pointer-events:none;padding:10px 0 2px}
   .foot-grp summary::after{display:none}
 }
+/* Werkzeug-Seiten: Querverweise am Ende */
+.mt-grid{display:grid;gap:10px}
+.mt-grid .cta-box{margin:0}
+@media (min-width:760px){.mt-grid{grid-template-columns:1fr 1fr}}
+/* Werkzeug-Seiten: schwebender Plus-Knopf */
+.fab{--fab-bg:#15211B;--fab-fg:#F6E03A;position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:30;display:grid;justify-items:end;gap:10px}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .fab{--fab-bg:#E9D63A;--fab-fg:#161503}}
+:root[data-theme="dark"] .fab{--fab-bg:#E9D63A;--fab-fg:#161503}
+.fab[hidden],.fab-menu[hidden],.fab-dim[hidden]{display:none}
+.fab-btn{position:relative;z-index:2;width:58px;height:58px;border-radius:50%;background:var(--fab-bg);border:0;display:grid;place-items:center;box-shadow:0 8px 22px rgba(0,0,0,.25);cursor:pointer}
+.fab-btn:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
+.fab-plus{position:relative;width:22px;height:22px;transition:transform .2s ease}
+.fab-plus::before,.fab-plus::after{content:"";position:absolute;left:50%;top:50%;width:22px;height:3px;border-radius:2px;background:var(--fab-fg);transform:translate(-50%,-50%)}
+.fab-plus::after{transform:translate(-50%,-50%) rotate(90deg)}
+.fab.open .fab-plus{transform:rotate(45deg)}
+.fab-dim{position:fixed;inset:0;background:rgba(15,20,17,.35);z-index:0}
+.fab-menu{position:relative;z-index:1;display:grid;gap:8px;justify-items:end}
+.fab-menu a,.fab-menu button{display:inline-flex;align-items:center;gap:10px;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:999px;padding:11px 16px;font:inherit;font-weight:700;text-decoration:none;box-shadow:0 6px 18px rgba(0,0,0,.14);cursor:pointer}
+.fab-menu a:hover,.fab-menu button:hover{border-color:var(--ink)}
+.fab-menu a.cur{border-color:var(--ink);box-shadow:0 6px 18px rgba(0,0,0,.14),inset 0 0 0 1px var(--ink)}
+.fab-menu .i{width:20px;height:20px}
+.fab-menu .fab-up{transform:rotate(-90deg)}
+.fab ~ .kc-float{right:88px}
+.fab.open ~ .kc-float{visibility:hidden}
+@media (prefers-reduced-motion:reduce){.fab-plus{transition:none}}

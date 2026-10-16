@@ -669,14 +669,12 @@ button.fav[aria-pressed="true"],.btn.fav-big[aria-pressed="true"]{background:var
 .dk-card a.route.go{margin:16px 0 0}
 .dk-had{position:absolute;top:14px;right:14px;font-size:12px;font-weight:700;border-radius:999px;padding:3px 10px;background:var(--ink);color:var(--paper)}
 .dk-stamp{display:none}
-.deck.on .dk-stack{position:relative;display:block}
-.deck.on .dk-card{position:absolute;left:0;right:0;top:0;min-height:calc(100% - 18px);transform-origin:50% 100%;user-select:none;-webkit-user-select:none;touch-action:pan-y;cursor:grab;box-shadow:0 8px 28px rgba(21,33,27,.10)}
+.deck.on .dk-stack{position:relative;display:grid;padding-bottom:18px}
+.deck.on .dk-card{grid-area:1/1;position:relative;transform-origin:50% 100%;user-select:none;-webkit-user-select:none;touch-action:pan-y;cursor:grab;box-shadow:0 8px 28px rgba(21,33,27,.10)}
 .deck.on .dk-card.c0{z-index:3}
 .deck.on .dk-card.c1{z-index:2;transform:translateY(9px) scale(.965);pointer-events:none}
 .deck.on .dk-card.c2{z-index:1;transform:translateY(18px) scale(.93);pointer-events:none;opacity:.6}
-.deck.on .dk-card.cx,.deck.on .dk-card.gone{display:none}
-.deck.measure .dk-card{display:block!important;visibility:hidden}
-.deck.measure .dk-card.c0{visibility:visible}
+.deck.on .dk-card.cx,.deck.on .dk-card.gone{visibility:hidden;pointer-events:none}
 @media (prefers-reduced-motion:no-preference){.deck.on .dk-card{transition:transform .25s ease,opacity .25s ease}}
 .deck.on .dk-stamp{display:inline-flex;align-items:center;gap:8px;position:absolute;bottom:58px;padding:8px 16px;white-space:nowrap;border-radius:999px;font:800 22px/1.2 var(--f-display);opacity:0;pointer-events:none;border:2px solid var(--ink);z-index:2}
 .dk-stamp .i{width:24px;height:24px}

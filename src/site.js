@@ -762,13 +762,12 @@
     else {
       deck.classList.add("on");
       var cnt = document.getElementById("dkCount"), btnY = document.getElementById("dkYes"), btnN = document.getElementById("dkNo"), btnU = document.getElementById("dkUndo"), done = document.getElementById("dkDone"), hist = [], idx = 0, busy = false, pend = null, pendT = 0;
-      var fit = function () { var h = 0; stack.style.height = ""; deck.classList.add("measure"); all.forEach(function (c) { h = Math.max(h, c.offsetHeight); }); deck.classList.remove("measure"); if (h) stack.style.height = (h + 18) + "px"; };
+      // Die Höhe des Stapels richtet sich per CSS-Raster nach der höchsten Karte, ohne Messen im Skript.
       // Läuft noch eine Karte raus, wird sie sofort fertig gemacht: So geht beim schnellen Wischen keine Karte verloren
       var flush = function () { if (!pend) return; clearTimeout(pendT); var f = pend; pend = null; f(); };
       var grew = false, had = function (c) { var h = c.querySelector(".dk-had"), on = favHas(c.getAttribute("data-fav")); if (on && !h) { h = document.createElement("span"); h.className = "dk-had"; h.textContent = "Schon auf deiner Merkliste"; c.insertBefore(h, c.firstChild); grew = true; } else if (!on && h) h.remove(); };
       var lay = function () {
         all.forEach(function (c, i) { var r = i - idx; if (r >= 0 && r < 3) had(c); c.className = "dk-card " + (r < 0 ? "gone" : r === 0 ? "c0" : r === 1 ? "c1" : r === 2 ? "c2" : "cx"); if (r !== 0) { c.style.transform = ""; c.style.opacity = ""; } c.setAttribute("aria-hidden", String(r !== 0)); c.querySelectorAll("a").forEach(function (a) { a.tabIndex = r === 0 ? 0 : -1; }); });
-        if (grew) { grew = false; if (stack.style.height) fit(); }
         var end = idx >= all.length; done.hidden = !end; stack.hidden = end; document.getElementById("dkBtns").hidden = end; btnU.disabled = !hist.length;
         if (!end) cnt.textContent = (idx + 1) + " von " + all.length;
         else { var n = hist.filter(function (x) { return x.dir > 0; }).length; cnt.textContent = ""; document.getElementById("dkDoneP").textContent = n ? "Du hast " + (n === 1 ? "einen Markt" : n + " Märkte") + " gemerkt. Alle stehen auf deiner Merkliste." : "Diesmal war nichts für dich dabei. Alle Termine der nächsten Wochen findest du im Kalender."; }
@@ -791,7 +790,7 @@
       btnY.addEventListener("click", function () { decide(1); });
       btnN.addEventListener("click", function () { decide(-1); });
       btnU.addEventListener("click", undo);
-      document.getElementById("dkAgain").addEventListener("click", function () { hist = []; idx = 0; all.forEach(function (c) { c.style.transition = "none"; c.style.transform = ""; c.style.opacity = ""; stamp(c, 0); }); lay(); fit(); });
+      document.getElementById("dkAgain").addEventListener("click", function () { hist = []; idx = 0; all.forEach(function (c) { c.style.transition = "none"; c.style.transform = ""; c.style.opacity = ""; stamp(c, 0); }); lay(); });
       if (deck.hasAttribute("data-keys")) document.addEventListener("keydown", function (e) { if (deck.hidden || /^(INPUT|TEXTAREA|SELECT)$/.test((e.target || {}).tagName || "") || e.altKey || e.ctrlKey || e.metaKey) return; if (e.key === "ArrowRight") { e.preventDefault(); decide(1); } else if (e.key === "ArrowLeft") { e.preventDefault(); decide(-1); } });
       // Ziehen mit Finger oder Maus (senkrecht scrollt die Seite weiter)
       var drag = null, noClick = 0;
@@ -813,12 +812,11 @@
         noClick = Date.now();
       };
       stack.addEventListener("pointerup", end); stack.addEventListener("pointercancel", function (e) { if (drag && e.pointerId === drag.id) { var c = drag.c; drag = null; c.style.transition = "transform .2s ease-out"; c.style.transform = ""; stamp(c, 0); } });
-      lay(); fit(); window.addEventListener("resize", fit);
+      lay();
       // Beim ersten Laden stupst die oberste Karte einmal nach rechts und links: So sieht man, dass sie sich wischen lässt
       // Auf der Startseite erst, wenn der Stapel ins Bild kommt
       var nudge = function () { var c = all[idx]; if (!c || drag || busy || hist.length) return; c.classList.add("nudge"); setTimeout(function () { c.classList.remove("nudge"); }, 1700); };
       if (!RM) { if ("IntersectionObserver" in window) { var io = new IntersectionObserver(function (en) { if (en[0].isIntersecting) { io.disconnect(); setTimeout(nudge, 500); } }, { threshold: 0.6 }); io.observe(stack); } else setTimeout(nudge, 700); }
-      if (document.fonts && document.fonts.ready) document.fonts.ready.then(fit);
     }
   }
 

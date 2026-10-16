@@ -522,7 +522,7 @@ const TOOLS = () => [["sign", "/flohmarkt-schilder/", "printer", "Schilder-Desig
   ["kb", "/ratgeber/", "book", "Ratgeber", `${KB.length} Artikel mit kurzen Antworten zu Handeln, Preisen und Wechselgeld.`]];
 const toolOf = p => p.startsWith("/flohmarkt-schilder/") ? "sign" : KC_ON && p.startsWith(KC_P) ? "kc" : p.startsWith("/ratgeber/") ? "kb" : "";
 const moreTools = cur => `<section class="sec more-tools"><div class="sec-head"><h2>Mehr für deinen Flohmarkt</h2></div><div class="mt-grid">${TOOLS().filter(x => x[0] !== cur).map(([, h, i, b, x]) => `<a class="cta-box" href="${h}">${ic(i)}<span><b>${b}</b>${esc(x)}</span>${ic("chev")}</a>`).join("")}</div></section>`;
-const fabHTML = cur => `<div class="fab" id="fab" hidden><div class="fab-dim" id="fabDim" hidden></div><nav class="fab-menu" id="fabMenu" aria-label="Schnellzugriff" hidden>${[...TOOLS(), ["dk", "/entdecken/", "heart", "Wischen &amp; merken"]].map(([k, h, i, b]) => `<a href="${h}"${k === cur ? ' class="cur" aria-current="true"' : ""}>${ic(i)}${b}</a>`).join("")}</nav><button type="button" class="fab-btn" id="fabBtn" aria-expanded="false" aria-controls="fabMenu" aria-label="Schnellzugriff: Schilder, Kauf-Check, Ratgeber, Wischen und merken"><span class="fab-plus" aria-hidden="true"></span><span class="fab-lab" aria-hidden="true">Schilder · Kauf-Check · Ratgeber</span></button></div>`;
+const fabHTML = cur => `<div class="fab" id="fab" hidden><div class="fab-dim" id="fabDim" hidden></div><nav class="fab-menu" id="fabMenu" aria-label="Schnellzugriff" hidden>${[["tm", "/termine/", "cal", "Termine"], ...TOOLS(), ["dk", "/entdecken/", "heart", "Wischen &amp; merken"]].map(([k, h, i, b]) => `<a href="${h}"${k === cur ? ' class="cur" aria-current="true"' : ""}>${ic(i)}${b}</a>`).join("")}</nav><button type="button" class="fab-btn" id="fabBtn" aria-expanded="false" aria-controls="fabMenu" aria-label="Schnellzugriff: Termine, Schilder, Kauf-Check, Ratgeber, Wischen und merken"><span class="fab-plus" aria-hidden="true"></span><span class="fab-lab" aria-hidden="true">Schilder · Kauf-Check · Ratgeber</span></button></div>`;
 function layout({ p, title, desc, body, ld, noindex, nav, extraHead = "", img = OG_IMG }) {
   const toolK = toolOf(p); if (toolK && p !== "/ratgeber/") body += moreTools(toolK); // Die Ratgeber-Übersicht zeigt die Werkzeuge schon oben
   const url = SITE + p;
@@ -568,7 +568,7 @@ ${shyHeads(body.replace(/<h1>([^<]{3,80}?): ([^<]+)<\/h1>/, '<h1>$1:<span class=
 <details class="foot-grp"><summary>Für jeden Flohmarkt</summary><nav class="foot-links" aria-label="Für jeden Flohmarkt"><a href="/ratgeber/">Ratgeber</a>${KC_ON ? `<a href="${KC_P}">Kauf-Check</a>` : ""}<a href="/flohmarkt-schilder/">Schilder-Designer</a></nav></details>
 <details class="foot-grp"><summary>${esc(NAME)}</summary><nav class="foot-links" aria-label="${esc(NAME)}"><a href="${ABOUT_P}">Über Flohlotse</a><a href="/veranstalter/">Für Veranstalter</a>${INSTA ? instaA("Instagram") : ""}<a href="/impressum/">Impressum</a><a href="/datenschutz/">Datenschutz</a></nav></details>
 </footer>
-${fabHTML(toolK || (p === "/entdecken/" ? "dk" : ""))}
+${fabHTML(toolK || (p === "/entdecken/" ? "dk" : p === "/termine/" ? "tm" : ""))}
 <script src="/assets/site${JS_V ? "." + JS_V.slice(3) : ""}.js" defer></script>
 </body>
 </html>`;
@@ -1333,10 +1333,10 @@ ${tabs.map(([id, l, ks, href, ev], i) => `<div class="ab-p" role="tabpanel" id="
   const body = ticker + `<section class="hero"><div>
 <span class="kicker hello">Willkommen bei ${esc(NAME)}</span>
 <h1>Flohmarkt Hamburg: alle Termine, aufgeräumt.</h1>
+<p class="hero-p">Alle Flohmärkte in Hamburg und Umgebung: wann, wo und wie lange. Ohne Werbebanner, ohne alte Termine.</p>
 ${sxForm(true)}
 ${answerBox()}
 <div class="quick">${PLZ_ROWS.length ? `<a class="chip" href="/termine/#near">${ic("pin")}In meiner Nähe</a>` : ""}${HAS_MAP ? `<a class="chip" href="/flohmaerkte/#karte">${ic("map")}Karte</a>` : ""}<a class="chip" href="/entdecken/">${ic("heart")}Wischen &amp; merken</a></div>
-<p class="hero-p">Alle Flohmärkte in Hamburg und Umgebung: wann, wo und wie lange. Ohne Werbebanner, ohne alte Termine.</p>
 </div><a class="big-sticker" id="bigSt" href="/wochenende/"${stAlt}><b>${weN}</b><span>${weLabel}</span></a></section>
 ${slider}
 ${helpers()}

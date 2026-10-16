@@ -456,6 +456,7 @@ const ICONS = {
   play: "<path d=\"M92,46.4V209.6a8,8,0,0,0,12.2,6.8l130.6-81.6a8,8,0,0,0,0-13.6L104.2,39.6A8,8,0,0,0,92,46.4Z\"/>",
   car: "<g fill=\"none\" stroke=\"currentColor\" stroke-width=\"13\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M36,124,62,72a16,16,0,0,1,14-8H180a16,16,0,0,1,14,8l26,52\"/><rect x=\"28\" y=\"124\" width=\"200\" height=\"56\" rx=\"12\"/><path d=\"M52,180v20M204,180v20\"/><path d=\"M68,152h16M172,152h16\"/></g>",
   cup: "<g fill=\"none\" stroke=\"currentColor\" stroke-width=\"13\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M44,96H188v48a64,64,0,0,1-64,64H108a64,64,0,0,1-64-64Z\"/><path d=\"M188,108h8a28,28,0,0,1,0,56h-12\"/><path d=\"M84,36c-8,10,8,18,0,28M116,36c-8,10,8,18,0,28M148,36c-8,10,8,18,0,28\"/></g>",
+  globe: "<g fill=\"none\" stroke=\"currentColor\" stroke-width=\"13\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"128\" cy=\"128\" r=\"96\"/><path d=\"M32,128H224\"/><path d=\"M128,32c-26,26-40,60-40,96s14,70,40,96c26-26,40-60,40-96S154,58,128,32Z\"/></g>",
   camera: "<g fill=\"none\" stroke=\"currentColor\" stroke-width=\"13\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M208,208H48a16,16,0,0,1-16-16V80A16,16,0,0,1,48,64H80L96,40h64l16,24h32a16,16,0,0,1,16,16V192A16,16,0,0,1,208,208Z\"/><circle cx=\"128\" cy=\"134\" r=\"36\"/></g>",
   search: "<path d=\"M228.24,219.76l-51.38-51.38a86.15,86.15,0,1,0-8.48,8.48l51.38,51.38a6,6,0,0,0,8.48-8.48ZM38,112a74,74,0,1,1,74,74A74.09,74.09,0,0,1,38,112Z\"/>",
   frog: "<path d=\"M368 32c41.7 0 75.9 31.8 79.7 72.5l85.6 26.3c25.4 7.8 42.8 31.3 42.8 57.9 0 21.8-11.7 41.9-30.7 52.7l-144.5 82.1 92.5 92.5h50.7c17.7 0 32 14.3 32 32s-14.3 32-32 32h-64c-8.5 0-16.6-3.4-22.6-9.4L346.9 360.2c11.7-36 3.2-77.1-25.4-105.7-40.6-40.6-106.3-40.6-146.9-.1l-73.6 70c-6.4 6.1-6.7 16.2-.6 22.6s16.2 6.6 22.6.6l73.8-70.2.1-.1.1-.1c3.5-3.5 7.3-6.6 11.3-9.2 27.9-18.5 65.9-15.4 90.5 9.2 24.7 24.7 27.7 62.9 9 90.9-2.6 3.8-5.6 7.5-9 10.9l-37 37H352c17.7 0 32 14.3 32 32s-14.3 32-32 32H64c-35.3 0-64-28.7-64-64C0 249.6 127 112.9 289.3 97.5 296.2 60.2 328.8 32 368 32m0 104a24 24 0 1 0 0-48 24 24 0 1 0 0 48\"/>",
@@ -484,7 +485,7 @@ const TAGS_ALL = [...new Set(MARKETS.flatMap(m => m.tags))];
 const timeTags = e => { if (e.cancelled || !e.start) return []; const h = parseInt(String(e.start).match(/\d{1,2}/)[0], 10); return h <= 7 ? ["Frühaufsteher"] : h >= 10 && h <= 15 ? ["Langschläfer"] : []; };
 const TIME_TAGS = ["Frühaufsteher", "Langschläfer"];
 // Zwei Seiten, die auch unter der Woche gesucht werden: Märkte von Montag bis Freitag und Standgebühren im Vergleich
-const WEEK_P = "/flohmarkt-hamburg-unter-der-woche/", FEE_P = "/flohmarkt-standgebuehr-hamburg/";
+const WEEK_P = "/flohmarkt-hamburg-unter-der-woche/", FEE_P = "/flohmarkt-standgebuehr-hamburg/", ABOUT_P = "/ueber-flohlotse/";
 // Zahl und Einheit bleiben in einer Zeile („4 m“, „12 €“, „7 Uhr“)
 const nbU = t => esc(t).replace(/(\d) (?=€|%|(?:m|Uhr|km)\b)/g, "$1&nbsp;");
 function menuHTML() {
@@ -492,12 +493,12 @@ function menuHTML() {
   const li = (h, l) => `<li><a href="${h}">${l}</a></li>`;
   return `<details class="menu-wrap"><summary class="menu-btn">${ic("list")}<span>Menü</span></summary>
 <div class="menu"><nav class="menu-grid" aria-label="Alle Bereiche">
-<div><p class="menu-h">Flohmärkte finden</p><ul>${li("/suche/", "Suchen nach Name oder Datum")}${li("/heute/", "Heute")}${li("/morgen/", "Morgen")}${li("/wochenende/", "Am Wochenende")}${li("/samstag/", "Am Samstag")}${li("/sonntag/", "Am Sonntag")}${li(WEEK_P, "Unter der Woche")}${li("/termine/", "Alle Termine")}${li("/flohmaerkte/", "Alle Märkte")}${li("/entdecken/", "Wischen &amp; merken")}${li("/merkliste/", "Meine Merkliste")}</ul></div>
+<div><p class="menu-h">Flohmärkte in Hamburg</p><ul>${li("/suche/", "Suchen nach Name oder Datum")}${li("/heute/", "Heute")}${li("/morgen/", "Morgen")}${li("/wochenende/", "Am Wochenende")}${li("/samstag/", "Am Samstag")}${li("/sonntag/", "Am Sonntag")}${li(WEEK_P, "Unter der Woche")}${li("/termine/", "Alle Termine")}${li("/flohmaerkte/", "Alle Märkte")}${li(FEE_P, "Standgebühren im Vergleich")}${li("/entdecken/", "Wischen &amp; merken")}${li("/merkliste/", "Meine Merkliste")}</ul></div>
 <div><p class="menu-h">Nach Art</p><ul>${CATS_ON.map(c => li(`/${c.s}/`, esc(c.chip))).join("")}</ul></div>
 <div><p class="menu-h">Hamburg</p><ul>${REGIONS.filter(r => !r.umland).map(r => li(`/flohmarkt-hamburg/${r.k}/`, `${esc(r.name)} <small>${cnt(r.k)}</small>`)).join("")}</ul></div>
 <div><p class="menu-h">Umland bis 30 km</p><ul>${REGIONS.filter(r => r.umland).map(r => li(`/flohmarkt-hamburg/${r.k}/`, `${esc(r.name)} <small>${cnt(r.k)}</small>`)).join("")}</ul></div>
-<div><p class="menu-h">Ratgeber</p><ul>${KC_ON ? li(KC_P, "Kauf-Check: echt oder Fälschung?") : ""}${li("/flohmarkt-schilder/", "Schilder &amp; Preisschilder drucken")}${li(FEE_P, "Standgebühren im Vergleich")}${Object.entries(CLUSTERS).map(([c, v]) => li(`/ratgeber/#${c}`, esc(v.t))).join("")}${li("/ratgeber/", "Alle Artikel")}</ul></div>
-<div><p class="menu-h">${esc(NAME)}</p><ul>${li("/veranstalter/", "Für Veranstalter")}${INSTA ? `<li>${instaA("Instagram")}</li>` : ""}${li("/impressum/", "Impressum")}${li("/datenschutz/", "Datenschutz")}</ul></div>
+<div><p class="menu-h">Für jeden Flohmarkt</p><ul>${KC_ON ? li(KC_P, "Kauf-Check: echt oder Fälschung?") : ""}${li("/flohmarkt-schilder/", "Schilder &amp; Preisschilder drucken")}${Object.entries(CLUSTERS).map(([c, v]) => li(`/ratgeber/#${c}`, esc(v.t))).join("")}${li("/ratgeber/", "Alle Artikel")}</ul></div>
+<div><p class="menu-h">${esc(NAME)}</p><ul>${li(ABOUT_P, "Über Flohlotse")}${li("/veranstalter/", "Für Veranstalter")}${INSTA ? `<li>${instaA("Instagram")}</li>` : ""}${li("/impressum/", "Impressum")}${li("/datenschutz/", "Datenschutz")}</ul></div>
 </nav></div></details>`;
 }
 const MENU = () => menuHTML();
@@ -551,9 +552,10 @@ ${shyHeads(body.replace(/<h1>([^<]{3,80}?): ([^<]+)<\/h1>/, '<h1>$1:<span class=
 </main>
 <footer class="wrap site-foot">
 <div>Termine nach öffentlichen Angaben der Veranstalter, Stand ${STAND}. Bitte vor dem Besuch beim Veranstalter prüfen, Märkte können kurzfristig ausfallen. Ratgeber-Artikel ersetzen keine Rechts- oder Steuerberatung.${WX_OK ? ` Wettervorhersage: Deutscher Wetterdienst, Stand ${STAND}.` : ""}</div>
-<nav class="foot-links" aria-label="Flohmarkt Hamburg"><b>Flohmarkt Hamburg</b><a href="/heute/">Heute</a><a href="/morgen/">Morgen</a><a href="/wochenende/">Wochenende</a><a href="/samstag/">Samstag</a><a href="/sonntag/">Sonntag</a><a href="${WEEK_P}">Unter der Woche</a>${REGIONS.map(r => `<a href="/flohmarkt-hamburg/${r.k}/">${esc(r.name)}</a>`).join("")}</nav>
+<nav class="foot-links" aria-label="Flohmarkt Hamburg"><b>Flohmarkt Hamburg</b><a href="/heute/">Heute</a><a href="/morgen/">Morgen</a><a href="/wochenende/">Wochenende</a><a href="/samstag/">Samstag</a><a href="/sonntag/">Sonntag</a><a href="${WEEK_P}">Unter der Woche</a>${REGIONS.map(r => `<a href="/flohmarkt-hamburg/${r.k}/">${esc(r.name)}</a>`).join("")}<a href="${FEE_P}">Standgebühren im Vergleich</a><a href="/flohmarkt-hamburg-statistik/">Flohmärkte in Zahlen</a></nav>
 <nav class="foot-links" aria-label="Nach Art und Monat"><b>Nach Art und Monat</b>${CATS_ON.map(c => `<a href="/${c.s}/">${esc(c.chip)}</a>`).join("")}${MONTHS.map(x => `<a href="/${x.s}/">${x.name} ${x.y}</a>`).join("")}</nav>
-<nav class="foot-links" aria-label="${esc(NAME)}"><b>${esc(NAME)}</b><a href="/ratgeber/">Ratgeber</a>${KC_ON ? `<a href="${KC_P}">Kauf-Check</a>` : ""}<a href="/flohmarkt-schilder/">Schilder-Designer</a><a href="${FEE_P}">Standgebühren im Vergleich</a><a href="/flohmarkt-hamburg-statistik/">Flohmärkte in Zahlen</a><a href="/veranstalter/">Für Veranstalter</a>${INSTA ? instaA("Instagram") : ""}<a href="/impressum/">Impressum</a><a href="/datenschutz/">Datenschutz</a></nav>
+<nav class="foot-links" aria-label="Für jeden Flohmarkt"><b>Für jeden Flohmarkt</b><a href="/ratgeber/">Ratgeber</a>${KC_ON ? `<a href="${KC_P}">Kauf-Check</a>` : ""}<a href="/flohmarkt-schilder/">Schilder-Designer</a></nav>
+<nav class="foot-links" aria-label="${esc(NAME)}"><b>${esc(NAME)}</b><a href="${ABOUT_P}">Über Flohlotse</a><a href="/veranstalter/">Für Veranstalter</a>${INSTA ? instaA("Instagram") : ""}<a href="/impressum/">Impressum</a><a href="/datenschutz/">Datenschutz</a></nav>
 </footer>
 <script src="/assets/site${JS_V ? "." + JS_V.slice(3) : ""}.js" defer></script>
 </body>
@@ -1275,7 +1277,8 @@ ${NEWS_TABS.length > 1 ? '<div class="akt-bar js-only" aria-hidden="true"><i id=
 <p>Alle Flohmärkte in Hamburg und Umgebung: wann, wo und wie lange. Ohne Werbebanner, ohne alte Termine.</p>
 ${sxForm(true)}
 <div class="quick"><a class="chip" href="/heute/">${ic("sun")}Heute</a>${PLZ_ROWS.length ? `<a class="chip" href="/termine/#near">${ic("pin")}In meiner Nähe</a>` : ""}<a class="chip" href="/wochenende/">${ic("cal")}Wochenende</a>${HAS_MAP ? `<a class="chip" href="/flohmaerkte/#karte">${ic("map")}Karte</a>` : ""}<a class="chip" href="/entdecken/">${ic("heart")}Wischen &amp; merken</a></div>
-<nav class="quick-more" aria-label="Weitere Bereiche"><a href="/sonntag/">Sonntag</a><a href="${WEEK_P}">Unter der Woche</a><a href="/flohmaerkte/">Märkte nach Bezirk</a><a href="/ratgeber/">Ratgeber</a>${KC_ON ? `<a href="${KC_P}">Kauf-Check</a>` : ""}<a href="/flohmarkt-schilder/">Schilder gestalten</a><a href="/veranstalter/">Für Veranstalter</a></nav>
+<nav class="quick-more" aria-label="Weitere Bereiche"><a href="/sonntag/">Sonntag</a><a href="${WEEK_P}">Unter der Woche</a><a href="/flohmaerkte/">Märkte nach Bezirk</a><a href="/veranstalter/">Für Veranstalter</a></nav>
+<nav class="quick-more quick-all" aria-label="Für jeden Flohmarkt"><span>Für jeden Flohmarkt, auch außerhalb Hamburgs:</span><a href="/ratgeber/">Ratgeber</a>${KC_ON ? `<a href="${KC_P}">Kauf-Check</a>` : ""}<a href="/flohmarkt-schilder/">Schilder gestalten</a></nav>
 </div><a class="big-sticker" id="bigSt" href="/wochenende/"${stAlt}><b>${weN}</b><span>${weLabel}</span></a></section>
 ${slider}
 ${newsBox}
@@ -1606,7 +1609,8 @@ for (const mo of MONTHS) {
    Eine Übersichtsseite plus eine Seite je Vorlage. Das Schild entsteht im Browser (src/site.js),
    gedruckt wird über den normalen Druckdialog. Es wird nichts gespeichert oder verschickt.
    Texte der Vorlagen stehen hier, damit sie ohne Sheet funktionieren. */
-const QR = { n: 25, d: "M0 0h7v1h-7zM11 0h1v1h-1zM13 0h1v1h-1zM16 0h1v1h-1zM18 0h7v1h-7zM0 1h1v1h-1zM6 1h1v1h-1zM10 1h1v1h-1zM13 1h3v1h-3zM18 1h1v1h-1zM24 1h1v1h-1zM0 2h1v1h-1zM2 2h3v1h-3zM6 2h1v1h-1zM8 2h2v1h-2zM14 2h3v1h-3zM18 2h1v1h-1zM20 2h3v1h-3zM24 2h1v1h-1zM0 3h1v1h-1zM2 3h3v1h-3zM6 3h1v1h-1zM8 3h3v1h-3zM12 3h3v1h-3zM18 3h1v1h-1zM20 3h3v1h-3zM24 3h1v1h-1zM0 4h1v1h-1zM2 4h3v1h-3zM6 4h1v1h-1zM8 4h1v1h-1zM12 4h1v1h-1zM14 4h1v1h-1zM16 4h1v1h-1zM18 4h1v1h-1zM20 4h3v1h-3zM24 4h1v1h-1zM0 5h1v1h-1zM6 5h1v1h-1zM8 5h1v1h-1zM10 5h1v1h-1zM12 5h1v1h-1zM14 5h2v1h-2zM18 5h1v1h-1zM24 5h1v1h-1zM0 6h7v1h-7zM8 6h1v1h-1zM10 6h1v1h-1zM12 6h1v1h-1zM14 6h1v1h-1zM16 6h1v1h-1zM18 6h7v1h-7zM8 7h2v1h-2zM12 7h1v1h-1zM15 7h1v1h-1zM0 8h1v1h-1zM2 8h5v1h-5zM9 8h1v1h-1zM13 8h2v1h-2zM18 8h5v1h-5zM0 9h1v1h-1zM3 9h1v1h-1zM5 9h1v1h-1zM7 9h1v1h-1zM9 9h4v1h-4zM14 9h1v1h-1zM16 9h2v1h-2zM19 9h1v1h-1zM23 9h1v1h-1zM1 10h2v1h-2zM5 10h2v1h-2zM8 10h2v1h-2zM13 10h1v1h-1zM15 10h7v1h-7zM23 10h2v1h-2zM1 11h1v1h-1zM4 11h2v1h-2zM7 11h2v1h-2zM11 11h2v1h-2zM14 11h1v1h-1zM16 11h2v1h-2zM19 11h1v1h-1zM24 11h1v1h-1zM4 12h1v1h-1zM6 12h1v1h-1zM8 12h1v1h-1zM11 12h1v1h-1zM13 12h2v1h-2zM17 12h4v1h-4zM22 12h3v1h-3zM0 13h2v1h-2zM9 13h1v1h-1zM12 13h1v1h-1zM16 13h2v1h-2zM19 13h1v1h-1zM21 13h1v1h-1zM23 13h1v1h-1zM0 14h1v1h-1zM5 14h5v1h-5zM14 14h2v1h-2zM17 14h5v1h-5zM23 14h2v1h-2zM0 15h1v1h-1zM3 15h3v1h-3zM10 15h1v1h-1zM12 15h1v1h-1zM14 15h4v1h-4zM19 15h2v1h-2zM24 15h1v1h-1zM0 16h1v1h-1zM3 16h1v1h-1zM6 16h1v1h-1zM9 16h2v1h-2zM12 16h2v1h-2zM16 16h5v1h-5zM22 16h1v1h-1zM8 17h1v1h-1zM13 17h1v1h-1zM15 17h2v1h-2zM20 17h2v1h-2zM0 18h7v1h-7zM9 18h1v1h-1zM11 18h4v1h-4zM16 18h1v1h-1zM18 18h1v1h-1zM20 18h1v1h-1zM22 18h3v1h-3zM0 19h1v1h-1zM6 19h1v1h-1zM8 19h2v1h-2zM11 19h1v1h-1zM16 19h1v1h-1zM20 19h2v1h-2zM24 19h1v1h-1zM0 20h1v1h-1zM2 20h3v1h-3zM6 20h1v1h-1zM8 20h1v1h-1zM11 20h10v1h-10zM22 20h1v1h-1zM0 21h1v1h-1zM2 21h3v1h-3zM6 21h1v1h-1zM8 21h1v1h-1zM12 21h1v1h-1zM15 21h2v1h-2zM18 21h1v1h-1zM20 21h5v1h-5zM0 22h1v1h-1zM2 22h3v1h-3zM6 22h1v1h-1zM8 22h1v1h-1zM14 22h1v1h-1zM21 22h2v1h-2zM24 22h1v1h-1zM0 23h1v1h-1zM6 23h1v1h-1zM9 23h1v1h-1zM15 23h3v1h-3zM19 23h3v1h-3zM24 23h1v1h-1zM0 24h7v1h-7zM8 24h1v1h-1zM12 24h3v1h-3zM19 24h6v1h-6z" }; // QR-Code zu https://www.flohlotse.de (fest, wird nicht bei jedem Bau neu berechnet)
+// QR-Code unten auf jedem Schild: https://www.flohlotse.de/schilder (leitet auf den Schilder-Designer weiter)
+const QR = { n: 29, d: "M0 0h7v1h-7zM9 0h1v1h-1zM12 0h1v1h-1zM15 0h2v1h-2zM18 0h3v1h-3zM22 0h7v1h-7zM0 1h1v1h-1zM6 1h1v1h-1zM11 1h2v1h-2zM22 1h1v1h-1zM28 1h1v1h-1zM0 2h1v1h-1zM2 2h3v1h-3zM6 2h1v1h-1zM8 2h2v1h-2zM11 2h1v1h-1zM14 2h1v1h-1zM16 2h1v1h-1zM18 2h3v1h-3zM22 2h1v1h-1zM24 2h3v1h-3zM28 2h1v1h-1zM0 3h1v1h-1zM2 3h3v1h-3zM6 3h1v1h-1zM8 3h2v1h-2zM16 3h2v1h-2zM19 3h1v1h-1zM22 3h1v1h-1zM24 3h3v1h-3zM28 3h1v1h-1zM0 4h1v1h-1zM2 4h3v1h-3zM6 4h1v1h-1zM8 4h3v1h-3zM12 4h4v1h-4zM18 4h2v1h-2zM22 4h1v1h-1zM24 4h3v1h-3zM28 4h1v1h-1zM0 5h1v1h-1zM6 5h1v1h-1zM8 5h3v1h-3zM12 5h5v1h-5zM20 5h1v1h-1zM22 5h1v1h-1zM28 5h1v1h-1zM0 6h7v1h-7zM8 6h1v1h-1zM10 6h1v1h-1zM12 6h1v1h-1zM14 6h1v1h-1zM16 6h1v1h-1zM18 6h1v1h-1zM20 6h1v1h-1zM22 6h7v1h-7zM8 7h1v1h-1zM13 7h1v1h-1zM15 7h1v1h-1zM20 7h1v1h-1zM0 8h1v1h-1zM2 8h5v1h-5zM9 8h1v1h-1zM14 8h2v1h-2zM17 8h2v1h-2zM22 8h5v1h-5zM2 9h2v1h-2zM7 9h1v1h-1zM10 9h3v1h-3zM15 9h10v1h-10zM28 9h1v1h-1zM0 10h1v1h-1zM2 10h1v1h-1zM6 10h2v1h-2zM9 10h1v1h-1zM11 10h1v1h-1zM17 10h1v1h-1zM20 10h1v1h-1zM1 11h1v1h-1zM5 11h1v1h-1zM9 11h3v1h-3zM14 11h1v1h-1zM16 11h1v1h-1zM19 11h1v1h-1zM21 11h3v1h-3zM25 11h1v1h-1zM27 11h1v1h-1zM2 12h1v1h-1zM4 12h1v1h-1zM6 12h1v1h-1zM8 12h2v1h-2zM17 12h1v1h-1zM20 12h1v1h-1zM25 12h2v1h-2zM0 13h1v1h-1zM3 13h3v1h-3zM7 13h3v1h-3zM11 13h5v1h-5zM19 13h4v1h-4zM24 13h1v1h-1zM28 13h1v1h-1zM1 14h1v1h-1zM5 14h2v1h-2zM8 14h3v1h-3zM12 14h4v1h-4zM17 14h2v1h-2zM22 14h2v1h-2zM25 14h2v1h-2zM4 15h1v1h-1zM11 15h1v1h-1zM13 15h1v1h-1zM20 15h2v1h-2zM23 15h2v1h-2zM27 15h1v1h-1zM1 16h2v1h-2zM4 16h3v1h-3zM10 16h1v1h-1zM14 16h4v1h-4zM20 16h1v1h-1zM23 16h1v1h-1zM25 16h2v1h-2zM0 17h2v1h-2zM3 17h3v1h-3zM7 17h1v1h-1zM9 17h2v1h-2zM16 17h1v1h-1zM18 17h7v1h-7zM26 17h1v1h-1zM28 17h1v1h-1zM0 18h1v1h-1zM6 18h1v1h-1zM10 18h1v1h-1zM12 18h1v1h-1zM15 18h4v1h-4zM20 18h1v1h-1zM22 18h2v1h-2zM26 18h1v1h-1zM0 19h1v1h-1zM2 19h3v1h-3zM8 19h3v1h-3zM14 19h3v1h-3zM19 19h2v1h-2zM22 19h3v1h-3zM27 19h1v1h-1zM0 20h1v1h-1zM4 20h3v1h-3zM9 20h1v1h-1zM11 20h2v1h-2zM15 20h1v1h-1zM17 20h1v1h-1zM19 20h6v1h-6zM26 20h3v1h-3zM8 21h3v1h-3zM12 21h3v1h-3zM16 21h3v1h-3zM20 21h1v1h-1zM24 21h5v1h-5zM0 22h7v1h-7zM13 22h3v1h-3zM18 22h3v1h-3zM22 22h1v1h-1zM24 22h3v1h-3zM0 23h1v1h-1zM6 23h1v1h-1zM8 23h1v1h-1zM10 23h1v1h-1zM13 23h1v1h-1zM15 23h2v1h-2zM18 23h3v1h-3zM24 23h1v1h-1zM0 24h1v1h-1zM2 24h3v1h-3zM6 24h1v1h-1zM8 24h2v1h-2zM11 24h2v1h-2zM14 24h2v1h-2zM17 24h1v1h-1zM20 24h5v1h-5zM26 24h2v1h-2zM0 25h1v1h-1zM2 25h3v1h-3zM6 25h1v1h-1zM8 25h6v1h-6zM16 25h3v1h-3zM23 25h1v1h-1zM25 25h4v1h-4zM0 26h1v1h-1zM2 26h3v1h-3zM6 26h1v1h-1zM8 26h6v1h-6zM15 26h1v1h-1zM18 26h10v1h-10zM0 27h1v1h-1zM6 27h1v1h-1zM9 27h3v1h-3zM13 27h4v1h-4zM20 27h4v1h-4zM25 27h1v1h-1zM27 27h1v1h-1zM0 28h7v1h-7zM8 28h2v1h-2zM11 28h3v1h-3zM17 28h1v1h-1zM19 28h1v1h-1zM21 28h1v1h-1zM23 28h4v1h-4z" }; // QR-Code zu https://www.flohlotse.de (fest, wird nicht bei jedem Bau neu berechnet)
 const qrSVG = cls => `<svg class="${cls}" viewBox="-2 -2 ${QR.n + 4} ${QR.n + 4}" aria-hidden="true" focusable="false"><rect x="-2" y="-2" width="${QR.n + 4}" height="${QR.n + 4}" fill="#fff"/><path fill="#15211B" d="${QR.d}"/></svg>`;
 const SIGN_BASE = "/flohmarkt-schilder/";
 const kl = (s, t) => KBY[s] ? `<a href="/ratgeber/${s}/">${t}</a>` : t; // Ratgeber-Link, falls der Artikel existiert
@@ -1691,14 +1695,14 @@ const SIGN_PAGE_IMGS = new Map(); // für die Bild-Sitemap
 // Startzustand einer Vorlage (erste Variante)
 const signState = (t, x = t.v[0]) => ({ kind: t.kind || "sign", fmt: t.kind === "tags" ? "tags" : (t.fmt || "quer"), top: x.top || "", main: x.main || "", bot: x.bot || "", price: x.price || "" });
 // Markup: dieselben Bausteine nutzt src/site.js (Vorlagen <template id="tplSign"> und "tplTag")
-const SG_UNIT = `<div class="sg"><div class="sg-top"></div><div class="sg-main"><span></span></div><div class="sg-bot"></div><div class="sg-foot"><div class="sg-pay"><svg class="sg-payqr" aria-hidden="true" focusable="false"></svg><span><b>Mit PayPal zahlen</b><span class="sg-payurl"></span></span></div>${qrSVG("sg-qr")}<span><b>flohlotse.de</b>Alle Flohmärkte in Hamburg</span></div></div>`;
+const SG_UNIT = `<div class="sg"><div class="sg-top"></div><div class="sg-main"><span></span></div><div class="sg-bot"></div><div class="sg-foot"><div class="sg-pay"><svg class="sg-payqr" aria-hidden="true" focusable="false"></svg><span><b>Mit PayPal zahlen</b><span class="sg-payurl"></span></span></div>${qrSVG("sg-qr")}<span><b>flohlotse.de/schilder</b>Schilder kostenlos gestalten</span></div></div>`;
 const TG_UNIT = `<div class="tg"><i class="tg-hole"></i><div class="tg-price"><span></span></div><div class="tg-vb"><i></i>VB</div><div class="tg-brand">flohlotse.de</div></div>`;
 function sheetHTML(st) {
   if (st.kind === "tags") {
     const u = `<div class="tg"><i class="tg-hole"></i><div class="tg-price${st.price ? "" : " blank"}"><span>${st.price ? esc(st.price) : "€"}</span></div><div class="tg-vb"><i></i>VB</div><div class="tg-brand">flohlotse.de</div></div>`;
     return `<div class="sheet f-tags" id="sheet">${u.repeat(24)}</div>`;
   }
-  const u = `<div class="sg"><div class="sg-top">${esc(st.top)}</div><div class="sg-main"><span>${esc(st.main)}</span></div><div class="sg-bot">${esc(st.bot)}</div><div class="sg-foot"><div class="sg-pay"><svg class="sg-payqr" aria-hidden="true" focusable="false"></svg><span><b>Mit PayPal zahlen</b><span class="sg-payurl"></span></span></div>${qrSVG("sg-qr")}<span><b>flohlotse.de</b>Alle Flohmärkte in Hamburg</span></div></div>`;
+  const u = `<div class="sg"><div class="sg-top">${esc(st.top)}</div><div class="sg-main"><span>${esc(st.main)}</span></div><div class="sg-bot">${esc(st.bot)}</div><div class="sg-foot"><div class="sg-pay"><svg class="sg-payqr" aria-hidden="true" focusable="false"></svg><span><b>Mit PayPal zahlen</b><span class="sg-payurl"></span></span></div>${qrSVG("sg-qr")}<span><b>flohlotse.de/schilder</b>Schilder kostenlos gestalten</span></div></div>`;
   return `<div class="sheet f-${st.fmt}" id="sheet">${st.fmt === "acht" ? u.repeat(8) : u}</div>`;
 }
 function genHTML(st, presets, heading, pay) {
@@ -1752,7 +1756,7 @@ const signCard = t => `<a class="card sg-card" href="${signUrl(t)}"><img src="${
 const signLD = (p, crumbsArr, faq) => G([crumbLD(crumbsArr),
   { "@type": "WebApplication", name: `${NAME} Schilder-Designer`, url: SITE + p, applicationCategory: "DesignApplication", operatingSystem: "Web", inLanguage: "de", isAccessibleForFree: true, offers: { "@type": "Offer", price: "0", priceCurrency: "EUR" } },
   { "@type": "FAQPage", mainEntity: faq.map(([q, x]) => ({ "@type": "Question", name: q, acceptedAnswer: { "@type": "Answer", text: plain(x.replace(/<[^>]+>/g, "")) } })) }]);
-const signByline = `<div class="byline"><span>${ic("tag")}Kostenlos</span><span>${ic("user")}Ohne Anmeldung</span><span>${ic("printer")}Drucken oder PDF</span></div>`;
+const signByline = `<div class="byline"><span>${ic("tag")}Kostenlos</span><span>${ic("user")}Ohne Anmeldung</span><span>${ic("printer")}Drucken oder PDF</span><span>${ic("globe")}Für jeden Flohmarkt</span></div>`;
 const faqHTML = f => `<section class="faq"><h2>Häufige Fragen</h2>${f.map(([q, x]) => `<details><summary>${esc(q)}</summary><p>${x}</p></details>`).join("")}</section>`;
 // Übersichtsseite
 {
@@ -1762,7 +1766,7 @@ const faqHTML = f => `<section class="faq"><h2>Häufige Fragen</h2>${f.map(([q, 
   const faq = [["Kostet der Schilder-Designer etwas?", "Nein. Du kannst so viele Schilder gestalten und drucken, wie du möchtest, ohne Anmeldung."],
     ["Werden meine Texte gespeichert?", "Nein. Das Schild entsteht direkt in deinem Browser. Wir sehen nicht, was du eintippst."],
     ["Kann ich auf Etiketten drucken?", `Ja. Die <a href="${signUrl(SIGN_BY.preisschilder)}">Preisschilder-Vorlage</a> hat 24 Felder im Format 70 × 37 mm und passt auf gängige Etikettenbögen mit diesem Maß. Stell beim Drucken die Größe auf 100 %.`],
-    ["Warum steht unten flohlotse.de?", "Damit deine Kundschaft weitere Flohmärkte in Hamburg findet. Der Hinweis ist klein und stört das Schild nicht."]];
+    ["Warum steht unten flohlotse.de/schilder?", "Damit auch andere sehen, wo es die Schilder kostenlos gibt. Der Hinweis ist klein und stört das Schild nicht."]];
   const body = crumbs(cr) + `<article class="kb"><h1>Flohmarkt-Schilder und Preisschilder zum Ausdrucken</h1>${signByline}
 <p class="lead">Der Schilder-Designer für deinen Stand: Vorlage wählen, Text eintippen, drucken. Ohne Drucker speicherst du das Schild als PDF und druckst es im Copyshop.</p>
 ${genHTML(signState(first), presets, "Schild gestalten und drucken", "auto")}
@@ -1812,13 +1816,15 @@ const kbPhoto = a => {
   const pool = (KB_POOL[a.c] || [[`ratgeber-${a.c}`, ""]]).filter(x => pickImg(x[0]) || pickImg(x[0] + "-klein"));
   return pool.length ? pool[KB.filter(x => x.c === a.c).indexOf(a) % pool.length] : [`ratgeber-${a.c}`, ""];
 };
+// Ratgeber-Artikel mit Hamburg im Titel gelten nur für Hamburg, alle anderen für jeden Flohmarkt
+const kbHH = a => /hamburg/i.test(`${a.h} ${a.t}`);
 const THUMB_FORM = ["", "rund"];
 const clusterThumb = (c, i) => { const x = pickImg(`ratgeber-${c}-klein`) || pickImg(`ratgeber-${c}`); return x ? `<img class="cl-thumb ${THUMB_FORM[i % 2]}" src="${imgUrl(x.f)}" width="760" height="332" alt="${esc(altOf(x))}"${i ? ' loading="lazy"' : ""} decoding="async">` : ""; };
 {
   const body = crumbs([[NAME, "/"], ["Ratgeber"]]) + `<section class="hub-head"><h1>Flohmarkt-Ratgeber: Antworten auf die häufigsten Fragen</h1>
-<p>Unsere Empfehlungen zum Kaufen, Verkaufen, Handeln und Organisieren. Jeder Artikel beginnt mit einer kurzen Antwort, danach folgen die Details.</p>
+<p>Unsere Empfehlungen zum Kaufen, Verkaufen, Handeln und Organisieren, für jeden Flohmarkt in Deutschland. Ein paar Artikel gelten speziell für Hamburg, das steht dann im Titel. Jeder Artikel beginnt mit einer kurzen Antwort, danach folgen die Details.</p>
 <div class="search js-only"><label for="kbSearch" class="kicker">Frage suchen</label><input id="kbSearch" type="search" placeholder="z. B. handeln, Steuern, Standgebühr" autocomplete="off"></div></section>
-${kcHubCta()}${Object.entries(CLUSTERS).map(([c, info], i) => { const items = KB.filter(a => a.c === c); return items.length ? `<section class="cluster" id="${c}"><div class="cl-head${i % 2 ? " flip" : ""}"><div><h2>${esc(info.t)}</h2><p>${esc(info.p)}</p></div>${clusterThumb(c, i)}</div><div class="qlist">${items.map(a => `<a href="/ratgeber/${a.s}/" data-q="${esc((a.h + " " + a.kw + " " + plain(a.a)).toLowerCase())}"><span>${brColon(esc(a.h))}</span>${ic("chev")}</a>`).join("")}</div></section>` : ""; }).join("")}
+${kcHubCta()}${signCta()}${Object.entries(CLUSTERS).map(([c, info], i) => { const items = KB.filter(a => a.c === c); return items.length ? `<section class="cluster" id="${c}"><div class="cl-head${i % 2 ? " flip" : ""}"><div><h2>${esc(info.t)}</h2><p>${esc(info.p)}</p></div>${clusterThumb(c, i)}</div><div class="qlist">${items.map(a => `<a href="/ratgeber/${a.s}/" data-q="${esc((a.h + " " + a.kw + " " + plain(a.a)).toLowerCase())}"><span>${brColon(esc(a.h))}</span>${ic("chev")}</a>`).join("")}</div></section>` : ""; }).join("")}
 ${CRED_SRC ? `<p class="meta cl-cred">Symbolfotos: ${credLink()}${S["Bildnachweis"] ? " · " + esc(String(S["Bildnachweis"]).replace(/^Fotos:\s*/, "").replace(/\.$/, "")) : ""}</p>` : ""}
 <div class="empty" id="kbLeer" hidden>Dazu gibt es noch keinen Artikel. Versuch einen anderen Begriff, etwa „Steuern“ oder „Stand“.</div>`;
   layout({ p: "/ratgeber/", title: `Flohmarkt-Ratgeber: Die wichtigsten Fragen | ${NAME}`, desc: "Kaufen, verkaufen, handeln, Knigge und Tipps für Veranstalter: Der Ratgeber beantwortet die häufigsten Fragen rund um den Flohmarkt, kurz und verständlich.", body, nav: "ratgeber", ld: G([crumbLD([[NAME, "/"], ["Ratgeber"]]), { "@type": "CollectionPage", name: "Flohmarkt-Ratgeber", hasPart: KB.map(a => ({ "@type": "Article", headline: a.h, url: `${SITE}/ratgeber/${a.s}/` })) }]) });
@@ -1827,7 +1833,7 @@ for (const a of KB) {
   const cl = CLUSTERS[a.c] || { t: a.c }, ph = kbPhoto(a);
   const words = (plain(a.a) + " " + a.b.map(x => x.join(" ")).join(" ")).split(/\s+/).length;
   const body = crumbs([[NAME, "/"], ["Ratgeber", "/ratgeber/"], [cl.t, `/ratgeber/#${a.c}`]]) + `<article class="kb"><h1>${esc(a.h)}</h1>
-<div class="byline"><span>${ic("book")}${esc(NAME)} Ratgeber</span><span>${ic("update")}Stand: ${STAND}</span><span>${ic("clock")}${Math.max(2, Math.round(words / 200))} Min. Lesezeit</span></div>
+<div class="byline">${kbHH(a) ? `<span>${ic("pin")}Speziell für Hamburg</span>` : `<span>${ic("globe")}Für jeden Flohmarkt</span>`}<span>${ic("update")}Stand: ${STAND}</span><span>${ic("clock")}${Math.max(2, Math.round(words / 200))} Min. Lesezeit</span></div>
 <div class="answer"><span class="kicker">Kurz gesagt</span><p>${rich(a.a)}</p></div>
 ${/rund/.test(ph[1]) ? "" : clusterImg(a.c, `kb-photo${ph[1] ? " " + ph[1] : ""}`, false, ph[0])}<div class="kb-body">${/rund/.test(ph[1]) ? sideImg(pickImg(ph[0] + "-klein") ? ph[0] + "-klein" : ph[0], ph[1]) : ""}${a.b.map(([h, p]) => `<h2>${esc(h)}</h2><p>${rich(p)}</p>`).join("")}</div>
 ${FEE_CTA.has(a.s) ? feeCta() : ""}${a.s in SIGN_CTA || a.c === "verkaufen" ? signCta(SIGN_BY[SIGN_CTA[a.s]]) : ""}
@@ -1866,7 +1872,7 @@ ${i.f.length ? `<div class="kc-blk kc-ask"><h${hl}>Frag am Stand</h${hl}><ul>${i
   {
     const AREAS_ON = Object.keys(KC_AREAS).filter(a => areaItems(a).length);
     const body = crumbs([[NAME, "/"], ["Kauf-Check"]]) + `<section class="hub-head"><h1>Kauf-Check: Echt und in Ordnung?</h1>
-<p>Für ${KC.length} typische Flohmarkt-Artikel: Woran du Fälschungen erkennst, ob ein Gerät gesperrt sein könnte und worauf du beim Zustand achtest. Am Stand tippst du einfach an, was dir auffällt, und bekommst eine Einschätzung.</p>
+<p>Für ${KC.length} typische Flohmarkt-Artikel: Woran du Fälschungen erkennst, ob ein Gerät gesperrt sein könnte und worauf du beim Zustand achtest. Am Stand tippst du einfach an, was dir auffällt, und bekommst eine Einschätzung. Funktioniert auf jedem Flohmarkt.</p>
 <div class="search kc-search js-only"><label for="kcSearch" class="kicker">Was willst du kaufen?</label><input id="kcSearch" type="search" enterkeyhint="go" placeholder="z. B. Levi's, iPhone, LEGO, Silber" autocomplete="off" aria-controls="kcSugg"><div class="kc-sugg" id="kcSugg" role="listbox" hidden></div></div>
 ${photoTip}</section>
 ${AREAS_ON.map(a => `<section class="cluster" id="${a}"><div class="cl-head"><div><h2>${esc(KC_AREAS[a].t)}</h2><p>${esc(KC_AREAS[a].p)}</p></div></div><div class="qlist">${areaItems(a).map(qItem).join("")}</div><p class="kc-all">${more(`${KC_P}${a}/`, `Alle ${areaItems(a).length} Checks: ${esc(KC_AREAS[a].t)}`)}</p></section>`).join("")}
@@ -1881,7 +1887,7 @@ ${kcHint()}`;
     const cr = [[NAME, "/"], ["Kauf-Check", KC_P], [A.t]];
     const cats = A.cat && CAT_BY_S[A.cat] ? catCta(CAT_BY_S[A.cat]) : "";
     const body = crumbs(cr) + `<article class="kb"><h1>${esc(A.t)}: Echtheit und Zustand prüfen</h1>
-<div class="byline"><span>${ic("search")}${its.length} Artikel</span><span>${ic("list")}${its.reduce((n, i) => n + kcCnt(i), 0)} Prüfpunkte</span><span>${ic("update")}Stand: ${STAND}</span></div>
+<div class="byline"><span>${ic("globe")}Für jeden Flohmarkt</span><span>${ic("search")}${its.length} Artikel</span><span>${ic("list")}${its.reduce((n, i) => n + kcCnt(i), 0)} Prüfpunkte</span><span>${ic("update")}Stand: ${STAND}</span></div>
 <div class="answer"><span class="kicker">Kurz gesagt</span><p>${esc(A.p)}</p></div>${areaTip(a)}${kcTop}
 <nav class="chips kc-toc" aria-label="Artikel in diesem Bereich">${its.map(i => `<a class="chip" href="${i.own ? kcUrl(i) : "#" + i.s}">${esc(i.n)}</a>`).join("")}</nav>
 ${photoTip}
@@ -1906,10 +1912,10 @@ ${kcHint(A.t)}</article>`;
     i.m.filter(x => !MBY[x]).forEach(x => warn("Kauf-Check", `${i.n}: Markt „${x}“ unter „Passende Märkte“ gibt es nicht.`));
     const sib = KC.filter(x => x.a === i.a && x !== i);
     const body = crumbs(cr) + `<article class="kb kc-page"><h1>${esc(h1)}</h1>
-<div class="byline"><span>${ic("search")}Kauf-Check</span><span>${ic("list")}${n} Prüfpunkte</span><span>${ic("update")}Stand: ${STAND}</span></div>
+<div class="byline"><span>${ic("globe")}Für jeden Flohmarkt</span><span>${ic("list")}${n} Prüfpunkte</span><span>${ic("update")}Stand: ${STAND}</span></div>
 <div class="answer"><span class="kicker">Kurz gesagt</span><p>${esc(i.k)}</p></div>${areaTip(i.a)}${kcTop}
 ${kcBody(i, 2)}
-${ms.length ? `<section class="related"><div class="sec-head"><h2>Hier wirst du fündig</h2></div>${grid(ms.map(mCard))}</section>` : ""}
+${ms.length ? `<section class="related"><div class="sec-head"><h2>Hier wirst du in Hamburg fündig</h2></div>${grid(ms.map(mCard))}</section>` : ""}
 ${sib.length ? `<section class="related"><div class="sec-head"><h2>Weitere Checks: ${esc(A.t)}</h2>${more(`${KC_P}${i.a}/`, "Alle")}</div><div class="qlist">${sib.map(qItem).join("")}</div></section>` : ""}
 ${A.kb.some(k => KBY[k]) ? `<section class="related"><div class="sec-head"><h2>Aus dem Ratgeber</h2></div>${grid(A.kb.filter(k => KBY[k]).map(kbCard))}</section>` : ""}
 ${kcHint(i.n)}</article>`;
@@ -1973,6 +1979,29 @@ ${f("Impressum: Register") || f("Impressum: USt-IdNr.") ? `<h2>Register und Umsa
 <h2>Quellen und Lizenzen</h2>${lic}
 <h2>Datenschutz</h2><p>Wie wir mit Daten umgehen und warum diese Website ohne Cookie-Banner auskommt, steht in der <a href="/datenschutz/">Datenschutzerklärung</a>.</p></div></article>`;
   layout({ p: "/impressum/", title: `Impressum | ${NAME}`, desc: `Impressum von ${NAME}.`, body: imp, noindex: true });
+  // Über Flohlotse: wie die Seite arbeitet. Wer dahintersteht, steht im Impressum (Daten nur aus dem Sheet).
+  {
+    const cr = [[NAME, "/"], [`Über ${NAME}`]];
+    const tools = [`der <a href="/ratgeber/">Ratgeber</a> beantwortet in ${KB.length} Artikeln die häufigsten Fragen rund ums Kaufen, Verkaufen und Handeln`,
+      `mit dem <a href="/flohmarkt-schilder/">Schilder-Designer</a> gestaltest du Preisschilder und Schilder für deinen Stand und druckst sie aus`,
+      ...(KC_ON ? [`der <a href="${KC_P}">Kauf-Check</a> hilft dir bei ${KC.length} typischen Artikeln, Fälschungen und Mängel zu erkennen`] : [])];
+    const body = crumbs(cr) + `<article class="kb"><h1>Über ${esc(NAME)}</h1>
+<div class="byline"><span>${ic("update")}Stand: ${STAND}</span></div>
+<div class="answer"><span class="kicker">Kurz gesagt</span><p>${esc(NAME)} hat zwei Teile: einen Kalender mit den Flohmärkten in Hamburg und bis 30 Kilometer drumherum, und Werkzeuge, die auf jedem Flohmarkt in Deutschland helfen. Alles ist kostenlos und ohne Anmeldung.</p></div>
+<div class="kb-body">
+<h2>Termine für Hamburg und Umgebung</h2>
+<p>Im Kalender stehen ${MARKETS.length} Märkte mit ihren Terminen. Die Angaben stammen aus öffentlichen Quellen der Veranstalter, vor allem aus ihren Websites. Die Seite wird jede Nacht neu erstellt, vergangene Termine verschwinden dabei von selbst.</p>
+<p>Ein automatischer Abgleich schaut regelmäßig auf die Websites der Veranstalter und meldet uns, wenn sich dort etwas geändert hat. Übernommen wird davon nichts automatisch. Märkte können trotzdem kurzfristig ausfallen, schau vor dem Besuch am besten noch einmal beim Veranstalter nach.</p>
+<h2>Werkzeuge für jeden Flohmarkt</h2>
+<p>${tools.map(cap).join(". ")}. Das alles funktioniert auf jedem Flohmarkt, nicht nur in Hamburg.</p>
+<h2>Kostenlos, ohne Konto, ohne Tracking</h2>
+<p>${esc(NAME)} kostet nichts und zeigt keine Werbebanner. Es gibt kein Konto und keine Analyse-Werkzeuge. Deine Merkliste bleibt nur in deinem Browser. Mehr dazu in der <a href="/datenschutz/">Datenschutzerklärung</a>.</p>
+<h2>Fehler gefunden oder fehlt ein Markt?</h2>
+<p>Sag uns Bescheid, am einfachsten über die Seite <a href="/veranstalter/">Für Veranstalter</a>. Wer hinter ${esc(NAME)} steht, steht im <a href="/impressum/">Impressum</a>.</p>
+</div></article>`;
+    layout({ p: ABOUT_P, title: `Über ${NAME}: So entstehen die Termine`, desc: `Wie ${NAME} arbeitet: Termine für Hamburg und Umgebung nach Angaben der Veranstalter, dazu Ratgeber, Schilder und Kauf-Check für jeden Flohmarkt.`,
+      body, nav: "", ld: G([crumbLD(cr), { "@type": "AboutPage", name: `Über ${NAME}`, url: SITE + ABOUT_P }]) });
+  }
   const isGitHub = /github/i.test(f("Datenschutz: Hoster"));
   const formKind = !FORM ? "mail" : /^mailto:/i.test(FORM) ? "mail" : /docs\.google\.com\/forms|forms\.gle/i.test(FORM) ? "google" : "other";
   const formHost = formKind === "other" ? (() => { try { return new URL(FORM).hostname; } catch { return "einem externen Anbieter"; } })() : "";
@@ -2278,6 +2307,9 @@ ${INSTA ? `- [Instagram](${INSTA}): jede Woche die Flohmärkte am Wochenende\n` 
 `);
 if (!PUBLIC) warn("Google", "Die Website ist noch nicht für Google freigegeben (Einstellung „Für Google freigeben“ = Nein). Das ist richtig, solange ihr testet.", true);
 if (process.env.CNAME) fs.writeFileSync(path.join(OUT, "CNAME"), process.env.CNAME + "\n");
+// Kurzadresse /schilder: Auf Apache leitet die .htaccess weiter, sonst diese kleine Seite (nicht in der Sitemap)
+fs.mkdirSync(path.join(OUT, "schilder"), { recursive: true });
+fs.writeFileSync(path.join(OUT, "schilder/index.html"), `<!doctype html><html lang="de"><meta charset="utf-8"><title>Schilder-Designer | ${esc(NAME)}</title><meta name="robots" content="noindex"><link rel="canonical" href="${SITE}/flohmarkt-schilder/"><meta http-equiv="refresh" content="0; url=/flohmarkt-schilder/"><p><a href="/flohmarkt-schilder/">Weiter zum Schilder-Designer</a></p></html>\n`);
 // Einstellungen für Webspace mit Apache (z. B. Hetzner). GitHub Pages beachtet die Datei nicht.
 {
   const host = new URL(SITE).hostname, bare = host.replace(/^www\./, ""), rx = bare.replace(/\./g, "\\.");
@@ -2297,6 +2329,8 @@ RewriteCond %{HTTP_HOST} ^www\\.${rx}$ [NC]
 RewriteCond %{HTTPS} !=on
 RewriteCond %{HTTP:X-Forwarded-Proto} !=https
 RewriteRule ^ https://${host}%{REQUEST_URI} [R=301,L]
+# Kurzadresse auf den gedruckten Schildern
+RewriteRule ^schilder/?$ https://${host}/flohmarkt-schilder/ [R=301,L]
 </IfModule>
 
 <IfModule mod_mime.c>

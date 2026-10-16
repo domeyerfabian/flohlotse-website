@@ -552,10 +552,10 @@ ${shyHeads(body.replace(/<h1>([^<]{3,80}?): ([^<]+)<\/h1>/, '<h1>$1:<span class=
 </main>
 <footer class="wrap site-foot">
 <div>Termine nach öffentlichen Angaben der Veranstalter, Stand ${STAND}. Bitte vor dem Besuch beim Veranstalter prüfen, Märkte können kurzfristig ausfallen. Ratgeber-Artikel ersetzen keine Rechts- oder Steuerberatung.${WX_OK ? ` Wettervorhersage: Deutscher Wetterdienst, Stand ${STAND}.` : ""}</div>
-<nav class="foot-links" aria-label="Flohmarkt Hamburg"><b>Flohmarkt Hamburg</b><a href="/heute/">Heute</a><a href="/morgen/">Morgen</a><a href="/wochenende/">Wochenende</a><a href="/samstag/">Samstag</a><a href="/sonntag/">Sonntag</a><a href="${WEEK_P}">Unter der Woche</a>${REGIONS.map(r => `<a href="/flohmarkt-hamburg/${r.k}/">${esc(r.name)}</a>`).join("")}<a href="${FEE_P}">Standgebühren im Vergleich</a><a href="/flohmarkt-hamburg-statistik/">Flohmärkte in Zahlen</a></nav>
-<nav class="foot-links" aria-label="Nach Art und Monat"><b>Nach Art und Monat</b>${CATS_ON.map(c => `<a href="/${c.s}/">${esc(c.chip)}</a>`).join("")}${MONTHS.map(x => `<a href="/${x.s}/">${x.name} ${x.y}</a>`).join("")}</nav>
-<nav class="foot-links" aria-label="Für jeden Flohmarkt"><b>Für jeden Flohmarkt</b><a href="/ratgeber/">Ratgeber</a>${KC_ON ? `<a href="${KC_P}">Kauf-Check</a>` : ""}<a href="/flohmarkt-schilder/">Schilder-Designer</a></nav>
-<nav class="foot-links" aria-label="${esc(NAME)}"><b>${esc(NAME)}</b><a href="${ABOUT_P}">Über Flohlotse</a><a href="/veranstalter/">Für Veranstalter</a>${INSTA ? instaA("Instagram") : ""}<a href="/impressum/">Impressum</a><a href="/datenschutz/">Datenschutz</a></nav>
+<details class="foot-grp"><summary>Flohmarkt Hamburg</summary><nav class="foot-links" aria-label="Flohmarkt Hamburg"><a href="/heute/">Heute</a><a href="/morgen/">Morgen</a><a href="/wochenende/">Wochenende</a><a href="/samstag/">Samstag</a><a href="/sonntag/">Sonntag</a><a href="${WEEK_P}">Unter der Woche</a>${REGIONS.map(r => `<a href="/flohmarkt-hamburg/${r.k}/">${esc(r.name)}</a>`).join("")}<a href="${FEE_P}">Standgebühren im Vergleich</a><a href="/flohmarkt-hamburg-statistik/">Flohmärkte in Zahlen</a></nav></details>
+<details class="foot-grp"><summary>Nach Art und Monat</summary><nav class="foot-links" aria-label="Nach Art und Monat">${CATS_ON.map(c => `<a href="/${c.s}/">${esc(c.chip)}</a>`).join("")}${MONTHS.map(x => `<a href="/${x.s}/">${x.name} ${x.y}</a>`).join("")}</nav></details>
+<details class="foot-grp"><summary>Für jeden Flohmarkt</summary><nav class="foot-links" aria-label="Für jeden Flohmarkt"><a href="/ratgeber/">Ratgeber</a>${KC_ON ? `<a href="${KC_P}">Kauf-Check</a>` : ""}<a href="/flohmarkt-schilder/">Schilder-Designer</a></nav></details>
+<details class="foot-grp"><summary>${esc(NAME)}</summary><nav class="foot-links" aria-label="${esc(NAME)}"><a href="${ABOUT_P}">Über Flohlotse</a><a href="/veranstalter/">Für Veranstalter</a>${INSTA ? instaA("Instagram") : ""}<a href="/impressum/">Impressum</a><a href="/datenschutz/">Datenschutz</a></nav></details>
 </footer>
 <script src="/assets/site${JS_V ? "." + JS_V.slice(3) : ""}.js" defer></script>
 </body>
@@ -1269,6 +1269,30 @@ ${NEWS_TABS.length > 1 ? '<div class="akt-bar js-only" aria-hidden="true"><i id=
     ...hlEvs.map(e => `<a class="hl-slide hl-card" href="/flohmarkt/${e.m.slug}/"><span class="kicker">${ic("star")}Wochen-Highlight</span><b>${esc(e.m.short)}</b><span class="hl-when">${esc(fmtDate(e.date))}${e.start ? " · " + esc(timeText(e)) : ""}</span><span class="hl-where">${ic("pin")}${esc(e.m.area || e.m.place)}</span><span class="promo-go">Zum Markt${ic("chev")}</span></a>`)].filter(Boolean);
   const slider = slides.length ? `<section class="hl" aria-label="Highlights"><div class="hl-track" id="hlTrack">${slides.join("")}</div>${slides.length > 1 ? `<div class="hl-dots js-only" id="hlDots">${slides.map((_, i) => `<button type="button" aria-label="Bild ${i + 1} von ${slides.length}"${i ? "" : ' aria-current="true"'}></button>`).join("")}</div>` : ""}</section>` : "";
   // Laufband über der Startseite mit dem Instagram-Hinweis. Bei „Bewegung reduzieren“ steht es still.
+  // Bühne „Für jeden Flohmarkt“: die drei Werkzeuge mit echten Inhalten statt Fotos.
+  // Kauf-Check-Artikel und Ratgeber-Frage wechseln jede Woche, bei Regen in den nächsten Tagen kommt die Regen-Frage nach vorn.
+  const toolsStage = () => {
+    const wk = Math.floor((TODAY.getTime() / 864e5 + 3) / 7), hh = a => /hamburg/i.test(`${a.h} ${a.t}`);
+    const kcOk = i => i && i.n.length <= 24 && i.e.filter(x => x.l && !x.tip).length >= 3;
+    const kcPool = ["levis-jeans", "iphone", "lego-minifiguren", "adidas-samba", "airpods", "meissen", "barbour", "carhartt", "apple-watch", "gameboy-spiele", "fussballtrikots", "analogkameras"].map(s => KC.find(i => i.s === s)).filter(kcOk);
+    const kcI = KC_ON ? (kcPool.length ? kcPool[wk % kcPool.length] : KC.find(kcOk)) : null;
+    const kbPool = ["wechselgeld-flohmarkt", "handeln-auf-dem-flohmarkt", "beste-uhrzeit-flohmarkt", "preise-festlegen-flohmarkt", "was-verkauft-sich-gut-flohmarkt", "was-mitnehmen-flohmarkt", "bezahlen-auf-dem-flohmarkt", "standgebuehr-flohmarkt", "flohmarkt-knigge"].map(s => KBY[s]).filter(a => a && !hh(a));
+    const evs4 = upcoming(4), wet = [...new Set(evs4.filter(e => !e.cancelled).map(e => e.k))].some(k => { const w = wxDay(evs4.filter(e => e.k === k && !e.cancelled)); return w && w.lvl === "wet"; });
+    const rot = kbPool.length ? [...kbPool.slice(wk % kbPool.length), ...kbPool.slice(0, wk % kbPool.length)] : KB.filter(a => !hh(a));
+    const kbPick = [...(wet && KBY["flohmarkt-bei-regen"] ? [KBY["flohmarkt-bei-regen"]] : []), ...rot].filter((a, i, l) => l.indexOf(a) === i).slice(0, 3);
+    const first = kbPick[0], short = first ? plain(first.a).split(/(?<=[.!?])\s/)[0] : "";
+    const sv = s => `/assets/schilder/flohmarkt-${s}-vorlage.svg`;
+    const share = (t, l) => `<button type="button" class="st-more st-share share-big" data-share="${esc(t)}" aria-label="${esc(l)} teilen" hidden>${ic("share")}<span>Teilen</span></button>`;
+    return `<section class="sec tools" aria-labelledby="toolsH"><div class="tools-head"><span class="kicker">Auch außerhalb Hamburgs</span><h2 id="toolsH">Für jeden Flohmarkt</h2><p>Drei Werkzeuge, die überall helfen. Kostenlos und ohne Anmeldung.</p>
+<p class="tools-num">${KC_ON ? `<span><b>${KC.length}</b>Kauf-Checks</span>` : ""}<span><b>${KB.length}</b>Ratgeber-Artikel</span><span><b>%%SIGN_N%%</b>Schilder-Vorlagen</span></p></div>
+<div class="stage"><div class="st-txt"><span class="kicker">Schilder-Designer</span><h3>Dein Stand, gut beschildert.</h3><p>Preisschilder, „Alles 1 €“ oder Bar &amp; PayPal mit QR-Code. Vorlage wählen, Text eintippen, drucken.</p><div class="st-go"><a class="btn" href="/flohmarkt-schilder/">Schild gestalten${ic("chev")}</a><a class="st-more" href="/flohmarkt-schilder/preisschilder/">Preisschilder${ic("chev")}</a>${share(`Kostenlose Flohmarkt-Schilder zum Ausdrucken, auch mit PayPal-QR-Code: ${SITE}/schilder`, "Schilder-Designer")}</div></div>
+<div class="st-vis"><div class="st-signs" aria-hidden="true"><img src="${sv("bar-und-paypal")}" width="297" height="210" alt="" loading="lazy" decoding="async"><img src="${sv("alles-1-euro")}" width="297" height="210" alt="" loading="lazy" decoding="async"></div><span class="st-url">Kurz: <b>flohlotse.de/schilder</b></span></div></div>
+${kcI ? `<div class="stage st-dark"><div class="st-txt"><span class="kicker">Kauf-Check</span><h3>Echt oder Fälschung?</h3><p>Prüfpunkte für ${KC.length} Artikel, von Levi's bis LEGO. Am Stand antippen, was dir auffällt.</p><div class="st-go"><a class="btn" href="${KC_P}">Artikel prüfen${ic("chev")}</a><a class="st-more" href="${kcUrl(kcI)}">Alle Prüfpunkte${ic("chev")}</a>${share(`Echt oder Fälschung? Kauf-Check für ${KC.length} Flohmarkt-Artikel: ${SITE}${KC_P}`, "Kauf-Check")}</div></div>
+<div class="st-vis"><fieldset class="st-check" data-kc><legend><small>Beispiel: ${esc(kcI.n)}</small>Was fällt dir auf?</legend>${kcI.e.filter(x => x.l && !x.tip).slice(0, 3).map(x => `<label><input type="checkbox"><i aria-hidden="true"></i>${esc(x.l)}</label>`).join("")}<small class="st-res" aria-live="polite">Tipp an, was dir auffällt</small></fieldset></div></div>` : ""}
+${first ? `<div class="stage"><div class="st-txt"><span class="kicker">Ratgeber</span><h3>Antworten, bevor du fragst.</h3><p>${KB.length} Artikel zum Kaufen, Verkaufen und Handeln, jeweils mit einer kurzen Antwort vorweg.</p><div class="st-go"><a class="btn" href="/ratgeber/">Zum Ratgeber${ic("chev")}</a>${share(`Flohmarkt-Ratgeber mit kurzen Antworten auf die häufigsten Fragen: ${SITE}/ratgeber/`, "Ratgeber")}</div></div>
+<div class="st-vis st-qs">${kbPick.map((a, n) => `<a href="/ratgeber/${a.s}/"${n ? "" : ' class="open"'}>${n ? "" : "<i>Kurz gesagt</i>"}<b>${esc(a.h)}</b>${n ? "" : `<span>${esc(short)}</span>`}</a>`).join("")}</div></div>` : ""}
+</section>`;
+  };
   const tickItems = INSTA ? Array(4).fill(`<a href="${INSTA}" rel="noopener me"><i aria-hidden="true">+++</i>${esc(NAME)} gibt’s jetzt auch bei Insta</a>`) : [];
   const ticker = tickItems.length ? `<div class="ticker" role="region" aria-label="Neuigkeiten"><div class="ticker-view"><div class="ticker-run"><div class="ticker-set">${tickItems[0]}${tickItems.slice(1).join("").replace(/<a /g, '<a tabindex="-1" aria-hidden="true" ')}</div><div class="ticker-set" aria-hidden="true">${tickItems.join("").replace(/<a /g, '<a tabindex="-1" ')}</div></div></div>${INSTA ? `<a class="ticker-cta" href="${INSTA}" rel="noopener me" aria-label="${esc(NAME)} auf Instagram folgen">Folgen${ic("chev")}</a>` : ""}</div>` : "";
   const body = ticker + `<section class="hero"><div>
@@ -1292,9 +1316,8 @@ ${MONTHS.length ? `<section class="sec"><div class="sec-head"><h2>Termine nach M
 ${NEWS.length ? `<section class="sec"><div class="sec-head"><h2>Neuigkeiten</h2></div>${grid(NEWS.map(n => `<a class="card" href="${esc(safeHref(n["Link"], "Neuigkeiten: " + n["Titel"]) || "/")}"><span class="kicker">${esc(n["Kicker"])}</span><h3>${esc(n["Titel"])}</h3><p>${esc(n["Text"])}</p></a>`))}</section>` : ""}
 <section class="sec kb-body home-seo"><h2>Flohmarkt in Hamburg: das Wichtigste</h2>${homeText.map(x => `<p>${rich(x)}</p>`).join("")}</section>
 ${faqBlock(homeFaq, "Häufige Fragen zu Flohmärkten in Hamburg")}
-<section class="sec"><div class="sec-head"><h2>Aus dem Ratgeber</h2>${more("/ratgeber/", "Alle", "Alle Ratgeber-Artikel")}</div>${grid(KB.filter(a => a.top).map(a => `<a class="card" href="/ratgeber/${a.s}/"><span class="kicker">${esc(CLUSTERS[a.c]?.t || "")}</span><h3>${brColon(esc(a.h))}</h3></a>`))}</section>
+${toolsStage()}
 ${INSTA ? `<section class="sec"><a class="follow" href="${INSTA}" rel="noopener me"><span class="follow-at" aria-hidden="true">@</span><span class="follow-txt"><span class="kicker">Neu auf Instagram</span><b>Jeden Donnerstag: dein Flohmarkt-Wochenende</b><span>Alle Märkte fürs Wochenende in drei Bildern. Zum Speichern und Weiterschicken.</span></span><span class="btn">${esc(INSTA_AT)} folgen${ic("chev")}</span></a></section>` : ""}
-<section class="sec"><a class="promo" href="/flohmarkt-schilder/"><span class="promo-txt"><span class="kicker">Schilder-Designer, gratis</span><b>Gestalte deine Verkaufsschilder</b><span>Preisschilder, „Alles 1 €“, „Handeln erwünscht“ und mehr. Vorlage wählen, Text eintippen, ausdrucken.</span><span class="btn">Zum Schilder-Designer${ic("chev")}</span></span><img src="/assets/schilder/flohmarkt-alles-1-euro-vorlage.svg" width="297" height="210" alt="Vorlage: Alles-1-Euro-Schild für den Flohmarkt" loading="lazy" decoding="async"></a></section>
 <section class="sec" id="veranstalter"><div class="org"><h2>Du veranstaltest einen Flohmarkt?</h2><p>Trag deinen Termin kostenlos ein. Wir prüfen jeden Eintrag, bevor er erscheint.</p><a class="btn" href="/veranstalter/">Termin eintragen${ic("chev")}</a></div></section>`;
   layout({ p: "/", title: `Flohmarkt Hamburg: Alle Flohmärkte & Termine ${YEAR} | ${NAME}`,
     desc: pickDesc(`Alle ${MARKETS.length} Flohmärkte in Hamburg und Umgebung mit Terminen, Uhrzeiten und Adressen.${weN ? ` ${sunOnly ? "Heute" : "Am Wochenende"}: ${weN} Märkte.` : ""} Täglich aktualisiert, ohne Werbung.`, "Alle Flohmärkte in Hamburg und Umgebung, aufgeräumt: Termine, Zeiten, Adressen und ein Ratgeber mit Antworten auf die wichtigsten Flohmarkt-Fragen."),
@@ -1688,6 +1711,7 @@ const SIGNS = [
     kb: ["reste-nach-dem-flohmarkt", "second-hand-nachhaltig", "checkliste-flohmarktstand"] }
 ];
 const SIGN_BY = Object.fromEntries(SIGNS.map(t => [t.s, t]));
+{ const hp = pages.get("/"); if (hp) hp.html = hp.html.split("%%SIGN_N%%").join(String(SIGNS.length)); }
 const signUrl = t => SIGN_BASE + t.s + "/";
 const signImg = t => `/assets/schilder/flohmarkt-${t.s}-vorlage.svg`;
 const SIGN_PAGE_IMGS = new Map(); // für die Bild-Sitemap

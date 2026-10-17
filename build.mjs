@@ -528,6 +528,9 @@ function layout({ p, title, desc, body, ld, noindex, nav, extraHead = "", img = 
   const url = SITE + p;
   // Google zeigt rund 60 Zeichen. Ist der Titel länger, fällt der angehängte Markenname weg (Google ergänzt den Seitennamen selbst).
   if (title.length > 60 && title.endsWith(` | ${NAME}`)) title = title.slice(0, -(` | ${NAME}`).length);
+  // Am Computer (ab 1080 px) sind Übersichtsseiten breit („wide“). Lese- und Detailseiten behalten eine bequeme Lesebreite („read“).
+  const readPg = /^\/(flohmarkt|ratgeber)\/[^/]+\/$/.test(p) || (p.startsWith(KC_P) && p !== KC_P) || ["/veranstalter/", "/impressum/", ABOUT_P, "/datenschutz/", "/404.html", "/flohmarkt-hamburg-statistik/"].includes(p);
+  const mainCls = `wrap ${readPg ? "read" : "wide"}${p === "/" ? " pg-home" : ""}`;
   const navItems = [["/termine/", "Termine", "termine"], ["/flohmaerkte/", "Märkte", "maerkte"], ["/ratgeber/", "Ratgeber", "ratgeber"], ["/flohmarkt-schilder/", "Schilder", "schilder"], ["/veranstalter/", "Für Veranstalter", "org"]];
   // data-stand: Tag des Baus. Ist die Seite beim Aufruf älter (kurz nach Mitternacht oder nach einem ausgefallenen Neubau),
   // blendet das Skript vergangene Tage aus und zeigt einen Hinweis. data-rel: Seiten, die von „heute“ und „morgen“ sprechen.
@@ -558,7 +561,7 @@ ${ld ? `<script type="application/ld+json">${JSON.stringify(ld).replace(/</g, "\
 <a class="fav-top" href="/merkliste/" aria-label="Merkliste"${nav === "merk" ? ' aria-current="page"' : ""}>${ic("heart")}<span class="fav-n" hidden></span></a>
 ${MENU()}
 </div></header>
-<main class="wrap" id="inhalt">
+<main class="${mainCls}" id="inhalt">
 ${shyHeads(body.replace(/<h1>([^<]{3,80}?): ([^<]+)<\/h1>/, '<h1>$1:<span class="h1-sub"> $2</span></h1>'))}
 </main>
 <footer class="wrap site-foot">
@@ -663,10 +666,10 @@ const deckCard = e => {
   const m = e.m, hm = x => x.includes("/") ? hmText(x) : x;
   const t = !e.start ? "Uhrzeit folgt" : e.end ? `${hm(e.start)} bis ${hm(e.end)}` : `ab ${hm(e.start)}`;
   return `<article class="dk-card" data-fav="${m.slug}" data-name="${esc(m.short || m.name)}" data-day="${e.k}"${e.start ? ` data-s="${tFirst(e.start)}"` : ""}${e.start && e.end ? ` data-e="${tLast(e.end)}"` : ""}>
-<p class="dk-day">${fmtDate(e.date)}</p><span class="dk-time">${ic("clock")}<span>${t}</span></span>
-<h2>${esc(m.name)}${neuPill(m)}</h2><p class="meta ln">${ic("pin")}<span><b>${esc(m.area)}</b> · ${addrNb(m.addr)}</span></p>
+<div class="dk-top"><p class="dk-day">${WDL[e.date.getUTCDay()]}</p><p class="dk-date">${e.date.getUTCDate()}. ${MON[e.date.getUTCMonth()]}</p><span class="dk-time">${ic("clock")}<span>${t}</span></span></div>
+<div class="dk-body"><h2>${esc(m.name)}${neuPill(m)}</h2><p class="meta ln">${ic("pin")}<span><b>${esc(m.area)}</b> · ${addrNb(m.addr)}</span></p>
 ${m.note ? `<p class="note">${esc(m.note)}${e.note ? " " + esc(e.note.replace(/([^.!?…])$/, "$1.")) : ""}</p>` : ""}${m.tags.length ? `<div class="row">${m.tags.map(t => `<span class="tag">${tagIc(t)}${esc(t)}</span>`).join("")}</div>` : ""}
-<p class="ln rhythm">${ic("repeat")}<span>${esc(m.rhythm)}</span></p><a class="route go" href="/flohmarkt/${m.slug}/">Zum Markt${ic("chev")}</a>
+<p class="ln rhythm">${ic("repeat")}<span>${esc(m.rhythm)}</span></p><a class="route go" href="/flohmarkt/${m.slug}/">Zum Markt${ic("chev")}</a></div>
 <span class="dk-stamp yes" aria-hidden="true">${ic("thumbsup")}Merken →</span><span class="dk-stamp no" aria-hidden="true">← Nein${ic("thumbsdown")}</span></article>`;
 };
 // Kartenstapel (Seite /entdecken/ und Startseite). mini = kompakte Fassung für die Startseite: ohne Beschreibung, ohne Tastatur.
@@ -1345,14 +1348,14 @@ ${DK_EVS.length ? `<section class="sec home-deck" id="dkSec"><div class="sec-hea
 <section class="sec home-next"><div class="sec-head"><h2>Die nächsten Flohmärkte</h2>${more("/termine/", "Alle")}</div>
 ${homeList() || '<div class="empty">Gerade stehen keine Termine im Kalender.</div>'}
 ${all14 > HOME_N ? `<a class="more" href="/termine/">Alle ${all14} Termine der nächsten 14 Tage</a>` : ""}</section>
-<section class="sec"><div class="sec-head"><h2>Flohmärkte nach Bezirk und Region</h2>${more("/flohmaerkte/", "Alle", "Alle Märkte")}</div>${regionChips()}</section>
-${CATS_ON.length ? `<section class="sec"><div class="sec-head"><h2>Flohmärkte nach Art</h2></div>${catChips()}</section>` : ""}
-${MONTHS.length ? `<section class="sec"><div class="sec-head"><h2>Termine nach Monat</h2>${more("/termine/", "Alle")}</div>${monthChips()}</section>` : ""}
-${NEWS.length ? `<section class="sec"><div class="sec-head"><h2>Neuigkeiten</h2></div>${grid(NEWS.map(n => `<a class="card" href="${esc(safeHref(n["Link"], "Neuigkeiten: " + n["Titel"]) || "/")}"><span class="kicker">${esc(n["Kicker"])}</span><h3>${esc(n["Titel"])}</h3><p>${esc(n["Text"])}</p></a>`))}</section>` : ""}
+<section class="sec hs-bez"><div class="sec-head"><h2>Flohmärkte nach Bezirk und Region</h2>${more("/flohmaerkte/", "Alle", "Alle Märkte")}</div>${regionChips()}</section>
+${CATS_ON.length ? `<section class="sec hs-art"><div class="sec-head"><h2>Flohmärkte nach Art</h2></div>${catChips()}</section>` : ""}
+${MONTHS.length ? `<section class="sec hs-mon"><div class="sec-head"><h2>Termine nach Monat</h2>${more("/termine/", "Alle")}</div>${monthChips()}</section>` : ""}
+${NEWS.length ? `<section class="sec hs-news"><div class="sec-head"><h2>Neuigkeiten</h2></div>${grid(NEWS.map(n => `<a class="card" href="${esc(safeHref(n["Link"], "Neuigkeiten: " + n["Titel"]) || "/")}"><span class="kicker">${esc(n["Kicker"])}</span><h3>${esc(n["Titel"])}</h3><p>${esc(n["Text"])}</p></a>`))}</section>` : ""}
 <section class="sec kb-body home-seo"><h2>Flohmarkt in Hamburg: das Wichtigste</h2>${homeText.map(x => `<p>${rich(x)}</p>`).join("")}</section>
 ${faqBlock(homeFaq, "Häufige Fragen zu Flohmärkten in Hamburg")}
-${INSTA ? `<section class="sec"><a class="follow" href="${INSTA}" rel="noopener me"><span class="follow-at" aria-hidden="true">@</span><span class="follow-txt"><span class="kicker">Neu auf Instagram</span><b>Jeden Donnerstag: dein Flohmarkt-Wochenende</b><span>Alle Märkte fürs Wochenende in drei Bildern. Zum Speichern und Weiterschicken.</span></span><span class="btn">${esc(INSTA_AT)} folgen${ic("chev")}</span></a></section>` : ""}
-<section class="sec" id="veranstalter"><div class="org"><h2>Du veranstaltest einen Flohmarkt?</h2><p>Trag deinen Termin kostenlos ein. Wir prüfen jeden Eintrag, bevor er erscheint.</p><a class="btn" href="/veranstalter/">Termin eintragen${ic("chev")}</a></div></section>`;
+${INSTA ? `<section class="sec hs-insta"><a class="follow" href="${INSTA}" rel="noopener me"><span class="follow-at" aria-hidden="true">@</span><span class="follow-txt"><span class="kicker">Neu auf Instagram</span><b>Jeden Donnerstag: dein Flohmarkt-Wochenende</b><span>Alle Märkte fürs Wochenende in drei Bildern. Zum Speichern und Weiterschicken.</span></span><span class="btn">${esc(INSTA_AT)} folgen${ic("chev")}</span></a></section>` : ""}
+<section class="sec hs-org" id="veranstalter"><div class="org"><h2>Du veranstaltest einen Flohmarkt?</h2><p>Trag deinen Termin kostenlos ein. Wir prüfen jeden Eintrag, bevor er erscheint.</p><a class="btn" href="/veranstalter/">Termin eintragen${ic("chev")}</a></div></section>`;
   layout({ p: "/", title: `Flohmarkt Hamburg: Alle Flohmärkte & Termine ${YEAR} | ${NAME}`,
     desc: pickDesc(`Alle ${MARKETS.length} Flohmärkte in Hamburg und Umgebung mit Terminen, Uhrzeiten und Adressen.${weN ? ` ${sunOnly ? "Heute" : "Am Wochenende"}: ${weN} Märkte.` : ""} Täglich aktualisiert, ohne Werbung.`, "Alle Flohmärkte in Hamburg und Umgebung, aufgeräumt: Termine, Zeiten, Adressen und ein Ratgeber mit Antworten auf die wichtigsten Flohmarkt-Fragen."),
     body, nav: "", ld: G([{ "@type": "WebSite", "@id": SITE + "/#website", name: NAME, url: SITE + "/", inLanguage: "de", publisher: { "@id": SITE + "/#org" } }, { "@type": "Organization", "@id": SITE + "/#org", name: NAME, url: SITE + "/", logo: SITE + (HAS_ICONS ? "/assets/icon-512.png" : "/assets/icon.svg"), ...(INSTA ? { sameAs: [INSTA] } : {}) }, faqLD(homeFaq)]) });

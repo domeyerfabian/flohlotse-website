@@ -1012,7 +1012,8 @@ const knownDays = m => new Set([...m.events.map(e => e.k), ...(ROW_DAYS[m.slug] 
      Klappt das bei weniger als 80 % der bekannten Tage (ein Ausreißer ist erlaubt), wird nichts zugeordnet (Ergebnis null) und die
      Seite wie bisher behandelt. Hat es in der letzten Nacht geklappt (sticky), genügt die Hälfte: So kippt die Zuordnung nicht,
      nur weil ein bekannter Tag von der Seite verschwindet – genau das soll ja gemeldet werden. */
-  const STOPW = new Set("und der die das den dem des am an im in auf bei von vom zum zur mit für rund ums ehemals flohmarkt flohmärkte flohmaerkte markt märkte marktplatz hamburg hamburger parkplatz parkdeck außenfläche außengelände gelände center centrum halle saal platz straße strasse kind kinder famila ikea rewe edeka kaufland metro marktkauf globus höffner real toom obi".split(" "));
+  // Ketten-Namen (famila, toom, Hagebau, ADLER …) erkennen keinen Markt: Sie stehen auf Sammelseiten auch bei fremden Orten (z. B. „HAGEBAU-Flohmarkt Itzehoe“ neben „Hagebau Rellingen“).
+  const STOPW = new Set("und der die das den dem des am an im in auf bei von vom zum zur mit für rund ums ehemals flohmarkt flohmärkte flohmaerkte markt märkte marktplatz hamburg hamburger parkplatz parkdeck außenfläche außengelände gelände center centrum halle saal platz straße strasse kind kinder famila ikea rewe edeka kaufland metro marktkauf globus höffner real toom obi hagebau hagebaumarkt baumarkt bauhaus hornbach hellweg dehner adler aldi lidl penny netto citti".split(" "));
   const CONNW = new Set("uhr und sowie bis von ab am um sa so mo di mi do fr samstag sonntag montag dienstag mittwoch donnerstag freitag sonnabend".split(" "));
   const isConn = s => s.length <= 40 && s.split(/[^a-zäöüß0-9]+/).every(w => !w || CONNW.has(w) || /^\d{1,4}$/.test(w));
   const translit = w => w.replace(/ä/g, "ae").replace(/ö/g, "oe").replace(/ü/g, "ue").replace(/ß/g, "ss");

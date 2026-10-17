@@ -652,7 +652,7 @@ button.fav[aria-pressed="true"],.btn.fav-big[aria-pressed="true"]{background:var
 @media (prefers-reduced-motion:no-preference){.toast{transition:transform .25s ease,opacity .25s ease}}
 .toast a,.toast button{flex:none;color:#F6E03A;font:inherit;font-weight:700;background:none;border:0;padding:0;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
 /* Wischen & merken */
-.deck{max-width:560px;margin:18px auto 0}
+.deck{max-width:380px;margin:18px auto 0}
 .dk-count{text-align:center;font-weight:600;color:var(--muted);font-size:14px;margin:0 0 10px}
 .dk-head{padding-bottom:0}
 .dk-head p{margin-bottom:0}
@@ -765,8 +765,37 @@ button.fav[aria-pressed="true"],.btn.fav-big[aria-pressed="true"]{background:var
 /* Wischen & merken auf der Startseite */
 .home-deck .dk-intro{margin:-6px 0 0;color:var(--muted);font-size:15px;max-width:60ch}
 .deck.mini{margin-top:14px}
-.deck.mini .dk-card .note{display:none}
-.deck.mini .dk-card h2{font-size:23px}
+/* Wischkarte im Hochformat (2 : 3), alle Karten gleich hoch: oben ein gelbes Datumsfeld, darunter der Markt */
+/* Mindestens 2 : 3. Braucht ein Markt mehr Platz, wächst die Karte (und mit ihr alle Karten im Stapel), statt etwas abzuschneiden. */
+.dk-stack{container-type:inline-size}
+.dk-card{display:flex;flex-direction:column;padding:0;overflow:visible}
+.deck.on .dk-card{min-height:calc(100cqw * 3 / 2)}
+.dk-top{background:var(--sticker);color:var(--sticker-ink);padding:18px 20px 20px;display:grid;justify-items:start;border-radius:21px 21px 0 0}
+.dk-top .dk-day{margin:0;font-size:13px;font-weight:700;letter-spacing:.07em;text-transform:uppercase}
+.dk-date{margin:2px 0 14px;font-family:var(--f-display);font-weight:800;font-size:42px;line-height:1;letter-spacing:-.03em}
+.dk-top .dk-time{background:var(--sticker-ink);color:var(--sticker);font-size:16px;padding:6px 15px}
+.dk-body{flex:1 0 auto;display:flex;flex-direction:column;align-items:flex-start;padding:16px 20px 58px}
+.dk-body h2{font-size:26px;margin:0 0 8px}
+.dk-card .dk-body .note{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.deck.mini .dk-card .dk-body .note{-webkit-line-clamp:2}
+.dk-body .rhythm{margin-bottom:16px}
+/* Schlagworte auf der Karte in einer Zeile (alle stehen auf der Marktseite) */
+.dk-card .dk-body .row{flex-wrap:nowrap;max-width:100%;overflow:hidden;-webkit-mask-image:linear-gradient(90deg,#000 85%,transparent);mask-image:linear-gradient(90deg,#000 85%,transparent)}
+.dk-card .dk-body .row .tag{flex:none}
+.dk-card .dk-body .row{align-self:stretch;min-width:0}
+.dk-card,.dk-body{min-width:0}
+.dk-card .dk-body a.route.go{margin:auto 0 0}
+.dk-had{z-index:2}
+@media (max-width:400px){
+  .dk-top{padding:14px 16px 16px}
+  .dk-date{font-size:34px;margin:2px 0 10px}
+  .dk-top .dk-time{font-size:15px;padding:5px 13px}
+  .dk-body{padding:14px 16px 56px}
+  .dk-body h2{font-size:22px}
+  .dk-card .meta.ln{font-size:14px}
+  .dk-card .dk-body .note{-webkit-line-clamp:2;font-size:14px}
+  .dk-body .rhythm{margin-top:10px;margin-bottom:12px}
+}
 @media (max-width:420px){.akt-tab{padding:7px 12px}.akt-tab .i{display:none}}
 /* Suche: Lupe in der Kopfzeile, Suchfeld (Startseite und Seite „Suchen“), Treffer nach Name und nach Datum */
 .vh{position:absolute!important;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
@@ -1264,5 +1293,145 @@ a.route.kc-go{margin:10px 0 0;min-height:44px;font-size:15px;padding:8px 16px}
 @media (min-width:800px){.hero ~ .sec{padding-top:48px}.hero ~ .faq{margin-top:48px}}
 /* Wisch-Knöpfe am Handy etwas enger, damit das Plus (immer sichtbar) nie am „Merken“-Knopf klebt */
 @media (max-width:640px){.dk-btns{gap:18px}.dk-b.no,.dk-b.yes{width:64px;height:64px}.dk-b .i{width:28px;height:28px}}
+@media (max-width:370px){.dk-btns{gap:10px}.dk-b.no,.dk-b.yes{width:58px;height:58px}.dk-b .i{width:26px;height:26px}}
+@media (max-width:340px){.dk-btns{gap:8px}.dk-b.no,.dk-b.yes{width:54px;height:54px}.dk-b.undo{width:44px;height:44px}}
 /* Plus-Menü bei wenig Höhe (Handy quer): etwas kompakter, damit alle fünf Einträge ganz zu sehen sind */
 @media (max-height:480px){.fab-menu{gap:6px}.fab-menu a{padding:7px 14px}.fab-menu .i{width:18px;height:18px}}
+/* Wischen ab Tablet-Breite: Daumen runter links, Daumen hoch rechts neben der Karte, „Zurück“ klein darunter.
+   Am Handy und auf schmalen Tablets bleiben die Knöpfe unter der Karte (daneben ist kein Platz, das Plus stünde im Weg). */
+@media (min-width:760px){
+  .deck{max-width:640px}
+  .deck.on{display:grid;grid-template-columns:minmax(0,1fr) min(380px,100%) minmax(0,1fr);align-items:center}
+  .deck.on > *{grid-column:2;min-width:0}
+  .deck.on .dk-count{grid-row:1}
+  .deck.on .dk-stack,.deck.on .dk-done{grid-row:2}
+  .deck.on .dk-btns{display:contents}
+  .deck.on .dk-bw:nth-child(1){grid-column:1;grid-row:2;justify-self:end;margin-right:24px}
+  .deck.on .dk-bw:nth-child(3){grid-column:3;grid-row:2;justify-self:start;margin-left:24px}
+  .deck.on .dk-bw:nth-child(2){grid-column:2;grid-row:3;grid-template-rows:auto auto;margin-top:6px}
+  .deck.on .dk-hint{grid-row:4}
+  .deck.on .dk-body{padding-bottom:24px}
+  .deck.on .dk-stamp{bottom:24px}
+}
+/* ==== Am Computer (ab 1080 px): ein Raster für alle Seiten. Handy und Tablet bleiben unverändert. ====
+   Zwölf Spalten, 32 px Spaltenabstand, höchstens 1200 px breit, mittig. Übersichtsseiten („wide“) nutzen alle zwölf Spalten,
+   Lese- und Detailseiten („read“) die mittleren acht (Spalten 3 bis 10). Alles, was nebeneinander steht, liegt auf diesen
+   Spalten: Hälften (6 + 6), Drittel (4 + 4 + 4), Kopf und Text (7 + 5). Zwischen den Abschnitten stehen überall 96 px. */
+@media (min-width:1080px){
+  :root{--gut:32px;--sp:96px}
+  body{padding-inline:40px}
+  .top{margin-inline:-40px;padding-inline:40px}
+  .wrap,.site-foot{max-width:1200px}
+  main.wide,main.read{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));column-gap:var(--gut);align-items:start;align-content:start}
+  main.wide > *{grid-column:1/-1;min-width:0}
+  main.read > *{grid-column:3/11;min-width:0}
+  /* Fußzeile: Hinweis oben, darunter vier Spalten zu je drei Rasterspalten */
+  .site-foot{grid-template-columns:repeat(4,minmax(0,1fr));column-gap:var(--gut);margin-top:var(--sp);padding-top:28px}
+  .site-foot > div{grid-column:1/-1;max-width:calc((100% - 11 * var(--gut)) / 12 * 8 + 7 * var(--gut));margin-bottom:12px}
+  /* Kartenraster überall mit dem gleichen Spaltenabstand */
+  main .news,main .mt-grid,main .mk-list,main .sx-hits{gap:var(--gut)}
+  main .news.fit{grid-template-columns:repeat(4,minmax(0,1fr))}
+  /* Lese- und Detailseiten: Kartenreihen am Ende („Tipps“, „In der Nähe“, „Passt dazu“) laufen über alle zwölf Spalten */
+  main.read .kb > .related{margin-inline:calc(-1 * ((100% - 7 * var(--gut)) / 4 + 2 * var(--gut)))}
+  main.read .cta-box,main.read .faq{max-width:none}
+  /* Terminliste auf der Marktseite: sechs der acht Spalten */
+  main.read .dates{max-width:calc((100% - 7 * var(--gut)) / 8 * 6 + 5 * var(--gut))}
+  main.wide .dates{max-width:calc((100% - var(--gut)) / 2)}
+  main.wide .mk-list,main.wide .sx-hits{grid-template-columns:repeat(2,minmax(0,1fr))}
+
+  /* Übersichtsseiten: gleiche Abstände, größere Zwischenüberschriften, Texte in Lesebreite */
+  main.wide h2{font-size:30px}
+  main.wide .sec-head{margin-bottom:20px}
+  main.wide .sec,main.wide .sec + .sec{padding-top:var(--sp);margin-top:0;border-top:0}
+  main.wide .related,main.wide .faq,main.wide .cluster,main.wide .map-sec{margin-top:var(--sp)}
+  main.wide .hub-head{padding-block:24px 0}
+  main.wide .hub-head p{max-width:64ch;font-size:17px}
+  main.wide .hub-head .search,main.wide .hub-head .sx-form{max-width:calc((100% - var(--gut)) / 2)}
+  main.wide .answer,main.wide .faq{max-width:calc((100% - 11 * var(--gut)) / 12 * 8 + 7 * var(--gut))}
+  main.wide .cta-box{max-width:calc((100% - var(--gut)) / 2)}
+  main.wide .map-box{height:560px}
+  main.wide a.more{width:calc((100% - 11 * var(--gut)) / 3 + 3 * var(--gut));max-width:none;justify-self:center;margin-inline:auto;margin-top:32px}
+
+  /* Terminlisten: Karten in zwei Hälften */
+  main.wide .list{grid-template-columns:repeat(2,minmax(0,1fr));gap:24px var(--gut)}
+  /* Tage mit nur einem Markt stehen paarweise nebeneinander, Tage mit mehreren Märkten über die volle Breite (Reihenfolge bleibt) */
+  main.wide :has(> .group){display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:40px var(--gut);align-items:start}
+  main.wide :has(> .group) > *{grid-column:1/-1}
+  main.wide :has(> .group) > .group,main.wide :has(> .group) > .sec-head{margin-top:0;margin-bottom:0}
+  main.wide :has(> .group) > a.more{margin-top:0}
+  main.wide :has(> .group) > .group:not(:has(.ev ~ .ev)){grid-column:auto}
+  main.wide .group:not(:has(.ev ~ .ev)) .list{grid-template-columns:minmax(0,1fr)}
+
+  /* Listen in Kästen (Märkte, Ratgeber, Kauf-Check, Suche): zwei Hälften */
+  main.wide .qlist,main.read .kb > .related .qlist{grid-template-columns:repeat(2,minmax(0,1fr))}
+  main.wide .qlist > a:nth-child(2),main.read .kb > .related .qlist > a:nth-child(2){border-top:0}
+  main.wide .qlist > a:nth-child(even),main.read .kb > .related .qlist > a:nth-child(even){border-left:1px solid var(--line)}
+  main.wide .cluster h2{font-size:28px}
+  main.wide .cl-head{margin-bottom:16px}
+  /* Ratgeber: die beiden Hinweis-Kästen als Hälften */
+  main.wide > a.cta-box{grid-column:span 6;max-width:none;margin-top:32px}
+  /* Standgebühren: Karten in zwei Hälften */
+  main.wide .fee-list{grid-template-columns:repeat(2,minmax(0,1fr))}
+  main.wide .fee-list > .fee:last-child:nth-child(odd){grid-column:1/-1}
+  /* Schilder-Designer: Vorschau links (sieben Spalten), Eingaben rechts (fünf) */
+  main.wide .gen{grid-template-columns:repeat(12,minmax(0,1fr));column-gap:var(--gut);align-items:start;padding:28px 32px 32px}
+  main.wide .gen > *{grid-column:1/-1}
+  main.wide .gen > .sheet-wrap{grid-column:1/8;grid-row:3/span 3}
+  main.wide .gen > .gen-form,main.wide .gen > .gen-print,main.wide .gen > .gen-hint{grid-column:8/-1}
+  main.wide .gen > .gen-form{grid-row:3}
+  main.wide .gen > .gen-print{grid-row:4;align-self:start}
+  main.wide .gen > .gen-hint{grid-row:5;align-self:start}
+  main.wide .gen-presets{flex-wrap:wrap}
+  /* Wischen & merken (eigene Seite und Startseite): Stapel mittig über die Spalten 4 bis 9 */
+  main.wide > .deck,main.wide > #dkEmpty{grid-column:4/10;margin-top:40px}
+  /* Der Stapel: Spalten 3 bis 10, die Karte hochkant in der Mitte (5 bis 8), die Daumen links und rechts daneben */
+  main.wide > .deck{grid-column:3/11;max-width:none;margin-inline:0}
+  main .deck.on{grid-template-columns:minmax(0,1fr) max(360px,calc((100% - 7 * var(--gut)) / 2 + 3 * var(--gut))) minmax(0,1fr)}
+  main .deck.on .dk-bw:nth-child(1){margin-right:var(--gut)}
+  main .deck.on .dk-bw:nth-child(3){margin-left:var(--gut)}
+  main .dk-date{font-size:46px}
+  main .dk-body h2{font-size:28px}
+
+  /* Startseite */
+  .pg-home > .helpers{grid-column:1/7}
+  .pg-home > .akt-sec{grid-column:7/-1}
+  .pg-home > .hs-bez{grid-column:1/5}
+  .pg-home > .hs-art{grid-column:5/9}
+  .pg-home > .hs-mon{grid-column:9/-1}
+  .pg-home > .home-seo{grid-column:1/8}
+  main.pg-home > .faq{grid-column:8/-1;max-width:none}
+  .pg-home > .hs-insta{grid-column:1/7;align-self:stretch;display:grid}
+  .pg-home > .hs-org{grid-column:7/-1;align-self:stretch;display:grid}
+  main.pg-home > .faq{padding-top:var(--sp);margin-top:0}
+  /* „Aktuell“ steht neben „Gut vorbereitet“: Überschrift auf gleicher Höhe (dort steht noch eine Dachzeile darüber) */
+  main.pg-home > .akt-sec{padding-top:calc(var(--sp) + 29px)}
+  /* Kopf: links Überschrift, Text, Suche und Schnellzugriffe mit Sticker (Spalten 1 bis 7), rechts die heutigen Termine (8 bis 12) */
+  .pg-home .hero{grid-template-columns:repeat(12,minmax(0,1fr));grid-template-rows:repeat(5,auto) 1fr;gap:0 var(--gut);align-items:start;padding-block:64px 0}
+  .pg-home .hero > div{display:contents}
+  .pg-home .hero > div > *{grid-column:1/8}
+  .pg-home .hero .hello{grid-row:1}
+  .pg-home .hero h1{grid-row:2;font-size:clamp(48px,4.4vw,62px)}
+  .pg-home .hero .hero-p{grid-row:3;font-size:18px;margin-top:18px;max-width:46ch}
+  .pg-home .hero .sx-home{grid-row:4}
+  .pg-home .hero .quick{grid-row:5;margin-top:22px}
+  .pg-home .hero .hero-p + .sx-home{margin-top:28px}
+  .pg-home .hero .sx-home,.pg-home .hero .quick{grid-column:1/6}
+  .pg-home .hero .ab{grid-column:8/-1;grid-row:1/-1;margin:0;max-width:none;align-self:center}
+  .pg-home .big-sticker{grid-column:6/8;grid-row:4/6;justify-self:center;align-self:center;margin:24px 0 0}
+  /* Wochen-Highlight: flacher, damit es den Bildschirm nicht füllt */
+  .pg-home .hl{margin-top:var(--sp)}
+  .pg-home .hl-slide{aspect-ratio:16/5}
+  /* Gut vorbereitet: die drei Kacheln untereinander in der linken Hälfte */
+  .pg-home .hp-grid{grid-template-columns:minmax(0,1fr);gap:12px}
+  .pg-home .hp-tile{flex-direction:row;align-items:center;gap:16px;padding:16px 18px}
+  .pg-home .hp-tile > .i{display:block}
+  /* Wischen & merken: Überschrift und Text wie überall links, der Stapel mittig */
+  .pg-home .home-deck{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));column-gap:var(--gut)}
+  .pg-home .home-deck > *{grid-column:1/-1}
+  .pg-home .home-deck > .deck{grid-column:3/11;margin:32px 0 0;max-width:none}
+  /* Kästen Instagram und Veranstalter gleich hoch */
+  .pg-home .hs-insta .follow,.pg-home .hs-org .org{height:100%;margin:0}
+  .pg-home .hs-insta .follow{grid-template-columns:auto 1fr;align-content:center}
+  .pg-home .hs-insta .follow .btn{grid-column:2}
+  .pg-home .hs-org .org{align-content:center}
+}

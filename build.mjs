@@ -1310,17 +1310,18 @@ ${NEWS_TABS.length > 1 ? '<div class="akt-bar js-only" aria-hidden="true"><i id=
     const kbPick = [...(wet && KBY["flohmarkt-bei-regen"] ? [KBY["flohmarkt-bei-regen"]] : []), ...rot].filter((a, i, l) => l.indexOf(a) === i).slice(0, 3);
     const first = kbPick[0], short = first ? plain(first.a).split(/(?<=[.!?])\s/)[0] : ""; toolsStage.picks = kbPick;
     const hx = head ? "h3" : "h2"; // ohne eigenen Kopf sind die drei Titel die Zwischenüberschriften der Seite
-    // Jede Karte passt am Handy auf einen Bildschirm: Dachzeile, Überschrift, ein Satz, Bild, ein Knopf (seit 18.10. ohne Vorteils-Pillen und Nebenlinks)
+    // Jede Karte passt am Handy auf einen Bildschirm: Dachzeile, Überschrift, ein Satz, Bild, ein Knopf (seit 18.10. ohne Vorteils-Pillen und Nebenlinks).
+    // Farbcode wie auf der Startseite: Schilder gelb, Kauf-Check dunkel, Ratgeber hell; dazu das Symbol des Werkzeugs in der Dachzeile.
     const sv = s => `/assets/schilder/flohmarkt-${s}-vorlage.svg`;
     return `<section class="sec st-sec"${head ? ' aria-labelledby="toolsH"' : ' aria-label="Für jeden Flohmarkt"'}>${head ? `<div class="tools-head"><span class="kicker">Auch außerhalb Hamburgs</span><h2 id="toolsH">Für jeden Flohmarkt</h2><p>Drei Werkzeuge, die überall helfen. Kostenlos und ohne Anmeldung.</p>
 ${toolsNum()}</div>` : ""}
-<div class="stage" id="schilder"><div class="st-txt"><span class="kicker">Schilder-Designer</span><${hx}>Dein Stand, gut beschildert.</${hx}><p>Preisschilder, „Alles 1 €“ oder Bar &amp; PayPal mit QR-Code. Gratis drucken.</p></div>
+<div class="stage st-yellow" id="schilder"><div class="st-txt"><span class="kicker">${ic("printer")}Schilder-Designer</span><${hx}>Dein Stand, gut beschildert.</${hx}><p>Preisschilder, „Alles 1 €“ oder Bar &amp; PayPal mit QR-Code. Gratis drucken.</p></div>
 <div class="st-vis"><a class="st-signs" href="/flohmarkt-schilder/" tabindex="-1" aria-hidden="true"><img src="${sv("bar-und-paypal")}" width="297" height="210" alt="" loading="lazy" decoding="async"><img src="${sv("alles-1-euro")}" width="297" height="210" alt="" loading="lazy" decoding="async"></a></div>
 <div class="st-go"><a class="btn" href="/flohmarkt-schilder/">Schild gestalten${ic("chev")}</a></div></div>
-${kcI ? `<div class="stage st-dark" id="kauf-check"><div class="st-txt"><span class="kicker">Kauf-Check</span><${hx}>Echt oder Fälschung?</${hx}><p>Prüfpunkte für ${KC.length} Artikel, von Levi's bis LEGO. Am Stand antippen.</p></div>
+${kcI ? `<div class="stage st-dark" id="kauf-check"><div class="st-txt"><span class="kicker">${ic("search")}Kauf-Check</span><${hx}>Echt oder Fälschung?</${hx}><p>Prüfpunkte für ${KC.length} Artikel, von Levi's bis LEGO. Am Stand antippen.</p></div>
 <div class="st-vis"><fieldset class="st-check" data-kc><legend><small>Beispiel: ${esc(kcI.n)}</small>Was fällt dir auf?</legend>${kcI.e.filter(x => x.l && !x.tip).slice(0, 3).map(x => `<label><input type="checkbox"><i aria-hidden="true"></i>${esc(x.l)}</label>`).join("")}<small class="st-res" aria-live="polite">Tipp an, was dir auffällt</small></fieldset></div>
 <div class="st-go"><a class="btn" href="${KC_P}">Artikel prüfen${ic("chev")}</a></div></div>` : ""}
-${first ? `<div class="stage" id="ratgeber"><div class="st-txt"><span class="kicker">Ratgeber</span><${hx}>Antworten, bevor du fragst.</${hx}><p>${KB.length} Artikel, jeweils mit der kurzen Antwort vorweg.</p></div>
+${first ? `<div class="stage st-light" id="ratgeber"><div class="st-txt"><span class="kicker">${ic("book")}Ratgeber</span><${hx}>Antworten, bevor du fragst.</${hx}><p>${KB.length} Artikel, jeweils mit der kurzen Antwort vorweg.</p></div>
 <div class="st-vis st-qs">${kbPick.slice(0, 2).map((a, n) => `<a href="/ratgeber/${a.s}/"${n ? "" : ' class="open"'}>${n ? "" : "<i>Kurz gesagt</i>"}<b>${esc(a.h)}</b>${n ? "" : `<span>${esc(short)}</span>`}</a>`).join("")}</div>
 <div class="st-go"><a class="btn" href="/ratgeber/">Zum Ratgeber${ic("chev")}</a></div></div>` : ""}
 </section>`;
@@ -1374,14 +1375,14 @@ ${INSTA ? `<section class="sec hs-insta"><a class="follow" href="${INSTA}" rel="
     const stageHTML = toolsStage({ head: false }), shown = new Set((toolsStage.picks || []).map(a => a.s));
     const qPool = ["was-mitnehmen-flohmarkt", "preise-festlegen-flohmarkt", "handeln-auf-dem-flohmarkt", "wechselgeld-flohmarkt", "beste-uhrzeit-flohmarkt", "was-verkauft-sich-gut-flohmarkt", "bezahlen-auf-dem-flohmarkt", "flohmarkt-knigge", "flohmarkt-bei-regen", "standgebuehr-flohmarkt"]
       .map(s => KBY[s]).filter(a => a && !shown.has(a.s) && !/hamburg/i.test(`${a.h} ${a.t}`)).slice(0, 6);
-    const jump = [["schilder", "printer", "Schilder", "%%SIGN_N%% Vorlagen"], ...(KC_ON ? [["kauf-check", "search", "Kauf-Check", `${KC.length} Artikel`]] : []), ["ratgeber", "book", "Ratgeber", `${KB.length} Antworten`]];
+    const jump = [["schilder", "printer", "Schilder", "%%SIGN_N%% Vorlagen", "sign"], ...(KC_ON ? [["kauf-check", "search", "Kauf-Check", `${KC.length} Artikel`, "kc"]] : []), ["ratgeber", "book", "Ratgeber", `${KB.length} Antworten`, "kb"]];
     // Abzweig für Hamburg: sonntags „heute“, sonst das Wochenende
     const hhN = sunOnly ? EVENTS.filter(e => !e.cancelled && e.k === key(sun)).length : weN;
     const hhGo = hhN ? (sunOnly ? [`${hhN} ${hhN === 1 ? "Markt" : "Märkte"} heute`, "/heute/"] : [`${hhN} ${hhN === 1 ? "Markt" : "Märkte"} am Wochenende`, "/wochenende/"]) : ["Flohmärkte am Wochenende", "/wochenende/"];
     const body = `<section class="lp-hero"><span class="kicker">Flohlotse · überall nützlich</span>
 <h1>Für jeden Flohmarkt: Tipps, Schilder${KC_ON ? " und Kauf-Check" : ""}.</h1>
 <p class="lp-lead">Gut vorbereitet, egal wo: Schilder drucken, Fälschungen erkennen, besser handeln. Kostenlos, ohne Anmeldung und ohne Werbung.</p>
-<nav class="lp-jump" aria-label="Direkt zu">${jump.map(([id, i, t, n]) => `<a href="#${id}">${ic(i)}<b>${t}</b><small>${n}</small></a>`).join("")}</nav>
+<nav class="lp-jump" aria-label="Direkt zu">${jump.map(([id, i, t, n, k]) => `<a class="lp-j-${k}" href="#${id}"><span class="lp-ic">${ic(i)}</span><b>${t}</b><small>${n}</small></a>`).join("")}</nav>
 <span class="big-sticker lp-sticker" aria-hidden="true"><b>0 €</b><span>ohne Anmeldung</span></span></section>
 ${stageHTML}
 ${qPool.length ? `<section class="sec lp-qs"><div class="sec-head"><h2>Häufige Fragen auf dem Flohmarkt</h2>${more("/ratgeber/", "Alle", "Alle Ratgeber-Artikel")}</div><div class="qlist">${qPool.map(a => `<a href="/ratgeber/${a.s}/"><span>${brColon(esc(a.h))}</span>${ic("chev")}</a>`).join("")}</div></section>` : ""}

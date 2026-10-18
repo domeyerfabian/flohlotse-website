@@ -1177,10 +1177,11 @@ a.route.kc-go{margin:10px 0 0;min-height:44px;font-size:15px;padding:8px 16px}
 .st-qs a.open i{justify-self:start;font-style:normal;background:var(--sticker);color:var(--sticker-ink);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:3px 9px;border-radius:999px}
 .st-qs a span{font-size:15px;line-height:1.4;color:var(--muted)}
 @media (min-width:860px){
-  .stage{grid-template-columns:1fr 1fr;align-items:center;text-align:left;padding:44px 48px;gap:40px}
-  .st-txt{justify-items:start}
-  .st-go{justify-content:flex-start}
-  .stage:nth-of-type(odd) .st-vis{order:-1}
+  .stage{grid-template-columns:1fr 1fr;grid-template-areas:"txt vis" "go vis";align-items:center;text-align:left;padding:44px 48px;gap:20px 40px}
+  .stage:nth-of-type(odd){grid-template-areas:"vis txt" "vis go"}
+  .stage .st-txt{grid-area:txt;justify-items:start;align-self:end}
+  .stage .st-vis{grid-area:vis}
+  .stage .st-go{grid-area:go;justify-content:flex-start;align-self:start}
 }
 @media (prefers-reduced-motion:reduce){.st-signs img,.st-check label i{transition:none}}
 /* Fußzeile: Linkgruppen auf dem Handy zum Aufklappen, am PC offen */
@@ -1297,13 +1298,18 @@ a.route.kc-go{margin:10px 0 0;min-height:44px;font-size:15px;padding:8px 16px}
 @media (max-width:340px){.dk-btns{gap:8px}.dk-b.no,.dk-b.yes{width:54px;height:54px}.dk-b.undo{width:44px;height:44px}}
 /* Plus-Menü bei wenig Höhe (Handy quer): etwas kompakter, damit alle fünf Einträge ganz zu sehen sind */
 @media (max-height:480px){.fab-menu{gap:6px}.fab-menu a{padding:7px 14px}.fab-menu .i{width:18px;height:18px}}
-/* Bühne: drei Vorteile je Werkzeug als kleine Pillen mit Häkchen */
-.st-pros{list-style:none;margin:6px 0 0;padding:0;display:flex;flex-wrap:wrap;justify-content:center;gap:6px 8px}
-.st-pros li{display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:600;line-height:1.3;color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:999px;padding:6px 12px 6px 9px;text-align:left}
-.st-pros .i{flex:none;width:16px;height:16px}
-.st-dark .st-pros li,.org .st-pros li{color:#fff;background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.18)}
-.st-dark .st-pros .i,.org .st-pros .i{color:#F6E03A}
-@media (min-width:860px){.stage .st-pros{justify-content:flex-start}}
+/* Bühnen-Karten kompakt: am Handy passt jede Karte auf einen Bildschirm (Reihenfolge: Text, Bild, Knopf) */
+.st-sec .stage{gap:16px;padding:26px 20px 24px}
+.st-sec .st-txt{gap:6px}
+.st-sec .stage p{max-width:340px}
+.st-sec .st-go{margin-top:0}
+.st-sec .st-signs{max-width:300px;display:block;margin-top:0}
+.st-sec .st-check{padding:16px 16px 12px;gap:8px;max-width:320px}
+.st-sec .st-check legend{font-size:20px}
+.st-sec .st-check label{padding:9px 12px}
+.st-sec .st-qs{gap:8px;max-width:340px}
+.st-sec .st-qs a{padding:12px 14px}
+@media (min-width:860px){.st-sec .stage{padding:44px 48px}.st-sec .st-signs{max-width:380px}.st-sec .st-check{max-width:340px}.st-sec .st-qs{max-width:400px}}
 /* Seite für jeden Flohmarkt (/flohmarkt-tipps/, Kurzadresse /start für die Instagram-Bio), im Stil der Bühne. Alles mittig, ohne Trennlinien. */
 .lp-hero{position:relative;display:grid;justify-items:center;text-align:center;padding:36px 0 4px}
 .lp-hero .kicker{color:var(--muted)}

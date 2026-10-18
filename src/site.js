@@ -78,7 +78,7 @@
       if (fOpen) return;
       var was = fab.hidden; fab.hidden = false;
       // Kein Hinweis, wenn gerade der Wisch-Stapel im Bild ist (der aufgeklappte Schriftzug läge über den Knöpfen)
-      if (was && !fab.hidden && fHint) { fHint = false; var dkB = document.getElementById("deck"), dkR = dkB && !dkB.hidden && dkB.getBoundingClientRect(); if (!(dkR && dkR.height && dkR.bottom > 0 && dkR.top < window.innerHeight)) { fY0 = window.scrollY; fab.classList.add("hint"); fHT = setTimeout(fHintOff, 3200); } }
+      if (was && !fab.hidden && fHint) { fHint = false; var dkB = document.getElementById("deck"), dkR = dkB && !dkB.hidden && dkB.getBoundingClientRect(); if (!(dkR && dkR.height && dkR.bottom > 0 && dkR.top < window.innerHeight) && !document.querySelector("main.pg-start")) { fY0 = window.scrollY; fab.classList.add("hint"); fHT = setTimeout(fHintOff, 3200); } }
       else if (fab.classList.contains("hint") && Math.abs(window.scrollY - fY0) > 260) fHintOff();
     };
     fBtn.addEventListener("click", function () { fSet(!fOpen); if (!fOpen) fBtn.focus(); });

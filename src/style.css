@@ -403,6 +403,21 @@ a.route .i{width:17px;height:17px}
 .gen-form input[type=text]{background:var(--paper);font-size:17px;padding:12px 14px}
 .gen-opts{display:grid;gap:10px}
 .seg{display:flex;flex-wrap:wrap;gap:8px}
+.seg .sw{display:inline-block;width:14px;height:14px;border-radius:50%;border:1px solid rgba(0,0,0,.18);margin-right:7px;vertical-align:-2px;flex:none}
+.sw-gelb{background:#F6E03A}.sw-pink{background:#FF8FC0}.sw-mint{background:#8EE3C1}
+@media (min-width:700px){.gen-opts .seg-tone{grid-column:1/-1}}
+.sym-pick{grid-column:1/-1;border:1px solid var(--line);border-radius:14px;background:var(--surface)}
+.sym-pick summary{display:flex;align-items:center;gap:12px;padding:10px 14px;cursor:pointer;font-size:14px;font-weight:600;list-style:none}
+.sym-pick summary::-webkit-details-marker{display:none}
+.sym-pick summary::after{content:"";margin-left:auto;width:9px;height:9px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg) translate(-2px,-2px);transition:transform .2s}
+.sym-pick[open] summary::after{transform:rotate(225deg) translate(-2px,-2px)}
+.sym-cur{display:inline-flex;align-items:center;gap:8px;font-weight:700}
+.sym-cur svg{width:20px;height:20px;fill:currentColor}
+.sym-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(46px,1fr));gap:6px;padding:4px 12px 14px}
+.sym-btn{display:grid;place-items:center;height:46px;border:1px solid var(--line);border-radius:12px;background:var(--paper);color:var(--ink);cursor:pointer;padding:0;font:inherit;font-size:12px;font-weight:600}
+.sym-btn svg{width:22px;height:22px;fill:currentColor}
+.sym-btn[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+@media (hover:hover){.sym-btn:hover{border-color:var(--ink)}}
 .switch{display:flex!important;align-items:center;gap:10px;font-weight:500!important;cursor:pointer}
 .switch input{width:24px;height:24px;flex:none;accent-color:var(--ink)}
 .gen[data-kind="tags"] .only-sign,.gen[data-kind="sign"] .only-tags{display:none!important}
@@ -421,10 +436,41 @@ a.route .i{width:17px;height:17px}
 .sg-top:empty,.sg-bot:empty{display:none}
 .sg-top{font-size:17mm;font-weight:800;letter-spacing:-.02em}
 .sg-bot{font-size:11mm;font-family:var(--f-body);font-weight:700}
-.sg-main{flex:1 1 0;min-height:0;display:flex;align-items:center;justify-content:center;background:#F6E03A;border-radius:9mm;padding:4mm 9mm;transform:rotate(-1.2deg);overflow:hidden;margin:1mm 2mm}
+.sg-mw{flex:1 1 0;min-height:0;display:flex;position:relative;margin:1mm 2mm}
+.sg-main{flex:1 1 auto;min-width:0;min-height:0;display:flex;align-items:center;justify-content:center;background:#F6E03A;border-radius:9mm;padding:4mm 9mm;transform:rotate(-1.2deg);overflow:hidden}
 .sg-main span{display:block;width:100%;font-weight:800;line-height:.98;letter-spacing:-.025em;text-wrap:balance;hyphens:manual;overflow-wrap:normal}
+/* Farbe der Schildfläche (Gelb ist Standard); der Sparmodus weiter unten geht vor */
+.tone-pink .sg-main,.tone-pink .tg-price{background:#FF8FC0}
+.tone-mint .sg-main,.tone-mint .tg-price{background:#8EE3C1}
+/* Symbol als runder Aufkleber an der oberen rechten Ecke der Fläche (Krone, Sektglas, Herz …), die Schrift macht ihm Platz */
+.sg-sym{position:absolute;top:-21mm;right:-21mm;width:42mm;height:42mm;border-radius:50%;background:#15211B;border:1.6mm solid #fff;display:none;place-items:center;transform:rotate(10deg);z-index:1}
+.sym .sg-sym{display:grid}
+.sg-sym svg{width:24mm;height:24mm;fill:#F6E03A}
+.tone-pink .sg-sym svg{fill:#FF8FC0}
+.tone-mint .sg-sym svg{fill:#8EE3C1}
+/* Platz für den Aufkleber: Die Fläche rückt rechts (und ohne Zeile oben auch oben) etwas ein, die Schrift hält Abstand zur Ecke */
+.sym .sg-mw{margin-right:19mm}
+.sym .sg-top:empty + .sg-mw{margin-top:13mm}
+.sym .sg-main{padding-left:19mm;padding-right:19mm}
+.sym .sg-top{padding:0 30mm}
+.f-hoch .sg-sym{top:-18mm;right:-18mm;width:36mm;height:36mm}.f-hoch .sg-sym svg{width:20.5mm;height:20.5mm}
+.f-hoch.sym .sg-mw{margin-right:16mm}
+.f-hoch.sym .sg-main{padding-left:15mm;padding-right:15mm}
+.f-hoch.sym .sg-top{padding:0 24mm}
+.f-acht .sg-sym{top:-8mm;right:-8mm;width:16mm;height:16mm;border-width:.7mm}.f-acht .sg-sym svg{width:9.2mm;height:9.2mm}
+.f-acht.sym .sg-mw{margin-right:8mm}
+.f-acht.sym .sg-top:empty + .sg-mw{margin-top:7mm}
+.f-acht.sym .sg-main{padding-left:7mm;padding-right:7mm}
+.f-acht.sym .sg-top{padding:0 11mm}
+/* Pfeile in Schriftstärke (siehe site.js); ein Pfeil bleibt mit seinem Wort in einer Zeile */
+.sg .nw{white-space:nowrap}
+.sg-arw{display:inline-block;width:.88em;height:.88em;vertical-align:-.1em;overflow:visible}
+.sg-arw path{fill:none;stroke:currentColor;stroke-width:21;stroke-linecap:butt;stroke-linejoin:miter}
+.sg-bot .sg-arw path{stroke-width:15}
 .save .sg-main{background:#fff;border:1.4mm solid #15211B}
 .save .tg-price{background:#fff;border:.45mm solid #15211B}
+.save .sg-sym{background:#fff;border:1.4mm solid #15211B}.save .sg-sym svg{fill:#15211B}
+.f-acht.save .sg-sym{border-width:.6mm}
 .sg-foot{flex:none;display:flex;justify-content:flex-end;align-items:center;gap:3mm;font-family:var(--f-body);font-size:3.6mm;color:#5A6961;text-align:left;line-height:1.25}
 .sg-foot b{display:block;color:#15211B;font-size:4.2mm;font-weight:700}
 .sg-qr{width:15mm;height:15mm;flex:none}
@@ -432,7 +478,8 @@ a.route .i{width:17px;height:17px}
 .f-hoch .sg-top{font-size:15mm}.f-hoch .sg-bot{font-size:10mm}
 .f-acht .sg{padding:5mm 6mm 3.5mm;gap:2.2mm;outline:.25mm dashed #c4c4c4;outline-offset:-.12mm}
 .f-acht .sg-top{font-size:6.5mm}.f-acht .sg-bot{font-size:4.2mm}
-.f-acht .sg-main{border-radius:4mm;padding:2mm 4mm;margin:.5mm 1mm}
+.f-acht .sg-mw{margin:.5mm 1mm}
+.f-acht .sg-main{border-radius:4mm;padding:2mm 4mm}
 .f-acht.save .sg-main{border-width:.7mm}
 .f-acht .sg-foot{font-size:2.1mm;gap:1.5mm}.f-acht .sg-foot b{font-size:2.5mm}.f-acht .sg-qr{width:7.5mm;height:7.5mm}
 .tg{position:relative;outline:.25mm dashed #c4c4c4;outline-offset:-.12mm;padding:4.5mm 4mm 3mm 11mm;display:flex;flex-direction:column;justify-content:center;gap:2mm;min-width:0}

@@ -450,7 +450,11 @@
   var gen = document.getElementById("gen");
   if (gen) {
     var wrap = document.getElementById("sheetWrap"), $ = function (id) { return document.getElementById(id); };
-    var st = { kind: gen.getAttribute("data-kind"), fmt: gen.getAttribute("data-fmt"), top: $("fTop").value, main: $("fMain").value, bot: $("fBot").value, price: $("fPrice").value, vb: true, save: false, pay: null };
+    var st = { kind: gen.getAttribute("data-kind"), fmt: gen.getAttribute("data-fmt"), top: $("fTop").value, main: $("fMain").value, bot: $("fBot").value, price: $("fPrice").value, vb: true, save: false, pay: null, tone: gen.getAttribute("data-tone") || "gelb", sym: gen.getAttribute("data-sym") || "" };
+    var toneSet = false, symSet = false; // Farbe oder Symbol selbst gewählt: bleibt beim Wechsel der Vorlage erhalten
+    // Symbol-Aufkleber: Die Form steckt schon im Auswahlknopf und wird von dort ins Schild kopiert
+    var symSrc = function () { var b = st.sym && gen.querySelector('button[data-sym="' + st.sym + '"] svg'); return b || null; };
+    var symCur = function () { var c = gen.querySelector(".sym-cur"), b = gen.querySelector('button[data-sym="' + (symSrc() ? st.sym : "") + '"]'); if (!c) return; c.textContent = ""; if (symSrc()) { c.appendChild(symSrc().cloneNode(true)); c.appendChild(document.createTextNode(b.getAttribute("title"))); } else c.textContent = "Ohne"; };
     // PayPal.me-Name: auch ein eingefügter Link wird verstanden. Der QR-Code entsteht hier im Browser.
     var payIn = $("fPay"), payNote = $("payNote");
     var payRead = function () {
@@ -462,6 +466,32 @@
     };
     if (payIn) { payIn.addEventListener("input", function () { payRead(); render(); }); payIn.addEventListener("change", function () { if (st.pay && payIn.value !== st.pay.name) payIn.value = st.pay.name; }); if (payIn.value) payRead(); }
     var NS = "http://www.w3.org/2000/svg";
+    // Pfeile (→ ← ↑ ↓) zeichnen wir selbst, in der Stärke der Schrift: Die Schilder-Schrift hat keine Pfeile, und Ersatzschriften wirken daneben dünn.
+    // Ein Pfeil bleibt mit seinem Nachbarwort in einer Zeile („Flohmarkt →“), statt allein umzubrechen.
+    var ARW = { "→": 0, "↓": 90, "←": 180, "↑": 270 }, ARW_D = "M8 50H80M54 22l28 28-28 28";
+    var arw = function (ch) {
+      var s = document.createElementNS(NS, "svg"), p = document.createElementNS(NS, "path");
+      s.setAttribute("viewBox", "0 0 100 100"); s.setAttribute("class", "sg-arw"); s.setAttribute("aria-hidden", "true");
+      p.setAttribute("d", ARW_D); p.setAttribute("transform", "rotate(" + ARW[ch] + " 50 50)"); s.appendChild(p); return s;
+    };
+    var signText = function (el, t, empty) {
+      el.textContent = "";
+      var tk = String(t).match(/[←→↑↓]|[^\s←→↑↓]+/g) || [], g = [];
+      if (!tk.length) { el.textContent = empty; return; }
+      tk.forEach(function (x) {
+        var a = ARW.hasOwnProperty(x), last = g[g.length - 1];
+        if (a && last && !last.wait) last.push(x);
+        else if (!a && last && last.wait) { last.push(x); last.wait = false; }
+        else { var n = [x]; n.wait = a; g.push(n); }
+      });
+      g.forEach(function (grp, i) {
+        if (i) el.appendChild(document.createTextNode(" "));
+        if (grp.length === 1 && !ARW.hasOwnProperty(grp[0])) { el.appendChild(document.createTextNode(grp[0])); return; }
+        var sp = document.createElement("span"); sp.className = "nw";
+        grp.forEach(function (x, j) { if (j) sp.appendChild(document.createTextNode(" ")); sp.appendChild(ARW.hasOwnProperty(x) ? arw(x) : document.createTextNode(x)); });
+        el.appendChild(sp);
+      });
+    };
     var payFill = function (unit) {
       var svg = unit.querySelector(".sg-payqr"), q = st.pay.qr, w = q.n + 8;
       while (svg.firstChild) svg.removeChild(svg.firstChild);
@@ -488,7 +518,7 @@
       var tags = st.kind === "tags", fmt = tags ? "tags" : st.fmt, n = tags ? 24 : fmt === "acht" ? 8 : 1;
       gen.setAttribute("data-kind", st.kind); gen.setAttribute("data-fmt", fmt);
       sheet = document.createElement("div"); sheet.id = "sheet";
-      sheet.className = "sheet f-" + fmt + (st.save ? " save" : "") + (tags && !st.vb ? " novb" : "");
+      sheet.className = "sheet f-" + fmt + (st.save ? " save" : "") + (tags && !st.vb ? " novb" : "") + (st.tone && st.tone !== "gelb" ? " tone-" + st.tone : "") + (!tags && symSrc() ? " sym" : "");
       var tpl = $(tags ? "tplTag" : "tplSign").content.firstElementChild;
       for (var i = 0; i < n; i++) sheet.appendChild(tpl.cloneNode(true));
       wrap.innerHTML = ""; wrap.appendChild(sheet);
@@ -500,16 +530,17 @@
         var fs = st.price ? fit(box, sp, box.clientHeight * 0.8, 6) : null;
         for (i = 1; i < n; i++) { var b2 = units[i].querySelector(".tg-price"); b2.className = box.className; b2.firstElementChild.textContent = sp.textContent; if (fs) b2.firstElementChild.style.fontSize = fs + "px"; }
       } else {
+        var sy = symSrc(); for (i = 0; i < n; i++) { var slot = units[i].querySelector(".sg-sym"); slot.textContent = ""; if (sy) slot.appendChild(sy.cloneNode(true)); }
         var top = u.querySelector(".sg-top"), main = u.querySelector(".sg-main"), ms = main.firstElementChild, bot = u.querySelector(".sg-bot");
-        top.textContent = st.top.trim(); ms.textContent = st.main.trim() || " "; bot.textContent = st.bot.trim();
+        signText(top, st.top, ""); signText(ms, st.main, " "); signText(bot, st.bot, "");
         var base = top.parentNode.clientWidth, sizes = [];
-        [top, bot].forEach(function (el) { if (el.textContent) { el.style.fontSize = ""; var mx = parseFloat(getComputedStyle(el).fontSize); sizes.push(fit(el, el, mx, 4)); } else sizes.push(null); });
+        [top, bot].forEach(function (el) { if (el.firstChild) { el.style.fontSize = ""; var mx = parseFloat(getComputedStyle(el).fontSize); sizes.push(fit(el, el, mx, 4)); } else sizes.push(null); });
         var mfs = fit(main, ms, main.clientHeight * 0.9, 6);
         for (i = 1; i < n; i++) {
           var c = units[i];
-          c.querySelector(".sg-top").textContent = top.textContent; if (sizes[0]) c.querySelector(".sg-top").style.fontSize = sizes[0] + "px";
-          c.querySelector(".sg-bot").textContent = bot.textContent; if (sizes[1]) c.querySelector(".sg-bot").style.fontSize = sizes[1] + "px";
-          var m2 = c.querySelector(".sg-main span"); m2.textContent = ms.textContent; m2.style.fontSize = mfs + "px";
+          c.querySelector(".sg-top").innerHTML = top.innerHTML; if (sizes[0]) c.querySelector(".sg-top").style.fontSize = sizes[0] + "px";
+          c.querySelector(".sg-bot").innerHTML = bot.innerHTML; if (sizes[1]) c.querySelector(".sg-bot").style.fontSize = sizes[1] + "px";
+          var m2 = c.querySelector(".sg-main span"); m2.innerHTML = ms.innerHTML; m2.style.fontSize = mfs + "px";
         }
       }
       scale();
@@ -519,12 +550,17 @@
     $("fVb").addEventListener("change", function () { st.vb = this.checked; render(); });
     $("fSave").addEventListener("change", function () { st.save = this.checked; render(); });
     gen.addEventListener("click", function (e) {
-      var f = e.target.closest("[data-fmt]"), p = e.target.closest("[data-set]");
+      var f = e.target.closest("[data-fmt]"), p = e.target.closest("[data-set]"), tn = e.target.closest("button[data-tone]");
+      if (tn) { st.tone = tn.getAttribute("data-tone"); toneSet = true; setPressed("button[data-tone]", tn); render(); }
+      var sb = e.target.closest("button[data-sym]");
+      if (sb) { st.sym = sb.getAttribute("data-sym"); symSet = true; setPressed("button[data-sym]", sb); symCur(); render(); }
       if (f && f.tagName === "BUTTON") { st.fmt = lastSignFmt = f.getAttribute("data-fmt"); setPressed("button[data-fmt]", f); render(); }
       if (p) {
         var d = JSON.parse(p.getAttribute("data-set"));
         st.kind = d.kind; st.top = d.top || ""; st.main = d.main || ""; st.bot = d.bot || ""; st.price = d.price || "";
         st.fmt = d.kind === "tags" ? "tags" : lastSignFmt;
+        if (!toneSet) { st.tone = d.tone || "gelb"; setPressed("button[data-tone]", gen.querySelector('button[data-tone="' + st.tone + '"]')); }
+        if (!symSet) { st.sym = d.sym || ""; setPressed("button[data-sym]", gen.querySelector('button[data-sym="' + st.sym + '"]')); symCur(); }
         if (gen.hasAttribute("data-pay")) gen.setAttribute("data-pay", d.pay ? "1" : "0");
         $("fTop").value = st.top; $("fMain").value = st.main; $("fBot").value = st.bot; $("fPrice").value = st.price;
         setPressed("button[data-set]", p); setPressed("button[data-fmt]", gen.querySelector('button[data-fmt="' + st.fmt + '"]')); render();

@@ -1,6 +1,6 @@
 # Flohlotse: Website gebaut
 
-Stand 18.10.2026 · 290 Seiten (284 für Google) · 132 Märkte · 187 Termine in den nächsten 120 Tagen · 42 Ratgeber-Artikel · 831 Event-Auszeichnungen
+Stand 18.10.2026 · 302 Seiten (296 für Google) · 132 Märkte · 187 Termine in den nächsten 120 Tagen · 42 Ratgeber-Artikel · 831 Event-Auszeichnungen
 
 ## Zu erledigen: 6 Hinweise
 
@@ -30,5 +30,24 @@ Quellen:
 ## Zur Kenntnis
 
 - Antik- und Designmarkt Colonnaden: Als Veranstalter-Website steht nur die Startseite https://www.marktundkultur.de/. Dort stehen auch die Termine anderer Märkte des Veranstalters, deshalb prüft der Termin-Wächter diese Seite nicht. Soll er den Markt mitprüfen, die Seite des Markts eintragen.
+- Vorschaubild für „Preisschilder“ fehlt oder passt nicht mehr zum Text der Vorlage. Bis zum nächsten Update zeigt die Website das einfache gezeichnete Vorschaubild.
+- Vorschaubild für „Alles 1 €“ fehlt oder passt nicht mehr zum Text der Vorlage. Bis zum nächsten Update zeigt die Website das einfache gezeichnete Vorschaubild.
+- Vorschaubild für „Handeln erwünscht“ fehlt oder passt nicht mehr zum Text der Vorlage. Bis zum nächsten Update zeigt die Website das einfache gezeichnete Vorschaubild.
+- Vorschaubild für „Bar & PayPal“ fehlt oder passt nicht mehr zum Text der Vorlage. Bis zum nächsten Update zeigt die Website das einfache gezeichnete Vorschaubild.
+- Vorschaubild für „3 für 5 €“ fehlt oder passt nicht mehr zum Text der Vorlage. Bis zum nächsten Update zeigt die Website das einfache gezeichnete Vorschaubild.
+- Vorschaubild für „Reserviert“ fehlt oder passt nicht mehr zum Text der Vorlage. Bis zum nächsten Update zeigt die Website das einfache gezeichnete Vorschaubild.
+- Vorschaubild für „Zu verschenken“ fehlt oder passt nicht mehr zum Text der Vorlage. Bis zum nächsten Update zeigt die Website das einfache gezeichnete Vorschaubild.
+- Vorschaubild für „Hofflohmarkt“ fehlt oder passt nicht mehr zum Text der Vorlage. Bis zum nächsten Update zeigt die Website das einfache gezeichnete Vorschaubild.
+- Vorschaubild für „Alles muss raus“ fehlt oder passt nicht mehr zum Text der Vorlage. Bis zum nächsten Update zeigt die Website das einfache gezeichnete Vorschaubild.
+- Vorschaubild für „Bin gleich zurück“ fehlt oder passt nicht mehr zum Text der Vorlage. Bis zum nächsten Update zeigt die Website das einfache gezeichnete Vorschaubild.
+- Vorschaubild für „Bitte nicht anfassen“ fehlt oder passt nicht mehr zum Text der Vorlage. Bis zum nächsten Update zeigt die Website das einfache gezeichnete Vorschaubild.
+- Vorschaubild für „Kinderflohmarkt“ fehlt oder passt nicht mehr zum Text der Vorlage. Bis zum nächsten Update zeigt die Website das einfache gezeichnete Vorschaubild.
+- Vorschaubild für „Lustige Sprüche“ fehlt oder passt nicht mehr zum Text der Vorlage. Bis zum nächsten Update zeigt die Website das einfache gezeichnete Vorschaubild.
+- Vorschaubild für „Mädelsflohmarkt“ fehlt oder passt nicht mehr zum Text der Vorlage. Bis zum nächsten Update zeigt die Website das einfache gezeichnete Vorschaubild.
+- Vorschaubild für „Weihnachten“ fehlt oder passt nicht mehr zum Text der Vorlage. Bis zum nächsten Update zeigt die Website das einfache gezeichnete Vorschaubild.
+- Vorschaubild für „Vintage & Rarität“ fehlt oder passt nicht mehr zum Text der Vorlage. Bis zum nächsten Update zeigt die Website das einfache gezeichnete Vorschaubild.
+- Vorschaubild für „Guter Zweck“ fehlt oder passt nicht mehr zum Text der Vorlage. Bis zum nächsten Update zeigt die Website das einfache gezeichnete Vorschaubild.
+- Vorschaubild für „Kaffee & Kuchen“ fehlt oder passt nicht mehr zum Text der Vorlage. Bis zum nächsten Update zeigt die Website das einfache gezeichnete Vorschaubild.
+- Vorschaubild für „Getestet“ fehlt oder passt nicht mehr zum Text der Vorlage. Bis zum nächsten Update zeigt die Website das einfache gezeichnete Vorschaubild.
 - 51 Märkte haben in den nächsten 120 Tagen keinen Termin (Saisonpause oder noch nicht angekündigt): altonale Flohmarkt an der Museumstraße, Connect Queer Indoor Flohmarkt, Fietsenbörse am Spielbudenplatz, Flohmarkt EDEKA Center Struve Bramfeld, Flohmarkt EDEKA Center Struve Eidelstedt, Flohmarkt Eppendorfer Weg, Flohmarkt famila Ahrensburg, Flohmarkt famila Bargteheide, Flohmarkt famila Buchholz, Flohmarkt famila Geesthacht, Flohmarkt famila Steilshoop, Flohmarkt famila Trittau, Flohmarkt famila Winsen (Luhe), Flohmarkt GLOBUS Lurup, Flohmarkt Hansaplatz, Flohmarkt Heidesiedlung Neu Wulmstorf, Flohmarkt Höffner Barsbüttel, Flohmarkt Hoheluftchaussee, Flohmarkt IKEA Altona, Flohmarkt IKEA Moorfleet, Flohmarkt IKEA Schnelsen, Flohmarkt im Barmbek°Basch, Flohmarkt im Lykkeby Familiencafé, Flohmarkt Isestraße, Flohmarkt Kaufland Henstedt-Ulzburg, Flohmarkt Körber (ehemals Hauni) Bergedorf, Flohmarkt Langenhorner Markt, Flohmarkt Lehmweg, Flohmarkt Marktplatz Glinde, Flohmarkt Metro Harburg, Flohmarkt Metro Niendorf, Flohmarkt mit Hofcafé am Kreativhaus, Flohmarkt Moorwegsiedlung Wedel, Flohmarkt Norderstedt Schmuggelstieg, Flohmarkt rund ums Haus bei Café Hulda, Flohmarkt Uetersen bei Lüchau Baustoffe, Flohmarkt Uetersen City, FlohZinn in den Wilhelmsburger Zinnwerken, Frauenflohmarkt im Gemeindehaus St. Salvatoris, Hallenflohmarkt in der Halle 15, Hamburger Schallplattenbörse, Kinderflohmarkt im kulturtreff Bergedorf Süd, Kultur-Flohmarkt am Museum der Arbeit, Langschläfer Flohmarkt, Langschläfer Flohmarkt Überseeboulevard, Nachbarschaftsflohmarkt HausDrei, Nachbarschaftsflohmarkt Herthastraße, Nachbarschaftsflohmarkt Wilhelmsburg, Quickborner famila-Flohmarkt, Rellinger Hagebau-Flohmarkt, Turmweg-Flohmarkt.
 - Eine Bilddatei im Ordner bilder wird auf keiner Seite verwendet und deshalb nicht hochgeladen: start-4.webp.

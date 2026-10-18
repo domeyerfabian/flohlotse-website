@@ -198,6 +198,9 @@ const BASE = (process.env.BASE_PATH || "").replace(/\/+$/, "");
 const todayStr = process.env.TODAY || new Intl.DateTimeFormat("sv-SE", { timeZone: "Europe/Berlin" }).format(new Date());
 const TODAY = new Date(todayStr + "T00:00:00Z");
 const STAND = `${pad(TODAY.getUTCDate())}.${pad(TODAY.getUTCMonth() + 1)}.${TODAY.getUTCFullYear()}`;
+// Artikel und ruhige Seiten nennen nicht den Tag des Baus, sondern den Tag, an dem sich ihr Inhalt zuletzt geändert hat.
+// Der steht erst ganz am Ende fest (Vergleich mit dem Merkzettel der letzten Nacht), deshalb hier Platzhalter, die beim Schreiben ersetzt werden.
+const AKT_ISO = "%%AKT_ISO%%", AKT_TIME = `<time datetime="${AKT_ISO}">%%AKT_DE%%</time>`, SEITE_TIME = `<time datetime="%%SEITE_ISO%%">%%SEITE_DE%%</time>`;
 const END = addDays(TODAY, HORIZON);
 
 const REGIONS = data.Bezirke.filter(r => validSlug(r["Kennung"], "Bezirke", r["Name"])).map(r => ({ k: r["Kennung"], name: r["Name"], umland: yes(r["Umland"]), im: r["Im Satz"] || "in " + r["Name"], kw: r["Suchbegriff"], h: r["Überschrift"], t: r["SEO-Titel"], d: r["SEO-Beschreibung"], intro: r["Einleitung"] }));
@@ -290,7 +293,9 @@ const fmtShortY = e => fmtShort(e.date) + (e.far ? e.date.getUTCFullYear() : "")
 const NO_DATES = MARKETS.filter(m => !m.events.length && !m.later);
 // Merkzettel der letzten Nacht (wird weiter unten für Sitemap und Notbremse gebraucht, hier schon für die „Neu“-Kennzeichnung)
 let OLD_STATE = {};
-if (process.env.SHEET_ID || process.env.SEITENSTAND === "an") { try { const r = await fetch(SITE + "/assets/seiten-stand.json", { signal: AbortSignal.timeout(8000) }); if (r.ok) { const j = await r.json(); if (j && typeof j === "object") OLD_STATE = j; } } catch { /* erster Lauf: alle Seiten bekommen das heutige Datum */ } }
+// Zum Ausprobieren am eigenen Rechner: SEITENSTAND_DATEI=pfad/seiten-stand.json nimmt einen gespeicherten Merkzettel statt den von der Website
+if (process.env.SEITENSTAND_DATEI) { try { const j = JSON.parse(fs.readFileSync(process.env.SEITENSTAND_DATEI, "utf8")); if (j && typeof j === "object") OLD_STATE = j; } catch { /* kein Merkzettel: alle Seiten bekommen das heutige Datum */ } }
+else if (process.env.SHEET_ID || process.env.SEITENSTAND === "an") { try { const r = await fetch(SITE + "/assets/seiten-stand.json", { signal: AbortSignal.timeout(8000) }); if (r.ok) { const j = await r.json(); if (j && typeof j === "object") OLD_STATE = j; } } catch { /* erster Lauf: alle Seiten bekommen das heutige Datum */ } }
 /* „Neu“: Ein Markt, den es beim letzten Bau noch nicht gab, trägt drei Tage lang ein „Neu“-Schild (Tag des Eintragens und die zwei folgenden).
    Der Tag des ersten Erscheinens steht im Merkzettel unter _neu. Beim allerersten Bau ohne Merkzettel gilt nichts als neu. */
 const NEU = {};
@@ -490,6 +495,8 @@ const timeTags = e => { if (e.cancelled || !e.start) return []; const h = parseI
 const TIME_TAGS = ["Frühaufsteher", "Langschläfer"];
 // Zwei Seiten, die auch unter der Woche gesucht werden: Märkte von Montag bis Freitag und Standgebühren im Vergleich
 const TIPS_P = "/flohmarkt-tipps/", WEEK_P = "/flohmarkt-hamburg-unter-der-woche/", FEE_P = "/flohmarkt-standgebuehr-hamburg/", ABOUT_P = "/ueber-flohlotse/";
+// Wer hinter den Artikeln steht: Google empfiehlt bei Artikeln einen Link auf eine Seite, die den Autor beschreibt (hier: Über Flohlotse).
+const ORG_AUTHOR = { "@type": "Organization", name: NAME, url: SITE + ABOUT_P }, ORG_PUB = { "@type": "Organization", name: NAME, url: SITE + "/" };
 // Zahl und Einheit bleiben in einer Zeile („4 m“, „12 €“, „7 Uhr“)
 const nbU = t => esc(t).replace(/(\d) (?=€|%|(?:m|Uhr|km)\b)/g, "$1&nbsp;");
 function menuHTML() {
@@ -501,7 +508,7 @@ function menuHTML() {
 <div><p class="menu-h">Nach Art</p><ul>${CATS_ON.map(c => li(`/${c.s}/`, esc(c.chip))).join("")}</ul></div>
 <div><p class="menu-h">Hamburg</p><ul>${REGIONS.filter(r => !r.umland).map(r => li(`/flohmarkt-hamburg/${r.k}/`, `${esc(r.name)} <small>${cnt(r.k)}</small>`)).join("")}</ul></div>
 <div><p class="menu-h">Umland bis 30 km</p><ul>${REGIONS.filter(r => r.umland).map(r => li(`/flohmarkt-hamburg/${r.k}/`, `${esc(r.name)} <small>${cnt(r.k)}</small>`)).join("")}</ul></div>
-<div><p class="menu-h">Für jeden Flohmarkt</p><ul>${KC_ON ? li(KC_P, "Kauf-Check: echt oder Fälschung?") : ""}${li("/flohmarkt-schilder/", "Schilder &amp; Preisschilder drucken")}${Object.entries(CLUSTERS).map(([c, v]) => li(`/ratgeber/#${c}`, esc(v.t))).join("")}${li("/ratgeber/", "Alle Artikel")}</ul></div>
+<div><p class="menu-h">Für jeden Flohmarkt</p><ul>${li(TIPS_P, "Alle Tipps &amp; Vorlagen")}${KC_ON ? li(KC_P, "Kauf-Check: echt oder Fälschung?") : ""}${li("/flohmarkt-schilder/", "Schilder &amp; Preisschilder drucken")}${Object.entries(CLUSTERS).map(([c, v]) => li(`/ratgeber/#${c}`, esc(v.t))).join("")}${li("/ratgeber/", "Alle Artikel")}</ul></div>
 <div><p class="menu-h">${esc(NAME)}</p><ul>${li(ABOUT_P, "Über Flohlotse")}${li("/veranstalter/", "Für Veranstalter")}${INSTA ? `<li>${instaA("Instagram")}</li>` : ""}${li("/impressum/", "Impressum")}${li("/datenschutz/", "Datenschutz")}</ul></div>
 </nav></div></details>`;
 }
@@ -522,17 +529,27 @@ const TOOLS = () => [["sign", "/flohmarkt-schilder/", "printer", "Schilder-Desig
   ...(KC_ON ? [["kc", KC_P, "search", "Kauf-Check", `Echt oder Fälschung? Prüfpunkte für ${KC.length} Artikel, direkt am Stand.`]] : []),
   ["kb", "/ratgeber/", "book", "Ratgeber", `${KB.length} Artikel mit kurzen Antworten zu Handeln, Preisen und Wechselgeld.`]];
 const toolOf = p => p.startsWith("/flohmarkt-schilder/") ? "sign" : KC_ON && p.startsWith(KC_P) ? "kc" : p.startsWith("/ratgeber/") ? "kb" : "";
-const moreTools = cur => `<section class="sec more-tools"><div class="sec-head"><h2>Mehr für deinen Flohmarkt</h2></div><div class="mt-grid">${TOOLS().filter(x => x[0] !== cur).map(([, h, i, b, x]) => `<a class="cta-box" href="${h}">${ic(i)}<span><b>${b}</b>${esc(x)}</span>${ic("chev")}</a>`).join("")}</div></section>`;
+// Am Ende jeder Werkzeug-Seite ein leiser Hinweis auf den Kalender: Wer aus Hamburg kommt, findet so zu den Terminen.
+const HH_HINT = `<p class="mt-hh">${ic("pin")}<span><b>Aus Hamburg?</b> Hier findest du <a href="/termine/">alle Flohmarkt-Termine für Hamburg und Umgebung</a>.</span></p>`;
+const moreTools = cur => `<section class="sec more-tools"><div class="sec-head"><h2>Mehr für deinen Flohmarkt</h2></div><div class="mt-grid">${TOOLS().filter(x => x[0] !== cur).map(([, h, i, b, x]) => `<a class="cta-box" href="${h}">${ic(i)}<span><b>${b}</b>${esc(x)}</span>${ic("chev")}</a>`).join("")}</div>${HH_HINT}</section>`;
 const fabHTML = cur => `<div class="fab" id="fab" hidden><div class="fab-dim" id="fabDim" hidden></div><nav class="fab-menu" id="fabMenu" aria-label="Schnellzugriff" hidden>${[["tm", "/termine/", "cal", "Termine"], ...TOOLS(), ["dk", "/entdecken/", "heart", "Wischen &amp; merken"]].map(([k, h, i, b]) => `<a href="${h}"${k === cur ? ' class="cur" aria-current="true"' : ""}>${ic(i)}${b}</a>`).join("")}</nav><button type="button" class="fab-btn" id="fabBtn" aria-expanded="false" aria-controls="fabMenu" aria-label="Schnellzugriff: Termine, Schilder, Kauf-Check, Ratgeber, Wischen und merken"><span class="fab-plus" aria-hidden="true"></span><span class="fab-lab" aria-hidden="true">Schilder · Kauf-Check · Ratgeber</span></button></div>`;
-function layout({ p, title, desc, body, ld, noindex, nav, extraHead = "", img = OG_IMG }) {
+// art: Wortlaut eines Artikels (Überschrift, Text, Fragen). Ändert er sich, ändert sich das Datum „Stand“ im Artikel und in den Angaben für Google (dateModified).
+function layout({ p, title, desc, body, ld, noindex, nav, extraHead = "", img = OG_IMG, art }) {
   const toolK = toolOf(p); if (toolK && p !== "/ratgeber/") body += moreTools(toolK); // Die Ratgeber-Übersicht zeigt die Werkzeuge schon oben
+  else if (p === "/ratgeber/") body += `<section class="sec more-tools">${HH_HINT}</section>`;
   const url = SITE + p;
   // Google zeigt rund 60 Zeichen. Ist der Titel länger, fällt der angehängte Markenname weg (Google ergänzt den Seitennamen selbst).
   if (title.length > 60 && title.endsWith(` | ${NAME}`)) title = title.slice(0, -(` | ${NAME}`).length);
   // Am Computer (ab 1080 px) sind Übersichtsseiten breit („wide“). Lese- und Detailseiten behalten eine bequeme Lesebreite („read“).
   const readPg = /^\/(flohmarkt|ratgeber)\/[^/]+\/$/.test(p) || (p.startsWith(KC_P) && p !== KC_P) || ["/veranstalter/", "/impressum/", ABOUT_P, "/datenschutz/", "/404.html", "/flohmarkt-hamburg-statistik/"].includes(p);
   const mainCls = `wrap ${readPg ? "read" : "wide"}${p === "/" ? " pg-home" : p === TIPS_P ? " pg-start" : ""}`;
-  const navItems = [["/termine/", "Termine", "termine"], ["/flohmaerkte/", "Märkte", "maerkte"], ["/ratgeber/", "Ratgeber", "ratgeber"], ["/flohmarkt-schilder/", "Schilder", "schilder"], ["/veranstalter/", "Für Veranstalter", "org"]];
+  // Hauptmenü in zwei Bereichen: der Kalender für Hamburg und die Werkzeuge, die auf jedem Flohmarkt helfen. Adressen bleiben, wie sie sind.
+  const navK = toolK === "kc" ? "kc" : nav;
+  const navA = ([h, l, k]) => `<a href="${h}"${k === navK ? ' aria-current="page"' : ""}>${l}</a>`;
+  const navG = (lab, short, items) => `<div class="nav-g" role="group" aria-label="${lab}"><span class="nav-l" aria-hidden="true">${short}</span>${items.map(navA).join("")}</div>`;
+  const navHTML = navG("Flohmärkte in Hamburg", "Hamburg", [["/termine/", "Termine", "termine"], ["/flohmaerkte/", "Märkte", "maerkte"]])
+    + navG("Für jeden Flohmarkt", "Für jeden Flohmarkt", [["/flohmarkt-schilder/", "Schilder", "schilder"], ...(KC_ON ? [[KC_P, "Kauf-Check", "kc"]] : []), ["/ratgeber/", "Ratgeber", "ratgeber"]])
+    + navA(["/veranstalter/", "Für Veranstalter", "org"]);
   // data-stand: Tag des Baus. Ist die Seite beim Aufruf älter (kurz nach Mitternacht oder nach einem ausgefallenen Neubau),
   // blendet das Skript vergangene Tage aus und zeigt einen Hinweis. data-rel: Seiten, die von „heute“ und „morgen“ sprechen.
   const html = `<!doctype html>
@@ -557,7 +574,7 @@ ${ld ? `<script type="application/ld+json">${JSON.stringify(ld).replace(/</g, "\
 <a class="skip" href="#inhalt">Zum Inhalt springen</a>
 <header class="top"><div class="wrap">
 <a class="brand" href="/"><i>€</i>${esc(NAME)}</a>
-<nav class="nav" aria-label="Hauptmenü">${navItems.map(([h, l, k]) => `<a href="${h}"${k === nav ? ' aria-current="page"' : ""}>${l}</a>`).join("")}</nav>
+<nav class="nav" aria-label="Hauptmenü">${navHTML}</nav>
 <a class="srch-top" href="/suche/" aria-label="Flohmarkt suchen"${nav === "suche" ? ' aria-current="page"' : ""}>${ic("search")}</a>
 <a class="fav-top" href="/merkliste/" aria-label="Merkliste"${nav === "merk" ? ' aria-current="page"' : ""}>${ic("heart")}<span class="fav-n" hidden></span></a>
 ${MENU()}
@@ -576,7 +593,7 @@ ${fabHTML(toolK || (p === "/entdecken/" ? "dk" : p === "/termine/" ? "tm" : ""))
 <script src="/assets/site${JS_V ? "." + JS_V.slice(3) : ""}.js" defer></script>
 </body>
 </html>`;
-  pages.set(p, { html, noindex, title, desc });
+  pages.set(p, { html, noindex, title, desc, art });
 }
 const crumbs = items => `<nav class="crumbs" aria-label="Brotkrümel">${items.map((it, i) => (i ? "<span>›</span>" : "") + (it[1] ? `<a href="${it[1]}">${esc(it[0])}</a>` : `<span>${esc(it[0])}</span>`)).join("")}</nav>`;
 const crumbLD = items => ({ "@type": "BreadcrumbList", itemListElement: items.map((it, i) => ({ "@type": "ListItem", position: i + 1, name: it[0], ...(it[1] ? { item: SITE + it[1] } : {}) })) });
@@ -1929,7 +1946,7 @@ for (const a of KB) {
   const cl = CLUSTERS[a.c] || { t: a.c }, ph = kbPhoto(a);
   const words = (plain(a.a) + " " + a.b.map(x => x.join(" ")).join(" ")).split(/\s+/).length;
   const body = crumbs([[NAME, "/"], ["Ratgeber", "/ratgeber/"], [cl.t, `/ratgeber/#${a.c}`]]) + `<article class="kb"><h1>${esc(a.h)}</h1>
-<div class="byline">${kbHH(a) ? `<span>${ic("pin")}Speziell für Hamburg</span>` : `<span>${ic("globe")}Für jeden Flohmarkt</span>`}<span>${ic("update")}Stand: ${STAND}</span><span>${ic("clock")}${Math.max(2, Math.round(words / 200))} Min. Lesezeit</span></div>
+<div class="byline">${kbHH(a) ? `<span>${ic("pin")}Speziell für Hamburg</span>` : `<span>${ic("globe")}Für jeden Flohmarkt</span>`}<span>${ic("update")}Stand: ${AKT_TIME}</span><span>${ic("clock")}${Math.max(2, Math.round(words / 200))} Min. Lesezeit</span></div>
 <div class="answer"><span class="kicker">Kurz gesagt</span><p>${rich(a.a)}</p></div>
 ${/rund/.test(ph[1]) ? "" : clusterImg(a.c, `kb-photo${ph[1] ? " " + ph[1] : ""}`, false, ph[0])}<div class="kb-body">${/rund/.test(ph[1]) ? sideImg(pickImg(ph[0] + "-klein") ? ph[0] + "-klein" : ph[0], ph[1]) : ""}${a.b.map(([h, p]) => `<h2>${esc(h)}</h2><p>${rich(p)}</p>`).join("")}</div>
 ${FEE_CTA.has(a.s) ? feeCta() : ""}${a.s in SIGN_CTA || a.c === "verkaufen" ? signCta(SIGN_BY[SIGN_CTA[a.s]]) : ""}
@@ -1938,8 +1955,8 @@ ${a.f.length ? `<section class="faq"><h2>Häufige Fragen</h2>${a.f.map(([q, x]) 
 ${a.x ? '<p class="hint">Unser Tipp: Verbindliche Auskünfte für deinen Fall bekommst du bei den zuständigen Stellen, zum Beispiel beim Finanzamt, beim Bezirksamt oder beim Veranstalter des Markts.</p>' : ""}
 <p class="ai-note">Dieser Text ist mit Unterstützung von künstlicher Intelligenz entstanden.</p>
 <section class="related"><div class="sec-head"><h2>Das könnte dich auch interessieren</h2></div>${grid(a.r.map(kbCard))}</section></article>`;
-  layout({ p: `/ratgeber/${a.s}/`, title: `${a.t} | ${NAME}`, desc: a.d, body, nav: "ratgeber", ld: G([
-    { "@type": "Article", headline: a.h, description: a.d, dateModified: key(TODAY), author: { "@type": "Organization", name: NAME }, publisher: { "@type": "Organization", name: NAME }, mainEntityOfPage: `${SITE}/ratgeber/${a.s}/` },
+  layout({ p: `/ratgeber/${a.s}/`, title: `${a.t} | ${NAME}`, desc: a.d, body, nav: "ratgeber", art: JSON.stringify([a.h, a.a, a.b, a.f, !!a.x]), ld: G([
+    { "@type": "Article", headline: a.h, description: a.d, dateModified: AKT_ISO, author: ORG_AUTHOR, publisher: ORG_PUB, mainEntityOfPage: `${SITE}/ratgeber/${a.s}/` },
     ...(a.f.length ? [{ "@type": "FAQPage", mainEntity: a.f.map(([q, x]) => ({ "@type": "Question", name: q, acceptedAnswer: { "@type": "Answer", text: plain(x) } })) }] : []),
     crumbLD([[NAME, "/"], ["Ratgeber", "/ratgeber/"], [cl.t, `/ratgeber/#${a.c}`], [a.h]])]) });
 }
@@ -1983,7 +2000,7 @@ ${kcHint()}`;
     const cr = [[NAME, "/"], ["Kauf-Check", KC_P], [A.t]];
     const cats = A.cat && CAT_BY_S[A.cat] ? catCta(CAT_BY_S[A.cat]) : "";
     const body = crumbs(cr) + `<article class="kb"><h1>${esc(A.t)}: Echtheit und Zustand prüfen</h1>
-<div class="byline"><span>${ic("globe")}Für jeden Flohmarkt</span><span>${ic("search")}${its.length} Artikel</span><span>${ic("list")}${its.reduce((n, i) => n + kcCnt(i), 0)} Prüfpunkte</span><span>${ic("update")}Stand: ${STAND}</span></div>
+<div class="byline"><span>${ic("globe")}Für jeden Flohmarkt</span><span>${ic("search")}${its.length} Artikel</span><span>${ic("list")}${its.reduce((n, i) => n + kcCnt(i), 0)} Prüfpunkte</span><span>${ic("update")}Stand: ${SEITE_TIME}</span></div>
 <div class="answer"><span class="kicker">Kurz gesagt</span><p>${esc(A.p)}</p></div>${areaTip(a)}${kcTop}
 <nav class="chips kc-toc" aria-label="Artikel in diesem Bereich">${its.map(i => `<a class="chip" href="${i.own ? kcUrl(i) : "#" + i.s}">${esc(i.n)}</a>`).join("")}</nav>
 ${photoTip}
@@ -2008,15 +2025,15 @@ ${kcHint(A.t)}</article>`;
     i.m.filter(x => !MBY[x]).forEach(x => warn("Kauf-Check", `${i.n}: Markt „${x}“ unter „Passende Märkte“ gibt es nicht.`));
     const sib = KC.filter(x => x.a === i.a && x !== i);
     const body = crumbs(cr) + `<article class="kb kc-page"><h1>${esc(h1)}</h1>
-<div class="byline"><span>${ic("globe")}Für jeden Flohmarkt</span><span>${ic("list")}${n} Prüfpunkte</span><span>${ic("update")}Stand: ${STAND}</span></div>
+<div class="byline"><span>${ic("globe")}Für jeden Flohmarkt</span><span>${ic("list")}${n} Prüfpunkte</span><span>${ic("update")}Stand: ${AKT_TIME}</span></div>
 <div class="answer"><span class="kicker">Kurz gesagt</span><p>${esc(i.k)}</p></div>${areaTip(i.a)}${kcTop}
 ${kcBody(i, 2)}
 ${ms.length ? `<section class="related"><div class="sec-head"><h2>Hier wirst du in Hamburg fündig</h2></div>${grid(ms.map(mCard))}</section>` : ""}
 ${sib.length ? `<section class="related"><div class="sec-head"><h2>Weitere Checks: ${esc(A.t)}</h2>${more(`${KC_P}${i.a}/`, "Alle")}</div><div class="qlist">${sib.map(qItem).join("")}</div></section>` : ""}
 ${A.kb.some(k => KBY[k]) ? `<section class="related"><div class="sec-head"><h2>Aus dem Ratgeber</h2></div>${grid(A.kb.filter(k => KBY[k]).map(kbCard))}</section>` : ""}
 ${kcHint(i.n)}</article>`;
-    layout({ p: kcUrl(i), title: `${title} | ${NAME}`, desc, body, nav: "ratgeber", ld: G([
-      { "@type": "Article", headline: h1, description: desc, dateModified: key(TODAY), author: { "@type": "Organization", name: NAME }, publisher: { "@type": "Organization", name: NAME }, mainEntityOfPage: SITE + kcUrl(i) },
+    layout({ p: kcUrl(i), title: `${title} | ${NAME}`, desc, body, nav: "ratgeber", art: JSON.stringify([h1, i.k, i.e, i.g, i.z, i.f, A.tip || ""]), ld: G([
+      { "@type": "Article", headline: h1, description: desc, dateModified: AKT_ISO, author: ORG_AUTHOR, publisher: ORG_PUB, mainEntityOfPage: SITE + kcUrl(i) },
       crumbLD(cr)]) });
   }
 }
@@ -2082,7 +2099,7 @@ ${f("Impressum: Register") || f("Impressum: USt-IdNr.") ? `<h2>Register und Umsa
       `mit dem <a href="/flohmarkt-schilder/">Schilder-Designer</a> gestaltest du Preisschilder und Schilder für deinen Stand und druckst sie aus`,
       ...(KC_ON ? [`der <a href="${KC_P}">Kauf-Check</a> hilft dir bei ${KC.length} typischen Artikeln, Fälschungen und Mängel zu erkennen`] : [])];
     const body = crumbs(cr) + `<article class="kb"><h1>Über ${esc(NAME)}</h1>
-<div class="byline"><span>${ic("update")}Stand: ${STAND}</span></div>
+<div class="byline"><span>${ic("update")}Stand: ${SEITE_TIME}</span></div>
 <div class="answer"><span class="kicker">Kurz gesagt</span><p>${esc(NAME)} hat zwei Teile: einen Kalender mit den Flohmärkten in Hamburg und bis 30 Kilometer drumherum, und Hilfen fürs Kaufen und Verkaufen, die auf jedem Flohmarkt in Deutschland funktionieren. Alles ist kostenlos und ohne Anmeldung.</p></div>
 <div class="kb-body">
 <h2>Termine für Hamburg und Umgebung</h2>
@@ -2219,7 +2236,7 @@ ${faqBlock(faq)}
   layout({ p: FEE_P, title: `Flohmarkt Standgebühr Hamburg: alle Preise im Vergleich | ${NAME}`,
     desc: pickDesc(stats ? `Was kostet ein Flohmarktstand in Hamburg? Standgebühren von ${nFee} Märkten im Vergleich, meist ${q1} bis ${q3} € pro Meter. Mit Anmeldung und Restplätzen.` : "",
       `Was kostet ein Flohmarktstand in Hamburg? Standgebühren von ${nFee} Märkten im Vergleich, mit Link zur Anmeldung und Märkten mit Restplätzen vor Ort.`),
-    body, nav: "ratgeber", noindex: rows.length < 5, ld: G([crumbLD(cr), faqLD(faq)]) });
+    body, nav: "maerkte", noindex: rows.length < 5, ld: G([crumbLD(cr), faqLD(faq)]) });
 }
 
 const STATS_P = "/flohmarkt-hamburg-statistik/";
@@ -2298,6 +2315,57 @@ for (const [p, pg] of pages) {
   else if (aus) warn("Einstellungen", "Die Notbremse ist ausgeschaltet (Einstellung „Notbremse“ = aus). Sie schützt davor, dass eine versehentlich geleerte Tabelle veröffentlicht wird. Bitte die Zeile wieder löschen.");
 }
 
+/* ---------------------------------------------------------------- Änderungsdatum je Seite
+   Das Datum bleibt stehen, solange sich der Inhalt nicht ändert. Google nutzt lastmod (Sitemap) und dateModified (Artikel) nur,
+   wenn die Angaben verlässlich sind, und ein Datum, das jede Nacht neu ist, ohne dass sich etwas geändert hat, gilt als geschönt.
+   Als Inhalt einer Seite zählen Titel, Beschreibung, strukturierte Daten und der Hauptteil. Nicht mit zählen: Kopf, Menü, Fuß,
+   Versionskürzel von Stil, Skript und Icons, die Werkzeug- und Hamburg-Hinweise am Seitenende und der Text in Hinweiskästen
+   (cta-box, etwa „der nächste am …“), von denen nur zählt, wohin sie verlinken, und die wechselnden Beispiele bei den
+   Werkzeugen (Kauf-Check-Beispiel, Ratgeber-Fragen, Fragenliste auf /flohmarkt-tipps/). Ein neuer Menüpunkt, ein neuer Anstrich, ein weitergerücktes Datum in einem
+   Kasten oder ein anderes Tagesbeispiel ist kein neuer Inhalt.
+   Artikel (Ratgeber, Kauf-Check) haben zusätzlich ein Datum für ihren Wortlaut. Es ändert sich nur, wenn sich Überschrift, Text oder
+   Fragen ändern, nicht wenn sich ein Kasten daneben ändert (etwa der nächste Termin einer Marktart). Dieses Datum steht im Artikel
+   als „Stand“ und in den Angaben für Google als dateModified. */
+const indexable = [...pages].filter(([p, pg]) => !pg.noindex && p !== "/404.html").map(([p]) => p);
+// Version der Berechnung. Beim ersten Bau mit einer neuen Version lassen sich die alten Fingerabdrücke nicht vergleichen:
+// Dann bleiben die bisherigen Daten stehen, statt dass alle Seiten auf einmal das heutige Datum bekommen.
+const SIG_V = 2;
+const LASTMOD = {}, PAGE_STATE = {}, ART_STATE = {};
+{
+  const old = OLD_STATE, today = key(TODAY), same = old._v === SIG_V, oldArt = same && old._art && typeof old._art === "object" ? old._art : {};
+  const okDay = d => typeof d === "string" && /^\d{4}-\d{2}-\d{2}$/.test(d) && d <= today;
+  const fp = t => hashOf("sha1").update(t).digest("hex").slice(0, 12);
+  const one = (html, re) => (html.match(re) || [""])[0];
+  const sigOf = html => fp([one(html, /<title>[\s\S]*?<\/title>/), one(html, /<meta name="description"[^>]*>/), ...(html.match(/<script type="application\/ld\+json">[\s\S]*?<\/script>/g) || []), one(html, /<main[\s\S]*?<\/main>/)].join("\n")
+    .replace(/<section class="sec (?:more-tools|lp-hh|lp-qs)">[\s\S]*?<\/section>/g, "").replace(/<a class="cta-box" href="([^"]*)">[\s\S]*?<\/a>/g, "[$1]")
+    .replace(/<fieldset class="st-check"[\s\S]*?<\/fieldset>/g, "").replace(/<div class="st-vis st-qs">[\s\S]*?<\/div>/g, "")
+    .split(STAND).join("").split(today).join("").replace(/\?v=[0-9a-f]{8}/g, ""));
+  for (const p of indexable) {
+    const sig = sigOf(pages.get(p).html), o = old[p], had = Array.isArray(o) && okDay(o[1]);
+    const d = had && (o[0] === sig || !same) ? o[1] : today;
+    LASTMOD[p] = d; PAGE_STATE[p] = [sig, d];
+  }
+  for (const [p, pg] of pages) {
+    if (!pg.art) continue;
+    const sig = fp(pg.art), o = oldArt[p], op = old[p];
+    // Bei der Umstellung bekommt ein Artikel das bisherige Änderungsdatum seiner Seite: Der Text kann älter sein, aber nicht jünger.
+    const d = Array.isArray(o) && o[0] === sig && okDay(o[1]) ? o[1] : !same && Array.isArray(op) && okDay(op[1]) ? op[1] : today;
+    ART_STATE[p] = [sig, d];
+    if (LASTMOD[p] && d > LASTMOD[p]) LASTMOD[p] = PAGE_STATE[p][1] = d; // Eine Seite ist nie älter als ihr Artikel
+  }
+}
+PAGE_STATE._v = SIG_V; PAGE_STATE._art = ART_STATE;
+// Platzhalter für die Daten einsetzen (siehe AKT_ISO weiter oben)
+{
+  const today = key(TODAY), de = k => `${k.slice(8, 10)}.${k.slice(5, 7)}.${k.slice(0, 4)}`;
+  for (const [p, pg] of pages) {
+    if (!pg.html.includes("%%")) continue;
+    const a = ART_STATE[p] ? ART_STATE[p][1] : today, sd = LASTMOD[p] || today;
+    pg.html = pg.html.split("%%AKT_ISO%%").join(a).split("%%AKT_DE%%").join(de(a)).split("%%SEITE_ISO%%").join(sd).split("%%SEITE_DE%%").join(de(sd));
+    const rest = pg.html.match(/%%[A-Z_]+%%/); if (rest) warn("Datum", `${p}: Platzhalter ${rest[0]} wurde nicht ersetzt.`);
+  }
+}
+
 /* ---------------------------------------------------------------- Schreiben */
 fs.rmSync(OUT, { recursive: true, force: true });
 const withBase = t => BASE ? t.replace(/srcset="([^"]*)"/g, (m, v) => `srcset="${v.replace(/(^|,\s*)\/(?!\/)/g, `$1${BASE}/`)}"`).replace(/(href|src)="\/(?!\/)/g, `$1="${BASE}/`).replace(/url\("\/fonts\//g, `url("${BASE}/fonts/`) : t;
@@ -2359,19 +2427,7 @@ if (fontsFound.length) {
   const FONT_C = { "Bricolage Grotesque": "Copyright 2022 The Bricolage Grotesque Project Authors (https://github.com/ateliertriay/bricolage)", "Figtree": "Copyright 2022 The Figtree Project Authors (https://github.com/erikdkennedy/figtree)", "DM Mono": "Copyright 2020 The DM Mono Project Authors (https://www.github.com/googlefonts/dm-mono)" };
   fs.writeFileSync(path.join(OUT, "fonts/OFL.txt"), [...new Set(fontsFound.map(x => FONT_C[x.fam]).filter(Boolean))].join("\n") + "\n\n" + OFL_TEXT + "\n");
 }
-const indexable = [...pages].filter(([p, pg]) => !pg.noindex && p !== "/404.html").map(([p]) => p);
-// Sitemap, bei den Schilder-Seiten mit Vorschaubildern für die Google-Bildersuche
-// Änderungsdatum je Seite: bleibt stehen, solange sich der Inhalt nicht ändert (Google nutzt lastmod nur, wenn es verlässlich ist).
-// Versionskürzel von Stil, Skript und Icons zählen dabei nicht mit: Ein neuer Anstrich ist kein neuer Inhalt.
-const LASTMOD = {}, PAGE_STATE = {};
-{
-  const old = OLD_STATE, today = key(TODAY);
-  for (const p of indexable) {
-    const sig = hashOf("sha1").update(pages.get(p).html.split(STAND).join("").split(today).join("").replace(/\?v=[0-9a-f]{8}/g, "")).digest("hex").slice(0, 12), o = old[p];
-    const d = Array.isArray(o) && o[0] === sig && /^\d{4}-\d{2}-\d{2}$/.test(o[1]) && o[1] <= today ? o[1] : today;
-    LASTMOD[p] = d; PAGE_STATE[p] = [sig, d];
-  }
-}
+// Sitemap, bei den Schilder-Seiten mit Vorschaubildern für die Google-Bildersuche. Änderungsdaten: siehe „Änderungsdatum je Seite“ weiter oben.
 PAGE_STATE._neu = NEU;
 PAGE_STATE._zahlen = [MARKETS.length, EVENTS.length, MARKETS.length - NO_DATES.length, HORIZON, key(TODAY)]; // Märkte, Termine, Märkte mit Termin, Tage im Voraus, Datum: für die Notbremse im nächsten Bau
 fs.writeFileSync(path.join(OUT, "assets/seiten-stand.json"), JSON.stringify(PAGE_STATE));

@@ -51,6 +51,12 @@
     var dated = document.querySelectorAll("main [data-day]"), old = 0;
     dated.forEach(function (el) { if (el.getAttribute("data-day") < NOW.day) { el.remove(); old++; } });
     document.querySelectorAll("main ul.dates").forEach(function (l) { if (!l.children.length) { var p = document.createElement("p"); p.className = "meta"; p.textContent = "Die nächsten Termine werden gerade aktualisiert."; l.parentNode.replaceChild(p, l); } });
+    // Kasten „Heute | Morgen“ auf der Startseite: Seine Reiter stimmen nach Mitternacht nicht mehr („Morgen“ ist schon heute), bis zum Neubau ausblenden
+    var ab0 = document.getElementById("ab"); if (ab0) ab0.hidden = true;
+    // Wochen-Highlights von gestern sind oben schon entfernt: Punkte unter dem Slider an die übrigen Bilder anpassen, leeren Slider ganz ausblenden
+    var hlT0 = document.getElementById("hlTrack"), hlD0 = document.getElementById("hlDots");
+    if (hlT0 && !hlT0.children.length) { var hs0 = hlT0.closest(".hl"); if (hs0) hs0.hidden = true; }
+    else if (hlT0 && hlD0) { while (hlD0.children.length > hlT0.children.length) hlD0.removeChild(hlD0.lastElementChild); var n0 = hlD0.children.length; [].forEach.call(hlD0.children, function (b, j) { b.setAttribute("aria-label", "Bild " + (j + 1) + " von " + n0); if (j) b.removeAttribute("aria-current"); else b.setAttribute("aria-current", "true"); }); if (n0 < 2) hlD0.hidden = true; }
     // Hinweis nur, wo er nötig ist: auf Seiten mit „heute“/„morgen“ oder wenn ein Neubau ausgefallen ist (Stand älter als gestern).
     // Sonst verschwinden die vergangenen Termine einfach still.
     var dOf = function (k) { var q = k.split("-"); return Date.UTC(+q[0], +q[1] - 1, +q[2]); }, behind = Math.round((dOf(NOW.day) - dOf(stand)) / 864e5), rel = document.documentElement.hasAttribute("data-rel");
@@ -74,13 +80,13 @@
     // Kurzer Hinweis am Knopf, nur wer von außen kommt (Suchmaschine, Link, direkt) und nur beim ersten Erscheinen. Beim Klicken innerhalb von Flohlotse kommt er nicht wieder. Nichts wird gespeichert.
     var fHint = true; try { fHint = !document.referrer || new URL(document.referrer).host !== location.host; } catch (e) {}
     var fY0 = 0, fHT;
-    var fHintOff = function () { clearTimeout(fHT); fab.classList.remove("hint"); };
+    var fHintOff = function () { clearTimeout(fHT); fab.classList.remove("fab-hint"); };
     var fShow = function () {
       if (fOpen) return;
       var was = fab.hidden; fab.hidden = false;
       // Kein Hinweis, wenn gerade der Wisch-Stapel im Bild ist (der aufgeklappte Schriftzug läge über den Knöpfen)
-      if (was && !fab.hidden && fHint) { fHint = false; var dkB = document.getElementById("deck"), dkR = dkB && !dkB.hidden && dkB.getBoundingClientRect(); if (!(dkR && dkR.height && dkR.bottom > 0 && dkR.top < window.innerHeight) && !document.querySelector("main.pg-start")) { fY0 = window.scrollY; fab.classList.add("hint"); fHT = setTimeout(fHintOff, 3200); } }
-      else if (fab.classList.contains("hint") && Math.abs(window.scrollY - fY0) > 260) fHintOff();
+      if (was && !fab.hidden && fHint) { fHint = false; var dkB = document.getElementById("deck"), dkR = dkB && !dkB.hidden && dkB.getBoundingClientRect(); if (!(dkR && dkR.height && dkR.bottom > 0 && dkR.top < window.innerHeight) && !document.querySelector("main.pg-start")) { fY0 = window.scrollY; fab.classList.add("fab-hint"); fHT = setTimeout(fHintOff, 3200); } }
+      else if (fab.classList.contains("fab-hint") && Math.abs(window.scrollY - fY0) > 260) fHintOff();
     };
     fBtn.addEventListener("click", function () { fSet(!fOpen); if (!fOpen) fBtn.focus(); });
     fDim.addEventListener("click", function () { fSet(false); });

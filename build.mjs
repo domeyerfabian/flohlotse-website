@@ -2045,14 +2045,21 @@ function sheetHTML(st) {
   const u = `<div class="sg"><div class="sg-top">${signTxt(st.top)}</div><div class="sg-mw"><div class="sg-main"><span>${signTxt(st.main)}</span></div><span class="sg-sym" aria-hidden="true">${symSVG(st.sym)}</span></div><div class="sg-bot">${signTxt(st.bot)}</div><div class="sg-foot"><div class="sg-pay"><svg class="sg-payqr" aria-hidden="true" focusable="false"></svg><span><b>Mit PayPal zahlen</b><span class="sg-payurl"></span></span></div>${qrSVG("sg-qr")}<span><b>flohlotse.de/schilder</b>Schilder kostenlos gestalten</span></div></div>`;
   return `<div class="sheet f-${st.fmt}${st.tone ? " tone-" + st.tone : ""}${st.sym ? " sym" : ""}" id="sheet">${st.fmt === "acht" ? u.repeat(8) : u}</div>`;
 }
-function genHTML(st, presets, heading, pay) {
+// Themen im Designer: jede Vorlage mit all ihren Sprüchen, dazu „Eigener Text“. So findet man jeden Spruch auf jeder Designer-Seite.
+// Reihenfolge: Beliebtes und Lustiges zuerst.
+const THEME_ORDER = ["alles-1-euro", "lustige-sprueche", "maedelsflohmarkt", "preisschilder", "bar-und-paypal", "handeln-erwuenscht", "mengenrabatt", "alles-muss-raus", "reserviert-verkauft", "zu-verschenken", "bin-gleich-zurueck", "bitte-nicht-anfassen", "hofflohmarkt", "kinderflohmarkt", "kaffee-und-kuchen", "guter-zweck", "vintage", "getestet", "weihnachtsflohmarkt"];
+const signThemes = () => [...THEME_ORDER.map(s => SIGN_BY[s]).filter(Boolean), ...SIGNS.filter(t => !THEME_ORDER.includes(t.s))]
+  .map(t => ({ s: t.s, l: { mengenrabatt: "Mengenrabatt", "reserviert-verkauft": "Reserviert & Verkauft" }[t.s] || t.chip, items: t.v.map(x => ({ l: x.l, set: t.s === "bar-und-paypal" ? { ...signState(t, x), pay: x.l === "Nur Bargeld" ? 0 : 1 } : signState(t, x) })) }))
+  .concat([{ s: "", l: "Eigener Text", items: [{ l: "Eigener Text", set: { kind: "sign", fmt: "quer", top: "", main: "Dein Text", bot: "" } }] }]);
+function genHTML(st, themes, act, heading, pay) {
   const pj = p => esc(JSON.stringify(p));
   const fmtBtn = (f, l) => `<button type="button" class="chip" data-fmt="${f}" aria-pressed="${st.fmt === f}">${l}</button>`;
   const tone = st.tone || "gelb", toneBtn = k => `<button type="button" class="chip" data-tone="${k}" aria-pressed="${tone === k}"><i class="sw sw-${k}"></i>${TONES[k][0]}</button>`;
   const symBtn = k => `<button type="button" class="sym-btn" data-sym="${k}" aria-pressed="${(st.sym || "") === k}" aria-label="${k ? "Symbol: " + esc(SYM[k][0]) : "Ohne Symbol"}" title="${k ? esc(SYM[k][0]) : "Ohne"}">${k ? symSVG(k) : "<span>Ohne</span>"}</button>`;
   return `<section class="gen" id="gen" data-kind="${st.kind}" data-fmt="${st.fmt}" data-tone="${tone}" data-sym="${st.sym || ""}"${pay === "auto" ? ' data-pay="0"' : ""} aria-labelledby="genH">
 <h2 id="genH">${heading}</h2>
-${presets.length > 1 ? `<div class="chips gen-presets js-only" role="group" aria-label="Vorlage wählen">${presets.map((p, i) => `<button type="button" class="chip" data-set="${pj(p.set)}" aria-pressed="${i === 0}">${esc(p.l)}</button>`).join("")}</div>` : ""}
+<div class="gen-pick js-only"><div class="gen-theme"><label for="genTheme">Thema</label><select id="genTheme">${themes.map((g, i) => `<option value="${i}"${i === act ? " selected" : ""}>${esc(g.l)}</option>`).join("")}</select></div>
+${themes.map((g, i) => `<div class="chips gen-presets" data-grp="${i}" role="group" aria-label="${esc(g.l)}: Spruch wählen"${i === act ? "" : " hidden"}>${g.items.map((p, j) => `<button type="button" class="chip" data-set="${pj(p.set)}" aria-pressed="${i === act && j === 0}">${esc(p.l)}</button>`).join("")}</div>`).join("")}</div>
 <div class="sheet-wrap" id="sheetWrap">${sheetHTML(st)}</div>
 <div class="gen-form js-only">
 <label class="only-sign"><span>Großer Text</span><input id="fMain" type="text" value="${esc(st.main)}" maxlength="40" autocomplete="off" enterkeyhint="done"></label>
@@ -2106,15 +2113,14 @@ const faqHTML = f => `<section class="faq"><h2>Häufige Fragen</h2>${f.map(([q, 
 // Übersichtsseite
 {
   const p = SIGN_BASE, cr = [[NAME, "/"], ["Schilder"]];
-  const presets = SIGNS.map(t => ({ l: t.chip, set: t.s === "bar-und-paypal" ? { ...signState(t), pay: 1 } : signState(t) })).concat([{ l: "Eigener Text", set: { kind: "sign", fmt: "quer", top: "", main: "Dein Text", bot: "" } }]);
-  const first = SIGN_BY["alles-1-euro"]; presets.sort((a, b) => (b.l === first.chip) - (a.l === first.chip));
+  const themes = signThemes(), first = SIGN_BY[themes[0].s];
   const faq = [["Kostet der Schilder-Designer etwas?", "Nein. Du kannst so viele Schilder gestalten und drucken, wie du möchtest, ohne Anmeldung."],
     ["Werden meine Texte gespeichert?", "Nein. Das Schild entsteht direkt in deinem Browser. Wir sehen nicht, was du eintippst."],
     ["Kann ich auf Etiketten drucken?", `Ja. Die <a href="${signUrl(SIGN_BY.preisschilder)}">Preisschilder-Vorlage</a> hat 24 Felder im Format 70 × 37 mm und passt auf gängige Etikettenbögen mit diesem Maß. Stell beim Drucken die Größe auf 100 %.`],
     ["Warum steht unten flohlotse.de/schilder?", "Damit auch andere sehen, wo es die Schilder kostenlos gibt. Der Hinweis ist klein und stört das Schild nicht."]];
   const body = crumbs(cr) + `<article class="kb"><h1>Flohmarkt-Schilder und Preisschilder zum Ausdrucken</h1>${signByline}
 <p class="lead">Der Schilder-Designer für deinen Stand: Vorlage wählen, Text eintippen, drucken. Ohne Drucker speicherst du das Schild als PDF und druckst es im Copyshop.</p>
-${genHTML(signState(first), presets, "Schild gestalten und drucken", "auto")}
+${genHTML(signState(first), themes, 0, "Schild gestalten und drucken", "auto")}
 <section class="related"><div class="sec-head"><h2>Alle Vorlagen</h2></div>${grid(SIGNS.map(signCard))}</section>
 <div class="kb-body"><h2>Welche Schilder lohnen sich am Stand?</h2><p>Ein großes Schild für die Wühlkiste wie <a href="${signUrl(first)}">„Alles 1 €“</a> erspart dir an einem vollen Markttag Dutzende Fragen. Ein <a href="${signUrl(SIGN_BY["bar-und-paypal"])}">Zahlungsschild</a> verhindert peinliche Momente an der Kasse, und <a href="${signUrl(SIGN_BY["handeln-erwuenscht"])}">„Handeln erwünscht“</a> holt Leute ins Gespräch, die sonst nur gucken. Für einzelne Stücke nimmst du <a href="${signUrl(SIGN_BY.preisschilder)}">kleine Preisschilder</a>. Für den Hofflohmarkt gibt es <a href="${signUrl(SIGN_BY.hofflohmarkt)}">Wegweiser mit Pfeil</a>, für die letzte Stunde <a href="${signUrl(SIGN_BY["alles-muss-raus"])}">„Alles muss raus“</a> und für den Stand deiner Kinder ein eigenes <a href="${signUrl(SIGN_BY.kinderflohmarkt)}">Kinderflohmarkt-Schild</a>. Für gute Laune gibt es <a href="${signUrl(SIGN_BY["lustige-sprueche"])}">lustige Sprüche</a>, für den <a href="${signUrl(SIGN_BY.maedelsflohmarkt)}">Mädelsflohmarkt</a> Schilder in Pink. Für Retro-Schätze gibt es <a href="${signUrl(SIGN_BY.vintage)}">Vintage-Schilder</a>, für Elektronik <a href="${signUrl(SIGN_BY.getestet)}">„Getestet“</a> und für Kita- und Schulflohmärkte <a href="${signUrl(SIGN_BY["kaffee-und-kuchen"])}">Kaffee &amp; Kuchen</a> und <a href="${signUrl(SIGN_BY["guter-zweck"])}">„Für den guten Zweck“</a>. Jedes Schild kannst du in Gelb, Pink oder Mint drucken und mit einem Symbol verzieren, von der Krone bis zum Sektglas.</p>
 ${sideImg("seite-schilder", "quer kante")}<h2>So hält dein Schild den ganzen Tag</h2><p>Steck das Blatt in eine Klarsichthülle, dann übersteht es Nieselregen und Kaffeeflecken. Mit Wäscheklammern oder Kreppband hält es an Kisten und Tischkanten, bei Wind hilft ein Stück Pappe dahinter. Was sonst noch in die Tasche gehört, steht in der ${kl("checkliste-flohmarktstand", "Checkliste für deinen Flohmarktstand")}.</p>
@@ -2129,7 +2135,7 @@ for (const t of SIGNS) {
   const p = signUrl(t), cr = [[NAME, "/"], ["Schilder", SIGN_BASE], [t.chip]];
   const others = SIGNS.filter(x => x !== t);
   const body = crumbs(cr) + `<article class="kb"><h1>${esc(t.h1)}</h1>${signByline}
-${genHTML(signState(t), t.v.map(x => ({ l: x.l, set: signState(t, x) })), t.kind === "tags" ? "Preisschilder gestalten" : `„${esc(t.chip)}“-Schild gestalten`, t.s === "bar-und-paypal")}
+${(() => { const th = signThemes(); return genHTML(signState(t), th, th.findIndex(g => g.s === t.s), t.kind === "tags" ? "Preisschilder gestalten" : `„${esc(t.chip)}“-Schild gestalten`, t.s === "bar-und-paypal" ? true : "auto"); })()}
 <div class="kb-body"><p class="intro">${esc(t.ans)}</p>${t.b().map(([h, x]) => `<h2>${esc(h)}</h2><p>${x}</p>`).join("")}</div>
 ${faqHTML(t.f)}
 <section class="related"><div class="sec-head"><h2>Weitere Schilder-Vorlagen</h2>${more(SIGN_BASE, "Alle")}</div>${grid(others.map(signCard))}</section>

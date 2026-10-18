@@ -3,7 +3,8 @@
   var menu = document.querySelector(".menu-wrap");
   if (menu) {
     var label = menu.querySelector(".menu-btn span");
-    menu.addEventListener("toggle", function () { if (label) label.textContent = menu.open ? "Schließen" : "Menü"; });
+    // Offen: Kreuz statt Liste. „Schließen“ nur, wenn genug Platz ist; am Handy bleibt „Menü“ stehen, damit der Knopf nicht aus der Kopfzeile ragt.
+    menu.addEventListener("toggle", function () { if (label) label.textContent = menu.open && window.matchMedia && matchMedia("(min-width: 480px)").matches ? "Schließen" : "Menü"; });
     document.addEventListener("keydown", function (e) { if (e.key === "Escape" && menu.open) { menu.open = false; menu.querySelector("summary").focus(); } });
     document.addEventListener("click", function (e) { if (menu.open && (!menu.contains(e.target) || e.target.closest(".menu a"))) menu.open = false; });
   }

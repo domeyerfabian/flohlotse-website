@@ -502,7 +502,7 @@ const nbU = t => esc(t).replace(/(\d) (?=€|%|(?:m|Uhr|km)\b)/g, "$1&nbsp;");
 function menuHTML() {
   const cnt = k => MARKETS.filter(m => m.bez === k).length;
   const li = (h, l) => `<li><a href="${h}">${l}</a></li>`;
-  return `<details class="menu-wrap"><summary class="menu-btn">${ic("list")}<span>Menü</span></summary>
+  return `<details class="menu-wrap"><summary class="menu-btn">${ic("list", "i i-open")}${ic("x", "i i-shut")}<span>Menü</span></summary>
 <div class="menu"><nav class="menu-grid" aria-label="Alle Bereiche">
 <div><p class="menu-h">Flohmärkte in Hamburg</p><ul>${li("/suche/", "Suchen nach Name oder Datum")}${li("/heute/", "Heute")}${li("/morgen/", "Morgen")}${li("/wochenende/", "Am Wochenende")}${li("/samstag/", "Am Samstag")}${li("/sonntag/", "Am Sonntag")}${li(WEEK_P, "Unter der Woche")}${li("/termine/", "Alle Termine")}${li("/flohmaerkte/", "Alle Märkte")}${li(FEE_P, "Standgebühren im Vergleich")}${li("/entdecken/", "Wischen &amp; merken")}${li("/merkliste/", "Meine Merkliste")}</ul></div>
 <div><p class="menu-h">Nach Art</p><ul>${CATS_ON.map(c => li(`/${c.s}/`, esc(c.chip))).join("")}</ul></div>

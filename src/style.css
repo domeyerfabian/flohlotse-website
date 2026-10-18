@@ -392,6 +392,12 @@ a.route .i{width:17px;height:17px}
 /* ---------- Schildgenerator ---------- */
 .gen{margin-top:26px;background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:18px 16px 20px;display:grid;gap:14px}
 .gen h2{font-size:21px}
+/* Thema (Vorlage) als Auswahlliste, darunter die Sprüche des Themas */
+.gen-pick{display:grid;gap:10px;min-width:0}
+.gen-theme{position:relative;display:flex;align-items:center;gap:12px}
+.gen-theme label{font-size:14px;font-weight:600;flex:none}
+.gen-theme select{flex:1;min-width:0;font:inherit;font-size:16px;font-weight:700;color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:999px;padding:11px 44px 11px 18px;appearance:none;-webkit-appearance:none;cursor:pointer}
+.gen-theme::after{content:"";position:absolute;right:20px;top:50%;width:8px;height:8px;border-right:2px solid var(--ink);border-bottom:2px solid var(--ink);transform:translateY(-70%) rotate(45deg);pointer-events:none}
 .gen-presets{margin:0;flex-wrap:nowrap;overflow-x:auto;margin-inline:-16px;padding:2px 16px 4px;scrollbar-width:none}
 .gen-presets::-webkit-scrollbar{display:none}
 .gen-presets .chip{flex:none}

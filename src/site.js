@@ -566,6 +566,12 @@
         setPressed("button[data-set]", p); setPressed("button[data-fmt]", gen.querySelector('button[data-fmt="' + st.fmt + '"]')); render();
       }
     });
+    // Thema wählen: zeigt die Sprüche dieses Themas und übernimmt gleich den ersten
+    var themeSel = $("genTheme");
+    if (themeSel) themeSel.addEventListener("change", function () {
+      var v = themeSel.value; gen.querySelectorAll(".gen-presets[data-grp]").forEach(function (r) { r.hidden = r.getAttribute("data-grp") !== v; });
+      var b = gen.querySelector('.gen-presets[data-grp="' + v + '"] button[data-set]'); if (b) b.click();
+    });
     // Drucken: nur das Schild, in Originalgröße, Seitenformat passend (auch bei Strg+P)
     var pageCss = document.createElement("style"), root = null;
     var prep = function () {

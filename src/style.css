@@ -37,11 +37,19 @@ a{color:var(--ink)}
 .more{display:block;width:100%;margin-top:14px;font:inherit;font-weight:600;background:var(--surface);color:var(--ink);border:1px solid var(--ink);border-radius:12px;padding:12px;cursor:pointer}
 .brand{display:flex;align-items:center;gap:8px;font-family:var(--f-display);font-weight:800;font-size:22px;letter-spacing:-.02em;color:var(--ink);text-decoration:none}
 .brand i{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--sticker);color:var(--sticker-ink);font-style:normal;font-size:15px;transform:rotate(-8deg)}
-.nav{display:flex;gap:16px;font-size:14px;font-weight:600}
+.nav{display:flex;align-items:center;gap:16px;font-size:14px;font-weight:600}
+/* Zwei Bereiche: Hamburg (Kalender) und Für jeden Flohmarkt (Werkzeuge), getrennt durch einen feinen Strich */
+.nav-g{display:flex;align-items:center;gap:16px}
+.nav .nav-g + .nav-g,.nav .nav-g + a{border-left:1px solid var(--line);padding-left:16px}
+.nav-l{display:none;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);white-space:nowrap;margin-right:-6px}
 .nav a{color:var(--muted);text-decoration:none;white-space:nowrap;padding:4px 0}
 .nav a:hover,.nav a[aria-current="page"]{color:var(--ink)}
 .region{font-size:13px;font-weight:600;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 12px;white-space:nowrap}
 @media (max-width:820px){.nav{display:none}}
+/* Tablet (bis 1079 px): „Für Veranstalter“ steht nur im Menü und im Fuß, damit die Kopfzeile nicht überläuft.
+   Breiter Bildschirm (ab 1280 px): Die beiden Bereiche bekommen ihre Überschrift „Hamburg“ und „Für jeden Flohmarkt“. */
+@media (min-width:821px) and (max-width:1079px){.nav > a{display:none}}
+@media (min-width:1280px){.nav-l{display:inline}}
 
 /* Hero */
 .hero{padding-block:36px 20px;display:grid;grid-template-columns:1fr auto;gap:20px;align-items:end}
@@ -362,6 +370,7 @@ a.route .i{width:17px;height:17px}
 .facts dt .i{width:17px;height:17px;color:var(--ink);opacity:.75}
 .facts dd a.route{margin:8px 0 0}
 .byline span{display:inline-flex;align-items:center;gap:5px}
+.byline time{display:contents} /* Datum bleibt mit „Stand:“ ein Textstück, kein zusätzlicher Abstand */
 .byline .i{width:16px;height:16px}
 /* Häufige Fragen: eigener Pfeil statt Dreieck, große Tippfläche */
 .faq summary{list-style:none;display:flex;justify-content:space-between;align-items:flex-start;gap:14px;padding-block:4px}
@@ -1200,6 +1209,11 @@ a.route.kc-go{margin:10px 0 0;min-height:44px;font-size:15px;padding:8px 16px}
 /* Werkzeug-Seiten: Querverweise am Ende */
 .mt-grid{display:grid;gap:10px}
 .mt-grid .cta-box{margin:0}
+/* Leiser Hinweis auf den Kalender für Besucher aus Hamburg */
+.mt-hh{display:flex;gap:10px;align-items:flex-start;margin:20px 0 0;font-size:15px;line-height:1.5;color:var(--muted)}
+.mt-hh .i{width:18px;height:18px;flex:none;margin-top:3px;color:var(--ink)}
+.mt-hh b{color:var(--ink);font-weight:700}
+.more-tools > .mt-hh:first-child{margin-top:0}
 @media (min-width:760px){.mt-grid{grid-template-columns:1fr 1fr}}
 /* Werkzeug-Seiten: schwebender Plus-Knopf */
 .fab{--fab-bg:#15211B;--fab-fg:#F6E03A;position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:30;display:grid;justify-items:end;gap:10px}

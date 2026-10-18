@@ -1310,6 +1310,22 @@ a.route.kc-go{margin:10px 0 0;min-height:44px;font-size:15px;padding:8px 16px}
 .st-sec .st-qs{gap:8px;max-width:340px}
 .st-sec .st-qs a{padding:12px 14px}
 @media (min-width:860px){.st-sec .stage{padding:44px 48px}.st-sec .st-signs{max-width:380px}.st-sec .st-check{max-width:340px}.st-sec .st-qs{max-width:400px}}
+/* Farbcode der Werkzeuge (wie die Kacheln auf der Startseite): Schilder gelb, Kauf-Check dunkel, Ratgeber hell.
+   Gelb und Dunkel bleiben in beiden Modi gleich, damit man das Werkzeug sofort an der Farbe erkennt. */
+.stage .kicker{display:inline-flex;align-items:center;gap:7px}
+.stage .kicker .i{width:18px;height:18px}
+.st-yellow{background:var(--sticker);border-color:var(--sticker);color:var(--sticker-ink)}
+.st-yellow .kicker,.st-yellow p{color:var(--sticker-ink)}
+.st-yellow p{opacity:.8}
+.st-yellow .btn{background:var(--sticker-ink);color:var(--sticker)}
+.st-yellow .st-signs img{border-color:rgba(0,0,0,.08);box-shadow:0 14px 30px rgba(60,50,0,.22)}
+/* Ratgeber-Karte hell in beiden Modi: die hellen Farben gelten nur innerhalb der Karte */
+.st-light{--paper:#F2F4F0;--surface:#FFFFFF;--ink:#15211B;--muted:#5A6961;--line:#DCE3DC;background:var(--surface);border-color:var(--line);color:var(--ink);color-scheme:light}
+.lp-jump .lp-ic{display:grid;place-items:center;width:42px;height:42px;border-radius:12px;background:var(--paper);color:var(--ink);box-shadow:inset 0 0 0 1px var(--line)}
+.lp-jump .lp-ic .i{width:22px;height:22px}
+.lp-jump .lp-j-sign .lp-ic{background:var(--sticker);color:var(--sticker-ink);box-shadow:none}
+.lp-jump .lp-j-kc .lp-ic{background:#15211B;color:#F6E03A;box-shadow:inset 0 0 0 1px rgba(255,255,255,.12)}
+.lp-jump .lp-j-kb .lp-ic{background:#F2F4F0;color:#15211B;box-shadow:inset 0 0 0 1px #DCE3DC}
 /* Seite für jeden Flohmarkt (/flohmarkt-tipps/, Kurzadresse /start für die Instagram-Bio), im Stil der Bühne. Alles mittig, ohne Trennlinien. */
 .lp-hero{position:relative;display:grid;justify-items:center;text-align:center;padding:36px 0 4px}
 .lp-hero .kicker{color:var(--muted)}
@@ -1317,7 +1333,7 @@ a.route.kc-go{margin:10px 0 0;min-height:44px;font-size:15px;padding:8px 16px}
 .lp-lead{margin:14px 0 0;color:var(--muted);font-size:17px;max-width:36ch;text-wrap:balance}
 .lp-jump{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;width:100%;max-width:440px;margin-top:24px}
 .lp-jump a{display:grid;justify-items:center;gap:2px;padding:14px 6px 12px;background:var(--surface);border:1px solid var(--line);border-radius:16px;color:var(--ink);text-decoration:none}
-.lp-jump b{font-size:15px;margin-top:6px}
+.lp-jump b{font-size:15px;margin-top:8px}
 .lp-jump small{font-size:12.5px;color:var(--muted);line-height:1.3}
 .lp-jump a:hover{border-color:var(--ink)}
 .lp-jump .i{width:24px;height:24px}

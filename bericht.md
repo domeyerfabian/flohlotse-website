@@ -6,7 +6,7 @@ Stand 19.10.2026 · 302 Seiten (296 für Google) · 132 Märkte · 178 Termine i
 
 | Bereich | Hinweis |
 |---|---|
-| Uhrzeit fehlt | 2 Termine in den nächsten drei Wochen ohne Uhrzeit: Flohmarkt famila Wedel am Sonntag, 1. November; Schrødelmarkt im Schrødingers am Sonntag, 8. November. Uhrzeit beim Veranstalter nachsehen und im Blatt „Termine“ (oder „Serien“) eintragen. |
+| Uhrzeit fehlt | Ein Termin in den nächsten drei Wochen ohne Uhrzeit: Flohmarkt famila Wedel am Sonntag, 1. November. Uhrzeit beim Veranstalter nachsehen und im Blatt „Termine“ (oder „Serien“) eintragen. |
 | Termin-Wächter | Flohmarkt auf dem ehemaligen Telekom-Gelände: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 15.11.2026. Bitte prüfen: https://kk-veranstaltungen.de/termine/ |
 | Termin-Wächter | Hallenflohmarkt in der Halle 15: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 20.10.2026. Bitte prüfen: https://www.asb-halle15.de/ |
 | Termin-Wächter | HNT Flohmarkt: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 25.10.2026, 26.10.2026, 27.10.2026. Bitte prüfen: https://www.hntonline.de/flohmarkt |

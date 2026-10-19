@@ -189,6 +189,24 @@ const FORM_LINK = safeHref(S["Formular-Link"], "Einstellungen, Formular-Link");
 const IMP_MAIL = (S["Impressum: E-Mail"] || "").trim();
 const FORM = FORM_LINK || (/^[^\s@<>"]+@[^\s@<>"]+\.[a-z]{2,}$/i.test(IMP_MAIL) ? `mailto:${IMP_MAIL}?subject=${encodeURIComponent("Flohmarkt eintragen")}` : "");
 const FORM_MAIL = /^mailto:/i.test(FORM);
+// Briefumschlag „Termin melden“ (Kopfzeile und Marktseiten): öffnet ein kleines Fenster mit zwei vorbereiteten E-Mails.
+// Nur wenn Termine per E-Mail kommen. Ist ein Formular eingetragen, führt der Briefumschlag direkt dorthin. Nichts wird gespeichert.
+const MS_ADDR = FORM_MAIL ? decodeURIComponent(FORM.slice(7).split("?")[0]) : "";
+const msMail = (subj, lines) => `mailto:${MS_ADDR}?subject=${encodeURIComponent(subj)}&body=${encodeURIComponent([`Hallo ${NAME},`, "", ...lines, "", "Viele Grüße", ""].join("\r\n"))}`;
+const msSheet = mk => {
+  if (!MS_ADDR) return "";
+  const u = mk ? `${SITE}/flohmarkt/${mk.slug}/` : "";
+  const neu = mk ? msMail(`Termin für ${mk.name}`, ["ich möchte einen Termin nachreichen.", "", `Markt: ${mk.name}`, u, "", "Datum: ", "Uhrzeit von/bis: ", "Quelle oder Link (falls vorhanden): "])
+    : msMail("Termin melden", ["ich möchte einen Flohmarkt-Termin melden.", "", "Name des Markts: ", "Datum: ", "Uhrzeit von/bis: ", "Adresse: ", "Link zur Website (falls vorhanden): ", "", "Ich veranstalte den Markt selbst: ja / nein"]);
+  const alt = msMail(mk ? `Änderung: ${mk.name}` : "Änderung oder Absage", [mk ? "bei diesem Markt hat sich etwas geändert." : "bei einem Termin hat sich etwas geändert.", "", ...(mk ? [`Markt: ${mk.name}`, u, ""] : ["Name des Markts: "]), "Betroffener Termin (Datum): ", "Was ist neu? (abgesagt, verschoben, andere Uhrzeit): ", "Quelle oder Link (falls vorhanden): "]);
+  return `<dialog class="ms" id="mailSheet" aria-labelledby="msH"><div class="ms-grab" aria-hidden="true"></div><button type="button" class="ms-x" aria-label="Schließen" data-ms-close>${ic("x")}</button>
+<p class="ms-h" id="msH">${mk ? `Termin für ${esc(mk.name)} melden` : "Termin melden"}</p><p class="ms-p">${mk ? "Fehlt ein Termin, hat sich die Uhrzeit geändert oder fällt er aus? Wir prüfen jeden Hinweis." : "Neuer Flohmarkt, fehlender Termin oder eine Änderung? Schreib uns kurz, wir prüfen jeden Hinweis."}</p>
+<a class="ms-opt" href="${esc(neu)}"><span class="ms-ic">${ic("cal")}</span><span><b>${mk ? "Termin nachreichen" : "Neuen Termin melden"}</b><small>${mk ? "Datum und Uhrzeit, mehr nicht" : "Markt, Datum, Uhrzeit und Adresse"}</small></span>${ic("chev")}</a>
+<a class="ms-opt" href="${esc(alt)}"><span class="ms-ic dk">${ic("update")}</span><span><b>Änderung oder Absage</b><small>Termin verschoben, abgesagt oder falsch</small></span>${ic("chev")}</a>
+<div class="ms-alt"><span>Kein Mail-Programm?</span><button type="button" data-copy="${esc(MS_ADDR)}">E-Mail-Adresse kopieren</button></div></dialog>`;
+};
+const mkOfPath = p => { const r = /^\/flohmarkt\/([^/]+)\/$/.exec(p); return r ? MARKETS.find(x => x.slug === r[1]) || null : null; };
+const msLink = (cls, inner, label, fallback = "/veranstalter/") => MS_ADDR ? `<a class="${cls}" href="${fallback}"${label ? ` aria-label="${label}"` : ""} aria-haspopup="dialog" data-ms>${inner}</a>` : FORM ? `<a class="${cls}" href="${esc(FORM)}"${label ? ` aria-label="${label}"` : ""} rel="noopener">${inner}</a>` : "";
 const IMP_NEED = ["Impressum: Name oder Firma", "Impressum: Straße", "Impressum: PLZ und Ort", "Impressum: E-Mail", "Impressum: Telefon"];
 const IMP_OK = IMP_NEED.every(k => S[k]);
 const PUBLIC = yes(S["Für Google freigeben"]) && IMP_OK;
@@ -578,6 +596,7 @@ ${ld ? `<script type="application/ld+json">${JSON.stringify(ld).replace(/</g, "\
 <a class="brand" href="/"><i>€</i>${esc(NAME)}</a>
 <nav class="nav" aria-label="Hauptmenü">${navHTML}</nav>
 <a class="srch-top" href="/suche/" aria-label="Flohmarkt suchen"${nav === "suche" ? ' aria-current="page"' : ""}>${ic("search")}</a>
+${msLink("mail-top", ic("mail"), "Termin melden")}
 <a class="fav-top" href="/merkliste/" aria-label="Merkliste"${nav === "merk" ? ' aria-current="page"' : ""}>${ic("heart")}<span class="fav-n" hidden></span></a>
 ${MENU()}
 </div></header>
@@ -591,7 +610,7 @@ ${shyHeads(body.replace(/<h1>([^<]{3,80}?): ([^<]+)<\/h1>/, '<h1>$1:<span class=
 <details class="foot-grp"><summary>Für jeden Flohmarkt</summary><nav class="foot-links" aria-label="Für jeden Flohmarkt"><a href="${TIPS_P}">Tipps &amp; Vorlagen</a><a href="/ratgeber/">Ratgeber</a>${KC_ON ? `<a href="${KC_P}">Kauf-Check</a>` : ""}<a href="/flohmarkt-schilder/">Schilder-Designer</a></nav></details>
 <details class="foot-grp"><summary>${esc(NAME)}</summary><nav class="foot-links" aria-label="${esc(NAME)}"><a href="${ABOUT_P}">Über Flohlotse</a><a href="/veranstalter/">Für Veranstalter</a>${INSTA ? instaA("Instagram") : ""}<a href="/impressum/">Impressum</a><a href="/datenschutz/">Datenschutz</a></nav></details>
 </footer>
-${fabHTML(toolK || (p === "/entdecken/" ? "dk" : p === "/termine/" ? "tm" : ""))}
+${msSheet(mkOfPath(p))}${fabHTML(toolK || (p === "/entdecken/" ? "dk" : p === "/termine/" ? "tm" : ""))}
 <script src="/assets/site${JS_V ? "." + JS_V.slice(3) : ""}.js" defer></script>
 </body>
 </html>`;
@@ -1549,7 +1568,7 @@ ${favBtn(m, "btn fav-big")}
 ${m.oepnv ? `<div><dt>${ic("tram")}Nächste Haltestelle</dt><dd>${esc(m.oepnv)}</dd></div>` : ""}${m.entry ? `<div><dt>${ic("tag")}Eintritt</dt><dd>${esc(entryText(m))}</dd></div>` : ""}${m.park ? `<div><dt>${ic("car")}Parken</dt><dd>${esc(m.park)}</dd></div>` : ""}${m.food ? `<div><dt>${ic("cup")}Essen &amp; Trinken</dt><dd>${esc(m.food)}</dd></div>` : ""}${m.org || m.web ? `<div><dt>${ic("user")}Veranstalter</dt><dd>${esc(m.org)}${m.web ? `${m.org ? "<br>" : ""}<a href="${esc(m.web)}" rel="noopener">Website des Veranstalters</a>` : ""}</dd></div>` : ""}${m.tags.length ? `<div><dt>${ic("tag")}Art des Markts</dt><dd class="tags-dd">${m.tags.map(t => CAT_BY_TAG[t] ? `<a class="tag" href="/${CAT_BY_TAG[t].s}/">${tagIc(t)}${esc(t)}</a>` : `<span class="tag">${tagIc(t)}${esc(t)}</span>`).join(" ")}</dd></div>` : ""}</dl>
 <div class="share-row">${shareBtn(m, first, "btn share-big")}<a class="route" href="${route}" rel="noopener">${ic("route")}Route planen</a></div>${calDD(m, first)}${first ? wxSay(wxEv(first), "für " + (first.k === key(TODAY) ? "heute" : first.k === key(addDays(TODAY, 1)) ? "morgen" : WDL[first.date.getUTCDay()])) : ""}
 ${m.intro ? `<section class="block kb-body"><h2>Über den Markt</h2><p>${rich(m.intro)}</p></section>` : ""}
-<section class="block"><h2>Nächste Termine</h2>${nxAll.length ? `<ul class="dates">${nxAll.map(e => `<li${e.cancelled ? ' class="off"' : ""} data-day="${e.k}"><span class="dt">${e.far ? fmtDateY(e.date) : fmtDate(e.date)}</span><span class="tm">${e.cancelled ? "fällt aus" : timeText(e)}</span>${e.note ? `<span class="meta">${esc(e.note)}</span>` : ""}</li>`).join("")}</ul>` : '<p class="meta">Die nächsten Termine sind noch nicht angekündigt.</p>'}</section>
+<section class="block"><h2>Nächste Termine</h2>${nxAll.length ? `<ul class="dates">${nxAll.map(e => `<li${e.cancelled ? ' class="off"' : ""} data-day="${e.k}"><span class="dt">${e.far ? fmtDateY(e.date) : fmtDate(e.date)}</span><span class="tm">${e.cancelled ? "fällt aus" : timeText(e)}</span>${e.note ? `<span class="meta">${esc(e.note)}</span>` : ""}</li>`).join("")}</ul>` : '<p class="meta">Die nächsten Termine sind noch nicht angekündigt.</p>'}${MS_ADDR || FORM ? `<div class="mk-report"><p><b>Termin fehlt oder stimmt nicht?</b> Sag uns kurz Bescheid.</p>${msLink("mk-report-btn", ic("mail") + "Melden", "", "/veranstalter/#korrektur")}</div>` : ""}</section>
 ${m.tips.length ? `<section class="block kb-body"><h2>Gut zu wissen</h2><ul class="tips">${m.tips.map(t => `<li>${rich(t)}</li>`).join("")}</ul></section>` : ""}
 ${m.fee || m.signup || m.signupHint || m.sellers ? `<section class="block sell"><h2>Selbst verkaufen</h2><dl class="facts">${m.fee ? `<div><dt>${ic("tag")}Standgebühr</dt><dd>${nbU(m.fee)}</dd></div>` : ""}${m.sellers ? `<div><dt>${ic("user")}Verkäufer</dt><dd>${esc(m.sellers)}</dd></div>` : ""}${m.signupHint ? `<div><dt>${ic("list")}Anmeldung</dt><dd>${nbU(m.signupHint)}</dd></div>` : ""}</dl>${m.signup ? `<p class="sell-go"><a class="route" href="${esc(m.signup)}" rel="noopener">Zur Anmeldung beim Veranstalter${ic("chev")}</a></p>` : ""}<p class="meta small">Stand der Angaben: Veranstalter, ohne Gewähr. Preise und Regeln können sich ändern. <a href="${FEE_P}">Alle Standgebühren im Vergleich</a></p>${signBox()}</section>` : ""}
 ${m.hint ? `<p class="hint">${rich(m.hint)}</p>` : ""}

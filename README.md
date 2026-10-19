@@ -38,6 +38,13 @@ Ihr pflegt nur die Tabelle. Die ausführliche Einrichtungsanleitung liegt als Do
 - **Bildnachweis:** Im Blatt Einstellungen bei „Bildnachweis“ steht „Fotos: Pexels (kostenlose Pexels-Lizenz).“
 - **Umkreissuche:** Die Postleitzahl wird erst nach Tippen auf „Anzeigen“ angewandt und steht nur hinter dem `#` in der Adresse, sie wird also nie an den Server geschickt.
 
+## Termin melden (Briefumschlag)
+
+- In der Kopfzeile jeder Seite steht ein Briefumschlag. Er öffnet ein kleines Fenster mit zwei vorbereiteten E-Mails: „Neuen Termin melden“ und „Änderung oder Absage“. Auf jeder Marktseite steht unter „Nächste Termine“ zusätzlich „Termin fehlt oder stimmt nicht? Melden“, dort ist der Marktname samt Link schon in der E-Mail eingetragen.
+- Die E-Mails gehen an die Adresse aus **Einstellungen → Impressum: E-Mail**. Ist dort ein **Formular-Link** eingetragen, führt der Briefumschlag direkt zum Formular.
+- „E-Mail-Adresse kopieren“ hilft allen, deren Handy kein Mail-Programm eingerichtet hat. Es gibt kein Formular auf der Website und nichts wird gespeichert, die Datenschutzerklärung (Abschnitt „Kontakt per E-Mail“) deckt das ab.
+- Damit am Handy alles in die Kopfzeile passt, zeigt der Menü-Knopf dort nur noch das Symbol ☰ (für Screenreader heißt er weiter „Menü“). Am Computer steht „Menü“ wie bisher.
+
 ## Gestaltung: ein festes System
 
 - **Farben:** nur Schwarz, Gelb und Weiß (plus Grau für Nebentext und Linien). Kein Blau, kein Rot, kein Grün.

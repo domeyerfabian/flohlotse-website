@@ -1374,12 +1374,12 @@ ${DK_EVS.length ? `<section class="sec home-deck" id="dkSec"><div class="sec-hea
 <section class="sec home-next"><div class="sec-head"><h2>Die nächsten Flohmärkte</h2>${more("/termine/", "Alle")}</div>
 ${homeList() || '<div class="empty">Gerade stehen keine Termine im Kalender.</div>'}
 ${all14 > HOME_N ? `<a class="more" href="/termine/">Alle ${all14} Termine der nächsten 14 Tage</a>` : ""}</section>
-<section class="sec hs-bez"><div class="sec-head"><h2>Flohmärkte nach Bezirk und Region</h2>${more("/flohmaerkte/", "Alle", "Alle Märkte")}</div>${regionChips()}</section>
+<div class="sec band band-browse"><section class="sec hs-bez"><div class="sec-head"><h2>Flohmärkte nach Bezirk und Region</h2>${more("/flohmaerkte/", "Alle", "Alle Märkte")}</div>${regionChips()}</section>
 ${CATS_ON.length ? `<section class="sec hs-art"><div class="sec-head"><h2>Flohmärkte nach Art</h2></div>${catChips()}</section>` : ""}
-${MONTHS.length ? `<section class="sec hs-mon"><div class="sec-head"><h2>Termine nach Monat</h2>${more("/termine/", "Alle")}</div>${monthChips()}</section>` : ""}
+${MONTHS.length ? `<section class="sec hs-mon"><div class="sec-head"><h2>Termine nach Monat</h2>${more("/termine/", "Alle")}</div>${monthChips()}</section>` : ""}</div>
 ${NEWS.length ? `<section class="sec hs-news"><div class="sec-head"><h2>Neuigkeiten</h2></div>${grid(NEWS.map(n => `<a class="card" href="${esc(safeHref(n["Link"], "Neuigkeiten: " + n["Titel"]) || "/")}"><span class="kicker">${esc(n["Kicker"])}</span><h3>${esc(n["Titel"])}</h3><p>${esc(n["Text"])}</p></a>`))}</section>` : ""}
-<section class="sec kb-body home-seo"><h2>Flohmarkt in Hamburg: das Wichtigste</h2>${homeText.map(x => `<p>${rich(x)}</p>`).join("")}</section>
-${faqBlock(homeFaq, "Häufige Fragen zu Flohmärkten in Hamburg")}
+<div class="sec band band-seo"><section class="sec kb-body home-seo"><h2>Flohmarkt in Hamburg: das Wichtigste</h2>${homeText.map(x => `<p>${rich(x)}</p>`).join("")}</section>
+${faqBlock(homeFaq, "Häufige Fragen zu Flohmärkten in Hamburg")}</div>
 ${INSTA ? `<section class="sec hs-insta"><a class="follow" href="${INSTA}" rel="noopener me"><span class="follow-at" aria-hidden="true">@</span><span class="follow-txt"><span class="kicker">Neu auf Instagram</span><b>Jeden Donnerstag: dein Flohmarkt-Wochenende</b><span>Alle Märkte fürs Wochenende in drei Bildern. Zum Speichern und Weiterschicken.</span></span><span class="btn">${esc(INSTA_AT)} folgen${ic("chev")}</span></a></section>` : ""}
 <section class="sec hs-org" id="veranstalter"><div class="org"><h2>Du veranstaltest einen Flohmarkt?</h2><p>Trag deinen Termin kostenlos ein. Wir prüfen jeden Eintrag, bevor er erscheint.</p><a class="btn" href="/veranstalter/">Termin eintragen${ic("chev")}</a></div></section>`;
   layout({ p: "/", title: `Flohmarkt Hamburg: Alle Flohmärkte & Termine ${YEAR} | ${NAME}`,

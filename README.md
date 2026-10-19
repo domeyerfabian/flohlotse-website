@@ -45,6 +45,8 @@ Ihr pflegt nur die Tabelle. Die ausführliche Einrichtungsanleitung liegt als Do
 - **Schwarz** = Hinweis oder Zustand: Feiertag, Wetterfrosch, „Jetzt geöffnet“, Entfernung, aktiver Filter, Hauptknopf.
 - **Weiß mit Rand** = alles zum Antippen: Filter, Art des Markts, Route, Teilen.
 - **Schriften:** Bricolage Grotesque für Überschriften, Figtree für alles andere. DM Mono wird nicht mehr gebraucht; die Dateien im Ordner `fonts` können bleiben oder gelöscht werden.
+- **Großer Bildschirm (ab 1080 px Breite):** alles steht in einem Raster aus zwölf Spalten. Auf der Startseite wechseln sich die Bereiche ab: Papiergrund, ein weißes Band (Stöbern nach Bezirk, Art und Monat; später Wissen und Fragen) und ein dunkles Band für „Wischen & merken“. Die Bänder reichen bis an den Bildschirmrand, ihr Inhalt bleibt im Raster. Nebeneinanderstehende Überschriften und Kästen sind oben und unten bündig. Der Sticker „Termine heute“ klebt auf der unteren linken Ecke des Kastens mit den heutigen Terminen. In Terminkarten steht „Zum Markt“ immer unten rechts. Handy und Tablet sehen genauso aus wie vorher.
+- **Termin-Kasten oben auf der Startseite:** Sind alle heutigen Märkte vorbei und gibt es auch in den anderen Reitern nichts, blendet er sich ganz aus (auf allen Geräten) statt als leerer Rahmen stehen zu bleiben.
 
 ## Technik für Google (Stand 3. Oktober)
 

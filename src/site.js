@@ -533,7 +533,7 @@
       wrap.style.height = (r.height * s + (wrap.offsetHeight - wrap.clientHeight)) + "px";
     };
     var render = function () {
-      var tags = st.kind === "tags", fmt = tags ? "tags" : st.fmt, n = tags ? 24 : fmt === "acht" ? 8 : 1;
+      var tags = st.kind === "tags", fmt = tags ? "tags" : st.fmt, n = tags ? 24 : ({ zwei: 2, vier: 4, acht: 8 })[fmt] || 1;
       gen.setAttribute("data-kind", st.kind); gen.setAttribute("data-fmt", fmt);
       sheet = document.createElement("div"); sheet.id = "sheet";
       sheet.className = "sheet f-" + fmt + (st.save ? " save" : "") + (tags && !st.vb ? " novb" : "") + (st.tone && st.tone !== "gelb" ? " tone-" + st.tone : "") + " ink-" + st.ink + (st.font && st.font !== "modern" ? " font-" + st.font : "") + (!tags && symSrc() ? " sym" : "");
@@ -563,6 +563,13 @@
       }
       scale();
     };
+    // Reiter: Text, Stil (Fläche, Schriftfarbe, Schrift), Symbol, Format. Die Vorschau bleibt dabei im Blick.
+    gen.querySelectorAll(".gen-tabs [data-tab]").forEach(function (t) {
+      t.addEventListener("click", function () {
+        gen.querySelectorAll(".gen-tabs [data-tab]").forEach(function (x) { x.setAttribute("aria-selected", String(x === t)); });
+        gen.querySelectorAll(".gen-panel").forEach(function (pn) { pn.hidden = pn.getAttribute("data-panel") !== t.getAttribute("data-tab"); });
+      });
+    });
     var setPressed = function (sel, el) { gen.querySelectorAll(sel).forEach(function (x) { x.setAttribute("aria-pressed", String(x === el)); }); };
     ["fTop", "fMain", "fBot", "fPrice"].forEach(function (id) { $(id).addEventListener("input", function () { st[{ fTop: "top", fMain: "main", fBot: "bot", fPrice: "price" }[id]] = this.value; render(); }); });
     $("fVb").addEventListener("change", function () { st.vb = this.checked; render(); });
@@ -581,6 +588,7 @@
         var d = JSON.parse(p.getAttribute("data-set"));
         st.kind = d.kind; st.top = d.top || ""; st.main = d.main || ""; st.bot = d.bot || ""; st.price = d.price || "";
         st.fmt = d.kind === "tags" ? "tags" : lastSignFmt;
+        if (d.kind === "tags") { var symTab = gen.querySelector('.gen-tabs [data-tab="sym"][aria-selected="true"]'); if (symTab) gen.querySelector('.gen-tabs [data-tab="text"]').click(); }
         if (!toneSet) { st.tone = d.tone || "gelb"; setPressed("button[data-tone]", gen.querySelector('button[data-tone="' + st.tone + '"]')); }
         if (!symSet) { st.sym = d.sym || ""; setPressed("button[data-sym]", gen.querySelector('button[data-sym="' + st.sym + '"]')); symCur(); }
         if (!inkSet) st.ink = d.ink || (INK_OK[st.tone] || ["schwarz"])[0];
@@ -604,7 +612,8 @@
       root = document.createElement("div"); root.id = "print-root";
       var c = sheet.cloneNode(true); c.removeAttribute("id"); c.style.transform = "none"; root.appendChild(c);
       document.body.appendChild(root);
-      pageCss.textContent = "@page{size:A4 " + (st.kind !== "tags" && st.fmt === "quer" ? "landscape" : "portrait") + ";margin:0}";
+      // Immer A4 hoch: Ein Querformat-Schild wird zum Drucken gedreht. So kommt es auch dort vollflächig aufs Blatt, wo der Browser „quer“ nicht beachtet (z. B. Android).
+      pageCss.textContent = "@page{size:A4 portrait;margin:0}";
       document.head.appendChild(pageCss); document.documentElement.classList.add("print-sign");
     };
     var done = function () { document.documentElement.classList.remove("print-sign"); if (root) { root.remove(); root = null; } pageCss.remove(); };

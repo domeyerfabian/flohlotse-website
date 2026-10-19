@@ -404,12 +404,21 @@ a.route .i{width:17px;height:17px}
 .gen-presets::-webkit-scrollbar{display:none}
 .gen-presets .chip{flex:none}
 .sheet-wrap{position:relative;overflow:hidden;border-radius:10px;border:1px solid var(--line);background:#fff;aspect-ratio:297/210}
-.gen[data-fmt="hoch"] .sheet-wrap,.gen[data-fmt="acht"] .sheet-wrap,.gen[data-fmt="tags"] .sheet-wrap{aspect-ratio:210/297;max-width:420px;width:100%;justify-self:center}
+.gen[data-fmt="hoch"] .sheet-wrap,.gen[data-fmt="acht"] .sheet-wrap,.gen[data-fmt="zwei"] .sheet-wrap,.gen[data-fmt="vier"] .sheet-wrap,.gen[data-fmt="tags"] .sheet-wrap{aspect-ratio:210/297;max-width:420px;width:100%;justify-self:center}
 .gen-form{display:grid;gap:12px}
 .gen-form label{font-size:14px}
 .gen-form label small{font-weight:400;color:var(--muted)}
 .gen-form input[type=text]{background:var(--paper);font-size:17px;padding:12px 14px}
-.gen-opts{display:grid;gap:10px}
+.gen-tabs{display:flex;gap:4px;padding:4px;background:var(--paper);border:1px solid var(--line);border-radius:999px;overflow-x:auto;scrollbar-width:none}
+.gen-tabs::-webkit-scrollbar{display:none}
+.gen-tabs button{flex:1 0 auto;border:0;background:transparent;color:var(--muted);font:inherit;font-size:14px;font-weight:700;padding:9px 12px;border-radius:999px;cursor:pointer;white-space:nowrap}
+.gen-tabs button[aria-selected="true"]{background:var(--ink);color:var(--paper)}
+.gen-panel{display:grid;gap:12px;align-content:start}
+.gen-panel[hidden]{display:none}
+.gp-sym .sym-grid{padding:0}
+/* Vorschau bleibt beim Bearbeiten oben im Blick (Handy: unter der Kopfzeile) */
+.gen .sheet-wrap{position:sticky;top:76px;z-index:2;box-shadow:0 8px 20px -14px rgba(21,33,27,.35)}
+.gen[data-fmt="hoch"] .sheet-wrap,.gen[data-fmt="acht"] .sheet-wrap,.gen[data-fmt="zwei"] .sheet-wrap,.gen[data-fmt="vier"] .sheet-wrap,.gen[data-fmt="tags"] .sheet-wrap{max-width:min(420px,calc(42vh * 210 / 297))}
 .seg{display:flex;flex-wrap:wrap;gap:8px}
 .seg .sw{display:inline-block;width:14px;height:14px;border-radius:50%;border:1px solid rgba(0,0,0,.18);margin-right:7px;vertical-align:-2px;flex:none}
 .sw-gelb{background:#F6E03A}.sw-pink{background:#FF8FC0}.sw-mint{background:#8EE3C1}.sw-schwarz{background:#15211B}
@@ -438,12 +447,16 @@ a.route .i{width:17px;height:17px}
 .gen[data-kind="tags"] .only-sign,.gen[data-kind="sign"] .only-tags{display:none!important}
 .gen-print{justify-self:stretch;justify-content:center;font-size:17px;padding:15px 20px}
 .gen-hint{margin:0;font-size:13px;color:var(--muted)}
-@media (min-width:700px){.gen{padding:24px}.gen-presets{margin-inline:0;padding-inline:0;flex-wrap:wrap}.gen-form{grid-template-columns:1fr 1fr}.gen-form label:first-child{grid-column:1/-1}.gen-opts{grid-column:1/-1;grid-template-columns:auto 1fr;align-items:center;gap:16px}.gen-print{justify-self:start}}
+@media (min-width:700px){.gen{padding:24px}.gen-presets{margin-inline:0;padding-inline:0;flex-wrap:wrap}.gp-text{grid-template-columns:1fr 1fr}.gp-text label:first-child,.gp-text .gen-pay{grid-column:1/-1}.gen-print{justify-self:start}}
 /* Das Blatt selbst: echte Maße in mm, feste Farben (auch im Dunkelmodus und beim Drucken) */
 .sheet{position:absolute;left:0;top:0;transform-origin:0 0;background:#fff;color:#15211B;font-family:var(--f-display);overflow:hidden;display:grid;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 .sheet *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
 .f-quer{width:297mm;height:209.5mm}
-.f-hoch,.f-acht,.f-tags{width:210mm;height:296.5mm}
+.f-hoch,.f-acht,.f-tags,.f-zwei,.f-vier{width:210mm;height:296.5mm}
+/* 2 und 4 pro Blatt: ein ganzes Quer- bzw. Hochformat-Schild, verkleinert (Text wird wie beim großen Schild eingepasst) */
+.f-zwei{grid-template-rows:1fr 1fr}.f-vier{grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr}
+.f-zwei .sg{width:297mm;height:209.5mm;zoom:.7065;outline:.5mm dashed #c4c4c4;outline-offset:-.25mm}
+.f-vier .sg{width:210mm;height:296.5mm;zoom:.4995;outline:.6mm dashed #c4c4c4;outline-offset:-.3mm}
 .f-acht{grid-template-columns:1fr 1fr;grid-template-rows:repeat(4,1fr)}
 .f-tags{grid-template-columns:repeat(3,70mm);grid-template-rows:repeat(8,37mm);align-content:start}
 .sg{display:flex;flex-direction:column;gap:6mm;padding:14mm 16mm 9mm;min-width:0;min-height:0;text-align:center}
@@ -467,7 +480,7 @@ a.route .i{width:17px;height:17px}
 /* Schrift */
 .font-klar :is(.sg-top,.sg-main span,.tg-price span){font-family:var(--f-body);font-weight:800}
 .font-elegant :is(.sg-top,.sg-main span,.tg-price span){font-family:"Fraunces",Georgia,serif;font-weight:600;letter-spacing:-.01em}
-.font-verspielt :is(.sg-top,.sg-main span,.tg-price span){font-family:"Pacifico",cursive;font-weight:400;letter-spacing:0;line-height:1.2}
+.font-verspielt :is(.sg-main span,.tg-price span){font-family:"Pacifico",cursive;font-weight:400;letter-spacing:0;line-height:1.2}
 /* Symbol als runder Aufkleber an der oberen rechten Ecke der Fläche (Krone, Sektglas, Herz …), die Schrift macht ihm Platz */
 .sg-sym{position:absolute;top:-21mm;right:-21mm;width:42mm;height:42mm;border-radius:50%;background:#15211B;border:1.6mm solid #fff;display:none;place-items:center;transform:rotate(10deg);z-index:1}
 .sym .sg-sym{display:grid}
@@ -480,10 +493,10 @@ a.route .i{width:17px;height:17px}
 .sym .sg-top:empty + .sg-mw{margin-top:13mm}
 .sym .sg-main{padding-left:19mm;padding-right:19mm}
 .sym .sg-top{padding:0 48mm}
-.f-hoch .sg-sym{top:-18mm;right:-18mm;width:36mm;height:36mm}.f-hoch .sg-sym svg{width:20.5mm;height:20.5mm}
-.f-hoch.sym .sg-mw{margin-right:16mm}
-.f-hoch.sym .sg-main{padding-left:15mm;padding-right:15mm}
-.f-hoch.sym .sg-top{padding:0 40mm}
+.f-hoch .sg-sym,.f-vier .sg-sym{top:-18mm;right:-18mm;width:36mm;height:36mm}.f-hoch .sg-sym svg,.f-vier .sg-sym svg{width:20.5mm;height:20.5mm}
+.f-hoch.sym .sg-mw,.f-vier.sym .sg-mw{margin-right:16mm}
+.f-hoch.sym .sg-main,.f-vier.sym .sg-main{padding-left:15mm;padding-right:15mm}
+.f-hoch.sym .sg-top,.f-vier.sym .sg-top{padding:0 40mm}
 .f-acht .sg-sym{top:-8mm;right:-8mm;width:16mm;height:16mm;border-width:.7mm}.f-acht .sg-sym svg{width:9.2mm;height:9.2mm}
 .f-acht.sym .sg-mw{margin-right:8mm}
 .f-acht.sym .sg-top:empty + .sg-mw{margin-top:7mm}
@@ -501,8 +514,8 @@ a.route .i{width:17px;height:17px}
 .sg-foot{flex:none;display:flex;justify-content:flex-end;align-items:center;gap:3mm;font-family:var(--f-body);font-size:3.6mm;color:#5A6961;text-align:left;line-height:1.25}
 .sg-foot b{display:block;color:#15211B;font-size:4.2mm;font-weight:700}
 .sg-qr{width:15mm;height:15mm;flex:none}
-.f-hoch .sg{padding:20mm 14mm 10mm;gap:8mm}
-.f-hoch .sg-top{font-size:15mm}.f-hoch .sg-bot{font-size:10mm}
+.f-hoch .sg,.f-vier .sg{padding:20mm 14mm 10mm;gap:8mm}
+.f-hoch .sg-top,.f-vier .sg-top{font-size:15mm}.f-hoch .sg-bot,.f-vier .sg-bot{font-size:10mm}
 .f-acht .sg{padding:5mm 6mm 3.5mm;gap:2.2mm;outline:.25mm dashed #c4c4c4;outline-offset:-.12mm}
 .f-acht .sg-top{font-size:6.5mm}.f-acht .sg-bot{font-size:4.2mm}
 .f-acht .sg-mw{margin:.5mm 1mm}
@@ -526,6 +539,7 @@ a.route .i{width:17px;height:17px}
   html.print-sign body > :not(#print-root){display:none!important}
   html.print-sign #print-root{display:block}
   html.print-sign #print-root .sheet{position:relative;transform:none!important}
+  html.print-sign #print-root .sheet.f-quer{transform:rotate(90deg) translateY(-100%)!important;transform-origin:0 0}
 }
 /* Vorlagen-Karten, Startseiten-Hinweis, Kasten im Ratgeber */
 .sg-card img{display:block;width:100%;height:auto;border-radius:8px;margin-bottom:6px;background:#fff}
@@ -1175,7 +1189,7 @@ a.route.kc-go{margin:10px 0 0;min-height:44px;font-size:15px;padding:8px 16px}
 .sg-payqr{width:34mm;height:34mm;flex:none}
 .sg-pay b{display:block;color:#15211B;font-size:6mm;font-weight:800;letter-spacing:-.01em}
 .sg-payurl{display:block;font-style:normal;font-size:4.4mm;color:#15211B;margin-top:1mm}
-.f-hoch .sg-payqr{width:40mm;height:40mm}
+.f-hoch .sg-payqr,.f-vier .sg-payqr{width:40mm;height:40mm}
 .f-acht .sg-pay{gap:1.6mm}.f-acht .sg-payqr{width:15mm;height:15mm}.f-acht .sg-pay b{font-size:2.6mm}.f-acht .sg-payurl{font-size:2.1mm;margin-top:.4mm}
 .gen-pay{grid-column:1/-1}
 .pfx{display:flex;align-items:center;border:1px solid var(--line);border-radius:10px;background:var(--paper)}
@@ -1535,7 +1549,7 @@ main.pg-start > .sec{border-top:0;margin-top:0;padding-top:48px}
   /* Schilder-Designer: Vorschau links (sieben Spalten), Eingaben rechts (fünf) */
   main.wide .gen{grid-template-columns:repeat(12,minmax(0,1fr));column-gap:var(--gut);align-items:start;padding:28px 32px 32px}
   main.wide .gen > *{grid-column:1/-1}
-  main.wide .gen > .sheet-wrap{grid-column:1/8;grid-row:3/span 3}
+  main.wide .gen > .sheet-wrap{grid-column:1/8;grid-row:3/span 3;top:90px}
   main.wide .gen > .gen-form,main.wide .gen > .gen-print,main.wide .gen > .gen-hint{grid-column:8/-1}
   main.wide .gen > .gen-form{grid-row:3}
   main.wide .gen > .gen-print{grid-row:4;align-self:start}

@@ -412,7 +412,7 @@ a.route .i{width:17px;height:17px}
 .gen-presets[hidden]{display:none}
 .gen-presets .chip{flex:none}
 .sheet-wrap{position:relative;overflow:hidden;border-radius:10px;border:1px solid var(--line);background:#fff;aspect-ratio:297/210}
-.gen[data-fmt="hoch"] .sheet-wrap,.gen[data-fmt="acht"] .sheet-wrap,.gen[data-fmt="zwei"] .sheet-wrap,.gen[data-fmt="vier"] .sheet-wrap,.gen[data-fmt="tags"] .sheet-wrap{aspect-ratio:210/297;max-width:420px;width:100%;justify-self:center}
+.gen[data-fmt="hoch"] .sheet-wrap,.gen[data-fmt="acht"] .sheet-wrap,.gen[data-fmt="zwei"] .sheet-wrap,.gen[data-fmt="tags"] .sheet-wrap{aspect-ratio:210/297;max-width:420px;width:100%;justify-self:center}
 .gen-form{display:grid;gap:12px}
 .gen-form label{font-size:14px}
 .gen-form label small{font-weight:400;color:var(--muted)}
@@ -426,7 +426,7 @@ a.route .i{width:17px;height:17px}
 .gp-sym .sym-grid{padding:0}
 /* Vorschau bleibt beim Bearbeiten oben im Blick (Handy: unter der Kopfzeile) */
 .gen .sheet-wrap{position:sticky;top:76px;z-index:2;box-shadow:0 8px 20px -14px rgba(21,33,27,.35)}
-.gen[data-fmt="hoch"] .sheet-wrap,.gen[data-fmt="acht"] .sheet-wrap,.gen[data-fmt="zwei"] .sheet-wrap,.gen[data-fmt="vier"] .sheet-wrap,.gen[data-fmt="tags"] .sheet-wrap{max-width:min(420px,calc(42vh * 210 / 297))}
+.gen[data-fmt="hoch"] .sheet-wrap,.gen[data-fmt="acht"] .sheet-wrap,.gen[data-fmt="zwei"] .sheet-wrap,.gen[data-fmt="tags"] .sheet-wrap{max-width:min(420px,calc(42vh * 210 / 297))}
 .seg{display:flex;flex-wrap:wrap;gap:8px}
 .seg .sw{display:inline-block;width:14px;height:14px;border-radius:50%;border:1px solid rgba(0,0,0,.18);margin-right:7px;vertical-align:-2px;flex:none}
 .sw-gelb{background:#F6E03A}.sw-pink{background:#FF8FC0}.sw-mint{background:#8EE3C1}.sw-schwarz{background:#15211B}
@@ -490,11 +490,15 @@ a.route .i{width:17px;height:17px}
 .sheet{position:absolute;left:0;top:0;transform-origin:0 0;background:#fff;color:#15211B;font-family:var(--f-display);overflow:hidden;display:grid;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 .sheet *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
 .f-quer{width:297mm;height:209.5mm}
-.f-hoch,.f-acht,.f-tags,.f-zwei,.f-vier{width:210mm;height:296.5mm}
-/* 2 und 4 pro Blatt: ein ganzes Quer- bzw. Hochformat-Schild, verkleinert (Text wird wie beim großen Schild eingepasst) */
+.f-quer,.f-vier{width:297mm;height:209.5mm}
+.f-hoch,.f-acht,.f-tags,.f-zwei{width:210mm;height:296.5mm}
+/* 2 und 4 pro Blatt: das ganze Querformat-Schild, verkleinert (Text wird wie beim großen Schild eingepasst). 2 pro Blatt: A4 hoch mit zwei A5-Schildern, 4 pro Blatt: A4 quer mit vier A6-Schildern */
 .f-zwei{grid-template-rows:1fr 1fr}.f-vier{grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr}
 .f-zwei .sg{width:297mm;height:209.5mm;zoom:.7065;outline:.5mm dashed #c4c4c4;outline-offset:-.25mm}
-.f-vier .sg{width:210mm;height:296.5mm;zoom:.4995;outline:.6mm dashed #c4c4c4;outline-offset:-.3mm}
+.f-vier .sg{width:297mm;height:209.5mm;zoom:.4995;outline:.6mm dashed #c4c4c4;outline-offset:-.3mm}
+/* QR-Code zu Flohlotse: bei 2 pro Blatt so groß, dass er gedruckt wieder 15 mm misst; bei 4 und 8 pro Blatt wäre er zu klein zum Scannen, dort steht nur die Adresse */
+.f-zwei .sg-qr{width:21.3mm;height:21.3mm}
+.f-vier .sg-qr,.f-acht .sg-qr{display:none}
 .f-acht{grid-template-columns:1fr 1fr;grid-template-rows:repeat(4,1fr)}
 .f-tags{grid-template-columns:repeat(3,70mm);grid-template-rows:repeat(8,37mm);align-content:start}
 .sg{display:flex;flex-direction:column;gap:6mm;padding:14mm 16mm 9mm;min-width:0;min-height:0;text-align:center}
@@ -531,10 +535,10 @@ a.route .i{width:17px;height:17px}
 .sym .sg-top:empty + .sg-mw{margin-top:13mm}
 .sym .sg-main{padding-left:19mm;padding-right:19mm}
 .sym .sg-top{padding:0 48mm}
-.f-hoch .sg-sym,.f-vier .sg-sym{top:-18mm;right:-18mm;width:36mm;height:36mm}.f-hoch .sg-sym svg,.f-vier .sg-sym svg{width:20.5mm;height:20.5mm}
-.f-hoch.sym .sg-mw,.f-vier.sym .sg-mw{margin-right:16mm}
-.f-hoch.sym .sg-main,.f-vier.sym .sg-main{padding-left:15mm;padding-right:15mm}
-.f-hoch.sym .sg-top,.f-vier.sym .sg-top{padding:0 40mm}
+.f-hoch .sg-sym{top:-18mm;right:-18mm;width:36mm;height:36mm}.f-hoch .sg-sym svg{width:20.5mm;height:20.5mm}
+.f-hoch.sym .sg-mw{margin-right:16mm}
+.f-hoch.sym .sg-main{padding-left:15mm;padding-right:15mm}
+.f-hoch.sym .sg-top{padding:0 40mm}
 .f-acht .sg-sym{top:-8mm;right:-8mm;width:16mm;height:16mm;border-width:.7mm}.f-acht .sg-sym svg{width:9.2mm;height:9.2mm}
 .f-acht.sym .sg-mw{margin-right:8mm}
 .f-acht.sym .sg-top:empty + .sg-mw{margin-top:7mm}
@@ -552,8 +556,8 @@ a.route .i{width:17px;height:17px}
 .sg-foot{flex:none;display:flex;justify-content:flex-end;align-items:center;gap:3mm;font-family:var(--f-body);font-size:3.6mm;color:#5A6961;text-align:left;line-height:1.25}
 .sg-foot b{display:block;color:#15211B;font-size:4.2mm;font-weight:700}
 .sg-qr{width:15mm;height:15mm;flex:none}
-.f-hoch .sg,.f-vier .sg{padding:20mm 14mm 10mm;gap:8mm}
-.f-hoch .sg-top,.f-vier .sg-top{font-size:15mm}.f-hoch .sg-bot,.f-vier .sg-bot{font-size:10mm}
+.f-hoch .sg{padding:20mm 14mm 10mm;gap:8mm}
+.f-hoch .sg-top{font-size:15mm}.f-hoch .sg-bot{font-size:10mm}
 .f-acht .sg{padding:5mm 6mm 3.5mm;gap:2.2mm;outline:.25mm dashed #c4c4c4;outline-offset:-.12mm}
 .f-acht .sg-top{font-size:6.5mm}.f-acht .sg-bot{font-size:4.2mm}
 .f-acht .sg-mw{margin:.5mm 1mm}
@@ -1248,7 +1252,7 @@ a.route.kc-go{margin:10px 0 0;min-height:44px;font-size:15px;padding:8px 16px}
 .sg-payqr{width:34mm;height:34mm;flex:none}
 .sg-pay b{display:block;color:#15211B;font-size:6mm;font-weight:800;letter-spacing:-.01em}
 .sg-payurl{display:block;font-style:normal;font-size:4.4mm;color:#15211B;margin-top:1mm}
-.f-hoch .sg-payqr,.f-vier .sg-payqr{width:40mm;height:40mm}
+.f-hoch .sg-payqr{width:40mm;height:40mm}
 .f-acht .sg-pay{gap:1.6mm}.f-acht .sg-payqr{width:15mm;height:15mm}.f-acht .sg-pay b{font-size:2.6mm}.f-acht .sg-payurl{font-size:2.1mm;margin-top:.4mm}
 .gen-pay{grid-column:1/-1}
 .pfx{display:flex;align-items:center;border:1px solid var(--line);border-radius:10px;background:var(--paper)}

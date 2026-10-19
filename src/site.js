@@ -673,7 +673,7 @@
       var c = sheet.cloneNode(true); c.removeAttribute("id"); c.style.transform = "none";
       // Querformat: Das Schild liegt gedreht auf einem Blatt in A4 hoch. So kommt es überall vollflächig aufs Papier,
       // auch dort, wo der Browser „A4 quer“ nicht beachtet (z. B. Chrome auf Android). Der Ausdruck ist derselbe.
-      var quer = st.kind !== "tags" && st.fmt === "quer";
+      var quer = st.kind !== "tags" && (st.fmt === "quer" || st.fmt === "vier"); // Blätter im Querformat (1 oder 4 Schilder) werden gedreht
       if (quer) { var pg = document.createElement("div"); pg.className = "pr-page"; pg.appendChild(c); root.appendChild(pg); } else root.appendChild(c);
       document.body.appendChild(root);
       pageCss.textContent = "@page{size:A4 portrait;margin:0}";

@@ -1366,6 +1366,21 @@ a.route.kc-go{margin:10px 0 0;min-height:44px;font-size:15px;padding:8px 16px}
 .band > .sec + .sec{border-top:0;margin-top:0;padding-top:40px}
 .band > .faq{margin-top:40px}
 @media (min-width:800px){.band > .sec + .sec{padding-top:48px}.band > .faq{margin-top:48px}}
+/* Startseite: „Wischen & merken“ auf dunklem Grund. Handy und Tablet: abgerundeter Kasten, der etwas in den Seitenrand ragt
+   (Karte, Texte und Knöpfe bleiben, wo sie sind). Computer: Band über die volle Breite (siehe unten im Block ab 1080 px). */
+.pg-home .home-deck{--dk-bg:#15211B}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .pg-home .home-deck{--dk-bg:#1D2822}}
+:root[data-theme="dark"] .pg-home .home-deck{--dk-bg:#1D2822}
+.pg-home .home-deck .sec-head h2,.pg-home .home-deck .sec-head a,.pg-home .home-deck .dk-bl{color:#fff}
+.pg-home .home-deck .dk-intro,.pg-home .home-deck .dk-count,.pg-home .home-deck .dk-bw:nth-child(2) .dk-bl{color:#C9D3CC}
+.pg-home .home-deck :focus-visible{outline-color:#fff}
+.pg-home .home-deck .dk-card :focus-visible,.pg-home .home-deck .dk-done :focus-visible{outline-color:var(--ink)}
+@media (max-width:1079px){
+  main.pg-home > .sec.home-deck{background:var(--dk-bg);border-radius:24px;margin:40px -12px 0;padding:28px 12px 32px}
+  main.pg-home > .home-deck + .sec{padding-top:48px}
+}
+@media (min-width:641px) and (max-width:1079px){main.pg-home > .sec.home-deck{margin-inline:-24px;padding:36px 24px 40px}}
+@media (min-width:800px) and (max-width:1079px){main.pg-home > .sec.home-deck{margin-top:48px}}
 /* Wisch-Knöpfe am Handy etwas enger, damit das Plus (immer sichtbar) nie am „Merken“-Knopf klebt */
 @media (max-width:640px){.dk-btns{gap:18px}.dk-b.no,.dk-b.yes{width:64px;height:64px}.dk-b .i{width:28px;height:28px}}
 @media (max-width:370px){.dk-btns{gap:10px}.dk-b.no,.dk-b.yes{width:58px;height:58px}.dk-b .i{width:26px;height:26px}}
@@ -1562,18 +1577,13 @@ main.pg-start > .sec{border-top:0;margin-top:0;padding-top:48px}
   .pg-home .hp-tile > .i{display:block}
 
   /* Wischen & merken: dunkles Band, Überschrift und Text links wie überall, der Stapel mittig über die Spalten 3 bis 10 */
-  main.pg-home > .sec.home-deck{--bnd:#15211B}
-  :root[data-theme="dark"] main.pg-home > .sec.home-deck{--bnd:#1D2822}
+  main.pg-home > .sec.home-deck{--bnd:var(--dk-bg)}
   .pg-home .home-deck > *{grid-column:1/-1}
   .pg-home .home-deck > .deck{grid-column:3/11;margin:40px 0 0;max-width:none}
   .pg-home .home-deck > #dkEmpty{grid-column:3/11}
-  .pg-home .home-deck .sec-head h2,.pg-home .home-deck .sec-head a,.pg-home .home-deck .dk-bl{color:#fff}
-  .pg-home .home-deck .dk-intro,.pg-home .home-deck .dk-count,.pg-home .home-deck .dk-bw:nth-child(2) .dk-bl{color:#C9D3CC}
   .pg-home .home-deck .dk-b{box-shadow:none}
   .pg-home .home-deck .dk-b.undo{background:transparent;color:#fff;border-color:rgba(255,255,255,.35)}
   .pg-home .home-deck .dk-b.undo:hover:not(:disabled){border-color:#fff}
-  .pg-home .home-deck :focus-visible{outline-color:#fff}
-  .pg-home .home-deck .dk-card :focus-visible,.pg-home .home-deck .dk-done :focus-visible{outline-color:var(--ink)}
 
   /* Stöbern: links die Bezirke, rechts Art und Monat untereinander. Überschriften und Chips stehen auf gleicher Höhe, auch wenn eine Überschrift umbricht. */
   .pg-home .band-browse > .sec{display:grid;grid-template-rows:subgrid;align-content:start}
@@ -1603,7 +1613,6 @@ main.pg-start > .sec{border-top:0;margin-top:0;padding-top:48px}
   main .ev .row.foot{margin-top:auto;padding-top:10px}
   main .ev .row.foot:not(:has(.acts)){margin-right:-46px}
   main .ev > button.fav{top:16px;right:16px} /* Merken oben rechts im gleichen Abstand wie „Zum Markt“ unten rechts und die Uhrzeit oben links */
-  @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) main.pg-home > .sec.home-deck{--bnd:#1D2822}}
   /* Seite /start/: Kopf mittig über acht Spalten, daneben der Sticker; Bühne und Fragen über die volle Breite */
   .pg-start > .lp-hero{grid-column:3/11;padding-top:72px}
   .pg-start .lp-hero h1{font-size:68px}

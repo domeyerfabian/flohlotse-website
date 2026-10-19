@@ -2049,6 +2049,7 @@ const signTxt = t => {
   }
   return g.map(grp => grp.length === 1 && !isArw(grp[0]) ? esc(grp[0]) : `<span class="nw">${grp.map(x => isArw(x) ? arwSVG(x) : esc(x)).join(" ")}</span>`).join(" ");
 };
+const SIGN_PER = { quer: 1, hoch: 1, zwei: 2, vier: 4, acht: 8 };
 const sheetCls = st => (st.tone ? " tone-" + st.tone : "") + " ink-" + (st.ink || inkDefault(st.tone)) + (st.font ? " font-" + st.font : "");
 function sheetHTML(st) {
   if (st.kind === "tags") {
@@ -2056,7 +2057,7 @@ function sheetHTML(st) {
     return `<div class="sheet f-tags${sheetCls(st)}" id="sheet">${u.repeat(24)}</div>`;
   }
   const u = `<div class="sg"><div class="sg-top">${signTxt(st.top)}</div><div class="sg-mw"><div class="sg-main"><span>${signTxt(st.main)}</span></div><span class="sg-sym" aria-hidden="true">${symSVG(st.sym)}</span></div><div class="sg-bot">${signTxt(st.bot)}</div><div class="sg-foot"><div class="sg-pay"><svg class="sg-payqr" aria-hidden="true" focusable="false"></svg><span><b>Mit PayPal zahlen</b><span class="sg-payurl"></span></span></div>${qrSVG("sg-qr")}<span><b>flohlotse.de/schilder</b>Schilder kostenlos gestalten</span></div></div>`;
-  return `<div class="sheet f-${st.fmt}${sheetCls(st)}${st.sym ? " sym" : ""}" id="sheet">${st.fmt === "acht" ? u.repeat(8) : u}</div>`;
+  return `<div class="sheet f-${st.fmt}${sheetCls(st)}${st.sym ? " sym" : ""}" id="sheet">${u.repeat(SIGN_PER[st.fmt] || 1)}</div>`;
 }
 // Themen im Designer: jede Vorlage mit all ihren Sprüchen, dazu „Eigener Text“. So findet man jeden Spruch auf jeder Designer-Seite.
 // Reihenfolge: Beliebtes und Lustiges zuerst.
@@ -2077,18 +2078,25 @@ function genHTML(st, themes, act, heading, pay) {
 ${themes.map((g, i) => `<div class="chips gen-presets" data-grp="${i}" role="group" aria-label="${esc(g.l)}: Spruch wählen"${i === act ? "" : " hidden"}>${g.items.map((p, j) => `<button type="button" class="chip" data-set="${pj(p.set)}" aria-pressed="${i === act && j === 0}">${esc(p.l)}</button>`).join("")}</div>`).join("")}</div>
 <div class="sheet-wrap" id="sheetWrap">${sheetHTML(st)}</div>
 <div class="gen-form js-only">
+<div class="gen-tabs" role="tablist" aria-label="Schild bearbeiten"><button type="button" role="tab" data-tab="text" aria-selected="true">Text</button><button type="button" role="tab" data-tab="look" aria-selected="false">Stil</button><button type="button" role="tab" class="only-sign" data-tab="sym" aria-selected="false">Symbol</button><button type="button" role="tab" data-tab="fmt" aria-selected="false">Format</button></div>
+<div class="gen-panel gp-text" data-panel="text" role="tabpanel">
 <label class="only-sign"><span>Großer Text</span><input id="fMain" type="text" value="${esc(st.main)}" maxlength="40" autocomplete="off" enterkeyhint="done"></label>
 <label class="only-sign"><span>Kleine Zeile oben <small>(optional)</small></span><input id="fTop" type="text" value="${esc(st.top)}" maxlength="40" autocomplete="off" enterkeyhint="done"></label>
 <label class="only-sign"><span>Kleine Zeile unten <small>(optional)</small></span><input id="fBot" type="text" value="${esc(st.bot)}" maxlength="60" autocomplete="off" enterkeyhint="done"></label>
 ${pay ? `<label class="only-sign gen-pay"><span>Dein PayPal.me-Name <small>(optional, für einen QR-Code zum Bezahlen)</small></span><span class="pfx"><b>paypal.me/</b><input id="fPay" type="text" value="" maxlength="80" autocomplete="off" autocapitalize="none" spellcheck="false" enterkeyhint="done" placeholder="deinname"></span><small class="pay-note" id="payNote" aria-live="polite"></small></label>` : ""}
 <label class="only-tags"><span>Preis <small>(leer lassen zum Beschriften)</small></span><input id="fPrice" type="text" value="${esc(st.price)}" maxlength="12" autocomplete="off" enterkeyhint="done" placeholder="z. B. 2 €"></label>
-<div class="gen-opts"><div class="seg only-sign" role="group" aria-label="Format">${fmtBtn("quer", "A4 quer")}${fmtBtn("hoch", "A4 hoch")}${fmtBtn("acht", "8 pro Blatt")}</div>
+</div>
+<div class="gen-panel gp-look" data-panel="look" role="tabpanel" hidden>
 <div class="seg seg-tone" role="group" aria-label="Farbe der Fläche"><span class="seg-l">Fläche</span>${Object.keys(TONES).map(toneBtn).join("")}</div>
 <div class="seg seg-tone seg-ink" role="group" aria-label="Schriftfarbe"><span class="seg-l">Schriftfarbe <small>(nur gut lesbare Paare)</small></span>${Object.keys(INKS).map(inkBtn).join("")}</div>
-${SIGN_FONTS.length > 1 ? `<div class="seg seg-tone seg-font" role="group" aria-label="Schrift"><span class="seg-l">Schrift</span>${SIGN_FONTS.map(fontBtn).join("")}</div>` : ""}
-<details class="sym-pick only-sign"><summary><span>Symbol</span><b class="sym-cur">${st.sym ? symSVG(st.sym) + esc(SYM[st.sym][0]) : "Ohne"}</b></summary><div class="sym-grid" role="group" aria-label="Symbol wählen">${["", ...Object.keys(SYM)].map(symBtn).join("")}</div></details>
+${SIGN_FONTS.length > 1 ? `<div class="seg seg-tone seg-font only-sign" role="group" aria-label="Schrift"><span class="seg-l">Schrift</span>${SIGN_FONTS.map(fontBtn).join("")}</div>` : ""}
+</div>
+<div class="gen-panel gp-sym" data-panel="sym" role="tabpanel" hidden><div class="sym-grid" role="group" aria-label="Symbol wählen">${["", ...Object.keys(SYM)].map(symBtn).join("")}</div></div>
+<div class="gen-panel gp-fmt" data-panel="fmt" role="tabpanel" hidden>
+<div class="seg only-sign" role="group" aria-label="Format"><span class="seg-l">Format</span>${fmtBtn("quer", "A4 quer")}${fmtBtn("hoch", "A4 hoch")}${fmtBtn("zwei", "2 pro Blatt")}${fmtBtn("vier", "4 pro Blatt")}${fmtBtn("acht", "8 pro Blatt")}</div>
 <label class="switch only-tags"><input type="checkbox" id="fVb" checked>Kästchen „VB“</label>
-<label class="switch"><input type="checkbox" id="fSave">Sparmodus: Rahmen statt Farbe</label></div>
+<label class="switch"><input type="checkbox" id="fSave">Sparmodus: Rahmen statt Farbe</label>
+</div>
 </div>
 <button class="btn gen-print js-only" id="doPrint" type="button">${ic("printer")}Drucken oder als PDF speichern</button>
 <p class="gen-hint js-only">Kein Drucker? Wähl im Druckfenster „Als PDF speichern“ und lass das PDF im Copyshop drucken. Deine Texte bleiben auf deinem Gerät.</p>

@@ -1,0 +1,19 @@
+Hier liegen die Schriftdateien der Website. Solange der Ordner leer ist, nutzt die Website Systemschriften.
+
+Gebraucht werden diese Dateien (im Paket mitgeliefert):
+   - Figtree-Variable.woff2
+   - BricolageGrotesque-Variable.woff2
+   - Fraunces-SemiBold.woff2 (nur für die Schrift „Elegant“ im Schilder-Designer)
+
+Freiwillig: Pacifico-Regular.ttf oder .woff2 von fonts.google.com hier ablegen,
+dann gibt es im Schilder-Designer zusätzlich die Schrift „Verspielt“.
+
+Das sind die Original-Schriften von Google Fonts, für das Web verkleinert:
+nur die Zeichen, die auf der Website vorkommen (Deutsch und westeuropäische Sprachen),
+im kompakten Format woff2. Zusammen rund 95 KB statt rund 470 KB.
+
+Ältere .ttf-Dateien in diesem Ordner können gelöscht werden. Bleiben sie liegen, schadet es nicht:
+Die Website nimmt automatisch die woff2-Dateien.
+
+Die Schriften stehen unter der SIL Open Font License und dürfen verändert und auf der eigenen Website genutzt werden.
+Weil die Dateien auf eurem eigenen Server liegen, wird keine Verbindung zu Google aufgebaut.

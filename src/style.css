@@ -539,7 +539,7 @@ a.route .i{width:17px;height:17px}
   html.print-sign body > :not(#print-root){display:none!important}
   html.print-sign #print-root{display:block}
   html.print-sign #print-root .sheet{position:relative;transform:none!important}
-  html.print-sign #print-root .sheet.f-quer{transform:rotate(90deg) translateY(-100%)!important;transform-origin:0 0}
+  html.print-sign #print-root.print-rot .sheet.f-quer{transform:rotate(90deg) translateY(-100%)!important;transform-origin:0 0}
 }
 /* Vorlagen-Karten, Startseiten-Hinweis, Kasten im Ratgeber */
 .sg-card img{display:block;width:100%;height:auto;border-radius:8px;margin-bottom:6px;background:#fff}

@@ -612,8 +612,11 @@
       root = document.createElement("div"); root.id = "print-root";
       var c = sheet.cloneNode(true); c.removeAttribute("id"); c.style.transform = "none"; root.appendChild(c);
       document.body.appendChild(root);
-      // Immer A4 hoch: Ein Querformat-Schild wird zum Drucken gedreht. So kommt es auch dort vollflächig aufs Blatt, wo der Browser „quer“ nicht beachtet (z. B. Android).
-      pageCss.textContent = "@page{size:A4 portrait;margin:0}";
+      // Querformat: Am Computer echtes A4 quer (auch als PDF). Handys und Tablets beachten „quer“ beim Drucken oft nicht;
+      // dort kommt das Schild gedreht auf A4 hoch, damit es trotzdem das ganze Blatt füllt.
+      var quer = st.kind !== "tags" && st.fmt === "quer", mobil = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+      root.classList.toggle("print-rot", quer && mobil);
+      pageCss.textContent = "@page{size:A4 " + (quer && !mobil ? "landscape" : "portrait") + ";margin:0}";
       document.head.appendChild(pageCss); document.documentElement.classList.add("print-sign");
     };
     var done = function () { document.documentElement.classList.remove("print-sign"); if (root) { root.remove(); root = null; } pageCss.remove(); };

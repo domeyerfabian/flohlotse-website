@@ -81,8 +81,11 @@
     var fHint = true; try { fHint = !document.referrer || new URL(document.referrer).host !== location.host; } catch (e) {}
     var fY0 = 0, fHT;
     var fHintOff = function () { clearTimeout(fHT); fab.classList.remove("fab-hint"); };
+    var fGen = document.getElementById("gen");
     var fShow = function () {
       if (fOpen) return;
+      // Handy: Solange der Schilder-Designer den Bildschirm füllt, weicht der Knopf aus (er läge sonst über Feldern und Knöpfen)
+      if (fGen && window.innerWidth < 1080) { var gr = fGen.getBoundingClientRect(); if (gr.top < window.innerHeight * 0.5 && gr.bottom > window.innerHeight * 0.6) { fHintOff(); fab.hidden = true; return; } }
       var was = fab.hidden; fab.hidden = false;
       // Kein Hinweis, wenn gerade der Wisch-Stapel im Bild ist (der aufgeklappte Schriftzug läge über den Knöpfen)
       if (was && !fab.hidden && fHint) { fHint = false; var dkB = document.getElementById("deck"), dkR = dkB && !dkB.hidden && dkB.getBoundingClientRect(); if (!(dkR && dkR.height && dkR.bottom > 0 && dkR.top < window.innerHeight) && !document.querySelector("main.pg-start")) { fY0 = window.scrollY; fab.classList.add("fab-hint"); fHT = setTimeout(fHintOff, 3200); } }
@@ -458,14 +461,42 @@
   var gen = document.getElementById("gen");
   if (gen) {
     var wrap = document.getElementById("sheetWrap"), $ = function (id) { return document.getElementById(id); };
-    var st = { kind: gen.getAttribute("data-kind"), fmt: gen.getAttribute("data-fmt"), top: $("fTop").value, main: $("fMain").value, bot: $("fBot").value, price: $("fPrice").value, vb: true, save: false, pay: null, tone: gen.getAttribute("data-tone") || "gelb", ink: gen.getAttribute("data-ink") || "schwarz", font: gen.getAttribute("data-font") || "modern", sym: gen.getAttribute("data-sym") || "" };
-    var toneSet = false, symSet = false, inkSet = false, fontSet = false;
+    var st = { kind: gen.getAttribute("data-kind"), fmt: gen.getAttribute("data-fmt"), top: $("fTop").value, main: $("fMain").value, bot: $("fBot").value, price: $("fPrice").value, vb: true, save: false, pay: null, tone: gen.getAttribute("data-tone") || "gelb", ink: gen.getAttribute("data-ink") || "schwarz", font: gen.getAttribute("data-font") || "modern", shape: gen.getAttribute("data-shape") || "rund", sym: gen.getAttribute("data-sym") || "" };
+    var toneSet = false, symSet = false, inkSet = false, fontSet = false, shapeSet = false;
+    // Form der Farbfläche (Wolke, Blume, Zacken, Sprechblase, Etikett), passend zur gemessenen Größe gerechnet. Gleiche Rechnung wie shapePath in build.mjs.
+    var shapePath = function (k, w, h) {
+      var p = Math.max(1.5, Math.min(w, h) * 0.02), m = Math.min(w, h), f = function (n) { return Math.round(n * 10) / 10; }, pts = [], i;
+      if (k === "wolke" || k === "blume") {
+        var r = k === "wolke" ? m * 0.14 : m * 0.1, x0 = p + r, y0 = p + r, x1 = w - p - r, y1 = h - p - r;
+        var side = function (ax, ay, bx, by) { var n = Math.max(2, Math.round(Math.hypot(bx - ax, by - ay) / (2 * r))); for (var j = 0; j < n; j++) { var t = j / n; if (k === "wolke" && j > 0) t += (j % 2 ? 0.16 : -0.1) / n; pts.push([ax + (bx - ax) * t, ay + (by - ay) * t]); } };
+        side(x0, y0, x1, y0); side(x1, y0, x1, y1); side(x1, y1, x0, y1); side(x0, y1, x0, y0);
+        var d = "M" + f(pts[0][0]) + " " + f(pts[0][1]);
+        for (i = 1; i <= pts.length; i++) { var a = pts[i - 1], b = pts[i % pts.length], c = Math.hypot(b[0] - a[0], b[1] - a[1]) / 2; d += "A" + f(c) + " " + f(c) + " 0 0 1 " + f(b[0]) + " " + f(b[1]); }
+        return d + "Z";
+      }
+      if (k === "zacken") {
+        var tz = m * 0.06, zx0 = p + tz, zy0 = p + tz, zx1 = w - p - tz, zy1 = h - p - tz;
+        var zs = function (ax, ay, bx, by, nx, ny) { var n = Math.max(3, Math.round(Math.hypot(bx - ax, by - ay) / (tz * 1.7))); for (var j = 0; j < n; j++) { var u = j / n, v = (j + 0.5) / n; pts.push([ax + (bx - ax) * u, ay + (by - ay) * u], [ax + (bx - ax) * v + nx * tz, ay + (by - ay) * v + ny * tz]); } };
+        zs(zx0, zy0, zx1, zy0, 0, -1); zs(zx1, zy0, zx1, zy1, 1, 0); zs(zx1, zy1, zx0, zy1, 0, 1); zs(zx0, zy1, zx0, zy0, -1, 0);
+        return "M" + pts.map(function (q) { return f(q[0]) + " " + f(q[1]); }).join("L") + "Z";
+      }
+      if (k === "blase") {
+        var R = m * 0.18, th = h * 0.17, bx0 = p, by0 = p, bx1 = w - p, by1 = h - p - th, tx = bx0 + (bx1 - bx0) * 0.2;
+        return "M" + f(bx0 + R) + " " + f(by0) + "H" + f(bx1 - R) + "Q" + f(bx1) + " " + f(by0) + " " + f(bx1) + " " + f(by0 + R) + "V" + f(by1 - R) + "Q" + f(bx1) + " " + f(by1) + " " + f(bx1 - R) + " " + f(by1) + "H" + f(tx + th * 1.2) + "L" + f(tx - th * 0.25) + " " + f(h - p) + "L" + f(tx) + " " + f(by1) + "H" + f(bx0 + R) + "Q" + f(bx0) + " " + f(by1) + " " + f(bx0) + " " + f(by1 - R) + "V" + f(by0 + R) + "Q" + f(bx0) + " " + f(by0) + " " + f(bx0 + R) + " " + f(by0) + "Z";
+      }
+      if (k === "etikett") {
+        var tip = Math.min(h * 0.42, w * 0.17), ER = m * 0.09, ex0 = p, ey0 = p, ex1 = w - p, ey1 = h - p, cy = h / 2, hr = m * 0.06, hx = ex0 + tip * 0.85;
+        return "M" + f(ex0 + tip) + " " + f(ey0) + "H" + f(ex1 - ER) + "Q" + f(ex1) + " " + f(ey0) + " " + f(ex1) + " " + f(ey0 + ER) + "V" + f(ey1 - ER) + "Q" + f(ex1) + " " + f(ey1) + " " + f(ex1 - ER) + " " + f(ey1) + "H" + f(ex0 + tip) + "L" + f(ex0) + " " + f(cy) + "Z"
+          + "M" + f(hx + hr) + " " + f(cy) + "A" + f(hr) + " " + f(hr) + " 0 1 0 " + f(hx - hr) + " " + f(cy) + "A" + f(hr) + " " + f(hr) + " 0 1 0 " + f(hx + hr) + " " + f(cy) + "Z";
+      }
+      return "";
+    };
     // Schriftfarbe: nur gut lesbare Paare zulassen (Liste kommt aus build.mjs). Passt die gewählte Farbe nicht mehr, nimmt das Schild die erste passende.
     var INK_OK = JSON.parse(gen.getAttribute("data-inkok") || "{}");
     var inkFix = function () {
       var ok = INK_OK[st.save ? "save" : st.tone] || ["schwarz"];
       if (ok.indexOf(st.ink) < 0) st.ink = ok[0];
-      gen.querySelectorAll("button[data-ink]").forEach(function (b) { var k = b.getAttribute("data-ink"); b.disabled = ok.indexOf(k) < 0; b.title = b.disabled ? "Auf dieser Fläche schlecht lesbar" : ""; b.setAttribute("aria-pressed", String(k === st.ink)); });
+      gen.querySelectorAll("button[data-ink]").forEach(function (b) { var k = b.getAttribute("data-ink"); b.disabled = ok.indexOf(k) < 0; b.title = (b.getAttribute("data-name") || "") + (b.disabled ? ": auf dieser Fläche schlecht lesbar" : ""); b.setAttribute("aria-pressed", String(k === st.ink)); });
     };
     // Schriften für das Schild lädt der Browser erst bei Auswahl; danach wird neu eingepasst
     var FONT_FAM = { klar: "800 40px Figtree", elegant: "600 40px Fraunces", verspielt: "400 40px Pacifico" };
@@ -536,7 +567,7 @@
       var tags = st.kind === "tags", fmt = tags ? "tags" : st.fmt, n = tags ? 24 : ({ zwei: 2, vier: 4, acht: 8 })[fmt] || 1;
       gen.setAttribute("data-kind", st.kind); gen.setAttribute("data-fmt", fmt);
       sheet = document.createElement("div"); sheet.id = "sheet";
-      sheet.className = "sheet f-" + fmt + (st.save ? " save" : "") + (tags && !st.vb ? " novb" : "") + (st.tone && st.tone !== "gelb" ? " tone-" + st.tone : "") + " ink-" + st.ink + (st.font && st.font !== "modern" ? " font-" + st.font : "") + (!tags && symSrc() ? " sym" : "");
+      sheet.className = "sheet f-" + fmt + (st.save ? " save" : "") + (tags && !st.vb ? " novb" : "") + (st.tone && st.tone !== "gelb" ? " tone-" + st.tone : "") + " ink-" + st.ink + ((st.ink === "weiss" || st.ink === "gold") && (st.save || st.tone !== "schwarz") ? " ink-out" : "") + (st.font && st.font !== "modern" ? " font-" + st.font : "") + (!tags && st.shape && st.shape !== "rund" ? " shp shape-" + st.shape : "") + (!tags && symSrc() ? " sym" : "");
       var tpl = $(tags ? "tplTag" : "tplSign").content.firstElementChild;
       for (var i = 0; i < n; i++) sheet.appendChild(tpl.cloneNode(true));
       wrap.innerHTML = ""; wrap.appendChild(sheet);
@@ -549,11 +580,13 @@
         for (i = 1; i < n; i++) { var b2 = units[i].querySelector(".tg-price"); b2.className = box.className; b2.firstElementChild.textContent = sp.textContent; if (fs) b2.firstElementChild.style.fontSize = fs + "px"; }
       } else {
         var sy = symSrc(); for (i = 0; i < n; i++) { var slot = units[i].querySelector(".sg-sym"); slot.textContent = ""; if (sy) slot.appendChild(sy.cloneNode(true)); }
-        var top = u.querySelector(".sg-top"), main = u.querySelector(".sg-main"), ms = main.firstElementChild, bot = u.querySelector(".sg-bot");
+        var top = u.querySelector(".sg-top"), main = u.querySelector(".sg-main"), ms = main.querySelector(":scope > span"), bot = u.querySelector(".sg-bot");
         signText(top, st.top, ""); signText(ms, st.main, " "); signText(bot, st.bot, "");
         var base = top.parentNode.clientWidth, sizes = [];
         [top, bot].forEach(function (el) { if (el.firstChild) { el.style.fontSize = ""; var mx = parseFloat(getComputedStyle(el).fontSize); sizes.push(fit(el, el, mx, 4)); } else sizes.push(null); });
         var mfs = fit(main, ms, main.clientHeight * 0.9, 6);
+        var spd = st.shape && st.shape !== "rund" ? shapePath(st.shape, main.offsetWidth, main.offsetHeight) : "";
+        for (i = 0; i < n; i++) { var sv = units[i].querySelector(".sg-shape"); if (sv) { sv.setAttribute("viewBox", "0 0 " + main.offsetWidth + " " + main.offsetHeight); sv.firstElementChild.setAttribute("d", spd); } }
         for (i = 1; i < n; i++) {
           var c = units[i];
           c.querySelector(".sg-top").innerHTML = top.innerHTML; if (sizes[0]) c.querySelector(".sg-top").style.fontSize = sizes[0] + "px";
@@ -587,6 +620,8 @@
       if (tn) { st.tone = tn.getAttribute("data-tone"); toneSet = true; setPressed("button[data-tone]", tn); if (!inkSet) st.ink = (INK_OK[st.tone] || ["schwarz"])[0]; inkFix(); render(); }
       var ik = e.target.closest("button[data-ink]");
       if (ik && !ik.disabled) { st.ink = ik.getAttribute("data-ink"); inkSet = true; inkFix(); render(); }
+      var shb = e.target.closest("button[data-shape]");
+      if (shb) { st.shape = shb.getAttribute("data-shape"); shapeSet = true; setPressed("button[data-shape]", shb); render(); }
       var fb = e.target.closest("button[data-font]");
       if (fb) { st.font = fb.getAttribute("data-font"); fontSet = true; setPressed("button[data-font]", fb); render(); fontLoad().then(render); }
       var sb = e.target.closest("button[data-sym]");
@@ -599,6 +634,7 @@
         if (d.kind === "tags") { var symTab = gen.querySelector('.gen-tabs [data-tab="sym"][aria-selected="true"]'); if (symTab) gen.querySelector('.gen-tabs [data-tab="text"]').click(); }
         if (!toneSet) { st.tone = d.tone || "gelb"; setPressed("button[data-tone]", gen.querySelector('button[data-tone="' + st.tone + '"]')); }
         if (!symSet) { st.sym = d.sym || ""; setPressed("button[data-sym]", gen.querySelector('button[data-sym="' + st.sym + '"]')); symCur(); }
+        if (!shapeSet) { st.shape = d.shape || "rund"; setPressed("button[data-shape]", gen.querySelector('button[data-shape="' + st.shape + '"]')); }
         if (!inkSet) st.ink = d.ink || (INK_OK[st.tone] || ["schwarz"])[0];
         inkFix();
         if (!fontSet && gen.querySelector('button[data-font="' + (d.font || "modern") + '"]')) { st.font = d.font || "modern"; setPressed("button[data-font]", gen.querySelector('button[data-font="' + st.font + '"]')); fontLoad().then(render); }
@@ -618,13 +654,13 @@
     var prep = function () {
       if (root) root.remove();
       root = document.createElement("div"); root.id = "print-root";
-      var c = sheet.cloneNode(true); c.removeAttribute("id"); c.style.transform = "none"; root.appendChild(c);
+      var c = sheet.cloneNode(true); c.removeAttribute("id"); c.style.transform = "none";
+      // Querformat: Das Schild liegt gedreht auf einem Blatt in A4 hoch. So kommt es überall vollflächig aufs Papier,
+      // auch dort, wo der Browser „A4 quer“ nicht beachtet (z. B. Chrome auf Android). Der Ausdruck ist derselbe.
+      var quer = st.kind !== "tags" && st.fmt === "quer";
+      if (quer) { var pg = document.createElement("div"); pg.className = "pr-page"; pg.appendChild(c); root.appendChild(pg); } else root.appendChild(c);
       document.body.appendChild(root);
-      // Querformat: Am Computer echtes A4 quer (auch als PDF). Handys und Tablets beachten „quer“ beim Drucken oft nicht;
-      // dort kommt das Schild gedreht auf A4 hoch, damit es trotzdem das ganze Blatt füllt.
-      var quer = st.kind !== "tags" && st.fmt === "quer", mobil = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
-      root.classList.toggle("print-rot", quer && mobil);
-      pageCss.textContent = "@page{size:A4 " + (quer && !mobil ? "landscape" : "portrait") + ";margin:0}";
+      pageCss.textContent = "@page{size:A4 portrait;margin:0}";
       document.head.appendChild(pageCss); document.documentElement.classList.add("print-sign");
     };
     var done = function () { document.documentElement.classList.remove("print-sign"); if (root) { root.remove(); root = null; } pageCss.remove(); };

@@ -395,13 +395,19 @@ a.route .i{width:17px;height:17px}
 .gen{margin-top:26px;background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:18px 16px 20px;display:grid;gap:14px}
 .gen h2{font-size:21px}
 /* Thema (Vorlage) als Auswahlliste, darunter die Sprüche des Themas */
-.gen-pick{display:grid;gap:10px;min-width:0}
+.gen-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.gen-head h2{margin:0;min-width:0;font-size:19px}
+@media (min-width:700px){.gen-head h2{font-size:21px}}
+/* Thema und Sprüche in einer wischbaren Zeile */
+.gen-pick{display:flex;align-items:center;gap:8px;min-width:0;overflow-x:auto;scrollbar-width:none;margin-inline:-16px;padding:2px 16px 4px}
+.gen-pick::-webkit-scrollbar{display:none}
+.gen-theme{flex:none}
 .gen-theme{position:relative;display:flex;align-items:center;gap:12px}
 .gen-theme label{font-size:14px;font-weight:600;flex:none}
-.gen-theme select{flex:1;min-width:0;font:inherit;font-size:16px;font-weight:700;color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:999px;padding:11px 44px 11px 18px;appearance:none;-webkit-appearance:none;cursor:pointer}
-.gen-theme::after{content:"";position:absolute;right:20px;top:50%;width:8px;height:8px;border-right:2px solid var(--ink);border-bottom:2px solid var(--ink);transform:translateY(-70%) rotate(45deg);pointer-events:none}
-.gen-presets{margin:0;flex-wrap:nowrap;overflow-x:auto;margin-inline:-16px;padding:2px 16px 4px;scrollbar-width:none}
-.gen-presets::-webkit-scrollbar{display:none}
+.gen-theme select{flex:1;min-width:0;font:inherit;font-size:15px;font-weight:700;color:var(--paper);background:var(--ink);border:1px solid var(--ink);border-radius:999px;padding:8px 36px 8px 16px;appearance:none;-webkit-appearance:none;cursor:pointer}
+.gen-theme::after{content:"";position:absolute;right:16px;top:50%;width:7px;height:7px;border-right:2px solid var(--paper);border-bottom:2px solid var(--paper);transform:translateY(-70%) rotate(45deg);pointer-events:none}
+.gen-presets{display:flex;flex-wrap:nowrap;gap:8px}
+.gen-presets[hidden]{display:none}
 .gen-presets .chip{flex:none}
 .sheet-wrap{position:relative;overflow:hidden;border-radius:10px;border:1px solid var(--line);background:#fff;aspect-ratio:297/210}
 .gen[data-fmt="hoch"] .sheet-wrap,.gen[data-fmt="acht"] .sheet-wrap,.gen[data-fmt="zwei"] .sheet-wrap,.gen[data-fmt="vier"] .sheet-wrap,.gen[data-fmt="tags"] .sheet-wrap{aspect-ratio:210/297;max-width:420px;width:100%;justify-self:center}
@@ -411,7 +417,7 @@ a.route .i{width:17px;height:17px}
 .gen-form input[type=text]{background:var(--paper);font-size:17px;padding:12px 14px}
 .gen-tabs{display:flex;gap:4px;padding:4px;background:var(--paper);border:1px solid var(--line);border-radius:999px;overflow-x:auto;scrollbar-width:none}
 .gen-tabs::-webkit-scrollbar{display:none}
-.gen-tabs button{flex:1 0 auto;border:0;background:transparent;color:var(--muted);font:inherit;font-size:14px;font-weight:700;padding:9px 12px;border-radius:999px;cursor:pointer;white-space:nowrap}
+.gen-tabs button{flex:1 0 auto;border:0;background:transparent;color:var(--muted);font:inherit;font-size:14px;font-weight:700;padding:9px 7px;border-radius:999px;cursor:pointer;white-space:nowrap}
 .gen-tabs button[aria-selected="true"]{background:var(--ink);color:var(--paper)}
 .gen-panel{display:grid;gap:12px;align-content:start}
 .gen-panel[hidden]{display:none}
@@ -445,9 +451,39 @@ a.route .i{width:17px;height:17px}
 .switch{display:flex!important;align-items:center;gap:10px;font-weight:500!important;cursor:pointer}
 .switch input{width:24px;height:24px;flex:none;accent-color:var(--ink)}
 .gen[data-kind="tags"] .only-sign,.gen[data-kind="sign"] .only-tags{display:none!important}
-.gen-print{justify-self:stretch;justify-content:center;font-size:17px;padding:15px 20px}
+.gen-print{flex:none;font-size:15px;padding:10px 16px;gap:7px}
+.gen-print .i{width:18px;height:18px}
+/* Textfelder kompakt: Beschriftung links im Feld, Reihenfolge wie auf dem Schild */
+.fld{display:flex;align-items:center;border:1px solid var(--line);border-radius:12px;background:var(--paper);min-width:0}
+.fld:focus-within{border-color:var(--ink)}
+.fld > span:first-child{flex:none;width:62px;padding-left:12px;font-size:12px;font-weight:700;color:var(--muted)}
+.gen-form .fld input[type=text]{flex:1;min-width:0;border:0;background:transparent;padding:11px 12px 11px 0;font-size:16px;outline:none}
+.fld .pfx{flex:1;min-width:0;border:0;background:transparent;padding:0}
+.gp-text{gap:8px}
+.pay-note{font-size:12.5px;color:var(--muted)}
+.pay-note:empty{display:none}
+/* Farben als runde Knöpfe: Fläche als Farbfleck, Schriftfarbe als „A“ in der Farbe */
+.sw-row{display:flex;align-items:center;gap:8px}
+.sw-row .seg-l{flex:none;width:62px;flex-basis:auto;line-height:1.15}
+.swb{flex:none;width:40px;height:40px;border-radius:50%;border:2px solid transparent;padding:0;display:grid;place-items:center;background:transparent;cursor:pointer}
+.swb .sw{display:block;width:30px;height:30px;margin:0;border-radius:50%;border:1px solid rgba(0,0,0,.18)}
+.swb[aria-pressed="true"]{border-color:var(--ink)}
+.swb:disabled{opacity:.28;cursor:not-allowed}
+.swb.ink b{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:#15211B;font:800 17px/1 var(--f-display)}
+.ink-b-schwarz b{background:#F2F4F0!important;color:#15211B;box-shadow:inset 0 0 0 1px rgba(0,0,0,.18)}
+.ink-b-weiss b{color:#fff}.ink-b-pink b{color:#FF8FC0}
+.ink-b-gold b{color:#D4AF37}
+/* Lange Reihen (Schriften, Formate, Symbole) wischen statt umbrechen */
+.seg.hs{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin-inline:-16px;padding:2px 16px 4px}
+.seg.hs::-webkit-scrollbar{display:none}
+.seg.hs .chip{flex:none}
+.gp-sym .sym-grid{grid-auto-flow:column;grid-template-rows:repeat(2,46px);grid-template-columns:none;grid-auto-columns:46px;overflow-x:auto;scrollbar-width:none;margin-inline:-16px;padding:2px 16px 4px}
+.gp-sym .sym-grid::-webkit-scrollbar{display:none}
+.shp-btn{flex-direction:column;gap:4px;min-height:0;padding:8px 12px;border-radius:14px;font-size:13px}
+.shp-btn svg{width:44px;height:26px;fill:#F6E03A;stroke:#15211B;stroke-width:1.2}
+.shp-btn[aria-pressed="true"] svg{stroke:#fff}
 .gen-hint{margin:0;font-size:13px;color:var(--muted)}
-@media (min-width:700px){.gen{padding:24px}.gen-presets{margin-inline:0;padding-inline:0;flex-wrap:wrap}.gp-text{grid-template-columns:1fr 1fr}.gp-text label:first-child,.gp-text .gen-pay{grid-column:1/-1}.gen-print{justify-self:start}}
+@media (min-width:700px){.gen{padding:24px}.gen-pick{flex-wrap:wrap;margin-inline:0;padding-inline:0;overflow:visible}.gen-presets{flex-wrap:wrap}.seg.hs{flex-wrap:wrap;margin-inline:0;padding-inline:0;overflow:visible}.gp-sym .sym-grid{grid-auto-flow:row;grid-template-rows:none;grid-template-columns:repeat(auto-fill,minmax(46px,1fr));margin-inline:0;padding-inline:0;overflow:visible}}
 /* Das Blatt selbst: echte Maße in mm, feste Farben (auch im Dunkelmodus und beim Drucken) */
 .sheet{position:absolute;left:0;top:0;transform-origin:0 0;background:#fff;color:#15211B;font-family:var(--f-display);overflow:hidden;display:grid;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 .sheet *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
@@ -532,6 +568,28 @@ a.route .i{width:17px;height:17px}
 .tg-vb i{width:3.3mm;height:3.3mm;border:.35mm solid #15211B;border-radius:.6mm}
 .novb .tg-vb{visibility:hidden}
 .tg-brand{position:absolute;right:3.5mm;bottom:2.6mm;font-family:var(--f-body);font-size:2.3mm;color:#7a867f}
+/* Kontur für Weiß und Gold auf heller Fläche: bleibt aus der Entfernung lesbar */
+.ink-out :is(.sg-main span,.tg-price span){-webkit-text-stroke:.06em #15211B;paint-order:stroke fill}
+.ink-out.ink-gold :is(.sg-main span,.tg-price span){-webkit-text-stroke:0;filter:drop-shadow(.03em 0 0 #15211B) drop-shadow(-.03em 0 0 #15211B) drop-shadow(0 .03em 0 #15211B) drop-shadow(0 -.03em 0 #15211B)} /* Gold mit Kontur per Schatten: Bei Strich-Kontur würden Linien im Inneren der Buchstaben sichtbar */
+.ink-out .sg-main .sg-arw path{stroke:#15211B}
+/* Formen der Farbfläche: Die Form zeichnet site.js als SVG hinter den Text, passend zur Größe */
+.sg-main{position:relative}
+.sg-main > span{position:relative}
+.sg-shape{display:none;position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible;pointer-events:none}
+.sg-shape path{fill:#F6E03A}
+.tone-pink .sg-shape path{fill:#FF8FC0}.tone-mint .sg-shape path{fill:#8EE3C1}.tone-schwarz .sg-shape path{fill:#15211B}
+.save .sg-shape path{fill:#fff;stroke:#15211B;stroke-width:1.4mm;stroke-linejoin:round}
+.f-acht.save .sg-shape path{stroke-width:.7mm}
+.shp .sg-main{background:none!important;border:0!important;border-radius:0;overflow:visible}
+.shp .sg-shape{display:block}
+/* Innenabstand je Form in Prozent: passt in jedem Format (quer, hoch, 2/4/8 pro Blatt) */
+.shape-wolke .sg-main{padding:6% 9%}
+.shape-blume .sg-main{padding:5% 8%}
+.shape-zacken .sg-main{padding:4.5% 7%}
+.shape-blase .sg-main{padding:3% 6% 10%}
+.shape-etikett .sg-main{padding:3% 5% 3% 24%}
+.shp.sym .sg-main{padding-right:12%}
+.shp.sym:not(.shape-etikett) .sg-main{padding-left:12%}
 /* Drucken: nur das Schild */
 #print-root{display:none}
 @media print{
@@ -539,7 +597,10 @@ a.route .i{width:17px;height:17px}
   html.print-sign body > :not(#print-root){display:none!important}
   html.print-sign #print-root{display:block}
   html.print-sign #print-root .sheet{position:relative;transform:none!important}
-  html.print-sign #print-root.print-rot .sheet.f-quer{transform:rotate(90deg) translateY(-100%)!important;transform-origin:0 0}
+  /* Querformat: Blatt in A4 hoch, darauf das Schild um 90 Grad gedreht (füllt das ganze Blatt) */
+  html.print-sign #print-root .pr-page{position:relative;width:210mm;height:296.5mm;overflow:hidden}
+  html.print-sign #print-root .pr-page .sheet{position:absolute;left:0;top:0;transform:rotate(90deg) translateY(-100%)!important;transform-origin:0 0}
+
 }
 /* Vorlagen-Karten, Startseiten-Hinweis, Kasten im Ratgeber */
 .sg-card img{display:block;width:100%;height:auto;border-radius:8px;margin-bottom:6px;background:#fff}
@@ -1552,8 +1613,7 @@ main.pg-start > .sec{border-top:0;margin-top:0;padding-top:48px}
   main.wide .gen > .sheet-wrap{grid-column:1/8;grid-row:3/span 3;top:90px}
   main.wide .gen > .gen-form,main.wide .gen > .gen-print,main.wide .gen > .gen-hint{grid-column:8/-1}
   main.wide .gen > .gen-form{grid-row:3}
-  main.wide .gen > .gen-print{grid-row:4;align-self:start}
-  main.wide .gen > .gen-hint{grid-row:5;align-self:start}
+  main.wide .gen > .gen-hint{grid-row:4;align-self:start}
   main.wide .gen-presets{flex-wrap:wrap}
   /* Wischen & merken (eigene Seite und Startseite): Stapel mittig über die Spalten 4 bis 9 */
   main.wide > .deck,main.wide > #dkEmpty{grid-column:4/10;margin-top:40px}

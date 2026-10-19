@@ -365,13 +365,15 @@ const plain = t => String(t || "").replace(/\[([^\]]+)\]\([^)]+\)/g, "$1");
 /* ---------------------------------------------------------------- Schriften */
 // Schriftdateien einfach in den Ordner fonts legen (so wie sie von fonts.google.com heruntergeladen werden, .ttf oder .woff2)
 const OFL_TEXT = "This Font Software is licensed under the SIL Open Font License, Version 1.1.\nThis license is copied below, and is also available with a FAQ at:\nhttps://openfontlicense.org\n\n\n-----------------------------------------------------------\nSIL OPEN FONT LICENSE Version 1.1 - 26 February 2007\n-----------------------------------------------------------\n\nPREAMBLE\nThe goals of the Open Font License (OFL) are to stimulate worldwide\ndevelopment of collaborative font projects, to support the font creation\nefforts of academic and linguistic communities, and to provide a free and\nopen framework in which fonts may be shared and improved in partnership\nwith others.\n\nThe OFL allows the licensed fonts to be used, studied, modified and\nredistributed freely as long as they are not sold by themselves. The\nfonts, including any derivative works, can be bundled, embedded, \nredistributed and/or sold with any software provided that any reserved\nnames are not used by derivative works. The fonts and derivatives,\nhowever, cannot be released under any other type of license. The\nrequirement for fonts to remain under this license does not apply\nto any document created using the fonts or their derivatives.\n\nDEFINITIONS\n\"Font Software\" refers to the set of files released by the Copyright\nHolder(s) under this license and clearly marked as such. This may\ninclude source files, build scripts and documentation.\n\n\"Reserved Font Name\" refers to any names specified as such after the\ncopyright statement(s).\n\n\"Original Version\" refers to the collection of Font Software components as\ndistributed by the Copyright Holder(s).\n\n\"Modified Version\" refers to any derivative made by adding to, deleting,\nor substituting -- in part or in whole -- any of the components of the\nOriginal Version, by changing formats or by porting the Font Software to a\nnew environment.\n\n\"Author\" refers to any designer, engineer, programmer, technical\nwriter or other person who contributed to the Font Software.\n\nPERMISSION & CONDITIONS\nPermission is hereby granted, free of charge, to any person obtaining\na copy of the Font Software, to use, study, copy, merge, embed, modify,\nredistribute, and sell modified and unmodified copies of the Font\nSoftware, subject to the following conditions:\n\n1) Neither the Font Software nor any of its individual components,\nin Original or Modified Versions, may be sold by itself.\n\n2) Original or Modified Versions of the Font Software may be bundled,\nredistributed and/or sold with any software, provided that each copy\ncontains the above copyright notice and this license. These can be\nincluded either as stand-alone text files, human-readable headers or\nin the appropriate machine-readable metadata fields within text or\nbinary files as long as those fields can be easily viewed by the user.\n\n3) No Modified Version of the Font Software may use the Reserved Font\nName(s) unless explicit written permission is granted by the corresponding\nCopyright Holder. This restriction only applies to the primary font name as\npresented to the users.\n\n4) The name(s) of the Copyright Holder(s) or the Author(s) of the Font\nSoftware shall not be used to promote, endorse or advertise any\nModified Version, except to acknowledge the contribution(s) of the\nCopyright Holder(s) and the Author(s) or with their explicit written\npermission.\n\n5) The Font Software, modified or unmodified, in part or in whole,\nmust be distributed entirely under this license, and must not be\ndistributed under any other license. The requirement for fonts to\nremain under this license does not apply to any document created\nusing the Font Software.\n\nTERMINATION\nThis license becomes null and void if any of the above conditions are\nnot met.\n\nDISCLAIMER\nTHE FONT SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND,\nEXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO ANY WARRANTIES OF\nMERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT\nOF COPYRIGHT, PATENT, TRADEMARK, OR OTHER RIGHT. IN NO EVENT SHALL THE\nCOPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,\nINCLUDING ANY GENERAL, SPECIAL, INDIRECT, INCIDENTAL, OR CONSEQUENTIAL\nDAMAGES, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING\nFROM, OUT OF THE USE OR INABILITY TO USE THE FONT SOFTWARE OR FROM\nOTHER DEALINGS IN THE FONT SOFTWARE.";
-const FONT_RULES = [[/bricolage.*\.(woff2|ttf)$/i, "Bricolage Grotesque", "200 800"], [/figtree.*variable.*\.(woff2|ttf)$|^figtree\.(woff2|ttf)$/i, "Figtree", "300 900"]];
+// Die letzten beiden Einträge sind nur Schriften für den Schilder-Designer: Sie werden nicht vorgeladen, der Browser holt sie erst, wenn jemand sie auswählt.
+// Fraunces liegt bei. Pacifico (verspielt) ist freiwillig: Datei von fonts.google.com in den Ordner fonts legen, dann erscheint die Schrift im Designer.
+const FONT_RULES = [[/bricolage.*\.(woff2|ttf)$/i, "Bricolage Grotesque", "200 800"], [/figtree.*variable.*\.(woff2|ttf)$|^figtree\.(woff2|ttf)$/i, "Figtree", "300 900"], [/fraunces.*\.(woff2|ttf)$/i, "Fraunces", "600", true], [/pacifico.*\.(woff2|ttf)$/i, "Pacifico", "400", true]];
 const fontDir = path.join(ROOT, "fonts");
 const fontFilesAll = fs.existsSync(fontDir) ? fs.readdirSync(fontDir) : [];
 // Kursive Varianten nie nehmen; bei mehreren Treffern woff2 und variable Schriften bevorzugen
 const fontScore = x => (x.endsWith("woff2") ? 2 : 0) + (/variable/i.test(x) ? 1 : 0);
-const fontsFound = FONT_RULES.map(([re, fam, w]) => { const f = fontFilesAll.filter(x => re.test(x) && !/italic/i.test(x)).sort((a, b) => fontScore(b) - fontScore(a) || a.localeCompare(b))[0]; return f && { f, fam, w }; }).filter(Boolean);
-const FONT_PRELOAD = fontsFound.filter(x => x.f.endsWith("woff2")).map(x => `<link rel="preload" href="/fonts/${encodeURIComponent(x.f)}" as="font" type="font/woff2" crossorigin>`).join("");
+const fontsFound = FONT_RULES.map(([re, fam, w, sign]) => { const f = fontFilesAll.filter(x => re.test(x) && !/italic/i.test(x)).sort((a, b) => fontScore(b) - fontScore(a) || a.localeCompare(b))[0]; return f && { f, fam, w, sign: !!sign }; }).filter(Boolean);
+const FONT_PRELOAD = fontsFound.filter(x => x.f.endsWith("woff2") && !x.sign).map(x => `<link rel="preload" href="/fonts/${encodeURIComponent(x.f)}" as="font" type="font/woff2" crossorigin>`).join("");
 const fontCSS = fontsFound.map(x => `@font-face{font-family:"${x.fam}";src:url("/fonts/${encodeURIComponent(x.f)}") format("${x.f.endsWith("woff2") ? "woff2" : "truetype"}");font-weight:${x.w};font-style:normal;font-display:swap}`).join("\n");
 // Stil der Website: der Schriften-Teil (hängt von den Dateien im Ordner fonts ab) plus src/style.css. Das Versionskürzel entsteht aus beidem.
 const CSS_SRC = fontCSS + "\n" + fs.readFileSync(path.join(ROOT, "src/style.css"), "utf8");
@@ -1869,7 +1871,7 @@ const SIGNS = [
   { s: "maedelsflohmarkt", fmt: "quer", tone: "pink", chip: "Mädelsflohmarkt", short: "In Pink, mit Krone und Sektglas: Mode, Taschen und Glitzer.",
     h1: "Schilder für den Mädelsflohmarkt: Mode, Taschen und Glitzer", title: "Mädelsflohmarkt-Schilder zum Ausdrucken: kostenlos",
     desc: "Glamouröse Schilder in Pink für Mädels- und Kleiderflohmarkt: „Königliche Preise“, „Anprobieren erwünscht“, „Neu mit Etikett“ und mehr. Kostenlos drucken.",
-    ans: "Auf dem Mädelsflohmarkt dreht sich alles um Kleidung, Taschen, Schuhe und Schmuck. Mit den passenden Schildern findet man sich an deinem Stand sofort zurecht und traut sich eher, etwas anzuprobieren. Die Vorlagen sind pink voreingestellt, unter „Farbe“ gibt es auch Gelb und Mint, unter „Symbol“ Krone, Sektglas, Diamant und vieles mehr.",
+    ans: "Auf dem Mädelsflohmarkt dreht sich alles um Kleidung, Taschen, Schuhe und Schmuck. Mit den passenden Schildern findet man sich an deinem Stand sofort zurecht und traut sich eher, etwas anzuprobieren. Die Vorlagen sind pink voreingestellt, unter „Fläche“ gibt es auch Gelb, Mint und Schwarz, dazu eine eigene Schriftfarbe wie Gold oder Weiß, eine elegante Schrift und unter „Symbol“ Krone, Sektglas, Diamant und vieles mehr.",
     v: [{ l: "Königliche Preise", sym: "crown", top: "Mädelsflohmarkt", main: "Königliche Preise", bot: "Für alle Queens" },
       { l: "Prickelnde Preise", sym: "champagne-glasses", top: "Gönn dir", main: "Prickelnde Preise", bot: "Alles unter 10 €" },
       { l: "Anprobieren erwünscht", sym: "shirt", top: "", main: "Anprobieren erwünscht", bot: "Der Spiegel steht gleich links" },
@@ -1877,10 +1879,12 @@ const SIGNS = [
       { l: "Neu mit Etikett", sym: "wand-magic-sparkles", top: "Nie getragen", main: "Neu mit Etikett", bot: "Zu schön für den Schrank" },
       { l: "Mir zu klein", sym: "heart", top: "", main: "Mir zu klein, dir perfekt", bot: "Probier es einfach an" },
       { l: "Nix zum Anziehen?", sym: "bag-shopping", top: "Nix zum Anziehen?", main: "Hier schon", bot: "Mode, Taschen und Schuhe" },
-      { l: "Glitzer-Ecke", sym: "gem", top: "Schmuck und Accessoires", main: "Glitzer-Ecke", bot: "Alles, was funkelt" }],
+      { l: "Glitzer-Ecke", sym: "gem", top: "Schmuck und Accessoires", main: "Glitzer-Ecke", bot: "Alles, was funkelt" },
+      { l: "Gold-Edition", sym: "crown", tone: "schwarz", ink: "gold", font: "elegant", top: "Mädelsflohmarkt", main: "Königliche Preise", bot: "Für alle Queens" }],
     b: () => [["So wirkt dein Stand wie eine kleine Boutique", "Häng Kleidung auf eine Stange statt sie zu stapeln und sortier nach Größen. Taschen und Schuhe stehen am besten auf Augenhöhe, Schmuck kommt in eine eigene Ecke mit Schild. Ein Spiegel neben dem Stand verkauft mehr als jeder Rabatt, weil sich die Leute gleich vorstellen können, wie das Teil an ihnen aussieht."],
       ["Preise und Größen auf einen Blick", `Ein Festpreis für die ganze Stange spart Fragen und macht das Stöbern entspannt. Für einzelne Teile nimmst du die <a href="${SIGN_BASE}preisschilder/">Preisschilder</a>, auch die gibt es in Pink. Mit dem Format „8 pro Blatt“ druckst du kleine Größen-Schilder wie „Größe 36 bis 38“ für die Stange. Worauf Käuferinnen bei Vintage achten, steht im Ratgeber ${kl("vintage-kleidung-flohmarkt", "Vintage-Kleidung auf dem Flohmarkt kaufen")}.`]],
-    f: [["Kann ich die Schilder auch in Gelb drucken?", "Ja. Unter „Farbe“ wählst du Gelb, Pink oder Mint. Im Sparmodus druckt das Schild ganz ohne Farbfläche, nur mit Rahmen."],
+    f: [["Kann ich die Schilder auch in Gelb drucken?", "Ja. Unter „Fläche“ wählst du Gelb, Pink, Mint oder Schwarz. Im Sparmodus druckt das Schild ganz ohne Farbfläche, nur mit Rahmen."],
+      ["Gibt es die Schrift auch in Gold?", "Ja. Unter „Schriftfarbe“ wählst du Gold, am schönsten auf schwarzer Fläche wie bei der Vorlage „Gold-Edition“. Ein normaler Drucker druckt Gold als warmen Goldton, nicht glänzend. Für echten Glanz druckst du im Sparmodus auf Gold- oder Glitzerpapier."],
       ["Wie viel verlange ich für Kleidung?", `Das hängt von Marke und Zustand ab. Viele setzen für Alltagskleidung einen Festpreis pro Stange und für Markenteile einzelne Preise. Tipps dazu stehen im Ratgeber ${kl("preise-festlegen-flohmarkt", "Preise auf dem Flohmarkt festlegen")}.`]],
     kb: ["vintage-kleidung-flohmarkt", "preise-festlegen-flohmarkt", "was-verkauft-sich-gut-flohmarkt"] },
   { s: "weihnachtsflohmarkt", fmt: "quer", chip: "Weihnachten", short: "Für Advents- und Weihnachtsflohmärkte: Wichtelgeschenke und mehr.",
@@ -1956,7 +1960,15 @@ const SIGN_PAGE_IMGS = new Map(); // für die Bild-Sitemap
 
 // Startzustand einer Vorlage (erste Variante)
 // Farben der Schildfläche: Gelb (Standard), Pink und Mint. Eine Vorlage kann eine andere Farbe voreinstellen (tone).
-const TONES = { gelb: ["Gelb", "#F6E03A"], pink: ["Pink", "#FF8FC0"], mint: ["Mint", "#8EE3C1"] };
+const TONES = { gelb: ["Gelb", "#F6E03A"], pink: ["Pink", "#FF8FC0"], mint: ["Mint", "#8EE3C1"], schwarz: ["Schwarz", "#15211B"] };
+// Schriftfarbe des großen Texts. Gold ist ein Goldton mit leichtem Verlauf (gedruckt nicht glänzend).
+const INKS = { schwarz: ["Schwarz", "#15211B"], weiss: ["Weiß", "#FFFFFF"], gold: ["Gold", "#C9A13B"], pink: ["Pink", "#FF8FC0"] };
+// Nur gut lesbare Paare: Was aus zwei Metern schwer zu lesen wäre, ist im Designer ausgegraut. Erste Farbe = Standard.
+const INK_OK = { gelb: ["schwarz"], pink: ["schwarz"], mint: ["schwarz"], schwarz: ["weiss", "gold", "pink"], save: ["schwarz", "gold", "pink"] };
+const inkDefault = tone => INK_OK[tone || "gelb"][0];
+// Schriften für den Schildtext; eine Schrift erscheint nur, wenn ihre Datei im Ordner fonts liegt
+const SIGN_FONTS = [["modern", "Modern", "Bricolage Grotesque"], ["klar", "Klar", "Figtree"], ["elegant", "Elegant", "Fraunces"], ["verspielt", "Verspielt", "Pacifico"]].filter(([k, , fam]) => k === "modern" || fontsFound.some(x => x.fam === fam));
+const fontOk = k => SIGN_FONTS.some(([x]) => x === k);
 // Symbole für die Schilder: Font Awesome Free 7.1.0 (Solid), Lizenz CC BY 4.0, Copyright 2025 Fonticons, Inc., unverändert übernommen.
 // Kräftige, gefüllte Formen passen zur fetten Schilder-Schrift. [Beschriftung, viewBox, Pfad]
 const SYM = {
@@ -2009,7 +2021,7 @@ const SYM = {
 const symSVG = k => SYM[k] ? `<svg viewBox="${SYM[k][1]}" aria-hidden="true" focusable="false"><path d="${SYM[k][2]}"/></svg>` : "";
 // Symbol einer Variante: eigene Angabe (auch "" für keins) geht vor der Angabe der Vorlage
 const symOf = (t, x) => { const k = x.sym !== undefined ? x.sym : t.sym; return k && SYM[k] ? k : ""; };
-const signState = (t, x = t.v[0]) => ({ kind: t.kind || "sign", fmt: t.kind === "tags" ? "tags" : (t.fmt || "quer"), top: x.top || "", main: x.main || "", bot: x.bot || "", price: x.price || "", ...((x.tone || t.tone) && (x.tone || t.tone) !== "gelb" ? { tone: x.tone || t.tone } : {}), ...(t.kind !== "tags" && symOf(t, x) ? { sym: symOf(t, x) } : {}) });
+const signState = (t, x = t.v[0]) => ({ kind: t.kind || "sign", fmt: t.kind === "tags" ? "tags" : (t.fmt || "quer"), top: x.top || "", main: x.main || "", bot: x.bot || "", price: x.price || "", ...((x.tone || t.tone) && (x.tone || t.tone) !== "gelb" ? { tone: x.tone || t.tone } : {}), ...(t.kind !== "tags" && symOf(t, x) ? { sym: symOf(t, x) } : {}), ...(x.ink && x.ink !== inkDefault(x.tone || t.tone) ? { ink: x.ink } : {}), ...(x.font && x.font !== "modern" && fontOk(x.font) ? { font: x.font } : {}) });
 /* Vorschaubilder: echte Aufnahmen des Schilder-Designers (src/schilder/flohmarkt-<kennung>-vorlage.webp), damit Übersicht,
    Startseite und Google-Bildersuche genau das Schild zeigen, das man druckt (Schrift, Pfeile, Farben). Sie entstehen außerhalb
    des Baus. vorschau.json merkt sich, zu welchem Text ein Bild gehört: Passt es nicht mehr (Text geändert), nimmt der Bau
@@ -2037,13 +2049,14 @@ const signTxt = t => {
   }
   return g.map(grp => grp.length === 1 && !isArw(grp[0]) ? esc(grp[0]) : `<span class="nw">${grp.map(x => isArw(x) ? arwSVG(x) : esc(x)).join(" ")}</span>`).join(" ");
 };
+const sheetCls = st => (st.tone ? " tone-" + st.tone : "") + " ink-" + (st.ink || inkDefault(st.tone)) + (st.font ? " font-" + st.font : "");
 function sheetHTML(st) {
   if (st.kind === "tags") {
     const u = `<div class="tg"><i class="tg-hole"></i><div class="tg-price${st.price ? "" : " blank"}"><span>${st.price ? esc(st.price) : "€"}</span></div><div class="tg-vb"><i></i>VB</div><div class="tg-brand">flohlotse.de</div></div>`;
-    return `<div class="sheet f-tags${st.tone ? " tone-" + st.tone : ""}" id="sheet">${u.repeat(24)}</div>`;
+    return `<div class="sheet f-tags${sheetCls(st)}" id="sheet">${u.repeat(24)}</div>`;
   }
   const u = `<div class="sg"><div class="sg-top">${signTxt(st.top)}</div><div class="sg-mw"><div class="sg-main"><span>${signTxt(st.main)}</span></div><span class="sg-sym" aria-hidden="true">${symSVG(st.sym)}</span></div><div class="sg-bot">${signTxt(st.bot)}</div><div class="sg-foot"><div class="sg-pay"><svg class="sg-payqr" aria-hidden="true" focusable="false"></svg><span><b>Mit PayPal zahlen</b><span class="sg-payurl"></span></span></div>${qrSVG("sg-qr")}<span><b>flohlotse.de/schilder</b>Schilder kostenlos gestalten</span></div></div>`;
-  return `<div class="sheet f-${st.fmt}${st.tone ? " tone-" + st.tone : ""}${st.sym ? " sym" : ""}" id="sheet">${st.fmt === "acht" ? u.repeat(8) : u}</div>`;
+  return `<div class="sheet f-${st.fmt}${sheetCls(st)}${st.sym ? " sym" : ""}" id="sheet">${st.fmt === "acht" ? u.repeat(8) : u}</div>`;
 }
 // Themen im Designer: jede Vorlage mit all ihren Sprüchen, dazu „Eigener Text“. So findet man jeden Spruch auf jeder Designer-Seite.
 // Reihenfolge: Beliebtes und Lustiges zuerst.
@@ -2056,7 +2069,9 @@ function genHTML(st, themes, act, heading, pay) {
   const fmtBtn = (f, l) => `<button type="button" class="chip" data-fmt="${f}" aria-pressed="${st.fmt === f}">${l}</button>`;
   const tone = st.tone || "gelb", toneBtn = k => `<button type="button" class="chip" data-tone="${k}" aria-pressed="${tone === k}"><i class="sw sw-${k}"></i>${TONES[k][0]}</button>`;
   const symBtn = k => `<button type="button" class="sym-btn" data-sym="${k}" aria-pressed="${(st.sym || "") === k}" aria-label="${k ? "Symbol: " + esc(SYM[k][0]) : "Ohne Symbol"}" title="${k ? esc(SYM[k][0]) : "Ohne"}">${k ? symSVG(k) : "<span>Ohne</span>"}</button>`;
-  return `<section class="gen" id="gen" data-kind="${st.kind}" data-fmt="${st.fmt}" data-tone="${tone}" data-sym="${st.sym || ""}"${pay === "auto" ? ' data-pay="0"' : ""} aria-labelledby="genH">
+  const ink = st.ink || inkDefault(tone), inkBtn = k => `<button type="button" class="chip" data-ink="${k}" aria-pressed="${ink === k}"${INK_OK[tone].includes(k) ? "" : " disabled"}><i class="sw sw-i-${k}"></i>${INKS[k][0]}</button>`;
+  const font = st.font || "modern", fontBtn = ([k, l]) => `<button type="button" class="chip fnt fnt-${k}" data-font="${k}" aria-pressed="${font === k}"><b aria-hidden="true">Aa</b>${l}</button>`;
+  return `<section class="gen" id="gen" data-kind="${st.kind}" data-fmt="${st.fmt}" data-tone="${tone}" data-ink="${ink}" data-font="${font}" data-inkok="${esc(JSON.stringify(INK_OK))}" data-sym="${st.sym || ""}"${pay === "auto" ? ' data-pay="0"' : ""} aria-labelledby="genH">
 <h2 id="genH">${heading}</h2>
 <div class="gen-pick js-only"><div class="gen-theme"><label for="genTheme">Thema</label><select id="genTheme">${themes.map((g, i) => `<option value="${i}"${i === act ? " selected" : ""}>${esc(g.l)}</option>`).join("")}</select></div>
 ${themes.map((g, i) => `<div class="chips gen-presets" data-grp="${i}" role="group" aria-label="${esc(g.l)}: Spruch wählen"${i === act ? "" : " hidden"}>${g.items.map((p, j) => `<button type="button" class="chip" data-set="${pj(p.set)}" aria-pressed="${i === act && j === 0}">${esc(p.l)}</button>`).join("")}</div>`).join("")}</div>
@@ -2068,7 +2083,9 @@ ${themes.map((g, i) => `<div class="chips gen-presets" data-grp="${i}" role="gro
 ${pay ? `<label class="only-sign gen-pay"><span>Dein PayPal.me-Name <small>(optional, für einen QR-Code zum Bezahlen)</small></span><span class="pfx"><b>paypal.me/</b><input id="fPay" type="text" value="" maxlength="80" autocomplete="off" autocapitalize="none" spellcheck="false" enterkeyhint="done" placeholder="deinname"></span><small class="pay-note" id="payNote" aria-live="polite"></small></label>` : ""}
 <label class="only-tags"><span>Preis <small>(leer lassen zum Beschriften)</small></span><input id="fPrice" type="text" value="${esc(st.price)}" maxlength="12" autocomplete="off" enterkeyhint="done" placeholder="z. B. 2 €"></label>
 <div class="gen-opts"><div class="seg only-sign" role="group" aria-label="Format">${fmtBtn("quer", "A4 quer")}${fmtBtn("hoch", "A4 hoch")}${fmtBtn("acht", "8 pro Blatt")}</div>
-<div class="seg seg-tone" role="group" aria-label="Farbe">${Object.keys(TONES).map(toneBtn).join("")}</div>
+<div class="seg seg-tone" role="group" aria-label="Farbe der Fläche"><span class="seg-l">Fläche</span>${Object.keys(TONES).map(toneBtn).join("")}</div>
+<div class="seg seg-tone seg-ink" role="group" aria-label="Schriftfarbe"><span class="seg-l">Schriftfarbe <small>(nur gut lesbare Paare)</small></span>${Object.keys(INKS).map(inkBtn).join("")}</div>
+${SIGN_FONTS.length > 1 ? `<div class="seg seg-tone seg-font" role="group" aria-label="Schrift"><span class="seg-l">Schrift</span>${SIGN_FONTS.map(fontBtn).join("")}</div>` : ""}
 <details class="sym-pick only-sign"><summary><span>Symbol</span><b class="sym-cur">${st.sym ? symSVG(st.sym) + esc(SYM[st.sym][0]) : "Ohne"}</b></summary><div class="sym-grid" role="group" aria-label="Symbol wählen">${["", ...Object.keys(SYM)].map(symBtn).join("")}</div></details>
 <label class="switch only-tags"><input type="checkbox" id="fVb" checked>Kästchen „VB“</label>
 <label class="switch"><input type="checkbox" id="fSave">Sparmodus: Rahmen statt Farbe</label></div>
@@ -2098,8 +2115,8 @@ function signPreviewSVG(t) {
   const cy = 112, lh = fs * 1.02, y0 = cy - (lines.length - 1) * lh / 2 + fs * 0.35;
   return head + (st.top ? `<text x="148.5" y="38" text-anchor="middle" font-family="${F}" font-size="17" font-weight="900" fill="#15211B">${esc(st.top)}</text>` : "")
     + `<rect x="22" y="${st.top ? 50 : 34}" width="253" height="${st.top ? 118 : 134}" rx="10" fill="${TONES[st.tone || "gelb"][1]}" transform="rotate(-1.2 148.5 109)"/>`
-    + lines.map((l, i) => `<text x="148.5" y="${(y0 + i * lh).toFixed(1)}" text-anchor="middle" font-family="${F}" font-size="${fs.toFixed(1)}" font-weight="900" fill="#15211B" transform="rotate(-1.2 148.5 109)">${esc(l)}</text>`).join("")
-    + (st.sym ? (() => { const [, vb, d] = SYM[st.sym], [, , vw, vh] = vb.split(" ").map(Number), sc = 22 / Math.max(vw, vh); return `<g transform="rotate(9 262 ${st.top ? 52 : 36})"><circle cx="262" cy="${st.top ? 52 : 36}" r="19" fill="#15211B"/><path d="${d}" fill="${TONES[st.tone || "gelb"][1]}" transform="translate(${(262 - vw * sc / 2).toFixed(2)} ${((st.top ? 52 : 36) - vh * sc / 2).toFixed(2)}) scale(${sc.toFixed(5)})"/></g>`; })() : "")
+    + lines.map((l, i) => `<text x="148.5" y="${(y0 + i * lh).toFixed(1)}" text-anchor="middle" font-family="${F}" font-size="${fs.toFixed(1)}" font-weight="900" fill="${INKS[st.ink || inkDefault(st.tone)][1]}" transform="rotate(-1.2 148.5 109)">${esc(l)}</text>`).join("")
+    + (st.sym ? (() => { const [, vb, d] = SYM[st.sym], [, , vw, vh] = vb.split(" ").map(Number), sc = 22 / Math.max(vw, vh); return `<g transform="rotate(9 262 ${st.top ? 52 : 36})"><circle cx="262" cy="${st.top ? 52 : 36}" r="19" fill="#15211B"/><path d="${d}" fill="${st.tone === "schwarz" ? INKS[st.ink || inkDefault(st.tone)][1] : TONES[st.tone || "gelb"][1]}" transform="translate(${(262 - vw * sc / 2).toFixed(2)} ${((st.top ? 52 : 36) - vh * sc / 2).toFixed(2)}) scale(${sc.toFixed(5)})"/></g>`; })() : "")
     + (st.bot ? `<text x="148.5" y="188" text-anchor="middle" font-family="${B}" font-size="11.5" font-weight="700" fill="#15211B">${esc(st.bot)}</text>` : "")
     + `<text x="283" y="203" text-anchor="end" font-family="${B}" font-size="5" fill="#5A6961">flohlotse.de</text></svg>\n`;
 }
@@ -2663,7 +2680,7 @@ if (IMGS.size) {
 if (fontsFound.length) {
   fs.mkdirSync(path.join(OUT, "fonts"), { recursive: true }); for (const x of fontsFound) fs.copyFileSync(path.join(fontDir, x.f), path.join(OUT, "fonts", x.f));
   // Die Open Font License verlangt, dass Urhebervermerk und Lizenztext mit den Schriften ausgeliefert werden
-  const FONT_C = { "Bricolage Grotesque": "Copyright 2022 The Bricolage Grotesque Project Authors (https://github.com/ateliertriay/bricolage)", "Figtree": "Copyright 2022 The Figtree Project Authors (https://github.com/erikdkennedy/figtree)", "DM Mono": "Copyright 2020 The DM Mono Project Authors (https://www.github.com/googlefonts/dm-mono)" };
+  const FONT_C = { "Bricolage Grotesque": "Copyright 2022 The Bricolage Grotesque Project Authors (https://github.com/ateliertriay/bricolage)", "Figtree": "Copyright 2022 The Figtree Project Authors (https://github.com/erikdkennedy/figtree)", "Fraunces": "Copyright 2018 The Fraunces Project Authors (https://github.com/undercasetype/Fraunces)", "Pacifico": "Copyright 2018 The Pacifico Project Authors (https://github.com/googlefonts/Pacifico)", "DM Mono": "Copyright 2020 The DM Mono Project Authors (https://www.github.com/googlefonts/dm-mono)" };
   fs.writeFileSync(path.join(OUT, "fonts/OFL.txt"), [...new Set(fontsFound.map(x => FONT_C[x.fam]).filter(Boolean))].join("\n") + "\n\n" + OFL_TEXT + "\n");
 }
 // Sitemap, bei den Schilder-Seiten mit Vorschaubildern für die Google-Bildersuche. Änderungsdaten: siehe „Änderungsdatum je Seite“ weiter oben.

@@ -474,10 +474,9 @@
         for (i = 1; i <= pts.length; i++) { var a = pts[i - 1], b = pts[i % pts.length], c = Math.hypot(b[0] - a[0], b[1] - a[1]) / 2; d += "A" + f(c) + " " + f(c) + " 0 0 1 " + f(b[0]) + " " + f(b[1]); }
         return d + "Z";
       }
-      if (k === "zacken") {
-        var tz = m * 0.06, zx0 = p + tz, zy0 = p + tz, zx1 = w - p - tz, zy1 = h - p - tz;
-        var zs = function (ax, ay, bx, by, nx, ny) { var n = Math.max(3, Math.round(Math.hypot(bx - ax, by - ay) / (tz * 1.7))); for (var j = 0; j < n; j++) { var u = j / n, v = (j + 0.5) / n; pts.push([ax + (bx - ax) * u, ay + (by - ay) * u], [ax + (bx - ax) * v + nx * tz, ay + (by - ay) * v + ny * tz]); } };
-        zs(zx0, zy0, zx1, zy0, 0, -1); zs(zx1, zy0, zx1, zy1, 1, 0); zs(zx1, zy1, zx0, zy1, 0, 1); zs(zx0, zy1, zx0, zy0, -1, 0);
+      if (k === "stern") {
+        var cx = w / 2, cy = h / 2, ra = w / 2 - p, rb = h / 2 - p, sn = Math.max(16, Math.min(30, Math.round(Math.PI * (ra + rb) / (m * 0.2))));
+        for (i = 0; i < sn * 2; i++) { var ang = -Math.PI / 2 + i * Math.PI / sn, k2 = i % 2 ? 0.84 : 1; pts.push([cx + Math.cos(ang) * ra * k2, cy + Math.sin(ang) * rb * k2]); }
         return "M" + pts.map(function (q) { return f(q[0]) + " " + f(q[1]); }).join("L") + "Z";
       }
       if (k === "blase") {
@@ -490,6 +489,16 @@
           + "M" + f(hx + hr) + " " + f(cy) + "A" + f(hr) + " " + f(hr) + " 0 1 0 " + f(hx - hr) + " " + f(cy) + "A" + f(hr) + " " + f(hr) + " 0 1 0 " + f(hx + hr) + " " + f(cy) + "Z";
       }
       return "";
+    };
+    // Sicherer Innenbereich je Form (oben, rechts, unten, links in px): Der Text bleibt so immer ganz innerhalb der Form
+    var shapeSafe = function (k, w, h) {
+      var p = Math.max(1.5, Math.min(w, h) * 0.02), m = Math.min(w, h), g = m * 0.05;
+      if (k === "wolke") { var a = p + m * 0.14 + g; return [a, a * 1.1, a, a * 1.1]; }
+      if (k === "blume") { var bl = p + m * 0.1 + g; return [bl, bl, bl, bl]; }
+      if (k === "stern") { var sx = w / 2 - 0.6 * (w / 2 - p), sy = h / 2 - 0.6 * (h / 2 - p); return [sy, sx, sy, sx]; }
+      if (k === "blase") return [p + g * 1.4, p + m * 0.1, p + h * 0.17 + g, p + m * 0.1];
+      if (k === "etikett") { var tip = Math.min(h * 0.42, w * 0.17); return [p + g * 1.3, p + m * 0.08, p + g * 1.3, p + tip + m * 0.07]; }
+      return null;
     };
     // Schriftfarbe: nur gut lesbare Paare zulassen (Liste kommt aus build.mjs). Passt die gewählte Farbe nicht mehr, nimmt das Schild die erste passende.
     var INK_OK = JSON.parse(gen.getAttribute("data-inkok") || "{}");
@@ -553,7 +562,9 @@
     var over = function (b) { return b.scrollWidth > b.clientWidth + 1 || b.scrollHeight > b.clientHeight + 1; };
     // passt, wenn weder der Kasten noch der Text selbst überläuft (lange Wörter werden so kleiner statt abgeschnitten)
     var bad = function (box, el) { return over(box) || (el !== box && el.scrollWidth > el.clientWidth + 1); };
-    var fit = function (box, el, max, min) { var lo = min || 4, hi = max; el.style.fontSize = hi + "px"; if (!bad(box, el)) return hi; while (hi - lo > 0.5) { var mid = (lo + hi) / 2; el.style.fontSize = mid + "px"; if (bad(box, el)) hi = mid; else lo = mid; } el.style.fontSize = lo + "px"; return lo; };
+    var fit = function (box, el, max, min, chk) { chk = chk || bad; var lo = min || 4, hi = max; el.style.fontSize = hi + "px"; if (!chk(box, el)) return hi; while (hi - lo > 0.5) { var mid = (lo + hi) / 2; el.style.fontSize = mid + "px"; if (chk(box, el)) hi = mid; else lo = mid; } el.style.fontSize = lo + "px"; return lo; };
+    // Großer Text: muss in den Innenbereich passen (ohne Innenabstand). scrollHeight allein reicht nicht, weil Text im zentrierten Kasten in den Rand rutschen darf, ohne als Überlauf zu zählen.
+    var badMain = function (box, el) { var cs = getComputedStyle(box), ch = box.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom), cw = box.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight); return el.offsetHeight > ch + 1 || el.offsetWidth > cw + 1 || el.scrollWidth > el.clientWidth + 1 || over(box); };
     var sheet;
     // Vorschau einpassen: echte Blattgröße messen, Rahmen-Höhe exakt setzen (Rahmen darf nicht bei jedem Tastendruck schrumpfen)
     var scale = function () {
@@ -584,7 +595,11 @@
         signText(top, st.top, ""); signText(ms, st.main, " "); signText(bot, st.bot, "");
         var base = top.parentNode.clientWidth, sizes = [];
         [top, bot].forEach(function (el) { if (el.firstChild) { el.style.fontSize = ""; var mx = parseFloat(getComputedStyle(el).fontSize); sizes.push(fit(el, el, mx, 4)); } else sizes.push(null); });
-        var mfs = fit(main, ms, main.clientHeight * 0.9, 6);
+        // Form: Innenabstand aus der Form rechnen (mit Platz für den Symbol-Aufkleber), dann erst die Schrift einpassen
+        var shpOn = st.shape && st.shape !== "rund", safe = shpOn ? shapeSafe(st.shape, main.offsetWidth, main.offsetHeight) : null;
+        if (safe && symSrc()) { var sw = u.querySelector(".sg-sym").offsetWidth * 0.5; safe[1] = Math.max(safe[1], sw); if (st.shape !== "etikett") safe[3] = Math.max(safe[3], sw); }
+        for (i = 0; i < n; i++) units[i].querySelector(".sg-main").style.padding = safe ? safe.map(function (v) { return v.toFixed(1) + "px"; }).join(" ") : "";
+        var mfs = fit(main, ms, main.clientHeight * 0.9, 6, badMain);
         var spd = st.shape && st.shape !== "rund" ? shapePath(st.shape, main.offsetWidth, main.offsetHeight) : "";
         for (i = 0; i < n; i++) { var sv = units[i].querySelector(".sg-shape"); if (sv) { sv.setAttribute("viewBox", "0 0 " + main.offsetWidth + " " + main.offsetHeight); sv.firstElementChild.setAttribute("d", spd); } }
         for (i = 1; i < n; i++) {
@@ -648,6 +663,7 @@
     if (themeSel) themeSel.addEventListener("change", function () {
       var v = themeSel.value; gen.querySelectorAll(".gen-presets[data-grp]").forEach(function (r) { r.hidden = r.getAttribute("data-grp") !== v; });
       var b = gen.querySelector('.gen-presets[data-grp="' + v + '"] button[data-set]'); if (b) b.click();
+      if (window.matchMedia && window.matchMedia("(pointer: coarse)").matches) themeSel.blur();
     });
     // Drucken: nur das Schild, in Originalgröße, Seitenformat passend (auch bei Strg+P)
     var pageCss = document.createElement("style"), root = null;

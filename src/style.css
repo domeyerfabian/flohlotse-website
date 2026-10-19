@@ -405,6 +405,8 @@ a.route .i{width:17px;height:17px}
 .gen-theme{position:relative;display:flex;align-items:center;gap:12px}
 .gen-theme label{font-size:14px;font-weight:600;flex:none}
 .gen-theme select{flex:1;min-width:0;font:inherit;font-size:15px;font-weight:700;color:var(--paper);background:var(--ink);border:1px solid var(--ink);border-radius:999px;padding:8px 36px 8px 16px;appearance:none;-webkit-appearance:none;cursor:pointer}
+.gen-theme select:focus{outline:none}
+.gen-theme select:focus-visible{outline:none;box-shadow:0 0 0 3px var(--sticker)}
 .gen-theme::after{content:"";position:absolute;right:16px;top:50%;width:7px;height:7px;border-right:2px solid var(--paper);border-bottom:2px solid var(--paper);transform:translateY(-70%) rotate(45deg);pointer-events:none}
 .gen-presets{display:flex;flex-wrap:nowrap;gap:8px}
 .gen-presets[hidden]{display:none}
@@ -582,14 +584,10 @@ a.route .i{width:17px;height:17px}
 .f-acht.save .sg-shape path{stroke-width:.7mm}
 .shp .sg-main{background:none!important;border:0!important;border-radius:0;overflow:visible}
 .shp .sg-shape{display:block}
-/* Innenabstand je Form in Prozent: passt in jedem Format (quer, hoch, 2/4/8 pro Blatt) */
-.shape-wolke .sg-main{padding:6% 9%}
-.shape-blume .sg-main{padding:5% 8%}
-.shape-zacken .sg-main{padding:4.5% 7%}
-.shape-blase .sg-main{padding:3% 6% 10%}
-.shape-etikett .sg-main{padding:3% 5% 3% 24%}
-.shp.sym .sg-main{padding-right:12%}
-.shp.sym:not(.shape-etikett) .sg-main{padding-left:12%}
+/* Innenabstand je Form setzt site.js passend zur Form. Schreibschrift ragt mit Schwüngen über ihre Zeile hinaus: etwas Luft im Text selbst, damit nichts über den Rand läuft. */
+.sg-main > span{padding:.03em 0}
+.font-verspielt .sg-main > span{padding:.16em .08em}
+.font-elegant .sg-main > span{padding:.06em 0}
 /* Drucken: nur das Schild */
 #print-root{display:none}
 @media print{

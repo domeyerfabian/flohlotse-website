@@ -1815,7 +1815,7 @@ const SIGNS = [
     h1: "Alles-muss-raus-Schild für den Flohmarkt zum Ausdrucken", title: "Alles muss raus: Schild zum Ausdrucken (kostenlos)",
     desc: "Schild „Alles muss raus“ für die letzte Stunde am Flohmarktstand, auch als „Alles halber Preis“ oder „Jetzt reduziert“. Kostenlos gestalten und drucken.",
     ans: "In der letzten Stunde zählt jedes Teil, das du nicht wieder einpacken musst. Ein „Alles muss raus“-Schild zeigt allen, dass jetzt die Preise fallen, und lockt auch Leute an, die schon auf dem Heimweg sind. Spruch wählen, drucken und gut sichtbar vorn an den Tisch hängen.",
-    v: [{ l: "Alles muss raus", top: "Ausverkauf", main: "Alles muss raus", bot: "Jetzt gibt's die besten Preise" }, { l: "Halber Preis", shape: "zacken", sym: "percent", top: "Letzte Stunde", main: "Alles halber Preis", bot: "Gilt für den ganzen Stand" }, { l: "Jetzt reduziert", top: "", main: "Jetzt reduziert", bot: "Frag nach dem neuen Preis" }],
+    v: [{ l: "Alles muss raus", top: "Ausverkauf", main: "Alles muss raus", bot: "Jetzt gibt's die besten Preise" }, { l: "Halber Preis", shape: "stern", sym: "percent", top: "Letzte Stunde", main: "Alles halber Preis", bot: "Gilt für den ganzen Stand" }, { l: "Jetzt reduziert", top: "", main: "Jetzt reduziert", bot: "Frag nach dem neuen Preis" }],
     b: () => [["Der richtige Zeitpunkt", "Häng das Schild erst gegen Ende des Markttags auf, etwa in der letzten Stunde. Vorher verschenkst du Geld bei Stücken, die sich auch zum normalen Preis verkauft hätten. Wertvolle Einzelstücke kannst du vom Rabatt ausnehmen, schreib das dann in die kleine Zeile."],
       ["Kombinieren mit Kisten und Tüten", `Noch besser wirkt das Schild zusammen mit einem <a href="${SIGN_BASE}mengenrabatt/">Mengenrabatt wie „Tüte voll: 5 €“</a>. Was danach noch übrig ist, steht im Ratgeber ${kl("reste-nach-dem-flohmarkt", "Nach dem Flohmarkt: Wohin mit den Resten?")}.`]],
     f: [["Wie stark sollte ich reduzieren?", "Viele halbieren in der letzten Stunde einfach alle Preise. Bei Kleinkram lohnt sich auch ein Festpreis pro Kiste oder Tüte. Wichtig ist, dass der Rabatt auf einen Blick verständlich ist."],
@@ -1967,7 +1967,7 @@ const INKS = { schwarz: ["Schwarz", "#15211B"], weiss: ["Weiß", "#FFFFFF"], gol
 const INK_OK = { gelb: ["schwarz", "weiss"], pink: ["schwarz", "weiss", "gold"], mint: ["schwarz", "weiss", "gold"], schwarz: ["weiss", "gold", "pink"], save: ["schwarz", "gold", "pink"] };
 const inkOut = st => { const k = st.ink || inkDefault(st.tone); return (k === "weiss" || k === "gold") && (st.save || (st.tone || "gelb") !== "schwarz"); };
 // Formen der Farbfläche. Die genaue Form rechnet site.js passend zur Größe aus; hier nur die kleinen Bilder für die Auswahl.
-const SHAPES = [["rund", "Klassisch"], ["wolke", "Wolke"], ["blume", "Blume"], ["zacken", "Zacken"], ["blase", "Sprechblase"], ["etikett", "Etikett"]];
+const SHAPES = [["rund", "Klassisch"], ["wolke", "Wolke"], ["blume", "Blume"], ["stern", "Stern"], ["blase", "Sprechblase"], ["etikett", "Etikett"]];
 const shapeOk = k => SHAPES.some(([x]) => x === k);
 // gleiche Rechnung wie shapePath in site.js (für die Auswahlbilder)
 function shapePath(k, w, h) {
@@ -1980,10 +1980,9 @@ function shapePath(k, w, h) {
     for (let i = 1; i <= pts.length; i++) { const a = pts[i - 1], b = pts[i % pts.length], c = Math.hypot(b[0] - a[0], b[1] - a[1]) / 2; d += `A${f(c)} ${f(c)} 0 0 1 ${f(b[0])} ${f(b[1])}`; }
     return d + "Z";
   }
-  if (k === "zacken") {
-    const t = m * 0.06, x0 = p + t, y0 = p + t, x1 = w - p - t, y1 = h - p - t, pts = [];
-    const side = (ax, ay, bx, by, nx, ny) => { const n = Math.max(3, Math.round(Math.hypot(bx - ax, by - ay) / (t * 1.7))); for (let i = 0; i < n; i++) { const u = i / n, v = (i + 0.5) / n; pts.push([ax + (bx - ax) * u, ay + (by - ay) * u], [ax + (bx - ax) * v + nx * t, ay + (by - ay) * v + ny * t]); } };
-    side(x0, y0, x1, y0, 0, -1); side(x1, y0, x1, y1, 1, 0); side(x1, y1, x0, y1, 0, 1); side(x0, y1, x0, y0, -1, 0);
+  if (k === "stern") { // Stern wie ein Preis-Aufkleber („Knaller“), passt sich als Oval der Fläche an
+    const cx = w / 2, cy = h / 2, a = w / 2 - p, b = h / 2 - p, n = Math.max(16, Math.min(30, Math.round(Math.PI * (a + b) / (m * 0.2)))), pts = [];
+    for (let i = 0; i < n * 2; i++) { const ang = -Math.PI / 2 + i * Math.PI / n, k2 = i % 2 ? 0.84 : 1; pts.push([cx + Math.cos(ang) * a * k2, cy + Math.sin(ang) * b * k2]); }
     return "M" + pts.map(q => f(q[0]) + " " + f(q[1])).join("L") + "Z";
   }
   if (k === "blase") {
@@ -2109,7 +2108,7 @@ function genHTML(st, themes, act, heading, pay) {
   const txt = (id, lab, v, max, ph, cls = "only-sign") => `<label class="fld ${cls}"><span>${lab}</span><input id="${id}" type="text" value="${esc(v)}" maxlength="${max}" autocomplete="off" enterkeyhint="done"${ph ? ` placeholder="${ph}"` : ""}></label>`;
   return `<section class="gen" id="gen" data-kind="${st.kind}" data-fmt="${st.fmt}" data-tone="${tone}" data-ink="${ink}" data-font="${font}" data-shape="${st.shape || "rund"}" data-inkok="${esc(JSON.stringify(INK_OK))}" data-sym="${st.sym || ""}"${pay === "auto" ? ' data-pay="0"' : ""} aria-labelledby="genH">
 <div class="gen-head"><h2 id="genH">${heading}</h2><button class="btn gen-print js-only" id="doPrint" type="button" aria-label="Drucken oder als PDF speichern">${ic("printer")}<span>Drucken</span></button></div>
-<div class="gen-pick js-only"><div class="gen-theme"><label for="genTheme" class="vh">Thema</label><select id="genTheme">${themes.map((g, i) => `<option value="${i}"${i === act ? " selected" : ""}>${esc(g.l)}</option>`).join("")}</select></div>
+<div class="gen-pick js-only"><div class="gen-theme"><label for="genTheme" class="vh">Kategorie</label><select id="genTheme"><option value="" selected disabled>Kategorie wählen</option>${themes.map((g, i) => `<option value="${i}">${esc(g.l)}</option>`).join("")}</select></div>
 ${themes.map((g, i) => `<div class="gen-presets" data-grp="${i}" role="group" aria-label="${esc(g.l)}: Spruch wählen"${i === act ? "" : " hidden"}>${g.items.map((p, j) => `<button type="button" class="chip" data-set="${pj(p.set)}" aria-pressed="${i === act && j === 0}">${esc(p.l)}</button>`).join("")}</div>`).join("")}</div>
 <div class="sheet-wrap" id="sheetWrap">${sheetHTML(st)}</div>
 <div class="gen-form js-only">

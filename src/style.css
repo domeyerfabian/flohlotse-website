@@ -412,7 +412,14 @@ a.route .i{width:17px;height:17px}
 .gen-opts{display:grid;gap:10px}
 .seg{display:flex;flex-wrap:wrap;gap:8px}
 .seg .sw{display:inline-block;width:14px;height:14px;border-radius:50%;border:1px solid rgba(0,0,0,.18);margin-right:7px;vertical-align:-2px;flex:none}
-.sw-gelb{background:#F6E03A}.sw-pink{background:#FF8FC0}.sw-mint{background:#8EE3C1}
+.sw-gelb{background:#F6E03A}.sw-pink{background:#FF8FC0}.sw-mint{background:#8EE3C1}.sw-schwarz{background:#15211B}
+.sw-i-schwarz{background:#15211B}.sw-i-weiss{background:#fff}.sw-i-pink{background:#FF8FC0}.sw-i-gold{background:linear-gradient(135deg,#F7E08B,#C9A13B 50%,#8C6A1C)}
+.chip[aria-pressed="true"] .sw-schwarz,.chip[aria-pressed="true"] .sw-i-schwarz{border-color:rgba(255,255,255,.7)}
+.seg-l{flex-basis:100%;font-size:13px;font-weight:600;color:var(--muted)}
+.seg-l small{font-weight:500}
+.seg .chip:disabled{opacity:.38;cursor:not-allowed}
+.fnt b{font-size:16px;line-height:1;margin-right:6px;font-weight:800;font-family:var(--f-display)}
+.fnt-klar b{font-family:var(--f-body)}.fnt-elegant b{font-family:"Fraunces",Georgia,serif;font-weight:600}.fnt-verspielt b{font-family:"Pacifico",cursive;font-weight:400}
 @media (min-width:700px){.gen-opts .seg-tone{grid-column:1/-1}}
 .sym-pick{grid-column:1/-1;border:1px solid var(--line);border-radius:14px;background:var(--surface)}
 .sym-pick summary{display:flex;align-items:center;gap:12px;padding:10px 14px;cursor:pointer;font-size:14px;font-weight:600;list-style:none}
@@ -450,26 +457,38 @@ a.route .i{width:17px;height:17px}
 /* Farbe der Schildfläche (Gelb ist Standard); der Sparmodus weiter unten geht vor */
 .tone-pink .sg-main,.tone-pink .tg-price{background:#FF8FC0}
 .tone-mint .sg-main,.tone-mint .tg-price{background:#8EE3C1}
+.tone-schwarz .sg-main,.tone-schwarz .tg-price{background:#15211B}
+/* Schriftfarbe des großen Texts (und des Preises auf Preisschildern) */
+.ink-weiss :is(.sg-main span,.tg-price span){color:#fff}
+.ink-pink :is(.sg-main span,.tg-price span){color:#FF8FC0}
+.ink-gold :is(.sg-main span,.tg-price span){color:#C9A13B;background:linear-gradient(170deg,#F4DC86 0%,#D4AF37 36%,#9E7620 60%,#E6C35E 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.ink-gold .sg-main .sg-arw path{stroke:#C9A13B}
+.tg-price.blank span{-webkit-text-fill-color:currentColor}
+/* Schrift */
+.font-klar :is(.sg-top,.sg-main span,.tg-price span){font-family:var(--f-body);font-weight:800}
+.font-elegant :is(.sg-top,.sg-main span,.tg-price span){font-family:"Fraunces",Georgia,serif;font-weight:600;letter-spacing:-.01em}
+.font-verspielt :is(.sg-top,.sg-main span,.tg-price span){font-family:"Pacifico",cursive;font-weight:400;letter-spacing:0;line-height:1.2}
 /* Symbol als runder Aufkleber an der oberen rechten Ecke der Fläche (Krone, Sektglas, Herz …), die Schrift macht ihm Platz */
 .sg-sym{position:absolute;top:-21mm;right:-21mm;width:42mm;height:42mm;border-radius:50%;background:#15211B;border:1.6mm solid #fff;display:none;place-items:center;transform:rotate(10deg);z-index:1}
 .sym .sg-sym{display:grid}
 .sg-sym svg{width:24mm;height:24mm;fill:#F6E03A}
 .tone-pink .sg-sym svg{fill:#FF8FC0}
 .tone-mint .sg-sym svg{fill:#8EE3C1}
+.tone-schwarz .sg-sym svg{fill:#fff}.tone-schwarz.ink-gold .sg-sym svg{fill:#D4AF37}.tone-schwarz.ink-pink .sg-sym svg{fill:#FF8FC0}
 /* Platz für den Aufkleber: Die Fläche rückt rechts (und ohne Zeile oben auch oben) etwas ein, die Schrift hält Abstand zur Ecke */
 .sym .sg-mw{margin-right:19mm}
 .sym .sg-top:empty + .sg-mw{margin-top:13mm}
 .sym .sg-main{padding-left:19mm;padding-right:19mm}
-.sym .sg-top{padding:0 30mm}
+.sym .sg-top{padding:0 48mm}
 .f-hoch .sg-sym{top:-18mm;right:-18mm;width:36mm;height:36mm}.f-hoch .sg-sym svg{width:20.5mm;height:20.5mm}
 .f-hoch.sym .sg-mw{margin-right:16mm}
 .f-hoch.sym .sg-main{padding-left:15mm;padding-right:15mm}
-.f-hoch.sym .sg-top{padding:0 24mm}
+.f-hoch.sym .sg-top{padding:0 40mm}
 .f-acht .sg-sym{top:-8mm;right:-8mm;width:16mm;height:16mm;border-width:.7mm}.f-acht .sg-sym svg{width:9.2mm;height:9.2mm}
 .f-acht.sym .sg-mw{margin-right:8mm}
 .f-acht.sym .sg-top:empty + .sg-mw{margin-top:7mm}
 .f-acht.sym .sg-main{padding-left:7mm;padding-right:7mm}
-.f-acht.sym .sg-top{padding:0 11mm}
+.f-acht.sym .sg-top{padding:0 18mm}
 /* Pfeile in Schriftstärke (siehe site.js); ein Pfeil bleibt mit seinem Wort in einer Zeile */
 .sg .nw{white-space:nowrap}
 .sg-arw{display:inline-block;width:.88em;height:.88em;vertical-align:-.1em;overflow:visible}

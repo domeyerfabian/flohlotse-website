@@ -458,8 +458,18 @@
   var gen = document.getElementById("gen");
   if (gen) {
     var wrap = document.getElementById("sheetWrap"), $ = function (id) { return document.getElementById(id); };
-    var st = { kind: gen.getAttribute("data-kind"), fmt: gen.getAttribute("data-fmt"), top: $("fTop").value, main: $("fMain").value, bot: $("fBot").value, price: $("fPrice").value, vb: true, save: false, pay: null, tone: gen.getAttribute("data-tone") || "gelb", sym: gen.getAttribute("data-sym") || "" };
-    var toneSet = false, symSet = false; // Farbe oder Symbol selbst gewählt: bleibt beim Wechsel der Vorlage erhalten
+    var st = { kind: gen.getAttribute("data-kind"), fmt: gen.getAttribute("data-fmt"), top: $("fTop").value, main: $("fMain").value, bot: $("fBot").value, price: $("fPrice").value, vb: true, save: false, pay: null, tone: gen.getAttribute("data-tone") || "gelb", ink: gen.getAttribute("data-ink") || "schwarz", font: gen.getAttribute("data-font") || "modern", sym: gen.getAttribute("data-sym") || "" };
+    var toneSet = false, symSet = false, inkSet = false, fontSet = false;
+    // Schriftfarbe: nur gut lesbare Paare zulassen (Liste kommt aus build.mjs). Passt die gewählte Farbe nicht mehr, nimmt das Schild die erste passende.
+    var INK_OK = JSON.parse(gen.getAttribute("data-inkok") || "{}");
+    var inkFix = function () {
+      var ok = INK_OK[st.save ? "save" : st.tone] || ["schwarz"];
+      if (ok.indexOf(st.ink) < 0) st.ink = ok[0];
+      gen.querySelectorAll("button[data-ink]").forEach(function (b) { var k = b.getAttribute("data-ink"); b.disabled = ok.indexOf(k) < 0; b.title = b.disabled ? "Auf dieser Fläche schlecht lesbar" : ""; b.setAttribute("aria-pressed", String(k === st.ink)); });
+    };
+    // Schriften für das Schild lädt der Browser erst bei Auswahl; danach wird neu eingepasst
+    var FONT_FAM = { klar: "800 40px Figtree", elegant: "600 40px Fraunces", verspielt: "400 40px Pacifico" };
+    var fontLoad = function () { return document.fonts && FONT_FAM[st.font] ? document.fonts.load(FONT_FAM[st.font]).catch(function () {}) : Promise.resolve(); }; // Farbe oder Symbol selbst gewählt: bleibt beim Wechsel der Vorlage erhalten
     // Symbol-Aufkleber: Die Form steckt schon im Auswahlknopf und wird von dort ins Schild kopiert
     var symSrc = function () { var b = st.sym && gen.querySelector('button[data-sym="' + st.sym + '"] svg'); return b || null; };
     var symCur = function () { var c = gen.querySelector(".sym-cur"), b = gen.querySelector('button[data-sym="' + (symSrc() ? st.sym : "") + '"]'); if (!c) return; c.textContent = ""; if (symSrc()) { c.appendChild(symSrc().cloneNode(true)); c.appendChild(document.createTextNode(b.getAttribute("title"))); } else c.textContent = "Ohne"; };
@@ -526,7 +536,7 @@
       var tags = st.kind === "tags", fmt = tags ? "tags" : st.fmt, n = tags ? 24 : fmt === "acht" ? 8 : 1;
       gen.setAttribute("data-kind", st.kind); gen.setAttribute("data-fmt", fmt);
       sheet = document.createElement("div"); sheet.id = "sheet";
-      sheet.className = "sheet f-" + fmt + (st.save ? " save" : "") + (tags && !st.vb ? " novb" : "") + (st.tone && st.tone !== "gelb" ? " tone-" + st.tone : "") + (!tags && symSrc() ? " sym" : "");
+      sheet.className = "sheet f-" + fmt + (st.save ? " save" : "") + (tags && !st.vb ? " novb" : "") + (st.tone && st.tone !== "gelb" ? " tone-" + st.tone : "") + " ink-" + st.ink + (st.font && st.font !== "modern" ? " font-" + st.font : "") + (!tags && symSrc() ? " sym" : "");
       var tpl = $(tags ? "tplTag" : "tplSign").content.firstElementChild;
       for (var i = 0; i < n; i++) sheet.appendChild(tpl.cloneNode(true));
       wrap.innerHTML = ""; wrap.appendChild(sheet);
@@ -556,10 +566,14 @@
     var setPressed = function (sel, el) { gen.querySelectorAll(sel).forEach(function (x) { x.setAttribute("aria-pressed", String(x === el)); }); };
     ["fTop", "fMain", "fBot", "fPrice"].forEach(function (id) { $(id).addEventListener("input", function () { st[{ fTop: "top", fMain: "main", fBot: "bot", fPrice: "price" }[id]] = this.value; render(); }); });
     $("fVb").addEventListener("change", function () { st.vb = this.checked; render(); });
-    $("fSave").addEventListener("change", function () { st.save = this.checked; render(); });
+    $("fSave").addEventListener("change", function () { st.save = this.checked; inkFix(); render(); });
     gen.addEventListener("click", function (e) {
       var f = e.target.closest("[data-fmt]"), p = e.target.closest("[data-set]"), tn = e.target.closest("button[data-tone]");
-      if (tn) { st.tone = tn.getAttribute("data-tone"); toneSet = true; setPressed("button[data-tone]", tn); render(); }
+      if (tn) { st.tone = tn.getAttribute("data-tone"); toneSet = true; setPressed("button[data-tone]", tn); if (!inkSet) st.ink = (INK_OK[st.tone] || ["schwarz"])[0]; inkFix(); render(); }
+      var ik = e.target.closest("button[data-ink]");
+      if (ik && !ik.disabled) { st.ink = ik.getAttribute("data-ink"); inkSet = true; inkFix(); render(); }
+      var fb = e.target.closest("button[data-font]");
+      if (fb) { st.font = fb.getAttribute("data-font"); fontSet = true; setPressed("button[data-font]", fb); render(); fontLoad().then(render); }
       var sb = e.target.closest("button[data-sym]");
       if (sb) { st.sym = sb.getAttribute("data-sym"); symSet = true; setPressed("button[data-sym]", sb); symCur(); render(); }
       if (f && f.tagName === "BUTTON") { st.fmt = lastSignFmt = f.getAttribute("data-fmt"); setPressed("button[data-fmt]", f); render(); }
@@ -569,6 +583,9 @@
         st.fmt = d.kind === "tags" ? "tags" : lastSignFmt;
         if (!toneSet) { st.tone = d.tone || "gelb"; setPressed("button[data-tone]", gen.querySelector('button[data-tone="' + st.tone + '"]')); }
         if (!symSet) { st.sym = d.sym || ""; setPressed("button[data-sym]", gen.querySelector('button[data-sym="' + st.sym + '"]')); symCur(); }
+        if (!inkSet) st.ink = d.ink || (INK_OK[st.tone] || ["schwarz"])[0];
+        inkFix();
+        if (!fontSet && gen.querySelector('button[data-font="' + (d.font || "modern") + '"]')) { st.font = d.font || "modern"; setPressed("button[data-font]", gen.querySelector('button[data-font="' + st.font + '"]')); fontLoad().then(render); }
         if (gen.hasAttribute("data-pay")) gen.setAttribute("data-pay", d.pay ? "1" : "0");
         $("fTop").value = st.top; $("fMain").value = st.main; $("fBot").value = st.bot; $("fPrice").value = st.price;
         setPressed("button[data-set]", p); setPressed("button[data-fmt]", gen.querySelector('button[data-fmt="' + st.fmt + '"]')); render();
@@ -594,7 +611,8 @@
     window.addEventListener("beforeprint", prep); window.addEventListener("afterprint", done);
     $("doPrint").addEventListener("click", function () { prep(); window.print(); });
     window.addEventListener("resize", scale);
-    (document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve()).then(render);
+    inkFix();
+    (document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve()).then(function () { return fontLoad(); }).then(render);
     render();
   }
   /* Merkliste: gemerkte Märkte liegen nur im Browser (Local Storage, Schlüssel „flohlotse-merkliste“, nur die Kennungen der Märkte).

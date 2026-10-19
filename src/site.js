@@ -106,7 +106,8 @@
     });
     var abSel = function (i, focus) { abT.forEach(function (t, j) { t.setAttribute("aria-selected", String(i === j)); t.tabIndex = i === j ? 0 : -1; abP[j].hidden = i !== j; }); if (focus) abT[i].focus(); };
     abT.forEach(function (t, i) { t.addEventListener("click", function () { abSel(i); }); t.addEventListener("keydown", function (e) { var d = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0; if (!d) return; var j = i; do { j = (j + d + abT.length) % abT.length; } while (abT[j].hidden && j !== i); abSel(j, true); }); });
-    var first = abT.findIndex(function (t) { return !t.hidden; }); if (first > -1) abSel(first);
+    // Läuft heute nichts mehr und hat kein anderer Reiter Termine, bleibt nur ein leerer Rahmen übrig: dann den ganzen Kasten ausblenden
+    var first = abT.findIndex(function (t) { return !t.hidden; }); if (first > -1) abSel(first); else ab.hidden = true;
   }
   // Startseite: Kauf-Check-Beispiel zum Antippen
   document.querySelectorAll("[data-kc]").forEach(function (f) {

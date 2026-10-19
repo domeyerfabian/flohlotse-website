@@ -1361,6 +1361,11 @@ a.route.kc-go{margin:10px 0 0;min-height:44px;font-size:15px;padding:8px 16px}
 .hero ~ .sec{border-top:0;margin-top:0;padding-top:40px}
 .hero ~ .faq{margin-top:40px}
 @media (min-width:800px){.hero ~ .sec{padding-top:48px}.hero ~ .faq{margin-top:48px}}
+/* Startseite: Bänder (Stöbern, Wissen) fassen nur zusammen; auf Handy und Tablet bleiben die Abstände wie ohne Band */
+.band > .sec:first-child{padding-top:0;border-top:0;margin-top:0}
+.band > .sec + .sec{border-top:0;margin-top:0;padding-top:40px}
+.band > .faq{margin-top:40px}
+@media (min-width:800px){.band > .sec + .sec{padding-top:48px}.band > .faq{margin-top:48px}}
 /* Wisch-Knöpfe am Handy etwas enger, damit das Plus (immer sichtbar) nie am „Merken“-Knopf klebt */
 @media (max-width:640px){.dk-btns{gap:18px}.dk-b.no,.dk-b.yes{width:64px;height:64px}.dk-b .i{width:28px;height:28px}}
 @media (max-width:370px){.dk-btns{gap:10px}.dk-b.no,.dk-b.yes{width:58px;height:58px}.dk-b .i{width:26px;height:26px}}
@@ -1439,7 +1444,7 @@ main.pg-start > .sec{border-top:0;margin-top:0;padding-top:48px}
    Spalten: Hälften (6 + 6), Drittel (4 + 4 + 4), Kopf und Text (7 + 5). Zwischen den Abschnitten stehen überall 96 px. */
 @media (min-width:1080px){
   :root{--gut:32px;--sp:96px}
-  body{padding-inline:40px}
+  body{padding-inline:40px;margin:0} /* ohne Browser-Rand: Kopfzeile und Bänder reichen bis an den Bildschirmrand */
   .top{margin-inline:-40px;padding-inline:40px}
   .wrap,.site-foot{max-width:1200px}
   main.wide,main.read{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));column-gap:var(--gut);align-items:start;align-content:start}
@@ -1512,20 +1517,14 @@ main.pg-start > .sec{border-top:0;margin-top:0;padding-top:48px}
   main .dk-date{font-size:46px}
   main .dk-body h2{font-size:28px}
 
-  /* Startseite */
-  .pg-home > .helpers{grid-column:1/7}
-  .pg-home > .akt-sec{grid-column:7/-1}
-  .pg-home > .hs-bez{grid-column:1/5}
-  .pg-home > .hs-art{grid-column:5/9}
-  .pg-home > .hs-mon{grid-column:9/-1}
-  .pg-home > .home-seo{grid-column:1/8}
-  main.pg-home > .faq{grid-column:8/-1;max-width:none}
-  .pg-home > .hs-insta{grid-column:1/7;align-self:stretch;display:grid}
-  .pg-home > .hs-org{grid-column:7/-1;align-self:stretch;display:grid}
-  main.pg-home > .faq{padding-top:var(--sp);margin-top:0}
-  /* „Aktuell“ steht neben „Gut vorbereitet“: Überschrift auf gleicher Höhe (dort steht noch eine Dachzeile darüber) */
-  main.pg-home > .akt-sec{padding-top:calc(var(--sp) + 29px)}
-  /* Kopf: links Überschrift, Text, Suche und Schnellzugriffe mit Sticker (Spalten 1 bis 7), rechts die heutigen Termine (8 bis 12) */
+  /* Startseite: ein Raster für alles. Die Bereiche stehen abwechselnd auf Papier, auf weißen Bändern (Stöbern, Wissen)
+     und auf dem dunklen Band „Wischen & merken“. Bänder laufen als Fläche über die volle Breite, der Inhalt bleibt in den zwölf Spalten. */
+  main.pg-home > .sec.band,main.pg-home > .sec.home-deck{--bnd:var(--surface);display:grid;grid-template-columns:repeat(12,minmax(0,1fr));column-gap:var(--gut);align-items:start;margin-top:var(--sp);padding-block:80px;border-image:linear-gradient(var(--bnd) 0 0) fill 0//0 100vmax}
+  main.pg-home > .band > *{min-width:0}
+  main.pg-home .band > .sec,main.pg-home .band > .faq{padding-top:0;margin-top:0;border-top:0;max-width:none}
+
+  /* Kopf: links Überschrift, Text, Suche und Schnellzugriffe (Spalten 1 bis 7), rechts die heutigen Termine (8 bis 12).
+     Der Kasten ist genau so hoch wie die linke Seite; der Sticker klebt auf seiner unteren linken Ecke. */
   .pg-home .hero{grid-template-columns:repeat(12,minmax(0,1fr));grid-template-rows:repeat(5,auto) 1fr;gap:0 var(--gut);align-items:start;padding-block:64px 0}
   .pg-home .hero > div{display:contents}
   .pg-home .hero > div > *{grid-column:1/8}
@@ -1535,25 +1534,76 @@ main.pg-start > .sec{border-top:0;margin-top:0;padding-top:48px}
   .pg-home .hero .sx-home{grid-row:4}
   .pg-home .hero .quick{grid-row:5;margin-top:22px}
   .pg-home .hero .hero-p + .sx-home{margin-top:28px}
-  .pg-home .hero .sx-home,.pg-home .hero .quick{grid-column:1/6}
-  .pg-home .hero .ab{grid-column:8/-1;grid-row:1/-1;margin:0;max-width:none;align-self:center}
-  .pg-home .big-sticker{grid-column:6/8;grid-row:4/6;justify-self:center;align-self:center;margin:24px 0 0}
+  .pg-home .hero .sx-home{grid-column:1/6}
+  .pg-home .hero .quick{grid-column:1/7}
+  .pg-home .hero .ab{grid-column:8/-1;grid-row:1/-1;align-self:stretch;margin:0;max-width:none;display:flex;flex-direction:column}
+  .pg-home .hero .ab-p{flex:1;display:flex;flex-direction:column}
+  .pg-home .hero .ab-all{margin-top:auto}
+  .pg-home .big-sticker{grid-column:8;grid-row:1/-1;justify-self:start;align-self:end;z-index:1;margin:0 0 -56px -78px}
+  /* Ohne Kasten (abends blendet site.js ihn aus, wenn nichts mehr läuft): der Sticker (dann „nächster Markt“) steht mittig rechts */
+  .pg-home .hero:not(:has(.ab:not([hidden]))) .big-sticker{grid-column:8/-1;justify-self:center;align-self:center;margin:0}
   /* Wochen-Highlight: flacher, damit es den Bildschirm nicht füllt */
   .pg-home .hl{margin-top:var(--sp)}
   .pg-home .hl-slide{aspect-ratio:16/5}
-  /* Gut vorbereitet: die drei Kacheln untereinander in der linken Hälfte */
+
+  /* „Gut vorbereitet“ (links) und „Aktuell“ (rechts) teilen sich die Zeilen: Überschriften auf einer Höhe, Kästen oben und unten bündig */
+  .pg-home > .helpers{grid-column:1/7}
+  .pg-home > .akt-sec{grid-column:7/-1}
+  .pg-home > .helpers,.pg-home > .akt-sec{display:grid;grid-template-rows:subgrid;grid-row:span 4;align-content:start}
+  .pg-home .helpers > .kicker{grid-row:1;margin-bottom:8px}
+  .pg-home .helpers > h2{grid-row:2;margin:0}
+  .pg-home .helpers > .hp-intro{grid-row:3}
+  .pg-home .helpers > .hp-grid{grid-row:4;margin-top:20px;grid-auto-rows:1fr}
+  .pg-home .akt-sec > .sec-head{grid-row:2;margin:0}
+  .pg-home .akt-sec > .akt{grid-row:4;margin-top:20px;align-self:stretch;display:flex;flex-direction:column}
+  .pg-home .akt-sec .akt-panels{flex:1;align-content:center}
   .pg-home .hp-grid{grid-template-columns:minmax(0,1fr);gap:12px}
   .pg-home .hp-tile{flex-direction:row;align-items:center;gap:16px;padding:16px 18px}
   .pg-home .hp-tile > .i{display:block}
-  /* Wischen & merken: Überschrift und Text wie überall links, der Stapel mittig */
-  .pg-home .home-deck{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));column-gap:var(--gut)}
+
+  /* Wischen & merken: dunkles Band, Überschrift und Text links wie überall, der Stapel mittig über die Spalten 3 bis 10 */
+  main.pg-home > .sec.home-deck{--bnd:#15211B}
+  :root[data-theme="dark"] main.pg-home > .sec.home-deck{--bnd:#1D2822}
   .pg-home .home-deck > *{grid-column:1/-1}
-  .pg-home .home-deck > .deck{grid-column:3/11;margin:32px 0 0;max-width:none}
-  /* Kästen Instagram und Veranstalter gleich hoch */
+  .pg-home .home-deck > .deck{grid-column:3/11;margin:40px 0 0;max-width:none}
+  .pg-home .home-deck > #dkEmpty{grid-column:3/11}
+  .pg-home .home-deck .sec-head h2,.pg-home .home-deck .sec-head a,.pg-home .home-deck .dk-bl{color:#fff}
+  .pg-home .home-deck .dk-intro,.pg-home .home-deck .dk-count,.pg-home .home-deck .dk-bw:nth-child(2) .dk-bl{color:#C9D3CC}
+  .pg-home .home-deck .dk-b{box-shadow:none}
+  .pg-home .home-deck .dk-b.undo{background:transparent;color:#fff;border-color:rgba(255,255,255,.35)}
+  .pg-home .home-deck .dk-b.undo:hover:not(:disabled){border-color:#fff}
+  .pg-home .home-deck :focus-visible{outline-color:#fff}
+  .pg-home .home-deck .dk-card :focus-visible,.pg-home .home-deck .dk-done :focus-visible{outline-color:var(--ink)}
+
+  /* Stöbern: links die Bezirke, rechts Art und Monat untereinander. Überschriften und Chips stehen auf gleicher Höhe, auch wenn eine Überschrift umbricht. */
+  .pg-home .band-browse > .sec{display:grid;grid-template-rows:subgrid;align-content:start}
+  .pg-home .band-browse > .hs-bez{grid-column:1/7;grid-row:1/5}
+  .pg-home .band-browse > .hs-art{grid-column:7/-1;grid-row:1/3}
+  .pg-home .band-browse > .hs-mon{grid-column:7/-1;grid-row:3/5}
+  .pg-home .band-browse .hs-bez > .chips{grid-row:2/-1;align-self:start}
+  .pg-home .band-browse .hs-mon > .sec-head{margin-top:48px}
+  .pg-home .band-browse .sec-head{align-items:baseline}
+
+  /* Wissen: Text links (Spalten 1 bis 7), Fragen rechts (8 bis 12). Beide Überschriften zwei Zeilen hoch und unten bündig, damit Text und Fragen auf einer Höhe beginnen. */
+  .pg-home .band-seo > .home-seo{grid-column:1/8}
+  .pg-home .band-seo > .faq{grid-column:8/-1}
+  .pg-home .band-seo h2{min-height:2lh;margin:0 0 20px;display:flex;flex-direction:column;justify-content:flex-end}
+  .pg-home .band-seo .home-seo p:first-of-type{margin-top:0}
+
+  /* Kästen Instagram und Veranstalter nebeneinander, gleich hoch */
+  .pg-home > .hs-insta{grid-column:1/7;align-self:stretch;display:grid}
+  .pg-home > .hs-org{grid-column:7/-1;align-self:stretch;display:grid}
   .pg-home .hs-insta .follow,.pg-home .hs-org .org{height:100%;margin:0}
   .pg-home .hs-insta .follow{grid-template-columns:auto 1fr;align-content:center}
   .pg-home .hs-insta .follow .btn{grid-column:2}
   .pg-home .hs-org .org{align-content:center}
+
+  /* Terminkarten: „Zum Markt“ immer unten rechts in der Karte, auch wenn die Nachbarkarte höher ist */
+  main .ev .ev-body{display:flex;flex-direction:column}
+  main .ev .row.foot{margin-top:auto;padding-top:10px}
+  main .ev .row.foot:not(:has(.acts)){margin-right:-46px}
+  main .ev > button.fav{top:16px;right:16px} /* Merken oben rechts im gleichen Abstand wie „Zum Markt“ unten rechts und die Uhrzeit oben links */
+  @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) main.pg-home > .sec.home-deck{--bnd:#1D2822}}
   /* Seite /start/: Kopf mittig über acht Spalten, daneben der Sticker; Bühne und Fragen über die volle Breite */
   .pg-start > .lp-hero{grid-column:3/11;padding-top:72px}
   .pg-start .lp-hero h1{font-size:68px}

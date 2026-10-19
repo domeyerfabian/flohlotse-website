@@ -1815,7 +1815,7 @@ const SIGNS = [
     h1: "Alles-muss-raus-Schild für den Flohmarkt zum Ausdrucken", title: "Alles muss raus: Schild zum Ausdrucken (kostenlos)",
     desc: "Schild „Alles muss raus“ für die letzte Stunde am Flohmarktstand, auch als „Alles halber Preis“ oder „Jetzt reduziert“. Kostenlos gestalten und drucken.",
     ans: "In der letzten Stunde zählt jedes Teil, das du nicht wieder einpacken musst. Ein „Alles muss raus“-Schild zeigt allen, dass jetzt die Preise fallen, und lockt auch Leute an, die schon auf dem Heimweg sind. Spruch wählen, drucken und gut sichtbar vorn an den Tisch hängen.",
-    v: [{ l: "Alles muss raus", top: "Ausverkauf", main: "Alles muss raus", bot: "Jetzt gibt's die besten Preise" }, { l: "Halber Preis", sym: "percent", top: "Letzte Stunde", main: "Alles halber Preis", bot: "Gilt für den ganzen Stand" }, { l: "Jetzt reduziert", top: "", main: "Jetzt reduziert", bot: "Frag nach dem neuen Preis" }],
+    v: [{ l: "Alles muss raus", top: "Ausverkauf", main: "Alles muss raus", bot: "Jetzt gibt's die besten Preise" }, { l: "Halber Preis", shape: "zacken", sym: "percent", top: "Letzte Stunde", main: "Alles halber Preis", bot: "Gilt für den ganzen Stand" }, { l: "Jetzt reduziert", top: "", main: "Jetzt reduziert", bot: "Frag nach dem neuen Preis" }],
     b: () => [["Der richtige Zeitpunkt", "Häng das Schild erst gegen Ende des Markttags auf, etwa in der letzten Stunde. Vorher verschenkst du Geld bei Stücken, die sich auch zum normalen Preis verkauft hätten. Wertvolle Einzelstücke kannst du vom Rabatt ausnehmen, schreib das dann in die kleine Zeile."],
       ["Kombinieren mit Kisten und Tüten", `Noch besser wirkt das Schild zusammen mit einem <a href="${SIGN_BASE}mengenrabatt/">Mengenrabatt wie „Tüte voll: 5 €“</a>. Was danach noch übrig ist, steht im Ratgeber ${kl("reste-nach-dem-flohmarkt", "Nach dem Flohmarkt: Wohin mit den Resten?")}.`]],
     f: [["Wie stark sollte ich reduzieren?", "Viele halbieren in der letzten Stunde einfach alle Preise. Bei Kleinkram lohnt sich auch ein Festpreis pro Kiste oder Tüte. Wichtig ist, dass der Rabatt auf einen Blick verständlich ist."],
@@ -1857,12 +1857,12 @@ const SIGNS = [
     desc: "Lustige Sprüche für deinen Flohmarktstand, etwa „Kann Spuren von Erinnerungen enthalten“ oder „Früher Fehlkauf, heute Schnäppchen“. Kostenlos drucken.",
     ans: "Ein Spruch, der zum Schmunzeln bringt, hält Leute einen Moment länger am Stand. Und wer stehen bleibt, schaut sich um und kommt mit dir ins Gespräch. Such dir einen Spruch aus, pass ihn an oder schreib deinen eigenen.",
     v: [{ l: "Spuren von Erinnerungen", sym: "triangle-exclamation", top: "Achtung", main: "Kann Spuren von Erinnerungen enthalten", bot: "Gebraucht, geliebt, gut erhalten" },
-      { l: "Fehlkauf", sym: "face-grin-wink", top: "", main: "Früher Fehlkauf, heute Schnäppchen", bot: "Mein Fehler, dein Glück" },
+      { l: "Fehlkauf", shape: "blase", sym: "face-grin-wink", top: "", main: "Früher Fehlkauf, heute Schnäppchen", bot: "Mein Fehler, dein Glück" },
       { l: "Mein Keller", sym: "box-open", top: "Bitte mitnehmen", main: "Mein Keller will das nicht zurück", bot: "Jedes Teil zählt" },
       { l: "Ausmisten", sym: "dumbbell", top: "", main: "Ausmisten ist mein Sport", bot: "Hilf mir beim Training" },
       { l: "Jetzt bist du dran", sym: "heart", top: "Ich hab's geliebt", main: "Jetzt bist du dran", bot: "Gute Reise, liebes Teil" },
       { l: "Wühlen", sym: "gem", top: "Achtung", main: "Wühlen auf eigene Gefahr", bot: "Schätze möglich, Staub auch" },
-      { l: "Moin", sym: "sun", top: "Moin!", main: "Schön, dass du da bist", bot: "Stöbern ausdrücklich erwünscht" }],
+      { l: "Moin", shape: "wolke", sym: "sun", top: "Moin!", main: "Schön, dass du da bist", bot: "Stöbern ausdrücklich erwünscht" }],
     b: () => [["Warum ein lustiges Schild hilft", "Auf einem vollen Markt laufen die meisten an den Ständen vorbei. Ein Spruch, über den man schmunzelt, ist ein guter Grund, kurz stehen zu bleiben. Häng das Schild auf Augenhöhe und stell deine schönsten Stücke direkt darunter."],
       ["Eigene Sprüche schreiben", `Kurz gewinnt: Drei bis fünf Wörter im großen Text liest man auch im Vorbeigehen. Die Pointe passt oft gut in die kleine Zeile unten. Freundlich bleibt es, wenn du über dich oder deine Sachen witzelst, nicht über die Kundschaft. Was sonst noch an den Stand gehört, steht in der ${kl("checkliste-flohmarktstand", "Checkliste für deinen Flohmarktstand")}.`]],
     f: [["Darf ich die Sprüche verwenden?", "Ja. Die Sprüche sind von uns, du kannst sie für deinen Stand frei nutzen und nach Lust und Laune ändern."],
@@ -1873,11 +1873,11 @@ const SIGNS = [
     desc: "Glamouröse Schilder in Pink für Mädels- und Kleiderflohmarkt: „Königliche Preise“, „Anprobieren erwünscht“, „Neu mit Etikett“ und mehr. Kostenlos drucken.",
     ans: "Auf dem Mädelsflohmarkt dreht sich alles um Kleidung, Taschen, Schuhe und Schmuck. Mit den passenden Schildern findet man sich an deinem Stand sofort zurecht und traut sich eher, etwas anzuprobieren. Die Vorlagen sind pink voreingestellt, unter „Fläche“ gibt es auch Gelb, Mint und Schwarz, dazu eine eigene Schriftfarbe wie Gold oder Weiß, eine elegante Schrift und unter „Symbol“ Krone, Sektglas, Diamant und vieles mehr.",
     v: [{ l: "Königliche Preise", sym: "crown", top: "Mädelsflohmarkt", main: "Königliche Preise", bot: "Für alle Queens" },
-      { l: "Prickelnde Preise", sym: "champagne-glasses", top: "Gönn dir", main: "Prickelnde Preise", bot: "Alles unter 10 €" },
-      { l: "Anprobieren erwünscht", sym: "shirt", top: "", main: "Anprobieren erwünscht", bot: "Der Spiegel steht gleich links" },
+      { l: "Prickelnde Preise", shape: "wolke", sym: "champagne-glasses", top: "Gönn dir", main: "Prickelnde Preise", bot: "Alles unter 10 €" },
+      { l: "Anprobieren erwünscht", shape: "blase", sym: "shirt", top: "", main: "Anprobieren erwünscht", bot: "Der Spiegel steht gleich links" },
       { l: "Kleiderstange", sym: "tag", top: "Kleiderstange", main: "Alles 5 €", bot: "Such dir dein Lieblingsteil aus" },
       { l: "Neu mit Etikett", sym: "wand-magic-sparkles", top: "Nie getragen", main: "Neu mit Etikett", bot: "Zu schön für den Schrank" },
-      { l: "Mir zu klein", sym: "heart", top: "", main: "Mir zu klein, dir perfekt", bot: "Probier es einfach an" },
+      { l: "Mir zu klein", shape: "blume", sym: "heart", top: "", main: "Mir zu klein, dir perfekt", bot: "Probier es einfach an" },
       { l: "Nix zum Anziehen?", sym: "bag-shopping", top: "Nix zum Anziehen?", main: "Hier schon", bot: "Mode, Taschen und Schuhe" },
       { l: "Glitzer-Ecke", sym: "gem", top: "Schmuck und Accessoires", main: "Glitzer-Ecke", bot: "Alles, was funkelt" },
       { l: "Gold-Edition", sym: "crown", tone: "schwarz", ink: "gold", font: "elegant", top: "Mädelsflohmarkt", main: "Königliche Preise", bot: "Für alle Queens" }],
@@ -1963,8 +1963,40 @@ const SIGN_PAGE_IMGS = new Map(); // für die Bild-Sitemap
 const TONES = { gelb: ["Gelb", "#F6E03A"], pink: ["Pink", "#FF8FC0"], mint: ["Mint", "#8EE3C1"], schwarz: ["Schwarz", "#15211B"] };
 // Schriftfarbe des großen Texts. Gold ist ein Goldton mit leichtem Verlauf (gedruckt nicht glänzend).
 const INKS = { schwarz: ["Schwarz", "#15211B"], weiss: ["Weiß", "#FFFFFF"], gold: ["Gold", "#C9A13B"], pink: ["Pink", "#FF8FC0"] };
-// Nur gut lesbare Paare: Was aus zwei Metern schwer zu lesen wäre, ist im Designer ausgegraut. Erste Farbe = Standard.
-const INK_OK = { gelb: ["schwarz"], pink: ["schwarz"], mint: ["schwarz"], schwarz: ["weiss", "gold", "pink"], save: ["schwarz", "gold", "pink"] };
+// Erlaubte Paare, erste Farbe = Standard. Weiß und Gold auf heller Fläche bekommen automatisch eine dunkle Kontur (Klasse ink-out), damit sie lesbar bleiben.
+const INK_OK = { gelb: ["schwarz", "weiss"], pink: ["schwarz", "weiss", "gold"], mint: ["schwarz", "weiss", "gold"], schwarz: ["weiss", "gold", "pink"], save: ["schwarz", "gold", "pink"] };
+const inkOut = st => { const k = st.ink || inkDefault(st.tone); return (k === "weiss" || k === "gold") && (st.save || (st.tone || "gelb") !== "schwarz"); };
+// Formen der Farbfläche. Die genaue Form rechnet site.js passend zur Größe aus; hier nur die kleinen Bilder für die Auswahl.
+const SHAPES = [["rund", "Klassisch"], ["wolke", "Wolke"], ["blume", "Blume"], ["zacken", "Zacken"], ["blase", "Sprechblase"], ["etikett", "Etikett"]];
+const shapeOk = k => SHAPES.some(([x]) => x === k);
+// gleiche Rechnung wie shapePath in site.js (für die Auswahlbilder)
+function shapePath(k, w, h) {
+  const p = Math.max(1.5, Math.min(w, h) * 0.02), f = n => Math.round(n * 10) / 10, m = Math.min(w, h);
+  if (k === "wolke" || k === "blume") {
+    const r = k === "wolke" ? m * 0.14 : m * 0.1, x0 = p + r, y0 = p + r, x1 = w - p - r, y1 = h - p - r, pts = [];
+    const side = (ax, ay, bx, by) => { const n = Math.max(2, Math.round(Math.hypot(bx - ax, by - ay) / (2 * r))); for (let i = 0; i < n; i++) { let t = i / n; if (k === "wolke" && i > 0) t += (i % 2 ? 0.16 : -0.1) / n; pts.push([ax + (bx - ax) * t, ay + (by - ay) * t]); } };
+    side(x0, y0, x1, y0); side(x1, y0, x1, y1); side(x1, y1, x0, y1); side(x0, y1, x0, y0);
+    let d = `M${f(pts[0][0])} ${f(pts[0][1])}`;
+    for (let i = 1; i <= pts.length; i++) { const a = pts[i - 1], b = pts[i % pts.length], c = Math.hypot(b[0] - a[0], b[1] - a[1]) / 2; d += `A${f(c)} ${f(c)} 0 0 1 ${f(b[0])} ${f(b[1])}`; }
+    return d + "Z";
+  }
+  if (k === "zacken") {
+    const t = m * 0.06, x0 = p + t, y0 = p + t, x1 = w - p - t, y1 = h - p - t, pts = [];
+    const side = (ax, ay, bx, by, nx, ny) => { const n = Math.max(3, Math.round(Math.hypot(bx - ax, by - ay) / (t * 1.7))); for (let i = 0; i < n; i++) { const u = i / n, v = (i + 0.5) / n; pts.push([ax + (bx - ax) * u, ay + (by - ay) * u], [ax + (bx - ax) * v + nx * t, ay + (by - ay) * v + ny * t]); } };
+    side(x0, y0, x1, y0, 0, -1); side(x1, y0, x1, y1, 1, 0); side(x1, y1, x0, y1, 0, 1); side(x0, y1, x0, y0, -1, 0);
+    return "M" + pts.map(q => f(q[0]) + " " + f(q[1])).join("L") + "Z";
+  }
+  if (k === "blase") {
+    const R = m * 0.18, th = h * 0.17, x0 = p, y0 = p, x1 = w - p, y1 = h - p - th, tx = x0 + (x1 - x0) * 0.2;
+    return `M${f(x0 + R)} ${f(y0)}H${f(x1 - R)}Q${f(x1)} ${f(y0)} ${f(x1)} ${f(y0 + R)}V${f(y1 - R)}Q${f(x1)} ${f(y1)} ${f(x1 - R)} ${f(y1)}H${f(tx + th * 1.2)}L${f(tx - th * 0.25)} ${f(h - p)}L${f(tx)} ${f(y1)}H${f(x0 + R)}Q${f(x0)} ${f(y1)} ${f(x0)} ${f(y1 - R)}V${f(y0 + R)}Q${f(x0)} ${f(y0)} ${f(x0 + R)} ${f(y0)}Z`;
+  }
+  if (k === "etikett") {
+    const tip = Math.min(h * 0.42, w * 0.17), R = m * 0.09, x0 = p, y0 = p, x1 = w - p, y1 = h - p, cy = h / 2, hr = m * 0.06, hx = x0 + tip * 0.85;
+    return `M${f(x0 + tip)} ${f(y0)}H${f(x1 - R)}Q${f(x1)} ${f(y0)} ${f(x1)} ${f(y0 + R)}V${f(y1 - R)}Q${f(x1)} ${f(y1)} ${f(x1 - R)} ${f(y1)}H${f(x0 + tip)}L${f(x0)} ${f(cy)}Z`
+      + `M${f(hx + hr)} ${f(cy)}A${f(hr)} ${f(hr)} 0 1 0 ${f(hx - hr)} ${f(cy)}A${f(hr)} ${f(hr)} 0 1 0 ${f(hx + hr)} ${f(cy)}Z`;
+  }
+  const R = m * 0.14; return `M${f(p + R)} ${f(p)}H${f(w - p - R)}Q${f(w - p)} ${f(p)} ${f(w - p)} ${f(p + R)}V${f(h - p - R)}Q${f(w - p)} ${f(h - p)} ${f(w - p - R)} ${f(h - p)}H${f(p + R)}Q${f(p)} ${f(h - p)} ${f(p)} ${f(h - p - R)}V${f(p + R)}Q${f(p)} ${f(p)} ${f(p + R)} ${f(p)}Z`;
+}
 const inkDefault = tone => INK_OK[tone || "gelb"][0];
 // Schriften für den Schildtext; eine Schrift erscheint nur, wenn ihre Datei im Ordner fonts liegt
 const SIGN_FONTS = [["modern", "Modern", "Bricolage Grotesque"], ["klar", "Klar", "Figtree"], ["elegant", "Elegant", "Fraunces"], ["verspielt", "Verspielt", "Pacifico"]].filter(([k, , fam]) => k === "modern" || fontsFound.some(x => x.fam === fam));
@@ -2021,7 +2053,7 @@ const SYM = {
 const symSVG = k => SYM[k] ? `<svg viewBox="${SYM[k][1]}" aria-hidden="true" focusable="false"><path d="${SYM[k][2]}"/></svg>` : "";
 // Symbol einer Variante: eigene Angabe (auch "" für keins) geht vor der Angabe der Vorlage
 const symOf = (t, x) => { const k = x.sym !== undefined ? x.sym : t.sym; return k && SYM[k] ? k : ""; };
-const signState = (t, x = t.v[0]) => ({ kind: t.kind || "sign", fmt: t.kind === "tags" ? "tags" : (t.fmt || "quer"), top: x.top || "", main: x.main || "", bot: x.bot || "", price: x.price || "", ...((x.tone || t.tone) && (x.tone || t.tone) !== "gelb" ? { tone: x.tone || t.tone } : {}), ...(t.kind !== "tags" && symOf(t, x) ? { sym: symOf(t, x) } : {}), ...(x.ink && x.ink !== inkDefault(x.tone || t.tone) ? { ink: x.ink } : {}), ...(x.font && x.font !== "modern" && fontOk(x.font) ? { font: x.font } : {}) });
+const signState = (t, x = t.v[0]) => ({ kind: t.kind || "sign", fmt: t.kind === "tags" ? "tags" : (t.fmt || "quer"), top: x.top || "", main: x.main || "", bot: x.bot || "", price: x.price || "", ...((x.tone || t.tone) && (x.tone || t.tone) !== "gelb" ? { tone: x.tone || t.tone } : {}), ...(t.kind !== "tags" && symOf(t, x) ? { sym: symOf(t, x) } : {}), ...(x.ink && x.ink !== inkDefault(x.tone || t.tone) ? { ink: x.ink } : {}), ...(x.font && x.font !== "modern" && fontOk(x.font) ? { font: x.font } : {}), ...(t.kind !== "tags" && x.shape && x.shape !== "rund" && shapeOk(x.shape) ? { shape: x.shape } : {}) });
 /* Vorschaubilder: echte Aufnahmen des Schilder-Designers (src/schilder/flohmarkt-<kennung>-vorlage.webp), damit Übersicht,
    Startseite und Google-Bildersuche genau das Schild zeigen, das man druckt (Schrift, Pfeile, Farben). Sie entstehen außerhalb
    des Baus. vorschau.json merkt sich, zu welchem Text ein Bild gehört: Passt es nicht mehr (Text geändert), nimmt der Bau
@@ -2035,7 +2067,7 @@ if (process.env.VORSCHAU_SCHLUESSEL) fs.writeFileSync(process.env.VORSCHAU_SCHLU
 const signImg = t => `/assets/schilder/flohmarkt-${t.s}-vorlage.${signWebp(t) ? "webp" : "svg"}`;
 for (const pg of pages.values()) if (pg.html.includes("%%SIGNIMG:")) pg.html = pg.html.replace(/%%SIGNIMG:([a-z0-9-]+)%%/g, (m, s) => SIGN_BY[s] ? signImg(SIGN_BY[s]) : `/assets/schilder/flohmarkt-${s}-vorlage.svg`);
 // Markup: dieselben Bausteine nutzt src/site.js (Vorlagen <template id="tplSign"> und "tplTag")
-const SG_UNIT = `<div class="sg"><div class="sg-top"></div><div class="sg-mw"><div class="sg-main"><span></span></div><span class="sg-sym" aria-hidden="true"></span></div><div class="sg-bot"></div><div class="sg-foot"><div class="sg-pay"><svg class="sg-payqr" aria-hidden="true" focusable="false"></svg><span><b>Mit PayPal zahlen</b><span class="sg-payurl"></span></span></div>${qrSVG("sg-qr")}<span><b>flohlotse.de/schilder</b>Schilder kostenlos gestalten</span></div></div>`;
+const SG_UNIT = `<div class="sg"><div class="sg-top"></div><div class="sg-mw"><div class="sg-main"><svg class="sg-shape" aria-hidden="true" focusable="false"><path fill-rule="evenodd"/></svg><span></span></div><span class="sg-sym" aria-hidden="true"></span></div><div class="sg-bot"></div><div class="sg-foot"><div class="sg-pay"><svg class="sg-payqr" aria-hidden="true" focusable="false"></svg><span><b>Mit PayPal zahlen</b><span class="sg-payurl"></span></span></div>${qrSVG("sg-qr")}<span><b>flohlotse.de/schilder</b>Schilder kostenlos gestalten</span></div></div>`;
 const TG_UNIT = `<div class="tg"><i class="tg-hole"></i><div class="tg-price"><span></span></div><div class="tg-vb"><i></i>VB</div><div class="tg-brand">flohlotse.de</div></div>`;
 // Pfeile auf Schildern als Grafik in Schriftstärke, ein Pfeil bleibt bei seinem Nachbarwort (wie in src/site.js, signText)
 const ARW_DEG = { "→": 0, "↓": 90, "←": 180, "↑": 270 }, ARW_D = "M8 50H80M54 22l28 28-28 28";
@@ -2050,13 +2082,13 @@ const signTxt = t => {
   return g.map(grp => grp.length === 1 && !isArw(grp[0]) ? esc(grp[0]) : `<span class="nw">${grp.map(x => isArw(x) ? arwSVG(x) : esc(x)).join(" ")}</span>`).join(" ");
 };
 const SIGN_PER = { quer: 1, hoch: 1, zwei: 2, vier: 4, acht: 8 };
-const sheetCls = st => (st.tone ? " tone-" + st.tone : "") + " ink-" + (st.ink || inkDefault(st.tone)) + (st.font ? " font-" + st.font : "");
+const sheetCls = st => (st.tone ? " tone-" + st.tone : "") + " ink-" + (st.ink || inkDefault(st.tone)) + (inkOut(st) ? " ink-out" : "") + (st.font ? " font-" + st.font : "") + (st.shape ? " shp shape-" + st.shape : "");
 function sheetHTML(st) {
   if (st.kind === "tags") {
     const u = `<div class="tg"><i class="tg-hole"></i><div class="tg-price${st.price ? "" : " blank"}"><span>${st.price ? esc(st.price) : "€"}</span></div><div class="tg-vb"><i></i>VB</div><div class="tg-brand">flohlotse.de</div></div>`;
     return `<div class="sheet f-tags${sheetCls(st)}" id="sheet">${u.repeat(24)}</div>`;
   }
-  const u = `<div class="sg"><div class="sg-top">${signTxt(st.top)}</div><div class="sg-mw"><div class="sg-main"><span>${signTxt(st.main)}</span></div><span class="sg-sym" aria-hidden="true">${symSVG(st.sym)}</span></div><div class="sg-bot">${signTxt(st.bot)}</div><div class="sg-foot"><div class="sg-pay"><svg class="sg-payqr" aria-hidden="true" focusable="false"></svg><span><b>Mit PayPal zahlen</b><span class="sg-payurl"></span></span></div>${qrSVG("sg-qr")}<span><b>flohlotse.de/schilder</b>Schilder kostenlos gestalten</span></div></div>`;
+  const u = `<div class="sg"><div class="sg-top">${signTxt(st.top)}</div><div class="sg-mw"><div class="sg-main"><svg class="sg-shape" aria-hidden="true" focusable="false"><path fill-rule="evenodd"/></svg><span>${signTxt(st.main)}</span></div><span class="sg-sym" aria-hidden="true">${symSVG(st.sym)}</span></div><div class="sg-bot">${signTxt(st.bot)}</div><div class="sg-foot"><div class="sg-pay"><svg class="sg-payqr" aria-hidden="true" focusable="false"></svg><span><b>Mit PayPal zahlen</b><span class="sg-payurl"></span></span></div>${qrSVG("sg-qr")}<span><b>flohlotse.de/schilder</b>Schilder kostenlos gestalten</span></div></div>`;
   return `<div class="sheet f-${st.fmt}${sheetCls(st)}${st.sym ? " sym" : ""}" id="sheet">${u.repeat(SIGN_PER[st.fmt] || 1)}</div>`;
 }
 // Themen im Designer: jede Vorlage mit all ihren Sprüchen, dazu „Eigener Text“. So findet man jeden Spruch auf jeder Designer-Seite.
@@ -2066,40 +2098,43 @@ const signThemes = () => [...THEME_ORDER.map(s => SIGN_BY[s]).filter(Boolean), .
   .map(t => ({ s: t.s, l: { mengenrabatt: "Mengenrabatt", "reserviert-verkauft": "Reserviert & Verkauft" }[t.s] || t.chip, items: t.v.map(x => ({ l: x.l, set: t.s === "bar-und-paypal" ? { ...signState(t, x), pay: x.l === "Nur Bargeld" ? 0 : 1 } : signState(t, x) })) }))
   .concat([{ s: "", l: "Eigener Text", items: [{ l: "Eigener Text", set: { kind: "sign", fmt: "quer", top: "", main: "Dein Text", bot: "" } }] }]);
 function genHTML(st, themes, act, heading, pay) {
+  // Aufbau fürs Handy: oben Überschrift mit Druckknopf, eine wischbare Zeile mit Thema und Sprüchen, die Vorschau (bleibt beim Bearbeiten stehen),
+  // darunter vier Reiter mit kurzen Bereichen. So passt alles auf einen Bildschirm, ohne hin und her zu scrollen.
   const pj = p => esc(JSON.stringify(p));
   const fmtBtn = (f, l) => `<button type="button" class="chip" data-fmt="${f}" aria-pressed="${st.fmt === f}">${l}</button>`;
-  const tone = st.tone || "gelb", toneBtn = k => `<button type="button" class="chip" data-tone="${k}" aria-pressed="${tone === k}"><i class="sw sw-${k}"></i>${TONES[k][0]}</button>`;
+  const tone = st.tone || "gelb", toneBtn = k => `<button type="button" class="swb" data-tone="${k}" data-name="${TONES[k][0]}" aria-pressed="${tone === k}" title="${TONES[k][0]}"><i class="sw sw-${k}"></i><span class="vh">${TONES[k][0]}</span></button>`;
   const symBtn = k => `<button type="button" class="sym-btn" data-sym="${k}" aria-pressed="${(st.sym || "") === k}" aria-label="${k ? "Symbol: " + esc(SYM[k][0]) : "Ohne Symbol"}" title="${k ? esc(SYM[k][0]) : "Ohne"}">${k ? symSVG(k) : "<span>Ohne</span>"}</button>`;
-  const ink = st.ink || inkDefault(tone), inkBtn = k => `<button type="button" class="chip" data-ink="${k}" aria-pressed="${ink === k}"${INK_OK[tone].includes(k) ? "" : " disabled"}><i class="sw sw-i-${k}"></i>${INKS[k][0]}</button>`;
+  const ink = st.ink || inkDefault(tone), inkBtn = k => `<button type="button" class="swb ink ink-b-${k}" data-ink="${k}" data-name="${INKS[k][0]}" aria-pressed="${ink === k}" title="${INKS[k][0]}"${INK_OK[tone].includes(k) ? "" : " disabled"}><b aria-hidden="true">A</b><span class="vh">${INKS[k][0]}</span></button>`;
   const font = st.font || "modern", fontBtn = ([k, l]) => `<button type="button" class="chip fnt fnt-${k}" data-font="${k}" aria-pressed="${font === k}"><b aria-hidden="true">Aa</b>${l}</button>`;
-  return `<section class="gen" id="gen" data-kind="${st.kind}" data-fmt="${st.fmt}" data-tone="${tone}" data-ink="${ink}" data-font="${font}" data-inkok="${esc(JSON.stringify(INK_OK))}" data-sym="${st.sym || ""}"${pay === "auto" ? ' data-pay="0"' : ""} aria-labelledby="genH">
-<h2 id="genH">${heading}</h2>
-<div class="gen-pick js-only"><div class="gen-theme"><label for="genTheme">Thema</label><select id="genTheme">${themes.map((g, i) => `<option value="${i}"${i === act ? " selected" : ""}>${esc(g.l)}</option>`).join("")}</select></div>
-${themes.map((g, i) => `<div class="chips gen-presets" data-grp="${i}" role="group" aria-label="${esc(g.l)}: Spruch wählen"${i === act ? "" : " hidden"}>${g.items.map((p, j) => `<button type="button" class="chip" data-set="${pj(p.set)}" aria-pressed="${i === act && j === 0}">${esc(p.l)}</button>`).join("")}</div>`).join("")}</div>
+  const txt = (id, lab, v, max, ph, cls = "only-sign") => `<label class="fld ${cls}"><span>${lab}</span><input id="${id}" type="text" value="${esc(v)}" maxlength="${max}" autocomplete="off" enterkeyhint="done"${ph ? ` placeholder="${ph}"` : ""}></label>`;
+  return `<section class="gen" id="gen" data-kind="${st.kind}" data-fmt="${st.fmt}" data-tone="${tone}" data-ink="${ink}" data-font="${font}" data-shape="${st.shape || "rund"}" data-inkok="${esc(JSON.stringify(INK_OK))}" data-sym="${st.sym || ""}"${pay === "auto" ? ' data-pay="0"' : ""} aria-labelledby="genH">
+<div class="gen-head"><h2 id="genH">${heading}</h2><button class="btn gen-print js-only" id="doPrint" type="button" aria-label="Drucken oder als PDF speichern">${ic("printer")}<span>Drucken</span></button></div>
+<div class="gen-pick js-only"><div class="gen-theme"><label for="genTheme" class="vh">Thema</label><select id="genTheme">${themes.map((g, i) => `<option value="${i}"${i === act ? " selected" : ""}>${esc(g.l)}</option>`).join("")}</select></div>
+${themes.map((g, i) => `<div class="gen-presets" data-grp="${i}" role="group" aria-label="${esc(g.l)}: Spruch wählen"${i === act ? "" : " hidden"}>${g.items.map((p, j) => `<button type="button" class="chip" data-set="${pj(p.set)}" aria-pressed="${i === act && j === 0}">${esc(p.l)}</button>`).join("")}</div>`).join("")}</div>
 <div class="sheet-wrap" id="sheetWrap">${sheetHTML(st)}</div>
 <div class="gen-form js-only">
-<div class="gen-tabs" role="tablist" aria-label="Schild bearbeiten"><button type="button" role="tab" data-tab="text" aria-selected="true">Text</button><button type="button" role="tab" data-tab="look" aria-selected="false">Stil</button><button type="button" role="tab" class="only-sign" data-tab="sym" aria-selected="false">Symbol</button><button type="button" role="tab" data-tab="fmt" aria-selected="false">Format</button></div>
+<div class="gen-tabs" role="tablist" aria-label="Schild bearbeiten"><button type="button" role="tab" data-tab="text" aria-selected="true">Text</button><button type="button" role="tab" data-tab="look" aria-selected="false">Stil</button><button type="button" role="tab" class="only-sign" data-tab="shape" aria-selected="false">Form</button><button type="button" role="tab" class="only-sign" data-tab="sym" aria-selected="false">Symbol</button><button type="button" role="tab" data-tab="fmt" aria-selected="false">Format</button></div>
 <div class="gen-panel gp-text" data-panel="text" role="tabpanel">
-<label class="only-sign"><span>Großer Text</span><input id="fMain" type="text" value="${esc(st.main)}" maxlength="40" autocomplete="off" enterkeyhint="done"></label>
-<label class="only-sign"><span>Kleine Zeile oben <small>(optional)</small></span><input id="fTop" type="text" value="${esc(st.top)}" maxlength="40" autocomplete="off" enterkeyhint="done"></label>
-<label class="only-sign"><span>Kleine Zeile unten <small>(optional)</small></span><input id="fBot" type="text" value="${esc(st.bot)}" maxlength="60" autocomplete="off" enterkeyhint="done"></label>
-${pay ? `<label class="only-sign gen-pay"><span>Dein PayPal.me-Name <small>(optional, für einen QR-Code zum Bezahlen)</small></span><span class="pfx"><b>paypal.me/</b><input id="fPay" type="text" value="" maxlength="80" autocomplete="off" autocapitalize="none" spellcheck="false" enterkeyhint="done" placeholder="deinname"></span><small class="pay-note" id="payNote" aria-live="polite"></small></label>` : ""}
-<label class="only-tags"><span>Preis <small>(leer lassen zum Beschriften)</small></span><input id="fPrice" type="text" value="${esc(st.price)}" maxlength="12" autocomplete="off" enterkeyhint="done" placeholder="z. B. 2 €"></label>
+${txt("fTop", "Oben", st.top, 40, "optional")}
+${txt("fMain", "Mitte", st.main, 40, "")}
+${txt("fBot", "Unten", st.bot, 60, "optional")}
+${pay ? `<label class="fld only-sign gen-pay"><span>PayPal</span><span class="pfx"><b>paypal.me/</b><input id="fPay" type="text" value="" maxlength="80" autocomplete="off" autocapitalize="none" spellcheck="false" enterkeyhint="done" placeholder="deinname"></span></label><small class="pay-note only-sign" id="payNote" aria-live="polite"></small>` : ""}
+${txt("fPrice", "Preis", st.price, 12, "leer = zum Beschriften", "only-tags")}
 </div>
 <div class="gen-panel gp-look" data-panel="look" role="tabpanel" hidden>
-<div class="seg seg-tone" role="group" aria-label="Farbe der Fläche"><span class="seg-l">Fläche</span>${Object.keys(TONES).map(toneBtn).join("")}</div>
-<div class="seg seg-tone seg-ink" role="group" aria-label="Schriftfarbe"><span class="seg-l">Schriftfarbe <small>(nur gut lesbare Paare)</small></span>${Object.keys(INKS).map(inkBtn).join("")}</div>
-${SIGN_FONTS.length > 1 ? `<div class="seg seg-tone seg-font only-sign" role="group" aria-label="Schrift"><span class="seg-l">Schrift</span>${SIGN_FONTS.map(fontBtn).join("")}</div>` : ""}
+<div class="sw-row" role="group" aria-label="Farbe der Fläche"><span class="seg-l">Fläche</span>${Object.keys(TONES).map(toneBtn).join("")}</div>
+<div class="sw-row" role="group" aria-label="Schriftfarbe (nur gut lesbare Paare)"><span class="seg-l">Schrift&shy;farbe</span>${Object.keys(INKS).map(inkBtn).join("")}</div>
+${SIGN_FONTS.length > 1 ? `<div class="seg hs seg-font only-sign" role="group" aria-label="Schrift">${SIGN_FONTS.map(fontBtn).join("")}</div>` : ""}
 </div>
+<div class="gen-panel gp-shape" data-panel="shape" role="tabpanel" hidden><div class="seg hs shape-row" role="group" aria-label="Form der Farbfläche">${SHAPES.map(([k, l]) => `<button type="button" class="chip shp-btn" data-shape="${k}" aria-pressed="${(st.shape || "rund") === k}"><svg viewBox="0 0 44 26" aria-hidden="true"><path fill-rule="evenodd" d="${shapePath(k, 44, 26)}"/></svg>${l}</button>`).join("")}</div></div>
 <div class="gen-panel gp-sym" data-panel="sym" role="tabpanel" hidden><div class="sym-grid" role="group" aria-label="Symbol wählen">${["", ...Object.keys(SYM)].map(symBtn).join("")}</div></div>
 <div class="gen-panel gp-fmt" data-panel="fmt" role="tabpanel" hidden>
-<div class="seg only-sign" role="group" aria-label="Format"><span class="seg-l">Format</span>${fmtBtn("quer", "A4 quer")}${fmtBtn("hoch", "A4 hoch")}${fmtBtn("zwei", "2 pro Blatt")}${fmtBtn("vier", "4 pro Blatt")}${fmtBtn("acht", "8 pro Blatt")}</div>
+<div class="seg hs only-sign" role="group" aria-label="Format">${fmtBtn("quer", "A4 quer")}${fmtBtn("hoch", "A4 hoch")}${fmtBtn("zwei", "2 pro Blatt")}${fmtBtn("vier", "4 pro Blatt")}${fmtBtn("acht", "8 pro Blatt")}</div>
 <label class="switch only-tags"><input type="checkbox" id="fVb" checked>Kästchen „VB“</label>
 <label class="switch"><input type="checkbox" id="fSave">Sparmodus: Rahmen statt Farbe</label>
 </div>
 </div>
-<button class="btn gen-print js-only" id="doPrint" type="button">${ic("printer")}Drucken oder als PDF speichern</button>
-<p class="gen-hint js-only">Kein Drucker? Wähl im Druckfenster „Als PDF speichern“ und lass das PDF im Copyshop drucken. Deine Texte bleiben auf deinem Gerät.</p>
+<p class="gen-hint js-only">Im Druckfenster einfach „Hochformat“ lassen: Ein Schild in A4 quer liegt schon gedreht auf dem Blatt und füllt es ganz aus. Kein Drucker? Wähl „Als PDF speichern“ und lass das PDF im Copyshop drucken. Deine Texte bleiben auf deinem Gerät.</p>
 <noscript><p class="gen-hint">Der Schilder-Designer braucht JavaScript. Die Vorlagen unten kannst du dir trotzdem ansehen.</p></noscript>
 <template id="tplSign">${SG_UNIT}</template><template id="tplTag">${TG_UNIT}</template>
 </section>`;

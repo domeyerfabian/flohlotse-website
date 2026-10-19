@@ -563,6 +563,14 @@
       }
       scale();
     };
+    // Handy: Beim Tippen das Eingabefeld direkt unter die stehende Vorschau schieben, damit weder Feld noch Schild verdeckt sind (auch wenn die Tastatur aufgeht)
+    var keepVis = function (el) {
+      if (!el || !el.matches || !el.matches(".gen-form input[type=text]") || getComputedStyle(wrap).position !== "sticky" || window.innerWidth >= 1080) return;
+      var w = wrap.getBoundingClientRect(), f = el.getBoundingClientRect(), vh = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+      if (f.top < w.bottom + 8 || f.bottom > vh - 8) window.scrollBy(0, f.top - (w.bottom + 12));
+    };
+    gen.addEventListener("focusin", function (e) { setTimeout(function () { keepVis(e.target); }, 350); });
+    if (window.visualViewport) window.visualViewport.addEventListener("resize", function () { keepVis(document.activeElement); });
     // Reiter: Text, Stil (Fläche, Schriftfarbe, Schrift), Symbol, Format. Die Vorschau bleibt dabei im Blick.
     gen.querySelectorAll(".gen-tabs [data-tab]").forEach(function (t) {
       t.addEventListener("click", function () {

@@ -2128,12 +2128,12 @@ ${SIGN_FONTS.length > 1 ? `<div class="seg hs seg-font only-sign" role="group" a
 <div class="gen-panel gp-shape" data-panel="shape" role="tabpanel" hidden><div class="seg hs shape-row" role="group" aria-label="Form der Farbfläche">${SHAPES.map(([k, l]) => `<button type="button" class="chip shp-btn" data-shape="${k}" aria-pressed="${(st.shape || "rund") === k}"><svg viewBox="0 0 44 26" aria-hidden="true"><path fill-rule="evenodd" d="${shapePath(k, 44, 26)}"/></svg>${l}</button>`).join("")}</div></div>
 <div class="gen-panel gp-sym" data-panel="sym" role="tabpanel" hidden><div class="sym-grid" role="group" aria-label="Symbol wählen">${["", ...Object.keys(SYM)].map(symBtn).join("")}</div></div>
 <div class="gen-panel gp-fmt" data-panel="fmt" role="tabpanel" hidden>
-<div class="seg hs only-sign" role="group" aria-label="Format">${fmtBtn("quer", "A4 quer")}${fmtBtn("hoch", "A4 hoch")}${fmtBtn("zwei", "2 pro Blatt")}${fmtBtn("vier", "4 pro Blatt")}${fmtBtn("acht", "8 pro Blatt")}</div>
+<div class="seg hs only-sign" role="group" aria-label="Format">${fmtBtn("quer", "1 pro Blatt")}${fmtBtn("zwei", "2 pro Blatt")}${fmtBtn("vier", "4 pro Blatt")}${fmtBtn("acht", "8 pro Blatt")}</div>
 <label class="switch only-tags"><input type="checkbox" id="fVb" checked>Kästchen „VB“</label>
 <label class="switch"><input type="checkbox" id="fSave">Sparmodus: Rahmen statt Farbe</label>
 </div>
 </div>
-<p class="gen-hint js-only">Im Druckfenster einfach „Hochformat“ lassen: Ein Schild in A4 quer liegt schon gedreht auf dem Blatt und füllt es ganz aus. Kein Drucker? Wähl „Als PDF speichern“ und lass das PDF im Copyshop drucken. Deine Texte bleiben auf deinem Gerät.</p>
+<p class="gen-hint js-only">Im Druckfenster einfach „Hochformat“ lassen: Die Schilder liegen schon richtig auf dem Blatt und füllen es ganz aus. Kein Drucker? Wähl „Als PDF speichern“ und lass das PDF im Copyshop drucken. Deine Texte bleiben auf deinem Gerät.</p>
 <noscript><p class="gen-hint">Der Schilder-Designer braucht JavaScript. Die Vorlagen unten kannst du dir trotzdem ansehen.</p></noscript>
 <template id="tplSign">${SG_UNIT}</template><template id="tplTag">${TG_UNIT}</template>
 </section>`;

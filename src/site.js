@@ -1351,4 +1351,30 @@
     fetch(out.getAttribute("data-src")).then(function (r) { if (!r.ok) throw new Error(); return r.json(); }).then(function (j) { D = j.m || {}; MO = j.mo || {}; BIS = j.bis || ""; build(); if (q.value.trim()) run(); })
       .catch(function () { msg.textContent = ""; out.innerHTML = '<div class="empty">Die Suche konnte gerade nicht geladen werden. Versuch es gleich noch einmal oder schau in die <a href="' + ROOT + '/flohmaerkte/">Liste aller Märkte</a>.</div>'; });
   })();
+  // Termin melden: Briefumschlag und „Melden“ öffnen ein kleines Fenster mit vorbereiteten E-Mails. Nichts wird gespeichert oder verschickt.
+  (function () {
+    var ms = document.getElementById("mailSheet");
+    if (!ms || typeof ms.showModal !== "function") return; // ohne Fenster-Unterstützung führt der Link zur Seite Für Veranstalter
+    var pos = function (t) {
+      if (innerWidth < 760) { ms.style.left = ms.style.top = ""; return; }
+      var r = t.getBoundingClientRect(), w = ms.offsetWidth, h = ms.offsetHeight, top = r.bottom + 10;
+      if (top + h > innerHeight - 12) top = Math.max(12, r.top - h - 10);
+      ms.style.left = Math.round(Math.min(Math.max(12, r.left + r.width / 2 - w / 2), innerWidth - w - 12)) + "px"; ms.style.top = Math.round(top) + "px";
+    };
+    document.addEventListener("click", function (e) {
+      var t = e.target.closest && e.target.closest("[data-ms]"); if (!t) return;
+      e.preventDefault();
+      document.querySelectorAll("details.menu-wrap[open]").forEach(function (d) { d.open = false; });
+      if (!ms.open) { ms.showModal(); pos(t); }
+    });
+    ms.addEventListener("click", function (e) {
+      if (e.target === ms) { var r = ms.getBoundingClientRect(); if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) ms.close(); return; }
+      if (e.target.closest("[data-ms-close]")) { ms.close(); return; }
+      if (e.target.closest(".ms-opt")) { setTimeout(function () { ms.close(); }, 400); return; }
+      var c = e.target.closest("[data-copy]"); if (!c) return;
+      var addr = c.getAttribute("data-copy"), lab = c.previousElementSibling;
+      var done = function (ok) { lab.textContent = addr; lab.className = "ms-addr"; if (ok) c.textContent = "Kopiert"; else c.hidden = true; };
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(addr).then(function () { done(true); }, function () { done(false); }); else done(false);
+    });
+  })();
 })();

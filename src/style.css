@@ -793,9 +793,9 @@ h3 .neu,h4 .neu{margin-left:4px;position:relative;top:-2px}
 .wachst .i{flex:none;margin-top:.2em}
 .wachst a{color:var(--ink);font-weight:600}
 /* Merkliste: Herz oben in der Kopfzeile, auf jeder Terminkarte und auf der Marktseite */
-.fav-top{position:relative;display:inline-grid;place-items:center;width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--ink);flex:none;text-decoration:none}
-.fav-top .i{width:20px;height:20px}
-.fav-top:hover,.fav-top[aria-current]{border-color:var(--ink)}
+.fav-top,.mail-top{position:relative;display:inline-grid;place-items:center;width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--ink);flex:none;text-decoration:none}
+.fav-top .i,.mail-top .i{width:20px;height:20px}
+.fav-top:hover,.fav-top[aria-current],.mail-top:hover{border-color:var(--ink)}
 .fav-n{position:absolute;top:-7px;right:-7px;min-width:20px;height:20px;padding:0 5px;border-radius:999px;background:var(--sticker);color:var(--sticker-ink);font:700 11px/16px var(--f-body);text-align:center;border:2px solid var(--paper)}
 .ev{position:relative}
 button.fav{position:absolute;top:10px;right:10px;z-index:1;display:inline-grid;place-items:center;width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer;padding:0}
@@ -963,7 +963,10 @@ button.fav[aria-pressed="true"],.btn.fav-big[aria-pressed="true"]{background:var
 .srch-top .i{width:19px;height:19px}
 .srch-top:hover,.srch-top[aria-current]{border-color:var(--ink)}
 @media (max-width:400px){.top > .wrap{gap:10px}.srch-top{margin-right:0}.brand{font-size:20px}.brand i{width:28px;height:28px}}
-@media (max-width:359px){.menu-btn{padding:7px 10px}.menu-btn span{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}}
+/* Handy: „Menü“ als rundes Symbol, damit Lupe, Briefumschlag, Herz und Menü nebeneinander passen. Das Wort bleibt für Screenreader. */
+@media (max-width:559px){.menu-btn{width:38px;height:38px;padding:0;justify-content:center}.menu-btn span{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}}
+@media (max-width:400px){.top > .wrap{gap:8px}}
+@media (max-width:359px){.top > .wrap{gap:4px}.srch-top,.mail-top,.fav-top,.menu-btn{width:34px;height:34px}.brand{font-size:18px;gap:6px}.brand i{width:26px;height:26px;font-size:13px}}
 .sx-form{display:block;position:relative;margin-top:18px;max-width:560px}
 .sx-field{display:block;position:relative;margin:0;font-size:16px;font-weight:400}
 .sx-field > .i{position:absolute;left:17px;top:50%;width:20px;height:20px;margin-top:-10px;color:var(--muted);pointer-events:none}
@@ -1717,3 +1720,36 @@ main.pg-start > .sec{border-top:0;margin-top:0;padding-top:48px}
   main.pg-start > .sec{padding-top:var(--sp)}
   .pg-start .lp-hh .org{padding:56px 48px}
 }
+
+/* Termin melden: Fenster mit zwei vorbereiteten E-Mails (Handy: von unten, Computer: unter dem Knopf) */
+.ms{position:fixed;inset:auto 0 0 0;margin:0;width:100%;max-width:none;max-height:calc(100dvh - 32px);overflow:auto;border:0;background:var(--surface);color:var(--ink);border-radius:24px 24px 0 0;padding:10px 20px calc(24px + env(safe-area-inset-bottom,0px));box-shadow:0 -10px 40px rgba(21,33,27,.25)}
+.ms[open]{animation:msUp .22s ease-out}
+@keyframes msUp{from{transform:translateY(24px);opacity:0}}
+.ms::backdrop{background:rgba(21,33,27,.42)}
+.ms-grab{width:40px;height:5px;border-radius:3px;background:var(--line);margin:0 auto 14px}
+.ms-h{margin:0;padding-right:44px;font:800 24px/1.1 var(--f-display);letter-spacing:-.02em}
+.ms-x{position:absolute;right:16px;top:18px;width:36px;height:36px;border-radius:50%;border:1px solid var(--line);display:grid;place-items:center;background:none;color:var(--ink);cursor:pointer}
+.ms-x .i{width:16px;height:16px}
+.ms-p{margin:8px 0 0;color:var(--muted);font-size:15px;line-height:1.45;max-width:36ch}
+.ms-opt{display:flex;align-items:center;gap:14px;margin-top:12px;padding:14px 16px;border-radius:18px;border:1px solid var(--line);text-decoration:none;color:var(--ink);background:var(--paper)}
+.ms-p + .ms-opt{margin-top:18px}
+.ms-opt:hover{border-color:var(--ink)}
+.ms-ic{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;background:var(--sticker);color:var(--sticker-ink);flex:none}
+.ms-ic.dk{background:var(--ink);color:var(--paper)}
+.ms-ic .i{width:22px;height:22px}
+.ms-opt b{display:block;font-size:16px}
+.ms-opt small{display:block;color:var(--muted);font-size:13.5px;margin-top:2px;line-height:1.3}
+.ms-opt > .i{width:16px;height:16px;margin-left:auto;flex:none}
+.ms-alt{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-top:16px;padding-top:14px;border-top:1px solid var(--line);font-size:14px;color:var(--muted)}
+.ms-alt span{overflow-wrap:anywhere}
+.ms-alt .ms-addr{color:var(--ink);font-weight:600;user-select:all}
+.ms-alt button{font:inherit;font-weight:600;font-size:14px;color:var(--ink);background:none;border:1px solid var(--line);border-radius:999px;padding:7px 14px;white-space:nowrap;cursor:pointer}
+@media (min-width:760px){.ms{inset:auto;width:400px;border-radius:22px;padding:20px 22px 22px;box-shadow:0 20px 50px rgba(21,33,27,.22),0 0 0 1px var(--line)}.ms::backdrop{background:rgba(21,33,27,.12)}.ms-grab{display:none}.ms[open]{animation-name:msIn}}
+@keyframes msIn{from{transform:translateY(-6px);opacity:0}}
+@media (prefers-reduced-motion:reduce){.ms[open]{animation:none}}
+.mk-report{display:flex;align-items:center;gap:12px;margin-top:14px;padding:12px 14px;border-radius:16px;border:1px dashed var(--line)}
+.mk-report p{margin:0;font-size:14.5px;line-height:1.35;flex:1;color:var(--muted)}
+.mk-report p b{display:block;font-size:15px;color:var(--ink)}
+.mk-report-btn{display:inline-flex;align-items:center;gap:7px;padding:9px 14px;border-radius:999px;background:var(--ink);color:var(--paper);font-weight:700;font-size:14px;text-decoration:none;white-space:nowrap}
+.mk-report-btn .i{width:17px;height:17px}
+@media print{.mail-top,.mk-report,.ms{display:none!important}}

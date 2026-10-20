@@ -1,12 +1,11 @@
 # Flohlotse: Website gebaut
 
-Stand 20.10.2026 · 302 Seiten (296 für Google) · 132 Märkte · 179 Termine in den nächsten 120 Tagen · 42 Ratgeber-Artikel · 777 Event-Auszeichnungen
+Stand 20.10.2026 · 303 Seiten (297 für Google) · 133 Märkte · 180 Termine in den nächsten 120 Tagen · 42 Ratgeber-Artikel · 779 Event-Auszeichnungen
 
-## Zu erledigen: 6 Hinweise
+## Zu erledigen: 5 Hinweise
 
 | Bereich | Hinweis |
 |---|---|
-| Uhrzeit fehlt | Ein Termin in den nächsten drei Wochen ohne Uhrzeit: Flohmarkt famila Wedel am Sonntag, 1. November. Uhrzeit beim Veranstalter nachsehen und im Blatt „Termine“ (oder „Serien“) eintragen. |
 | Termin-Wächter | Flohmarkt auf dem ehemaligen Telekom-Gelände: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 15.11.2026. Bitte prüfen: https://kk-veranstaltungen.de/termine/ |
 | Termin-Wächter | Hallenflohmarkt in der Halle 15: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 22.10.2026. Bitte prüfen: https://www.asb-halle15.de/ |
 | Termin-Wächter | HNT Flohmarkt: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 25.10.2026, 26.10.2026, 27.10.2026. Bitte prüfen: https://www.hntonline.de/flohmarkt |

@@ -1,8 +1,8 @@
 # Flohlotse: Website gebaut
 
-Stand 21.10.2026 · 303 Seiten (297 für Google) · 133 Märkte · 179 Termine in den nächsten 120 Tagen · 42 Ratgeber-Artikel · 778 Event-Auszeichnungen
+Stand 21.10.2026 · 304 Seiten (298 für Google) · 134 Märkte · 180 Termine in den nächsten 120 Tagen · 42 Ratgeber-Artikel · 783 Event-Auszeichnungen
 
-## Zu erledigen: 7 Hinweise
+## Zu erledigen: 8 Hinweise
 
 | Bereich | Hinweis |
 |---|---|
@@ -10,6 +10,7 @@ Stand 21.10.2026 · 303 Seiten (297 für Google) · 133 Märkte · 179 Termine i
 | Termin-Wächter | Hallenflohmarkt in der Halle 15: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 22.10.2026. Bitte prüfen: https://www.asb-halle15.de/ |
 | Termin-Wächter | HNT Flohmarkt: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 25.10.2026, 26.10.2026, 27.10.2026. Bitte prüfen: https://www.hntonline.de/flohmarkt |
 | Termin-Wächter | Flohmarkt famila Winsen (Luhe): Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 31.10.2026, 01.11.2026, 08.11.2026. Bitte prüfen: https://flohmaxx.de/flohmarkt/winsen-famila/2026-10-03 |
+| Termin-Wächter | 5. Kleidertausch-Party: Die Website des Veranstalters möchte nicht automatisch abgerufen werden (robots.txt). Diese Seite bitte weiter von Hand prüfen: https://olddubliner.de |
 | Serie endet bald | Flohmarkt Else-Rauch-Platz (Sonntag): Die Serie läuft nur bis Montag, 30. November. Bei Bedarf „Gültig bis“ verlängern, sobald der Veranstalter neue Termine bestätigt. |
 | SEO | /ratgeber/beste-uhrzeit-flohmarkt/: Titel hat 145 Zeichen (Ziel höchstens 60). |
 | SEO | /ratgeber/flohmarkt-bei-regen/: Titel hat 147 Zeichen (Ziel höchstens 60). |

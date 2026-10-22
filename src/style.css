@@ -401,13 +401,24 @@ a.route .i{width:17px;height:17px}
 /* Thema und Sprüche in einer wischbaren Zeile */
 .gen-pick{display:flex;align-items:center;gap:8px;min-width:0;overflow-x:auto;scrollbar-width:none;margin-inline:-16px;padding:2px 16px 4px}
 .gen-pick::-webkit-scrollbar{display:none}
+/* Ideen zum Antippen: fertige Looks als kleine Bilder, am Handy wischbar */
+.gen-sub{margin:0 0 -6px;font-size:13px;font-weight:700;color:var(--muted)}
+.gen-ideas{display:grid;gap:8px;min-width:0}
+.idea-row{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;margin-inline:-16px;padding:3px 16px 6px;scroll-padding-inline:16px;scroll-snap-type:x proximity}
+.idea-row::-webkit-scrollbar{display:none}
+.idea{flex:none;width:132px;display:grid;gap:6px;align-content:start;padding:0;border:0;background:none;text-align:left;font:inherit;color:var(--ink);cursor:pointer;scroll-snap-align:start}
+.idea img,.idea-ph{display:block;width:100%;height:auto;aspect-ratio:200/141;border-radius:10px;background:#fff;box-shadow:0 0 0 1px var(--line),0 6px 14px rgba(21,33,27,.1)}
+.idea span{font-size:13px;font-weight:600;line-height:1.25}
+.idea[aria-pressed="true"] img,.idea[aria-pressed="true"] .idea-ph{box-shadow:0 0 0 3px var(--ink)}
+.idea:focus-visible{outline:none}.idea:focus-visible img,.idea:focus-visible .idea-ph{box-shadow:0 0 0 3px var(--sticker),0 0 0 5px var(--ink)}
+@media (min-width:700px){.idea-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:14px 12px;overflow:visible;margin-inline:0;padding-inline:0}.idea{width:auto}}
 .gen-theme{flex:none}
 .gen-theme{position:relative;display:flex;align-items:center;gap:12px}
 .gen-theme label{font-size:14px;font-weight:600;flex:none}
-.gen-theme select{flex:1;min-width:0;font:inherit;font-size:15px;font-weight:700;color:var(--paper);background:var(--ink);border:1px solid var(--ink);border-radius:999px;padding:8px 36px 8px 16px;appearance:none;-webkit-appearance:none;cursor:pointer}
+.gen-theme select{flex:1;min-width:0;font:inherit;font-size:15px;font-weight:700;color:var(--sticker-ink);background:var(--sticker);border:1px solid var(--sticker);border-radius:999px;padding:8px 36px 8px 16px;appearance:none;-webkit-appearance:none;cursor:pointer}
 .gen-theme select:focus{outline:none}
-.gen-theme select:focus-visible{outline:none;box-shadow:0 0 0 3px var(--sticker)}
-.gen-theme::after{content:"";position:absolute;right:16px;top:50%;width:7px;height:7px;border-right:2px solid var(--paper);border-bottom:2px solid var(--paper);transform:translateY(-70%) rotate(45deg);pointer-events:none}
+.gen-theme select:focus-visible{outline:none;box-shadow:0 0 0 3px var(--ink)}
+.gen-theme::after{content:"";position:absolute;right:16px;top:50%;width:7px;height:7px;border-right:2px solid var(--sticker-ink);border-bottom:2px solid var(--sticker-ink);transform:translateY(-70%) rotate(45deg);pointer-events:none}
 .gen-presets{display:flex;flex-wrap:nowrap;gap:8px}
 .gen-presets[hidden]{display:none}
 .gen-presets .chip{flex:none}
@@ -592,6 +603,9 @@ a.route .i{width:17px;height:17px}
 .sg-main > span{padding:.03em 0}
 .font-verspielt .sg-main > span{padding:.16em .08em}
 .font-elegant .sg-main > span{padding:.06em 0}
+/* Gold-Schrift ist ein Farbverlauf, der nur innerhalb der Textbox gemalt wird: Unterlängen (y, g, p) brauchen dort Platz, sonst fehlt ihr Ende */
+.ink-gold .sg-main > span{padding-bottom:.2em}
+.ink-gold.font-verspielt .sg-main > span{padding:.2em .1em .36em}
 /* Drucken: nur das Schild */
 #print-root{display:none}
 @media print{
@@ -1615,11 +1629,12 @@ main.pg-start > .sec{border-top:0;margin-top:0;padding-top:48px}
   /* Schilder-Designer: Vorschau links (sieben Spalten), Eingaben rechts (fünf) */
   main.wide .gen{grid-template-columns:repeat(12,minmax(0,1fr));column-gap:var(--gut);align-items:start;padding:28px 32px 32px}
   main.wide .gen > *{grid-column:1/-1}
-  main.wide .gen > .sheet-wrap{grid-column:1/8;grid-row:3/span 3;top:90px}
+  main.wide .gen > .sheet-wrap{grid-column:1/8;grid-row:5/span 3;top:90px}
   main.wide .gen > .gen-form,main.wide .gen > .gen-print,main.wide .gen > .gen-hint{grid-column:8/-1}
-  main.wide .gen > .gen-form{grid-row:3}
-  main.wide .gen > .gen-hint{grid-row:4;align-self:start}
+  main.wide .gen > .gen-form{grid-row:5}
+  main.wide .gen > .gen-hint{grid-row:6;align-self:start}
   main.wide .gen-presets{flex-wrap:wrap}
+  main.wide .idea-row{grid-template-columns:repeat(6,minmax(0,1fr))}
   /* Wischen & merken (eigene Seite und Startseite): Stapel mittig über die Spalten 4 bis 9 */
   main.wide > .deck,main.wide > #dkEmpty{grid-column:4/10;margin-top:40px}
   /* Der Stapel: Spalten 3 bis 10, die Karte hochkant in der Mitte (5 bis 8), die Daumen links und rechts daneben */

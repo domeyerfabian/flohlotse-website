@@ -619,7 +619,7 @@
     };
     gen.addEventListener("focusin", function (e) { setTimeout(function () { keepVis(e.target); }, 350); });
     if (window.visualViewport) window.visualViewport.addEventListener("resize", function () { keepVis(document.activeElement); });
-    // Reiter: Text, Stil (Fläche, Schriftfarbe, Schrift), Symbol, Format. Die Vorschau bleibt dabei im Blick.
+    // Reiter: Stil (Fläche, Schriftfarbe, Schrift, ist beim Öffnen zu sehen), Text, Form, Symbol, Format. Die Vorschau bleibt dabei im Blick.
     gen.querySelectorAll(".gen-tabs [data-tab]").forEach(function (t) {
       t.addEventListener("click", function () {
         gen.querySelectorAll(".gen-tabs [data-tab]").forEach(function (x) { x.setAttribute("aria-selected", String(x === t)); });
@@ -644,6 +644,12 @@
       if (f && f.tagName === "BUTTON") { st.fmt = lastSignFmt = f.getAttribute("data-fmt"); setPressed("button[data-fmt]", f); render(); }
       if (p) {
         var d = JSON.parse(p.getAttribute("data-set"));
+        // Idee zum Antippen: übernimmt den ganzen Look (Farbe, Schriftfarbe, Schrift, Form, Symbol) und zeigt die Sprüche ihrer Kategorie
+        if (d.look) {
+          toneSet = symSet = inkSet = fontSet = shapeSet = false;
+          var gi = p.getAttribute("data-grp");
+          if (themeSel && gi !== null) { themeSel.value = gi; gen.querySelectorAll(".gen-presets[data-grp]").forEach(function (r) { r.hidden = r.getAttribute("data-grp") !== gi; }); }
+        }
         st.kind = d.kind; st.top = d.top || ""; st.main = d.main || ""; st.bot = d.bot || ""; st.price = d.price || "";
         st.fmt = d.kind === "tags" ? "tags" : lastSignFmt;
         if (d.kind === "tags") { var symTab = gen.querySelector('.gen-tabs [data-tab="sym"][aria-selected="true"]'); if (symTab) gen.querySelector('.gen-tabs [data-tab="text"]').click(); }

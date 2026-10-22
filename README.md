@@ -38,6 +38,12 @@ Ihr pflegt nur die Tabelle. Die ausführliche Einrichtungsanleitung liegt als Do
 - **Bildnachweis:** Im Blatt Einstellungen bei „Bildnachweis“ steht „Fotos: Pexels (kostenlose Pexels-Lizenz).“
 - **Umkreissuche:** Die Postleitzahl wird erst nach Tippen auf „Anzeigen“ angewandt und steht nur hinter dem `#` in der Adresse, sie wird also nie an den Server geschickt.
 
+## Termine gehören ins Blatt Termine, nicht in Texte
+
+- **Regel:** Konkrete Daten („11. Oktober“, „4.10.“) nur ins Blatt **Termine** (oder **Serien**) eintragen. Texte im Blatt **Märkte** (Einleitung, Kurzbeschreibung, Hinweis, Tipps, SEO-Beschreibung) ohne festes Datum schreiben, zum Beispiel „mehrmals im Jahr“ oder „zweiter Sonntag im Monat“. Saisonangaben wie „im Juni“ oder „März bis Oktober“ sind in Ordnung.
+- **Google-Beschreibung:** Der nächste Termin steht automatisch vorne in der Beschreibung jeder Marktseite („nächster Termin Sa., 31. Oktober, 8 bis 16 Uhr“). Enthält die SEO-Beschreibung im Blatt ein festes Datum, nimmt der Bau sie nicht und rechnet selbst eine aus. Ein veraltetes Datum landet so nie bei Google.
+- **Bericht:** Nennt ein Text im Blatt Märkte ein Datum, das schon vorbei ist, steht das jede Nacht im Baubericht unter „Zur Kenntnis“, mit Markt, Spalte und Datum. Diese Stellen einfach nach und nach umformulieren. Der Bau bleibt dabei grün.
+
 ## Termin melden (Briefumschlag)
 
 - In der Kopfzeile jeder Seite steht ein Briefumschlag. Er öffnet ein kleines Fenster mit zwei vorbereiteten E-Mails: „Neuen Termin melden“ und „Änderung oder Absage“. Auf jeder Marktseite steht unter „Nächste Termine“ zusätzlich „Termin fehlt oder stimmt nicht? Melden“, dort ist der Marktname samt Link schon in der E-Mail eingetragen.

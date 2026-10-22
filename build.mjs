@@ -631,7 +631,7 @@ function eventLD(e) {
     "@type": "Event", name: m.name, url: `${SITE}/flohmarkt/${m.slug}/`,
     startDate: e.start ? `${e.k}T${tFirst(e.start)}:00${berlinOff(e.date)}` : e.k,
     eventStatus: e.cancelled ? "https://schema.org/EventCancelled" : "https://schema.org/EventScheduled",
-    eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode", description: m.note || m.name,
+    eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode", description: noPast(m.note) || m.name,
     location: { "@type": "Place", name: m.place, address: { "@type": "PostalAddress", streetAddress: parts[0], addressLocality: pm ? pm[2] : (parts.length > 1 ? parts[parts.length - 1] : (m.area || "Hamburg")), addressCountry: "DE", ...(pm ? { postalCode: pm[1] } : {}) } }
   };
   if (e.start && e.end) ev.endDate = `${e.k}T${tLast(e.end)}:00${berlinOff(e.date)}`;
@@ -743,6 +743,21 @@ const pickDesc = (...c) => { c = c.filter(Boolean).map(x => x.replace(/\s+/g, " 
 // Eine Saisonangabe wie „März bis Oktober“ bleibt stehen.
 const STALE = new RegExp(`\\b\\d{1,2}\\.\\s*(${MON.join("|")})\\b|\\b(${MON.join("|")})\\s+20\\d\\d\\b|\\b(im|Anfang|Mitte|Ende)\\s+(${MON.join("|")})\\b|\\b\\d{1,2}\\.\\d{1,2}\\.`, "i");
 const fresh = t => t && !STALE.test(t) ? t : "";
+// Vergangene Daten in Texten aus dem Blatt Märkte finden („11. Oktober“, „4.10.“, „6. Dezember 2026“). Ohne Jahr gilt das Datum,
+// das am ehesten gemeint ist: bis 150 Tage voraus zählt als kommend, sonst als letztes Jahr. Der Bau meldet solche Stellen im Bericht.
+const noPast = t => t && !pastDates(t).length ? t : ""; // Text nur, wenn er kein vergangenes Datum nennt
+const pastDates = t => {
+  if (!t) return [];
+  const out = [], re = new RegExp(`\\b(\\d{1,2})\\.\\s*(?:(${MON.join("|")})|(\\d{1,2})\\.)(?:\\s*(20\\d\\d|\\d{2})\\b)?`, "gi");
+  for (const x of String(t).matchAll(re)) {
+    const day = +x[1], mon = x[2] ? MON.findIndex(n => n.toLowerCase() === x[2].toLowerCase()) : +x[3] - 1;
+    if (mon < 0 || mon > 11 || day < 1 || day > 31) continue;
+    let y = x[4] ? +x[4] + (x[4].length === 2 ? 2000 : 0) : YEAR, d = new Date(Date.UTC(y, mon, day));
+    if (!x[4]) { if (d > addDays(TODAY, 150)) d = new Date(Date.UTC(y - 1, mon, day)); else if (d < addDays(TODAY, -215)) d = new Date(Date.UTC(y + 1, mon, day)); }
+    if (d < TODAY) out.push(x[0].trim());
+  }
+  return [...new Set(out)];
+};
 
 // Gesetzliche Feiertage in Hamburg (für Hinweise an den Tagen und auf den Monatsseiten)
 const HOLI = {};
@@ -1502,6 +1517,13 @@ ${REGIONS.map(r => { const ms = MARKETS.filter(m => m.bez === r.k); return ms.le
   layout({ p: "/flohmaerkte/", title: `Flohmärkte in Hamburg und Umgebung: alle ${MARKETS.length} Märkte | ${NAME}`, desc: `Alle ${MARKETS.length} Flohmärkte in Hamburg und im Umland bis 30 Kilometer auf einen Blick, sortiert nach Bezirk und Region, mit Rhythmus und Terminen.`, body, nav: "maerkte", ld: G([crumbLD([[NAME, "/"], ["Alle Märkte"]]), { "@type": "ItemList", itemListElement: MARKETS.map((m, i) => ({ "@type": "ListItem", position: i + 1, name: m.name, url: `${SITE}/flohmarkt/${m.slug}/` })) }]) });
 }
 
+// Texte im Blatt Märkte mit vergangenem Datum melden (sichtbare Texte veralten sonst unbemerkt). Die SEO-Beschreibung mit Datum
+// nutzt der Bau ohnehin nicht, dort steht automatisch der nächste Termin aus dem Blatt Termine.
+for (const m of MARKETS) {
+  const cols = [["Einleitung", m.intro], ["Kurzbeschreibung", m.note], ["Hinweis", m.hint], ["Tipps", m.tips.join(" ")], ["Rhythmus im Satz", m.when], ["Anmeldung Hinweis", m.signupHint], ["SEO-Beschreibung", m.d]]
+    .map(([c, t]) => [c, pastDates(t)]).filter(([, d]) => d.length);
+  if (cols.length) warn("Märkte", `„${m.name}“: vergangenes Datum in ${cols.map(([c, d]) => `${c} (${d.slice(0, 3).join(", ")})`).join(", ")}. Bitte im Blatt Märkte anpassen, am besten ohne festes Datum, die Termine kommen aus dem Blatt Termine.`, true);
+}
 /* ---------------------------------------------------------------- Marktseiten */
 // Entfernung zwischen zwei Märkten in km (Luftlinie). Die Lage stammt aus „Koordinaten“ oder der Postleitzahl, ist also ungefähr.
 const kmOf = (a, b) => { const t = x => x * Math.PI / 180, h = Math.sin(t(b[0] - a[0]) / 2) ** 2 + Math.cos(t(a[0])) * Math.cos(t(b[0])) * Math.sin(t(b[1] - a[1]) / 2) ** 2; return 12742 * Math.asin(Math.sqrt(h)); };
@@ -1550,14 +1572,14 @@ for (const m of MARKETS) {
   const mTitle = (!first && !far) || /20\d\d/.test(baseT) || (baseT + " " + Ym).length > 60 ? baseT : /\bTermine?\b/.test(baseT) ? baseT.replace(/\bTermine?\b/, x => `${x} ${Ym}`) : `${baseT} ${Ym}`;
   const mDesc = first ? pickDesc(
       fresh(m.d) && `Nächster Termin: ${dDate(first.date)}${first.start ? ", " + timeText(first) : ""}. ${m.d}`,
-      `${m.name}${m.name.includes(m.area) ? "" : ` (${m.area})`}: nächster Termin ${dDate(first.date)}${first.start ? ", " + timeText(first) : ""}. ${m.note || ""} Adresse und Anfahrt.`,
+      `${m.name}${m.name.includes(m.area) ? "" : ` (${m.area})`}: nächster Termin ${dDate(first.date)}${first.start ? ", " + timeText(first) : ""}. ${noPast(m.note)} Adresse und Anfahrt.`,
       `${m.name}${m.name.includes(m.area) ? "" : ` in ${m.area}`}: nächster Termin ${dDate(first.date)}${first.start ? ", " + timeText(first) : ""}. Alle Termine ${Ym}, Adresse, Anfahrt und Tipps für deinen Besuch.`,
       `${m.name}: nächster Termin ${dDate(first.date)}. Alle Termine ${Ym}, Uhrzeiten, Adresse und Anfahrt.`)
     : far ? pickDesc(
-      `${m.name}${m.name.includes(m.area) ? "" : ` (${m.area})`}: nächster Termin ${dDate(far.date)} ${far.date.getUTCFullYear()}${far.start ? ", " + timeText(far) : ""}. ${m.note || ""} Adresse und Anfahrt.`,
+      `${m.name}${m.name.includes(m.area) ? "" : ` (${m.area})`}: nächster Termin ${dDate(far.date)} ${far.date.getUTCFullYear()}${far.start ? ", " + timeText(far) : ""}. ${noPast(m.note)} Adresse und Anfahrt.`,
       `${m.name}: nächster Termin ${dDate(far.date)} ${far.date.getUTCFullYear()}${far.start ? ", " + timeText(far) : ""}. Adresse, Anfahrt und Tipps für deinen Besuch.`,
       `${m.short}: nächster Termin ${dDate(far.date)} ${far.date.getUTCFullYear()}. Adresse und Anfahrt.`)
-    : pickDesc(fresh(m.d), `${m.name} in ${m.area}: ${m.note || ""} Neue Termine folgen, sobald der Veranstalter sie veröffentlicht. Adresse und Anfahrt.`, `${m.name}: ${m.note || ""} Adresse, Anfahrt und neue Termine, sobald der Veranstalter sie veröffentlicht.`, `${m.name}: Adresse, Anfahrt und alle Termine, sobald der Veranstalter sie veröffentlicht. Täglich aktualisiert.`, `${m.short}: Adresse, Anfahrt und neue Termine, sobald der Veranstalter sie veröffentlicht.`);
+    : pickDesc(fresh(m.d), `${m.name} in ${m.area}: ${noPast(m.note)} Neue Termine folgen, sobald der Veranstalter sie veröffentlicht. Adresse und Anfahrt.`, `${m.name}: ${noPast(m.note)} Adresse, Anfahrt und neue Termine, sobald der Veranstalter sie veröffentlicht.`, `${m.name}: Adresse, Anfahrt und alle Termine, sobald der Veranstalter sie veröffentlicht. Täglich aktualisiert.`, `${m.short}: Adresse, Anfahrt und neue Termine, sobald der Veranstalter sie veröffentlicht.`);
   const body = crumbs([[NAME, "/"], [r.umland ? "Umland" : "Flohmärkte Hamburg", "/flohmaerkte/"], [r.name, `/flohmarkt-hamburg/${r.k}/`], [m.short]]) + `<article class="kb">
 <h1>${esc(m.name)}: Öffnungszeiten und Termine</h1>
 <div class="byline">${NEU[m.slug] ? '<span class="neu">Neu im Kalender</span>' : ""}<span>${ic("pin")}${esc(m.area)}</span><span>${ic("map")}${esc(regionLabel(r))}</span><span>${ic("update")}Stand: ${STAND}</span></div>

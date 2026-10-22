@@ -2,10 +2,11 @@
 
 Stand 22.10.2026 · 306 Seiten (300 für Google) · 136 Märkte · 180 Termine in den nächsten 120 Tagen · 42 Ratgeber-Artikel · 790 Event-Auszeichnungen
 
-## Zu erledigen: 6 Hinweise
+## Zu erledigen: 7 Hinweise
 
 | Bereich | Hinweis |
 |---|---|
+| Termin-Wächter | Frauenflohmarkt Tausendschön: Die Website des Veranstalters war drei Nächte in Folge nicht erreichbar. Adresse in der Spalte „Veranstalter-Website“ prüfen: https://flohmarkt-eppendorf.de/frauenflohmarkt-tausendschoen/ |
 | Termin-Wächter | Flohmarkt auf dem ehemaligen Telekom-Gelände: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 01.11.2026, 15.11.2026. Bitte prüfen: https://kk-veranstaltungen.de/termine/ |
 | Termin-Wächter | HNT Flohmarkt: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 25.10.2026, 26.10.2026, 27.10.2026. Bitte prüfen: https://www.hntonline.de/flohmarkt |
 | Termin-Wächter | Flohmarkt famila Winsen (Luhe): Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 31.10.2026, 01.11.2026, 08.11.2026. Bitte prüfen: https://flohmaxx.de/flohmarkt/winsen-famila/2026-10-03 |

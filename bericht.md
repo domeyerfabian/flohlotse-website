@@ -2,13 +2,14 @@
 
 Stand 22.10.2026 · 306 Seiten (300 für Google) · 136 Märkte · 180 Termine in den nächsten 120 Tagen · 42 Ratgeber-Artikel · 790 Event-Auszeichnungen
 
-## Zu erledigen: 6 Hinweise
+## Zu erledigen: 7 Hinweise
 
 | Bereich | Hinweis |
 |---|---|
 | Termin-Wächter | Flohmarkt auf dem ehemaligen Telekom-Gelände: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 01.11.2026, 15.11.2026. Bitte prüfen: https://kk-veranstaltungen.de/termine/ |
 | Termin-Wächter | HNT Flohmarkt: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 25.10.2026, 26.10.2026, 27.10.2026. Bitte prüfen: https://www.hntonline.de/flohmarkt |
 | Termin-Wächter | Flohmarkt famila Winsen (Luhe): Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 31.10.2026, 01.11.2026, 08.11.2026. Bitte prüfen: https://flohmaxx.de/flohmarkt/winsen-famila/2026-10-03 |
+| Termin-Wächter | Halstenbeker Kleidermarkt mit Trödel und Kunst: Achtung: 15.11.2026 steht noch im Kalender, ist auf der Website des Veranstalters aber nicht mehr zu finden. Prüfen, ob der Termin ausfällt. Bitte prüfen: https://www.buergerstiftung-brunohelms.de/termine/ |
 | Serie endet bald | Flohmarkt Else-Rauch-Platz (Sonntag): Die Serie läuft nur bis Montag, 30. November. Bei Bedarf „Gültig bis“ verlängern, sobald der Veranstalter neue Termine bestätigt. |
 | SEO | /ratgeber/beste-uhrzeit-flohmarkt/: Titel hat 145 Zeichen (Ziel höchstens 60). |
 | SEO | /ratgeber/flohmarkt-bei-regen/: Titel hat 147 Zeichen (Ziel höchstens 60). |

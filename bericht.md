@@ -1,12 +1,13 @@
 # Flohlotse: Website gebaut
 
-Stand 22.10.2026 · 307 Seiten (301 für Google) · 137 Märkte · 181 Termine in den nächsten 120 Tagen · 42 Ratgeber-Artikel · 793 Event-Auszeichnungen
+Stand 23.10.2026 · 307 Seiten (301 für Google) · 137 Märkte · 185 Termine in den nächsten 120 Tagen · 42 Ratgeber-Artikel · 794 Event-Auszeichnungen
 
-## Zu erledigen: 7 Hinweise
+## Zu erledigen: 8 Hinweise
 
 | Bereich | Hinweis |
 |---|---|
 | Termin-Wächter | Flohmarkt auf dem ehemaligen Telekom-Gelände: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 01.11.2026, 15.11.2026. Bitte prüfen: https://kk-veranstaltungen.de/termine/ |
+| Termin-Wächter | Hallenflohmarkt in der Halle 15: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 25.10.2026, 26.10.2026. Bitte prüfen: https://www.asb-halle15.de/ |
 | Termin-Wächter | HNT Flohmarkt: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 25.10.2026, 26.10.2026, 27.10.2026. Bitte prüfen: https://www.hntonline.de/flohmarkt |
 | Termin-Wächter | Flohmarkt famila Winsen (Luhe): Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 31.10.2026, 01.11.2026, 08.11.2026. Bitte prüfen: https://flohmaxx.de/flohmarkt/winsen-famila/2026-10-03 |
 | Termin-Wächter | Halstenbeker Kleidermarkt mit Trödel und Kunst: Achtung: 15.11.2026 steht noch im Kalender, ist auf der Website des Veranstalters aber nicht mehr zu finden. Prüfen, ob der Termin ausfällt. Bitte prüfen: https://www.buergerstiftung-brunohelms.de/termine/ |
@@ -14,7 +15,7 @@ Stand 22.10.2026 · 307 Seiten (301 für Google) · 137 Märkte · 181 Termine i
 | SEO | /ratgeber/beste-uhrzeit-flohmarkt/: Titel hat 145 Zeichen (Ziel höchstens 60). |
 | SEO | /ratgeber/flohmarkt-bei-regen/: Titel hat 147 Zeichen (Ziel höchstens 60). |
 
-## Termin-Wächter: 5 Vorschläge zum Einfügen
+## Termin-Wächter: 6 Vorschläge zum Einfügen
 
 Diese Tage stehen neu auf Veranstalterseiten und fehlen in der Tabelle. **Erst auf der Seite des Veranstalters prüfen**, ob es wirklich ein Markttermin ist und ob die Uhrzeit stimmt (eingesetzt ist die übliche Uhrzeit des Markts; ist sie leer, kennt die Tabelle noch keine). Dann die Zeilen markieren, kopieren und im Blatt „Termine“ in die erste freie Zeile einfügen. Die Spalten sind: Markt, Datum, Beginn, Ende, Status, Hinweis. Ein Vorschlag bleibt sieben Tage stehen und verschwindet, sobald der Tag in der Tabelle steht.
 
@@ -22,12 +23,14 @@ Diese Tage stehen neu auf Veranstalterseiten und fehlen in der Tabelle. **Erst a
 flohmarkt-famila-winsen	31.10.2026	11:00	16:00	Findet statt	
 flohmarkt-famila-winsen	01.11.2026	11:00	16:00	Findet statt	
 flohmarkt-famila-winsen	08.11.2026	11:00	16:00	Findet statt	
+hallenflohmarkt-halle-15-rissen	25.10.2026	10:00	15:00	Findet statt	
 hnt-flohmarkt-hausbruch	25.10.2026	09:00	14:00	Findet statt	
 hnt-flohmarkt-hausbruch	26.10.2026	09:00	14:00	Findet statt	
 ```
 
 Quellen:
 - https://flohmaxx.de/flohmarkt/winsen-famila/2026-10-03
+- https://www.asb-halle15.de/
 - https://www.hntonline.de/flohmarkt
 
 ## Zur Kenntnis

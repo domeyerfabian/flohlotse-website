@@ -2137,6 +2137,36 @@ const THEME_ORDER = ["alles-1-euro", "lustige-sprueche", "maedelsflohmarkt", "pr
 const signThemes = () => [...THEME_ORDER.map(s => SIGN_BY[s]).filter(Boolean), ...SIGNS.filter(t => !THEME_ORDER.includes(t.s))]
   .map(t => ({ s: t.s, l: { mengenrabatt: "Mengenrabatt", "reserviert-verkauft": "Reserviert & Verkauft" }[t.s] || t.chip, items: t.v.map(x => ({ l: x.l, set: t.s === "bar-und-paypal" ? { ...signState(t, x), pay: x.l === "Nur Bargeld" ? 0 : 1 } : signState(t, x) })) }))
   .concat([{ s: "", l: "Eigener Text", items: [{ l: "Eigener Text", set: { kind: "sign", fmt: "quer", top: "", main: "Dein Text", bot: "" } }] }]);
+// Ideen zum Antippen: fertige Looks (Spruch, Farbe, Schrift, Form) als kleines Bild. Ein Tipp übernimmt alles, danach Text ändern und drucken.
+// Bilder: src/schilder/ideen/<kennung>.webp (echte Aufnahmen aus dem Designer, entstehen außerhalb des Baus). Fehlt ein Bild, zeigt die Karte Farbe und Namen.
+const IDEAS = [
+  ["prickelnde-preise", "maedelsflohmarkt", "Prickelnde Preise", { tone: "pink", ink: "weiss", font: "verspielt", shape: "wolke" }],
+  ["koenigliche-preise", "maedelsflohmarkt", "Gold-Edition", {}, "Königliche Preise"],
+  ["mir-zu-klein", "maedelsflohmarkt", "Mir zu klein", { tone: "mint", ink: "weiss", font: "verspielt", shape: "blume" }],
+  ["neu-mit-etikett", "maedelsflohmarkt", "Neu mit Etikett", { tone: "pink", ink: "gold", font: "elegant", shape: "etikett" }],
+  ["glitzer-ecke", "maedelsflohmarkt", "Glitzer-Ecke", { tone: "schwarz", ink: "pink", shape: "stern" }],
+  ["anprobieren", "maedelsflohmarkt", "Anprobieren erwünscht", { tone: "mint", ink: "schwarz", font: "elegant", shape: "blase" }, "Anprobieren"],
+  ["alles-1-euro", "alles-1-euro", "1 €", {}, "Alles 1 €"],
+  ["halber-preis", "alles-muss-raus", "Halber Preis", {}],
+  ["fehlkauf", "lustige-sprueche", "Fehlkauf", {}],
+  ["moin", "lustige-sprueche", "Moin", { tone: "mint", font: "verspielt" }],
+  ["raritaet", "vintage", "Rarität", { tone: "pink", font: "verspielt", shape: "etikett" }],
+  ["bar-und-paypal", "bar-und-paypal", "Bar & PayPal", { tone: "schwarz", ink: "gold", font: "verspielt", shape: "etikett" }]
+];
+const IDEA_DIR = path.join(ROOT, "src", "schilder", "ideen");
+const ideaImg = k => fs.existsSync(path.join(IDEA_DIR, `${k}.webp`));
+const ideasHTML = themes => {
+  const cards = IDEAS.map(([k, s, l, o, name]) => {
+    const t = SIGN_BY[s], x = t && t.v.find(v => v.l === l), g = themes.findIndex(h => h.s === s);
+    if (!t || !x || g < 0) { warn("Schilder", `Idee „${k}“: Vorlage „${s}“ / „${l}“ nicht gefunden, die Karte fehlt.`); return ""; }
+    const tone = o.tone || x.tone || t.tone || "gelb", ink = o.ink || x.ink || inkDefault(tone), font = fontOk(o.font || x.font || "modern") ? (o.font || x.font || "modern") : "modern";
+    if (!INK_OK[tone].includes(ink)) warn("Schilder", `Idee „${k}“: Schriftfarbe ${ink} passt nicht zur Fläche ${tone}.`);
+    const set = { ...signState(t, x), tone, ink, font, shape: o.shape || x.shape || "rund", sym: symOf(t, x), look: 1, ...(s === "bar-und-paypal" ? { pay: 1 } : {}) };
+    const img = ideaImg(k) ? `<img src="/assets/schilder/ideen/${k}.webp" width="200" height="141" alt="" loading="lazy" decoding="async">` : `<i class="idea-ph sw-${tone}" aria-hidden="true"></i>`;
+    return `<button type="button" class="idea" data-set="${esc(JSON.stringify(set))}" data-grp="${g}" aria-pressed="false">${img}<span>${esc(name || l)}</span></button>`;
+  }).join("");
+  return cards ? `<div class="gen-ideas js-only"><p class="gen-sub" id="genIdeasH">Ideen zum Antippen</p><div class="idea-row" role="group" aria-labelledby="genIdeasH">${cards}</div></div>` : "";
+};
 function genHTML(st, themes, act, heading, pay) {
   // Aufbau fürs Handy: oben Überschrift mit Druckknopf, eine wischbare Zeile mit Thema und Sprüchen, die Vorschau (bleibt beim Bearbeiten stehen),
   // darunter vier Reiter mit kurzen Bereichen. So passt alles auf einen Bildschirm, ohne hin und her zu scrollen.
@@ -2149,19 +2179,20 @@ function genHTML(st, themes, act, heading, pay) {
   const txt = (id, lab, v, max, ph, cls = "only-sign") => `<label class="fld ${cls}"><span>${lab}</span><input id="${id}" type="text" value="${esc(v)}" maxlength="${max}" autocomplete="off" enterkeyhint="done"${ph ? ` placeholder="${ph}"` : ""}></label>`;
   return `<section class="gen" id="gen" data-kind="${st.kind}" data-fmt="${st.fmt}" data-tone="${tone}" data-ink="${ink}" data-font="${font}" data-shape="${st.shape || "rund"}" data-inkok="${esc(JSON.stringify(INK_OK))}" data-sym="${st.sym || ""}"${pay === "auto" ? ' data-pay="0"' : ""} aria-labelledby="genH">
 <div class="gen-head"><h2 id="genH">${heading}</h2><button class="btn gen-print js-only" id="doPrint" type="button" aria-label="Drucken oder als PDF speichern">${ic("printer")}<span>Drucken</span></button></div>
+${ideasHTML(themes)}<p class="gen-sub js-only" id="genPickH">Alle Vorlagen nach Kategorie</p>
 <div class="gen-pick js-only"><div class="gen-theme"><label for="genTheme" class="vh">Kategorie</label><select id="genTheme"><option value="" selected disabled>Kategorie wählen</option>${themes.map((g, i) => `<option value="${i}">${esc(g.l)}</option>`).join("")}</select></div>
 ${themes.map((g, i) => `<div class="gen-presets" data-grp="${i}" role="group" aria-label="${esc(g.l)}: Spruch wählen"${i === act ? "" : " hidden"}>${g.items.map((p, j) => `<button type="button" class="chip" data-set="${pj(p.set)}" aria-pressed="${i === act && j === 0}">${esc(p.l)}</button>`).join("")}</div>`).join("")}</div>
 <div class="sheet-wrap" id="sheetWrap">${sheetHTML(st)}</div>
 <div class="gen-form js-only">
-<div class="gen-tabs" role="tablist" aria-label="Schild bearbeiten"><button type="button" role="tab" data-tab="text" aria-selected="true">Text</button><button type="button" role="tab" data-tab="look" aria-selected="false">Stil</button><button type="button" role="tab" class="only-sign" data-tab="shape" aria-selected="false">Form</button><button type="button" role="tab" class="only-sign" data-tab="sym" aria-selected="false">Symbol</button><button type="button" role="tab" data-tab="fmt" aria-selected="false">Format</button></div>
-<div class="gen-panel gp-text" data-panel="text" role="tabpanel">
+<div class="gen-tabs" role="tablist" aria-label="Schild bearbeiten"><button type="button" role="tab" data-tab="look" aria-selected="true">Stil</button><button type="button" role="tab" data-tab="text" aria-selected="false">Text</button><button type="button" role="tab" class="only-sign" data-tab="shape" aria-selected="false">Form</button><button type="button" role="tab" class="only-sign" data-tab="sym" aria-selected="false">Symbol</button><button type="button" role="tab" data-tab="fmt" aria-selected="false">Format</button></div>
+<div class="gen-panel gp-text" data-panel="text" role="tabpanel" hidden>
 ${txt("fTop", "Oben", st.top, 40, "optional")}
 ${txt("fMain", "Mitte", st.main, 40, "")}
 ${txt("fBot", "Unten", st.bot, 60, "optional")}
 ${pay ? `<label class="fld only-sign gen-pay"><span>PayPal</span><span class="pfx"><b>paypal.me/</b><input id="fPay" type="text" value="" maxlength="80" autocomplete="off" autocapitalize="none" spellcheck="false" enterkeyhint="done" placeholder="deinname"></span></label><small class="pay-note only-sign" id="payNote" aria-live="polite"></small>` : ""}
 ${txt("fPrice", "Preis", st.price, 12, "leer = zum Beschriften", "only-tags")}
 </div>
-<div class="gen-panel gp-look" data-panel="look" role="tabpanel" hidden>
+<div class="gen-panel gp-look" data-panel="look" role="tabpanel">
 <div class="sw-row" role="group" aria-label="Farbe der Fläche"><span class="seg-l">Fläche</span>${Object.keys(TONES).map(toneBtn).join("")}</div>
 <div class="sw-row" role="group" aria-label="Schriftfarbe (nur gut lesbare Paare)"><span class="seg-l">Schrift&shy;farbe</span>${Object.keys(INKS).map(inkBtn).join("")}</div>
 ${SIGN_FONTS.length > 1 ? `<div class="seg hs seg-font only-sign" role="group" aria-label="Schrift">${SIGN_FONTS.map(fontBtn).join("")}</div>` : ""}
@@ -2750,6 +2781,7 @@ fs.writeFileSync(path.join(OUT, "assets/icons-lizenz.txt"), ICON_LICENSE);
 fs.writeFileSync(path.join(OUT, "assets/icons.svg"), SPRITE_FILE);
 if (WATCH_ON) fs.writeFileSync(path.join(OUT, "assets/waechter.json"), JSON.stringify(WATCH));
 fs.mkdirSync(path.join(OUT, "assets/schilder"), { recursive: true });
+if (IDEAS.some(([k]) => ideaImg(k))) { fs.mkdirSync(path.join(OUT, "assets/schilder/ideen"), { recursive: true }); for (const [k] of IDEAS) if (ideaImg(k)) fs.copyFileSync(path.join(IDEA_DIR, `${k}.webp`), path.join(OUT, `assets/schilder/ideen/${k}.webp`)); }
 for (const t of SIGNS) { fs.writeFileSync(path.join(OUT, `assets/schilder/flohmarkt-${t.s}-vorlage.svg`), signPreviewSVG(t)); if (signWebp(t)) fs.copyFileSync(path.join(SIGN_PREV_DIR, `flohmarkt-${t.s}-vorlage.webp`), path.join(OUT, `assets/schilder/flohmarkt-${t.s}-vorlage.webp`)); }
 // Bilder: Hochgeladen wird nur, was auf mindestens einer Seite vorkommt. Der Rest bleibt im Ordner bilder liegen und steht im Bericht.
 const IMG_UNUSED = [];

@@ -38,6 +38,13 @@ Ihr pflegt nur die Tabelle. Die ausführliche Einrichtungsanleitung liegt als Do
 - **Bildnachweis:** Im Blatt Einstellungen bei „Bildnachweis“ steht „Fotos: Pexels (kostenlose Pexels-Lizenz).“
 - **Umkreissuche:** Die Postleitzahl wird erst nach Tippen auf „Anzeigen“ angewandt und steht nur hinter dem `#` in der Adresse, sie wird also nie an den Server geschickt.
 
+## Schilder-Designer: Ideen zum Antippen
+
+- Oben im Designer stehen zwölf fertige Looks als kleine Bilder (zum Beispiel „Prickelnde Preise“ als pinke Wolke mit weißer Schreibschrift). Ein Tipp übernimmt Spruch, Farbe, Schriftfarbe, Schrift, Form und Symbol, danach kann man den Text ändern und drucken. Am Handy wischt man durch die Reihe, am Computer stehen sie in zwei Reihen.
+- Darunter folgt „Alle Vorlagen nach Kategorie“ mit der gelben Auswahl. Der erste Reiter ist jetzt „Stil“ (Farben und Schriften), „Text“ ist der zweite.
+- Welche Looks erscheinen, steht in `build.mjs` unter `IDEAS`. Die Bilder liegen in `src/schilder/ideen/` (echte Aufnahmen aus dem Designer). Fehlt ein Bild, zeigt die Karte nur Farbe und Namen. Ändert sich der Spruch einer Vorlage, sollte das Bild neu aufgenommen werden.
+- Es wird nichts gespeichert: Die Ideen sind von uns, nicht von anderen Besucherinnen.
+
 ## Termine gehören ins Blatt Termine, nicht in Texte
 
 - **Regel:** Konkrete Daten („11. Oktober“, „4.10.“) nur ins Blatt **Termine** (oder **Serien**) eintragen. Texte im Blatt **Märkte** (Einleitung, Kurzbeschreibung, Hinweis, Tipps, SEO-Beschreibung) ohne festes Datum schreiben, zum Beispiel „mehrmals im Jahr“ oder „zweiter Sonntag im Monat“. Saisonangaben wie „im Juni“ oder „März bis Oktober“ sind in Ordnung.

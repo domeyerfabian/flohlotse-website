@@ -522,6 +522,8 @@ const ORG_AUTHOR = { "@type": "Organization", name: NAME, url: SITE + ABOUT_P },
 const nbU = t => esc(t).replace(/(\d) (?=€|%|(?:m|Uhr|km)\b)/g, "$1&nbsp;");
 function menuHTML() {
   // Menü in vier Fragen: Wann? Was für ein Markt? Wo? Und die Werkzeuge. Seltenes steht klein darunter, Bezirke zum Aufklappen.
+  // Kurze Namen im Menü, damit zwei Knöpfe nebeneinander passen (auch bei großer Schrift am Handy)
+  const MN_SHORT = { "hallenflohmarkt-hamburg": "Überdacht", "nachtflohmarkt-hamburg": "Nachts", "kinderflohmarkt-hamburg": "Für Kinder", "fahrradflohmarkt-hamburg": "Fahrräder", "nachbarschaftsflohmarkt-hamburg": "Nachbarschaft", "frauenflohmarkt-hamburg": "Für Frauen", "flohmarkt-hamburg-umgebung": "Umland" };
   const cnt = k => MARKETS.filter(m => m.bez === k).length;
   const a = (h, l, c = "") => `<a href="${h}"${c ? ` class="${c}"` : ""}>${l}</a>`;
   const reg = um => REGIONS.filter(r => !!r.umland === um).map(r => a(`/flohmarkt-hamburg/${r.k}/`, `${esc(r.name)} <small>${cnt(r.k)}</small>`)).join("");
@@ -531,7 +533,7 @@ function menuHTML() {
 <div class="menu"><nav class="mn" aria-label="Alle Bereiche">
 <div class="mn-when"><p class="mn-h">Wann?</p><div class="mn-days">${a("/heute/", "Heute")}${a("/morgen/", "Morgen")}${a("/wochenende/", "Wochenende")}</div>
 <div class="mn-rows">${a("/termine/", `${ic("cal")}Alle Termine`)}${a(WEEK_P, `${ic("clock")}Unter der Woche`)}${a("/flohmaerkte/", `${ic("list")}Alle Märkte A–Z`)}${a("/entdecken/", `${ic("heart")}Wischen &amp; merken`)}</div></div>
-<div class="mn-what"><p class="mn-h">Was für ein Markt?</p><div class="mn-chips">${CATS_ON.map(c => a(`/${c.s}/`, `${ic(c.icon)}${esc(c.chip)}`)).join("")}</div></div>
+<div class="mn-what"><p class="mn-h">Was für ein Markt?</p><div class="mn-chips">${CATS_ON.map(c => a(`/${c.s}/`, `${ic(c.icon)}${esc(MN_SHORT[c.s] || c.chip)}`)).join("")}</div></div>
 <div class="mn-where"><p class="mn-h">Wo?</p><details class="mn-reg"><summary>Hamburg nach Bezirk</summary><div>${reg(false)}</div></details><details class="mn-reg"><summary>Umland bis 30 km</summary><div>${reg(true)}</div></details></div>
 <div class="mn-tools"><p class="mn-h">Für deinen Flohmarkt</p>${TOOLS().map(tool).join("")}</div>
 <div class="mn-more">${a(FEE_P, "Standgebühren")}${a(TIPS_P, "Tipps &amp; Vorlagen")}${a("/veranstalter/", "Für Veranstalter")}${a(ABOUT_P, "Über Flohlotse")}${INSTA ? instaA("Instagram") : ""}${a("/impressum/", "Impressum")}${a("/datenschutz/", "Datenschutz")}</div>

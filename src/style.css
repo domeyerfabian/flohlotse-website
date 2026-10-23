@@ -30,14 +30,15 @@ a{color:var(--ink)}
 .mn{max-width:760px;margin:0 auto;display:grid;gap:24px}
 .mn-h{font-family:var(--f-display);font-weight:700;font-size:17px;letter-spacing:-.015em;line-height:1.2;color:var(--ink);margin:0 0 10px}
 .mn a{color:var(--ink);text-decoration:none}
-.mn-days{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
-.mn-days a{display:flex;align-items:center;justify-content:center;min-height:52px;padding:0 6px;border-radius:var(--r);background:var(--sticker);color:var(--sticker-ink);font-weight:700;font-size:16px;text-align:center}
+.mn-days{display:grid;grid-template-columns:1fr 1fr 1.32fr;gap:8px}
+.mn-days a{display:flex;align-items:center;justify-content:center;min-height:52px;padding:0 8px;border-radius:var(--r);background:var(--sticker);color:var(--sticker-ink);font-weight:700;font-size:16px;letter-spacing:-.01em;text-align:center}
 .mn-rows{margin-top:6px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:16px}
 .mn-rows a{display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid var(--line);font-weight:500;font-size:15px;line-height:1.3}
 .mn-rows .i{width:18px;height:18px;color:var(--muted)}
-.mn-chips{display:flex;flex-wrap:wrap;gap:8px}
-.mn-chips a{display:inline-flex;align-items:center;gap:7px;padding:8px 13px;border:1px solid var(--line);background:var(--surface);border-radius:999px;font-weight:500;font-size:14.5px;line-height:1.25}
-.mn-chips .i{width:16px;height:16px;color:var(--muted)}
+.mn-chips{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.mn-chips a{display:flex;align-items:center;gap:8px;min-height:46px;padding:8px 12px;border:1px solid var(--line);background:var(--surface);border-radius:12px;font-weight:500;font-size:14.5px;line-height:1.2}
+.mn-chips .i{width:17px;height:17px;flex:none;color:var(--muted)}
+@media (min-width:560px) and (max-width:859px){.mn-chips{grid-template-columns:repeat(3,minmax(0,1fr))}}
 .mn-reg{border-top:1px solid var(--line)}
 .mn-reg:last-child{border-bottom:1px solid var(--line)}
 .mn-reg summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 0;font-weight:600;font-size:15px}
@@ -1791,5 +1792,5 @@ main.pg-start > .sec{border-top:0;margin-top:0;padding-top:48px}
 @media print{.mail-top,.mk-report,.ms{display:none!important}}
 /* Offenes Menü: Plus-Knopf ausblenden, er läge sonst über den Einträgen */
 body:has(.menu-wrap[open]) .fab{display:none}
-@media (max-width:374px){.mn-days a{font-size:14.5px;min-height:48px}.mn-rows a{font-size:14px;gap:8px}.mn-chips a{font-size:14px;padding:7px 11px}.tk-item{gap:6px;padding-left:12px}.tk-item i{display:none}}
-@media (max-width:339px){.mn-days{gap:6px}.mn-days a{font-size:13.5px}.mn-rows{grid-template-columns:1fr}.mn-chips{gap:6px}.mn-chips a{font-size:13.5px;padding:6px 10px;gap:5px}}
+@media (max-width:374px){.mn-days{gap:6px}.mn-days a{font-size:15px;min-height:48px;padding:0 4px}.mn-rows a{font-size:14px;gap:8px}.mn-chips a{font-size:14px;padding:8px 10px;gap:7px}.tk-item{gap:6px;padding-left:12px}.tk-item i{display:none}}
+@media (max-width:339px){.mn-days a{font-size:14px}.mn-rows{grid-template-columns:1fr}.mn-chips{gap:6px}.mn-chips a{font-size:13.5px;padding:7px 9px;gap:6px}.mn-chips .i{display:none}}

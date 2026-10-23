@@ -521,16 +521,20 @@ const ORG_AUTHOR = { "@type": "Organization", name: NAME, url: SITE + ABOUT_P },
 // Zahl und Einheit bleiben in einer Zeile („4 m“, „12 €“, „7 Uhr“)
 const nbU = t => esc(t).replace(/(\d) (?=€|%|(?:m|Uhr|km)\b)/g, "$1&nbsp;");
 function menuHTML() {
+  // Menü in vier Fragen: Wann? Was für ein Markt? Wo? Und die Werkzeuge. Seltenes steht klein darunter, Bezirke zum Aufklappen.
   const cnt = k => MARKETS.filter(m => m.bez === k).length;
-  const li = (h, l) => `<li><a href="${h}">${l}</a></li>`;
+  const a = (h, l, c = "") => `<a href="${h}"${c ? ` class="${c}"` : ""}>${l}</a>`;
+  const reg = um => REGIONS.filter(r => !!r.umland === um).map(r => a(`/flohmarkt-hamburg/${r.k}/`, `${esc(r.name)} <small>${cnt(r.k)}</small>`)).join("");
+  const SUB = { sign: "Preisschilder gratis drucken", kc: "Echt oder Fälschung?", kb: `${KB.length} kurze Antworten` };
+  const tool = ([k, h, i, t]) => `<a class="mn-tool" href="${h}">${ic(i)}<span><b>${t}</b><small>${SUB[k]}</small></span>${ic("chev")}</a>`;
   return `<details class="menu-wrap"><summary class="menu-btn">${ic("list", "i i-open")}${ic("x", "i i-shut")}<span>Menü</span></summary>
-<div class="menu"><nav class="menu-grid" aria-label="Alle Bereiche">
-<div><p class="menu-h">Flohmärkte in Hamburg</p><ul>${li("/suche/", "Suchen nach Name oder Datum")}${li("/heute/", "Heute")}${li("/morgen/", "Morgen")}${li("/wochenende/", "Am Wochenende")}${li("/samstag/", "Am Samstag")}${li("/sonntag/", "Am Sonntag")}${li(WEEK_P, "Unter der Woche")}${li("/termine/", "Alle Termine")}${li("/flohmaerkte/", "Alle Märkte")}${li(FEE_P, "Standgebühren im Vergleich")}${li("/entdecken/", "Wischen &amp; merken")}${li("/merkliste/", "Meine Merkliste")}</ul></div>
-<div><p class="menu-h">Nach Art</p><ul>${CATS_ON.map(c => li(`/${c.s}/`, esc(c.chip))).join("")}</ul></div>
-<div><p class="menu-h">Hamburg</p><ul>${REGIONS.filter(r => !r.umland).map(r => li(`/flohmarkt-hamburg/${r.k}/`, `${esc(r.name)} <small>${cnt(r.k)}</small>`)).join("")}</ul></div>
-<div><p class="menu-h">Umland bis 30 km</p><ul>${REGIONS.filter(r => r.umland).map(r => li(`/flohmarkt-hamburg/${r.k}/`, `${esc(r.name)} <small>${cnt(r.k)}</small>`)).join("")}</ul></div>
-<div><p class="menu-h">Für jeden Flohmarkt</p><ul>${li(TIPS_P, "Alle Tipps &amp; Vorlagen")}${KC_ON ? li(KC_P, "Kauf-Check: echt oder Fälschung?") : ""}${li("/flohmarkt-schilder/", "Schilder &amp; Preisschilder drucken")}${Object.entries(CLUSTERS).map(([c, v]) => li(`/ratgeber/#${c}`, esc(v.t))).join("")}${li("/ratgeber/", "Alle Artikel")}</ul></div>
-<div><p class="menu-h">${esc(NAME)}</p><ul>${li(ABOUT_P, "Über Flohlotse")}${li("/veranstalter/", "Für Veranstalter")}${INSTA ? `<li>${instaA("Instagram")}</li>` : ""}${li("/impressum/", "Impressum")}${li("/datenschutz/", "Datenschutz")}</ul></div>
+<div class="menu"><nav class="mn" aria-label="Alle Bereiche">
+<div class="mn-when"><p class="mn-h">Wann?</p><div class="mn-days">${a("/heute/", "Heute")}${a("/morgen/", "Morgen")}${a("/wochenende/", "Wochenende")}</div>
+<div class="mn-rows">${a("/termine/", `${ic("cal")}Alle Termine`)}${a(WEEK_P, `${ic("clock")}Unter der Woche`)}${a("/flohmaerkte/", `${ic("list")}Alle Märkte A–Z`)}${a("/entdecken/", `${ic("heart")}Wischen &amp; merken`)}</div></div>
+<div class="mn-what"><p class="mn-h">Was für ein Markt?</p><div class="mn-chips">${CATS_ON.map(c => a(`/${c.s}/`, `${ic(c.icon)}${esc(c.chip)}`)).join("")}</div></div>
+<div class="mn-where"><p class="mn-h">Wo?</p><details class="mn-reg"><summary>Hamburg nach Bezirk</summary><div>${reg(false)}</div></details><details class="mn-reg"><summary>Umland bis 30 km</summary><div>${reg(true)}</div></details></div>
+<div class="mn-tools"><p class="mn-h">Für deinen Flohmarkt</p>${TOOLS().map(tool).join("")}</div>
+<div class="mn-more">${a(FEE_P, "Standgebühren")}${a(TIPS_P, "Tipps &amp; Vorlagen")}${a("/veranstalter/", "Für Veranstalter")}${a(ABOUT_P, "Über Flohlotse")}${INSTA ? instaA("Instagram") : ""}${a("/impressum/", "Impressum")}${a("/datenschutz/", "Datenschutz")}</div>
 </nav></div></details>`;
 }
 const MENU = () => menuHTML();
@@ -605,11 +609,12 @@ ${MENU()}
 ${shyHeads(body.replace(/<h1>([^<]{3,80}?): ([^<]+)<\/h1>/, '<h1>$1:<span class="h1-sub"> $2</span></h1>'))}
 </main>
 <footer class="wrap site-foot">
-<div>Termine nach öffentlichen Angaben der Veranstalter, Stand ${STAND}. Bitte vor dem Besuch beim Veranstalter prüfen, Märkte können kurzfristig ausfallen. Ratgeber-Artikel ersetzen keine Rechts- oder Steuerberatung.${WX_OK ? ` Wettervorhersage: Deutscher Wetterdienst, Stand ${STAND}.` : ""}</div>
+<div>Termine nach öffentlichen Angaben der Veranstalter. Bitte vor dem Besuch beim Veranstalter prüfen, Märkte können kurzfristig ausfallen. Ratgeber-Artikel ersetzen keine Rechts- oder Steuerberatung.${WX_OK ? ` Wettervorhersage: Deutscher Wetterdienst, Stand ${STAND}.` : ""}</div>
 <details class="foot-grp"><summary>Flohmarkt Hamburg</summary><nav class="foot-links" aria-label="Flohmarkt Hamburg"><a href="/heute/">Heute</a><a href="/morgen/">Morgen</a><a href="/wochenende/">Wochenende</a><a href="/samstag/">Samstag</a><a href="/sonntag/">Sonntag</a><a href="${WEEK_P}">Unter der Woche</a>${REGIONS.map(r => `<a href="/flohmarkt-hamburg/${r.k}/">${esc(r.name)}</a>`).join("")}<a href="${FEE_P}">Standgebühren im Vergleich</a><a href="/flohmarkt-hamburg-statistik/">Flohmärkte in Zahlen</a></nav></details>
 <details class="foot-grp"><summary>Nach Art und Monat</summary><nav class="foot-links" aria-label="Nach Art und Monat">${CATS_ON.map(c => `<a href="/${c.s}/">${esc(c.chip)}</a>`).join("")}${MONTHS.map(x => `<a href="/${x.s}/">${x.name} ${x.y}</a>`).join("")}</nav></details>
 <details class="foot-grp"><summary>Für jeden Flohmarkt</summary><nav class="foot-links" aria-label="Für jeden Flohmarkt"><a href="${TIPS_P}">Tipps &amp; Vorlagen</a><a href="/ratgeber/">Ratgeber</a>${KC_ON ? `<a href="${KC_P}">Kauf-Check</a>` : ""}<a href="/flohmarkt-schilder/">Schilder-Designer</a></nav></details>
 <details class="foot-grp"><summary>${esc(NAME)}</summary><nav class="foot-links" aria-label="${esc(NAME)}"><a href="${ABOUT_P}">Über Flohlotse</a><a href="/veranstalter/">Für Veranstalter</a>${INSTA ? instaA("Instagram") : ""}<a href="/impressum/">Impressum</a><a href="/datenschutz/">Datenschutz</a></nav></details>
+<p class="foot-stand">Stand der Termine: ${STAND}</p>
 </footer>
 ${msSheet(mkOfPath(p))}${fabHTML(toolK || (p === "/entdecken/" ? "dk" : p === "/termine/" ? "tm" : ""))}
 <script src="/assets/site${JS_V ? "." + JS_V.slice(3) : ""}.js" defer></script>
@@ -753,8 +758,10 @@ const pastDates = t => {
   for (const x of String(t).matchAll(re)) {
     const day = +x[1], mon = x[2] ? MON.findIndex(n => n.toLowerCase() === x[2].toLowerCase()) : +x[3] - 1;
     if (mon < 0 || mon > 11 || day < 1 || day > 31) continue;
-    let y = x[4] ? +x[4] + (x[4].length === 2 ? 2000 : 0) : YEAR, d = new Date(Date.UTC(y, mon, day));
-    if (!x[4]) { if (d > addDays(TODAY, 150)) d = new Date(Date.UTC(y - 1, mon, day)); else if (d < addDays(TODAY, -215)) d = new Date(Date.UTC(y + 1, mon, day)); }
+    // Ohne Jahr direkt am Datum: ein Jahr kurz davor im Text gilt mit („Für 2027 nennt der Veranstalter den 25. April“)
+    const near = !x[4] && [...String(t).slice(Math.max(0, x.index - 120), x.index).matchAll(/\b(20\d\d)\b/g)].map(m => +m[1]).filter(v => v >= YEAR - 1 && v <= YEAR + 2).pop();
+    let y = x[4] ? +x[4] + (x[4].length === 2 ? 2000 : 0) : near || YEAR, d = new Date(Date.UTC(y, mon, day));
+    if (!x[4] && !near) { if (d > addDays(TODAY, 150)) d = new Date(Date.UTC(y - 1, mon, day)); else if (d < addDays(TODAY, -215)) d = new Date(Date.UTC(y + 1, mon, day)); }
     if (d < TODAY) out.push(x[0].trim());
   }
   return [...new Set(out)];
@@ -1392,10 +1399,10 @@ ${first ? `<div class="stage st-light" id="ratgeber"><div class="st-txt"><span c
     return `<div class="ab" id="ab"><div class="ab-tabs" role="tablist" aria-label="Termine">${tabs.map(([id, l, , , ev], i) => `<button type="button" role="tab" id="abt-${id}" aria-controls="abp-${id}" aria-selected="${i === 0}"${i ? ' tabindex="-1"' : ""}>${l}<span class="ab-c">${ev.length}</span></button>`).join("")}</div>
 ${tabs.map(([id, l, ks, href, ev], i) => `<div class="ab-p" role="tabpanel" id="abp-${id}" aria-labelledby="abt-${id}"${i ? " hidden" : ""}><ul>${ev.map(e => li(e, ks.length > 1)).join("")}</ul><a class="ab-all" href="${href}">Alle ${ev.length} Termine ${l === "Wochenende" ? "am Wochenende" : l.toLowerCase()}${ic("chev")}</a></div>`).join("")}</div>`;
   };
-  const tIns = `<a href="${INSTA}" rel="noopener me"><i aria-hidden="true">+++</i>${esc(NAME)} gibt’s jetzt auch bei Insta</a>`;
-  // Laufband im Wechsel: Instagram, Kauf-Check, Schilder
-  const tickItems = INSTA ? [tIns, ...(KC_ON ? [`<a href="${KC_P}"><i aria-hidden="true">+++</i>Echt oder Fake? Der Kauf-Check</a>`] : []), `<a href="/flohmarkt-schilder/"><i aria-hidden="true">+++</i>Schilder für deinen Stand: gratis drucken</a>`, tIns] : [];
-  const ticker = tickItems.length ? `<div class="ticker" role="region" aria-label="Neuigkeiten"><div class="ticker-view"><div class="ticker-run"><div class="ticker-set">${tickItems[0]}${tickItems.slice(1).join("").replace(/<a /g, '<a tabindex="-1" aria-hidden="true" ')}</div><div class="ticker-set" aria-hidden="true">${tickItems.join("").replace(/<a /g, '<a tabindex="-1" ')}</div></div></div>${INSTA ? `<a class="ticker-cta" href="${INSTA}" rel="noopener me" aria-label="${esc(NAME)} auf Instagram folgen">Folgen${ic("chev")}</a>` : ""}</div>` : "";
+  // Neuigkeiten oben: eine Zeile, die alle paar Sekunden wechselt. Jede Meldung hat ihren eigenen Knopf.
+  const tk = (h, t, cta, ext) => [h, t, cta, ext];
+  const tickItems = INSTA ? [tk(INSTA, `${esc(NAME)} jetzt bei Insta`, "Folgen", true), ...(KC_ON ? [tk(KC_P, "Echt oder Fake? Kauf-Check", "Prüfen")] : []), tk("/flohmarkt-schilder/", "Schilder für deinen Stand", "Gestalten")] : [];
+  const ticker = tickItems.length ? `<div class="ticker" role="region" aria-label="Neuigkeiten">${tickItems.map(([h, t, cta, ext], i) => `<a class="tk-item${i ? "" : " on"}" href="${h}"${ext ? ' rel="noopener me"' : ""}${i ? ' tabindex="-1" aria-hidden="true"' : ""}><i aria-hidden="true">+++</i><span>${t}</span><b class="tk-cta">${cta}${ic("chev")}</b></a>`).join("")}</div>` : "";
   const body = ticker + `<section class="hero"><div>
 <span class="kicker hello">Willkommen bei ${esc(NAME)}</span>
 <h1>Flohmarkt Hamburg: alle Termine, aufgeräumt.</h1>
@@ -1503,7 +1510,7 @@ ${sxForm()}
 <div class="chips sx-days js-only" id="sxDays" aria-label="Tag wählen"><button type="button" class="chip" data-d="0">${ic("sun")}Heute</button><button type="button" class="chip" data-d="1">${ic("cal")}Morgen</button><button type="button" class="chip" data-d="sa">${ic("cal")}Samstag</button><button type="button" class="chip" data-d="so">${ic("cal")}Sonntag</button><label class="chip sx-pick">${ic("cal")}<span>Datum wählen</span><input type="date" id="sxDate" min="${key(TODAY)}" max="${key(addDays(TODAY, 400))}" aria-label="Datum wählen"></label></div></section>
 <p class="sx-msg" id="sxMsg" role="status" aria-live="polite"></p>
 <div class="sx-out js-only" id="sxOut" data-src="/assets/maerkte.json?v=${key(TODAY)}" data-tools="/assets/werkzeuge.json?v=${key(TODAY)}"></div>
-<section class="sec sx-az" id="sxAz"><div class="sec-head"><h2>Alle Märkte von A bis Z</h2>${more("/flohmaerkte/", "Nach Bezirk")}</div><div class="qlist sx-azl">${azList}</div></section>
+<section class="sec sx-az" id="sxAz"><div class="sec-head"><h2>Alle Märkte A–Z</h2>${more("/flohmaerkte/", "Nach Bezirk")}</div><div class="qlist sx-azl">${azList}</div></section>
 <section class="sec sx-tip" id="sxTip"><div class="sec-head"><h2>Nach Zeitraum stöbern</h2></div><div class="chips">${[["/heute/", "Heute", "sun"], ["/morgen/", "Morgen", "cal"], ["/wochenende/", "Wochenende", "cal"], [WEEK_P, "Unter der Woche", "cal"], ["/termine/", "Alle Termine", "list"]].map(([h, l, i]) => `<a class="chip" href="${h}">${ic(i)}${l}</a>`).join("")}</div>${monthChips()}</section>`;
   layout({ p: "/suche/", title: `Flohmarkt suchen | ${NAME}`, desc: `Flohmarkt in Hamburg suchen: nach Name, Stadtteil oder Datum. ${MARKETS.length} Märkte mit allen bekannten Terminen.`, body, noindex: true, nav: "suche" });
 }

@@ -45,6 +45,12 @@ Ihr pflegt nur die Tabelle. Die ausführliche Einrichtungsanleitung liegt als Do
 - Welche Looks erscheinen, steht in `build.mjs` unter `IDEAS`. Die Bilder liegen in `src/schilder/ideen/` (echte Aufnahmen aus dem Designer). Fehlt ein Bild, zeigt die Karte nur Farbe und Namen. Ändert sich der Spruch einer Vorlage, sollte das Bild neu aufgenommen werden.
 - Es wird nichts gespeichert: Die Ideen sind von uns, nicht von anderen Besucherinnen.
 
+## Menü und Stand (24. Oktober)
+- **Menü in vier Fragen:** „Wann?“ (Heute, Morgen, Wochenende als gelbe Felder, darunter Alle Termine, Unter der Woche, Alle Märkte A–Z, Wischen & merken), „Was für ein Markt?“ (alle Arten als Chips mit Symbol), „Wo?“ (Bezirke und Umland zum Aufklappen) und „Für deinen Flohmarkt“ (Schilder, Kauf-Check, Ratgeber). Seltenes steht klein darunter: Standgebühren, Tipps & Vorlagen, Für Veranstalter, Über Flohlotse, Instagram, Impressum, Datenschutz. Am Computer stehen die Bereiche in drei Spalten.
+- Samstag, Sonntag und die Ratgeber-Themen sind nicht mehr im Menü, aber weiter in der Fußzeile und auf den Seiten verlinkt. Suche und Merkliste sind oben als Symbole. Keine Adresse hat sich geändert.
+- Bei offenem Menü ist der Plus-Knopf unten rechts ausgeblendet.
+- **Kein Hinweis „Wird aktualisiert“ mehr:** Nach Mitternacht bis zum nächsten Bau verschwinden vergangene Termine still. Den Stand nennt die letzte Zeile der Fußzeile („Stand der Termine: …“).
+
 ## Termine gehören ins Blatt Termine, nicht in Texte
 
 - **Regel:** Konkrete Daten („11. Oktober“, „4.10.“) nur ins Blatt **Termine** (oder **Serien**) eintragen. Texte im Blatt **Märkte** (Einleitung, Kurzbeschreibung, Hinweis, Tipps, SEO-Beschreibung) ohne festes Datum schreiben, zum Beispiel „mehrmals im Jahr“ oder „zweiter Sonntag im Monat“. Saisonangaben wie „im Juni“ oder „März bis Oktober“ sind in Ordnung.
@@ -150,7 +156,7 @@ Marktseiten zeigen den nächsten bekannten Termin auch dann, wenn er weiter entf
 
 Das Profil ist im Menü, im Footer und in einem Kasten auf der Startseite verlinkt (nur als Link, ohne eingebettete Inhalte). Die Adresse lässt sich im Blatt Einstellungen mit der Zeile `Instagram` ändern, mit dem Wert `Nein` verschwindet der Link.
 
-Auf der Startseite läuft oben ein Laufband mit dem Instagram-Hinweis („+++ Flohlotse gibt’s jetzt auch bei Insta +++“) und einem festen Knopf „Folgen“. Beim Drüberfahren hält es an; ist am Gerät „Bewegung reduzieren“ eingestellt, steht es still. Ohne Instagram-Adresse entfällt es.
+Auf der Startseite steht oben eine Neuigkeiten-Zeile. Sie wechselt alle 4,5 Sekunden zwischen drei Meldungen, jede mit eigenem Knopf: Instagram („Folgen“), Kauf-Check („Prüfen“) und Schilder („Gestalten“). Beim Drüberfahren oder mit der Tastatur bleibt die Meldung stehen; ist am Gerät „Bewegung reduzieren“ eingestellt, bleibt die erste stehen. Ohne Instagram-Adresse entfällt die Zeile.
 
 Ratgeber-Artikel: Je Bereich wechseln sich mehrere Fotos und Formen ab (`KB_POOL` in `build.mjs`), damit nicht jeder Artikel dasselbe Bild zeigt. Zusätzliche Banner heißen `banner-<name>.webp` und `banner-<name>-klein.webp`. Ein Foto nur für einen Artikel: `artikel-<kennung>.webp` (und `-klein.webp`) in den Ordner `bilder` legen, es hat Vorrang.
 

@@ -57,17 +57,21 @@
     var hlT0 = document.getElementById("hlTrack"), hlD0 = document.getElementById("hlDots");
     if (hlT0 && !hlT0.children.length) { var hs0 = hlT0.closest(".hl"); if (hs0) hs0.hidden = true; }
     else if (hlT0 && hlD0) { while (hlD0.children.length > hlT0.children.length) hlD0.removeChild(hlD0.lastElementChild); var n0 = hlD0.children.length; [].forEach.call(hlD0.children, function (b, j) { b.setAttribute("aria-label", "Bild " + (j + 1) + " von " + n0); if (j) b.removeAttribute("aria-current"); else b.setAttribute("aria-current", "true"); }); if (n0 < 2) hlD0.hidden = true; }
-    // Hinweis nur, wo er nötig ist: auf Seiten mit „heute“/„morgen“ oder wenn ein Neubau ausgefallen ist (Stand älter als gestern).
-    // Sonst verschwinden die vergangenen Termine einfach still.
-    var dOf = function (k) { var q = k.split("-"); return Date.UTC(+q[0], +q[1] - 1, +q[2]); }, behind = Math.round((dOf(NOW.day) - dOf(stand)) / 864e5), rel = document.documentElement.hasAttribute("data-rel");
-    if (rel || (behind > 1 && dated.length)) {
-      var main = document.querySelector("main"), fmt = function (k) { var q = k.split("-"); return (+q[2]) + "." + (+q[1]) + "."; }, note = document.createElement("p");
-      note.className = "stale"; note.setAttribute("role", "status"); note.setAttribute("data-nosnippet", "");
-      var dot = document.createElement("span"); dot.className = behind > 1 ? "stale-dot still" : "stale-dot"; dot.setAttribute("aria-hidden", "true"); note.appendChild(dot);
-      note.appendChild(document.createTextNode(behind > 1 ? "Stand " + fmt(stand) + (old ? " · vergangene Termine ausgeblendet" : "") : "Wird für den " + fmt(NOW.day) + " aktualisiert"));
-      if (location.pathname.slice(-9) !== "/termine/") { var more = document.createElement("a"); more.href = ROOT0 + "/termine/"; more.textContent = "Termine"; note.appendChild(more); }
-      if (main) main.insertBefore(note, main.firstChild);
-    }
+    // Kein Hinweis oben: Die vergangenen Termine verschwinden still, den Stand nennt die Fußzeile.
+  }
+  // Neuigkeiten oben: alle 4,5 Sekunden die nächste Meldung. Pause bei Maus darüber, Fokus darin oder verstecktem Tab. Bei „weniger Bewegung“ bleibt die erste stehen.
+  var tkr = document.querySelector(".ticker"), tks = tkr ? [].slice.call(tkr.querySelectorAll(".tk-item")) : [];
+  if (tks.length > 1 && !(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches)) {
+    var tkI = 0, tkHold = false;
+    var tkSet = function (el, on) { el.classList.toggle("on", on); if (on) { el.removeAttribute("aria-hidden"); el.removeAttribute("tabindex"); } else { el.setAttribute("aria-hidden", "true"); el.tabIndex = -1; } };
+    setInterval(function () {
+      if (tkHold || document.hidden) return;
+      var a = tks[tkI]; tkI = (tkI + 1) % tks.length; var b = tks[tkI];
+      a.classList.add("out"); tkSet(a, false); tkSet(b, true);
+      setTimeout(function () { a.style.transition = "none"; a.classList.remove("out"); void a.offsetWidth; a.style.transition = ""; }, 500);
+    }, 4500);
+    tkr.addEventListener("mouseenter", function () { tkHold = true; }); tkr.addEventListener("mouseleave", function () { tkHold = false; });
+    tkr.addEventListener("focusin", function () { tkHold = true; }); tkr.addEventListener("focusout", function () { tkHold = false; });
   }
   // Pfad der Website (falls sie in einem Unterordner liegt), abgeleitet aus dem Pfad dieses Skripts
   // Fußzeile: am PC sind alle Linkgruppen offen, auf dem Handy zum Aufklappen

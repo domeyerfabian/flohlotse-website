@@ -1794,3 +1794,13 @@ main.pg-start > .sec{border-top:0;margin-top:0;padding-top:48px}
 body:has(.menu-wrap[open]) .fab{display:none}
 @media (max-width:374px){.mn-days{gap:6px}.mn-days a{font-size:15px;min-height:48px;padding:0 4px}.mn-rows a{font-size:14px;gap:8px}.mn-chips a{font-size:14px;padding:8px 10px;gap:7px}.tk-item{gap:6px;padding-left:12px}.tk-item i{display:none}}
 @media (max-width:339px){.mn-days a{font-size:14px}.mn-rows{grid-template-columns:1fr}.mn-chips{gap:6px}.mn-chips a{font-size:13.5px;padding:7px 9px;gap:6px}.mn-chips .i{display:none}}
+
+/* Folge Flohlotse: runde Logo-Knöpfe im Menü und in der Fußzeile */
+.social{display:flex;align-items:center;gap:10px}
+.social span{font-weight:600;font-size:14px;color:var(--ink);margin-right:4px}
+.social a{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:var(--ink);color:var(--paper);text-decoration:none}
+.social a .i{width:22px;height:22px}
+@media (hover:hover){.social a:hover{background:var(--sticker);color:var(--sticker-ink)}}
+.mn-social{padding-top:10px}
+.foot-social{margin-top:14px}
+@media (min-width:860px){.foot-social{grid-column:1/-1}}

@@ -1,8 +1,8 @@
 # Flohlotse: Website gebaut
 
-Stand 24.10.2026 · 314 Seiten (308 für Google) · 144 Märkte · 195 Termine in den nächsten 120 Tagen · 42 Ratgeber-Artikel · 842 Event-Auszeichnungen
+Stand 24.10.2026 · 317 Seiten (311 für Google) · 147 Märkte · 198 Termine in den nächsten 120 Tagen · 42 Ratgeber-Artikel · 855 Event-Auszeichnungen
 
-## Zu erledigen: 7 Hinweise
+## Zu erledigen: 6 Hinweise
 
 | Bereich | Hinweis |
 |---|---|
@@ -11,7 +11,6 @@ Stand 24.10.2026 · 314 Seiten (308 für Google) · 144 Märkte · 195 Termine i
 | Termin-Wächter | HNT Flohmarkt: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 26.10.2026, 27.10.2026. Bitte prüfen: https://www.hntonline.de/flohmarkt |
 | Termin-Wächter | Flohmarkt famila Winsen (Luhe): Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 31.10.2026, 01.11.2026, 08.11.2026. Bitte prüfen: https://flohmaxx.de/flohmarkt/winsen-famila/2026-10-03 |
 | Termin-Wächter | Flohmarkt am Bunthaus: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 14.03.2027, 19.03.2027, 18.04.2027, 06.05.2027, 09.05.2027, 23.07.2027. Achtung: 25.10.2026 steht noch im Kalender, ist auf der Website des Veranstalters aber nicht mehr zu finden. Prüfen, ob der Termin ausfällt. Bitte prüfen: https://elbepark-bunthaus.de/bunthaus-flohmarkt/ |
-| Termin-Wächter | Flohmarkt bei Selfmades by Sibel: Die Website des Veranstalters möchte nicht automatisch abgerufen werden (robots.txt). Diese Seite bitte weiter von Hand prüfen: https://www.instagram.com/selfmadesbysibel/ |
 | Serie endet bald | Flohmarkt Else-Rauch-Platz (Sonntag): Die Serie läuft nur bis Montag, 30. November. Bei Bedarf „Gültig bis“ verlängern, sobald der Veranstalter neue Termine bestätigt. |
 
 ## Termin-Wächter: 9 Vorschläge zum Einfügen

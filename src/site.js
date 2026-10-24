@@ -706,11 +706,11 @@
   var favHas = function (s) { return favGet().indexOf(s) > -1; };
   // kurze Meldung unten am Bildschirm (schwarz = Hinweis), auf Wunsch mit Link oder Knopf
   var toastEl = null, toastT = 0;
-  var toast = function (msg, act, fn) {
+  var toast = function (msg, act, fn, ms) {
     if (!toastEl) { toastEl = document.createElement("div"); toastEl.className = "toast"; toastEl.setAttribute("role", "status"); toastEl.setAttribute("aria-live", "polite"); document.body.appendChild(toastEl); }
     toastEl.innerHTML = ""; var t = document.createElement("span"); t.textContent = msg; toastEl.appendChild(t);
     if (act) { var a; if (typeof fn === "string") { a = document.createElement("a"); a.href = fn; } else { a = document.createElement("button"); a.type = "button"; a.addEventListener("click", function () { fn(); toastEl.classList.remove("on"); }); } a.textContent = act; toastEl.appendChild(a); }
-    toastEl.classList.add("on"); clearTimeout(toastT); toastT = setTimeout(function () { toastEl.classList.remove("on"); }, 4000);
+    toastEl.classList.add("on"); clearTimeout(toastT); toastT = setTimeout(function () { toastEl.classList.remove("on"); }, ms || 4000);
   };
   var favSync = function () {
     var a = favGet();
@@ -742,6 +742,9 @@
       if (same > 1) { var gk = grp.getAttribute("data-day"); toast(same + " Märkte am " + ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"][new Date(gk + "T12:00:00Z").getUTCDay()] + " gemerkt", "Als Tour planen", ROOT + "/merkliste/#tour-" + gk); return; }
       var calA = on && document.querySelector(".cal-dd .cal-pop a"), calSeen = false; try { calSeen = !!localStorage.getItem("flohlotse-kal-tipp"); } catch (x) {}
       if (calA && !calSeen) { try { localStorage.setItem("flohlotse-kal-tipp", "1"); } catch (x) {} toast("Gemerkt. Neue Termine automatisch in deinen Kalender?", "Abonnieren", calA.getAttribute("href")); return; }
+      // Beim nächsten Merken einmalig: Hinweis auf den WhatsApp-Kanal (Link aus der Fußzeile, nur wenn eingetragen)
+      var waA = on && document.querySelector('.foot-social a[href*="whatsapp.com"]'), waSeen = false; try { waSeen = !!localStorage.getItem("flohlotse-wa-tipp"); } catch (x) {}
+      if (waA && !waSeen) { try { localStorage.setItem("flohlotse-wa-tipp", "1"); } catch (x) {} toast("Gemerkt. Jeden Donnerstag die Wochenend-Tipps per WhatsApp?", "Folgen", waA.getAttribute("href"), 7000); return; }
       toast(on ? "„" + n + "“ ist auf deiner Merkliste." : "„" + n + "“ ist nicht mehr auf der Merkliste.", on ? "Ansehen" : "Rückgängig", on ? ROOT + "/merkliste/" : function () { favToggle(s, true); });
     });
     window.addEventListener("storage", function (e) { if (e.key === FK || e.key === null) { favSync(); try { document.dispatchEvent(new CustomEvent("flfav")); } catch (x) {} } });

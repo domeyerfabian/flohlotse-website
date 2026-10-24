@@ -1820,3 +1820,20 @@ body:has(.menu-wrap[open]) .fab{display:none}
 @media (max-width:459px){.me{grid-template-columns:1fr;gap:12px;padding:20px 18px}.me-pic{width:72px;height:72px}.me-pic b{font-size:38px}}
 @media (min-width:640px){.me{padding:28px;gap:26px}.me-pic{width:112px;height:112px}.me-pic b{font-size:58px}.me-story{grid-template-columns:auto 1fr;gap:24px}.me-pic-l{width:120px;height:120px}}
 @media (min-width:1080px){.pg-home > .hs-me{grid-column:3/11}}
+
+/* WhatsApp: gelber Kasten auf der Startseite und Zeile unter den Terminen */
+.follow-wa .follow-at .i{width:46px;height:46px}
+.follow-btns{display:grid;gap:10px;justify-items:start}
+.follow-alt{color:var(--sticker-ink);font-size:14px;font-weight:600;text-decoration:underline;text-underline-offset:3px}
+@media (min-width:640px){.follow-wa .follow-at .i{width:54px;height:54px}}
+.wa-strip{display:flex;align-items:center;gap:14px;margin:22px 0 0;padding:14px 16px;background:var(--surface);border:1px solid var(--line);border-radius:16px;color:var(--ink);text-decoration:none}
+.wa-strip > .i:first-child{flex:none;width:40px;height:40px;padding:8px;border-radius:50%;background:#25D366;color:#fff}
+.wa-strip > span{flex:1;display:grid;gap:2px;line-height:1.3}
+.wa-strip b{font-size:15.5px}
+.wa-strip > span > span{font-size:13.5px;color:var(--muted)}
+.wa-strip > .i:last-child{flex:none;width:16px;height:16px;color:var(--muted)}
+@media (hover:hover){.wa-strip:hover{border-color:var(--ink)}}
+@media (min-width:640px){.follow.follow-wa{grid-template-columns:auto minmax(0,1fr)}.follow-wa .follow-btns{grid-column:2}}
+.pg-home .hs-insta .follow.follow-wa{grid-template-columns:auto minmax(0,1fr);align-content:center}
+.pg-home .hs-insta .follow-btns .btn{grid-column:auto}.follow-btns .btn{white-space:nowrap}
+.follow-btns .btn{text-decoration:none}

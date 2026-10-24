@@ -46,6 +46,7 @@ Ihr pflegt nur die Tabelle. Die ausführliche Einrichtungsanleitung liegt als Do
 - Es wird nichts gespeichert: Die Ideen sind von uns, nicht von anderen Besucherinnen.
 
 ## Menü und Stand (24. Oktober)
+- **Folge Flohlotse:** Ganz unten im Menü und in der Fußzeile stehen runde Knöpfe für Instagram und TikTok. Die Adressen kommen aus dem Blatt Einstellungen, Zeilen `Instagram` und `TikTok` (z. B. `https://www.tiktok.com/@flohlotse`). Leere Zeile = kein Knopf. Beide Profile stehen auch in den Angaben für Google (sameAs), und die Datenschutzerklärung nennt sie als einfache Links.
 - **Menü in vier Fragen:** „Wann?“ (Heute, Morgen, Wochenende als gelbe Felder, darunter Alle Termine, Unter der Woche, Alle Märkte A–Z, Wischen & merken), „Was für ein Markt?“ (alle Arten als Chips mit Symbol), „Wo?“ (Bezirke und Umland zum Aufklappen) und „Für deinen Flohmarkt“ (Schilder, Kauf-Check, Ratgeber). Seltenes steht klein darunter: Standgebühren, Tipps & Vorlagen, Für Veranstalter, Über Flohlotse, Instagram, Impressum, Datenschutz. Am Computer stehen die Bereiche in drei Spalten.
 - Samstag, Sonntag und die Ratgeber-Themen sind nicht mehr im Menü, aber weiter in der Fußzeile und auf den Seiten verlinkt. Suche und Merkliste sind oben als Symbole. Keine Adresse hat sich geändert.
 - Bei offenem Menü ist der Plus-Knopf unten rechts ausgeblendet.

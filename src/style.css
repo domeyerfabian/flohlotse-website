@@ -1822,6 +1822,7 @@ body:has(.menu-wrap[open]) .fab{display:none}
 @media (min-width:1080px){.pg-home > .hs-me{grid-column:3/11}}
 
 /* WhatsApp: gelber Kasten auf der Startseite und Zeile unter den Terminen */
+.follow-wa .follow-at{background:#25D366;color:#fff;transform:none}
 .follow-wa .follow-at .i{width:46px;height:46px}
 .follow-btns{display:grid;gap:10px;justify-items:start}
 .follow-alt{color:var(--sticker-ink);font-size:14px;font-weight:600;text-decoration:underline;text-underline-offset:3px}
@@ -1834,6 +1835,7 @@ body:has(.menu-wrap[open]) .fab{display:none}
 .wa-strip > .i:last-child{flex:none;width:16px;height:16px;color:var(--muted)}
 @media (hover:hover){.wa-strip:hover{border-color:var(--ink)}}
 @media (min-width:640px){.follow.follow-wa{grid-template-columns:auto minmax(0,1fr)}.follow-wa .follow-btns{grid-column:2}}
-.pg-home .hs-insta .follow.follow-wa{grid-template-columns:auto minmax(0,1fr);align-content:center}
+@media (min-width:1080px){.pg-home .hs-insta .follow.follow-wa{grid-template-columns:auto minmax(0,1fr);align-content:center}}
 .pg-home .hs-insta .follow-btns .btn{grid-column:auto}.follow-btns .btn{white-space:nowrap}
 .follow-btns .btn{text-decoration:none}
+.social a[href*="whatsapp.com"],.social a[href*="wa.me"]{background:#25D366;color:#fff}

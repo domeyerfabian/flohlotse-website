@@ -744,7 +744,7 @@
       if (calA && !calSeen) { try { localStorage.setItem("flohlotse-kal-tipp", "1"); } catch (x) {} toast("Gemerkt. Neue Termine automatisch in deinen Kalender?", "Abonnieren", calA.getAttribute("href")); return; }
       // Beim nächsten Merken einmalig: Hinweis auf den WhatsApp-Kanal (Link aus der Fußzeile, nur wenn eingetragen)
       var waA = on && document.querySelector('.foot-social a[href*="whatsapp.com"]'), waSeen = false; try { waSeen = !!localStorage.getItem("flohlotse-wa-tipp"); } catch (x) {}
-      if (waA && !waSeen) { try { localStorage.setItem("flohlotse-wa-tipp", "1"); } catch (x) {} toast("Gemerkt. Jeden Donnerstag die Wochenend-Tipps per WhatsApp?", "Folgen", waA.getAttribute("href"), 7000); return; }
+      if (waA && !waSeen) { try { localStorage.setItem("flohlotse-wa-tipp", "1"); } catch (x) {} toast("Gemerkt. Flohmarkt-Tipps direkt aufs Handy? Folge Flohlotse auf WhatsApp.", "Folgen", waA.getAttribute("href"), 7000); return; }
       toast(on ? "„" + n + "“ ist auf deiner Merkliste." : "„" + n + "“ ist nicht mehr auf der Merkliste.", on ? "Ansehen" : "Rückgängig", on ? ROOT + "/merkliste/" : function () { favToggle(s, true); });
     });
     window.addEventListener("storage", function (e) { if (e.key === FK || e.key === null) { favSync(); try { document.dispatchEvent(new CustomEvent("flfav")); } catch (x) {} } });

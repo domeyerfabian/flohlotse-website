@@ -1,19 +1,20 @@
 # Flohlotse: Website gebaut
 
-Stand 25.10.2026 · 317 Seiten (311 für Google) · 147 Märkte · 191 Termine in den nächsten 120 Tagen · 42 Ratgeber-Artikel · 841 Event-Auszeichnungen
+Stand 25.10.2026 · 318 Seiten (312 für Google) · 148 Märkte · 192 Termine in den nächsten 120 Tagen · 42 Ratgeber-Artikel · 847 Event-Auszeichnungen
 
-## Zu erledigen: 6 Hinweise
+## Zu erledigen: 7 Hinweise
 
 | Bereich | Hinweis |
 |---|---|
+| Termin-Wächter | Flohmarkt Else-Rauch-Platz: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 22.11.2026. Bitte prüfen: https://www.else-rauch-platz.de/ |
 | Termin-Wächter | Flohmarkt auf dem ehemaligen Telekom-Gelände: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 01.11.2026. Bitte prüfen: https://kk-veranstaltungen.de/termine/ |
 | Termin-Wächter | Hallenflohmarkt in der Halle 15: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 26.10.2026, 27.10.2026. Bitte prüfen: https://www.asb-halle15.de/ |
-| Termin-Wächter | HNT Flohmarkt: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 27.10.2026. Bitte prüfen: https://www.hntonline.de/flohmarkt |
+| Termin-Wächter | HNT Flohmarkt: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 27.10.2026, 04.11.2026. Bitte prüfen: https://www.hntonline.de/flohmarkt |
 | Termin-Wächter | Flohmarkt famila Winsen (Luhe): Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 31.10.2026, 01.11.2026, 08.11.2026. Bitte prüfen: https://flohmaxx.de/flohmarkt/winsen-famila/2026-10-03 |
 | Termin-Wächter | Flohmarkt am Bunthaus: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 14.03.2027, 19.03.2027, 18.04.2027, 06.05.2027, 09.05.2027, 23.07.2027. Bitte prüfen: https://elbepark-bunthaus.de/bunthaus-flohmarkt/ |
 | Serie endet bald | Flohmarkt Else-Rauch-Platz (Sonntag): Die Serie läuft nur bis Montag, 30. November. Bei Bedarf „Gültig bis“ verlängern, sobald der Veranstalter neue Termine bestätigt. |
 
-## Termin-Wächter: 7 Vorschläge zum Einfügen
+## Termin-Wächter: 8 Vorschläge zum Einfügen
 
 Diese Tage stehen neu auf Veranstalterseiten und fehlen in der Tabelle. **Erst auf der Seite des Veranstalters prüfen**, ob es wirklich ein Markttermin ist und ob die Uhrzeit stimmt (eingesetzt ist die übliche Uhrzeit des Markts; ist sie leer, kennt die Tabelle noch keine). Dann die Zeilen markieren, kopieren und im Blatt „Termine“ in die erste freie Zeile einfügen. Die Spalten sind: Markt, Datum, Beginn, Ende, Status, Hinweis. Ein Vorschlag bleibt sieben Tage stehen und verschwindet, sobald der Tag in der Tabelle steht.
 
@@ -22,6 +23,7 @@ flohmarkt-am-bunthaus	14.03.2027	12:00	18:00	Findet statt
 flohmarkt-am-bunthaus	18.04.2027	12:00	18:00	Findet statt	
 flohmarkt-am-bunthaus	06.05.2027	12:00	18:00	Findet statt	
 flohmarkt-am-bunthaus	09.05.2027	12:00	18:00	Findet statt	
+flohmarkt-else-rauch-platz	22.11.2026	10:00	16:00	Findet statt	
 flohmarkt-famila-winsen	31.10.2026	11:00	16:00	Findet statt	
 flohmarkt-famila-winsen	01.11.2026	11:00	16:00	Findet statt	
 flohmarkt-famila-winsen	08.11.2026	11:00	16:00	Findet statt	
@@ -29,6 +31,7 @@ flohmarkt-famila-winsen	08.11.2026	11:00	16:00	Findet statt
 
 Quellen:
 - https://elbepark-bunthaus.de/bunthaus-flohmarkt/
+- https://www.else-rauch-platz.de/
 - https://flohmaxx.de/flohmarkt/winsen-famila/2026-10-03
 
 ## Zur Kenntnis

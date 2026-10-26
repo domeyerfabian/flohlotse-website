@@ -1484,6 +1484,7 @@ ${qPool.length ? `<section class="sec lp-qs"><div class="sec-head"><h2>Häufige 
 {
   const evs = upcoming(60);
   const body = crumbs([[NAME, "/"], ["Termine"]]) + `<section class="hub-head"><h1>Flohmarkt-Termine in Hamburg und Umgebung</h1><p>Alle Termine der nächsten 60 Tage in Hamburg und im Umland bis 30 Kilometer, nach Tagen sortiert.</p>
+${MONTHS.length ? `<nav class="mon-row" aria-label="Ganzer Monat"><span>Ganzer Monat mit Tipps und Zahlen</span>${MONTHS.slice(0, 3).map(x => `<a href="/${x.s}/">${ic("cal")}${x.name}</a>`).join("")}</nav>` : ""}
 <div class="chips js-only" id="filter" role="group" aria-label="Art des Markts"><button class="chip" type="button" data-t="" aria-pressed="true">Alle Arten</button>${[...TIME_TAGS, ...TAGS_ALL].map(t => `<button class="chip" type="button" data-t="${esc(t)}" aria-pressed="false">${tagIc(t)}${esc(t)}</button>`).join("")}</div>
 <div class="tools">${nearBox()}${HAS_MAP ? `<div class="view-tog js-only" id="viewTog" role="group" aria-label="Ansicht"><button type="button" class="chip" data-v="liste" aria-pressed="true">${ic("list")}Liste</button><button type="button" class="chip" data-v="karte" aria-pressed="false">${ic("map")}Karte</button></div>` : ""}</div></section>
 ${dayStrip(evs)}<div id="liste">${groupList(evs, 2, true)}</div><div class="empty" id="leer" hidden>Keine Märkte dieser Art in den nächsten 60 Tagen.</div>

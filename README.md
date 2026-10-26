@@ -49,7 +49,7 @@ Ihr pflegt nur die Tabelle. Die ausführliche Einrichtungsanleitung liegt als Do
 - Unter „Kurz gesagt“ stehen auf jeder Monatsseite **„Fabians Tipps für den …“**: drei Märkte, automatisch aus dem Kalender gewählt (im Winter zuerst überdacht, dann Kinderflohmarkt, abends, Frühaufsteher, großer Markt), nur Termine ab heute, jeder Markt nur einmal. Die Begründung ist ein fester Satz je Art, mit Foto bzw. Anfangsbuchstabe aus „Über mich“. Nichts zu pflegen.
 - Darunter **„Das bringt der …“**: Zahl der Kinderflohmärkte, überdachten und abendlichen Märkte im Monat (zum Antippen) und der Tag mit den meisten Märkten.
 - Ohne Namen (Zeile `Über mich: Vorname` leer) erscheinen nur die Zahlen.
-- **So findet man die Tipps:** Auf der Startseite steht als erster Schnellzugriff „Tipps für November“ (ab dem 20. eines Monats schon der nächste Monat), er springt direkt zu den Tipps. Im Menü stehen unter „Wann?“ die nächsten drei Monate.
+- **So findet man die Tipps:** Auf der Startseite steht als erster Schnellzugriff „Tipps für November“ (ab dem 20. eines Monats schon der nächste Monat), er springt direkt zu den Tipps. Im Menü stehen unter „Wann?“ die nächsten drei Monate, ebenso oben auf der Seite Termine („Ganzer Monat mit Tipps und Zahlen“).
 
 ## Persönlicher Kasten „Hallo, ich bin …“ (24. Oktober)
 - Auf der Startseite steht nach „Die nächsten Flohmärkte“ ein Kasten mit einer kurzen Vorstellung, auf „Über Flohlotse“ die ganze Geschichte (Abschnitt „Warum es Flohlotse gibt“, Sprungmarke #warum). Titel und Adresse der Seite sind unverändert.

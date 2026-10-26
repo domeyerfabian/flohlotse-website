@@ -49,6 +49,7 @@ Ihr pflegt nur die Tabelle. Die ausführliche Einrichtungsanleitung liegt als Do
 - Unter „Kurz gesagt“ stehen auf jeder Monatsseite **„Fabians Tipps für den …“**: drei Märkte, automatisch aus dem Kalender gewählt (im Winter zuerst überdacht, dann Kinderflohmarkt, abends, Frühaufsteher, großer Markt), nur Termine ab heute, jeder Markt nur einmal. Die Begründung ist ein fester Satz je Art, mit Foto bzw. Anfangsbuchstabe aus „Über mich“. Nichts zu pflegen.
 - Darunter **„Das bringt der …“**: Zahl der Kinderflohmärkte, überdachten und abendlichen Märkte im Monat (zum Antippen) und der Tag mit den meisten Märkten.
 - Ohne Namen (Zeile `Über mich: Vorname` leer) erscheinen nur die Zahlen.
+- **So findet man die Tipps:** Auf der Startseite steht als erster Schnellzugriff „Tipps für November“ (ab dem 20. eines Monats schon der nächste Monat), er springt direkt zu den Tipps. Im Menü stehen unter „Wann?“ die nächsten drei Monate.
 
 ## Persönlicher Kasten „Hallo, ich bin …“ (24. Oktober)
 - Auf der Startseite steht nach „Die nächsten Flohmärkte“ ein Kasten mit einer kurzen Vorstellung, auf „Über Flohlotse“ die ganze Geschichte (Abschnitt „Warum es Flohlotse gibt“, Sprungmarke #warum). Titel und Adresse der Seite sind unverändert.
@@ -61,7 +62,7 @@ Ihr pflegt nur die Tabelle. Die ausführliche Einrichtungsanleitung liegt als Do
 - **Folge Flohlotse:** Ganz unten im Menü und in der Fußzeile stehen runde Knöpfe für Instagram und TikTok. Die Adressen kommen aus dem Blatt Einstellungen, Zeilen `Instagram` und `TikTok` (z. B. `https://www.tiktok.com/@flohlotse`). Leere Zeile = kein Knopf. Beide Profile stehen auch in den Angaben für Google (sameAs), und die Datenschutzerklärung nennt sie als einfache Links.
 - **Menü in vier Fragen:** „Wann?“ (Heute, Morgen, Wochenende als gelbe Felder, darunter Alle Termine, Unter der Woche, Alle Märkte A–Z, Wischen & merken), „Was für ein Markt?“ (alle Arten als Chips mit Symbol), „Wo?“ (Bezirke und Umland zum Aufklappen) und „Für deinen Flohmarkt“ (Schilder, Kauf-Check, Ratgeber). Seltenes steht klein darunter: Standgebühren, Tipps & Vorlagen, Für Veranstalter, Über Flohlotse, Instagram, Impressum, Datenschutz. Am Computer stehen die Bereiche in drei Spalten.
 - Samstag, Sonntag und die Ratgeber-Themen sind nicht mehr im Menü, aber weiter in der Fußzeile und auf den Seiten verlinkt. Suche und Merkliste sind oben als Symbole. Keine Adresse hat sich geändert.
-- Bei offenem Menü ist der Plus-Knopf unten rechts ausgeblendet.
+- Bei offenem Menü ist der Plus-Knopf unten rechts ausgeblendet. Das Menü ist genau so hoch wie der sichtbare Bereich (auch mit Browserleiste am Handy) und scrollt für sich; am Ende scrollt die Seite dahinter nicht mit.
 - **Kein Hinweis „Wird aktualisiert“ mehr:** Nach Mitternacht bis zum nächsten Bau verschwinden vergangene Termine still. Den Stand nennt die letzte Zeile der Fußzeile („Stand der Termine: …“).
 
 ## Termine gehören ins Blatt Termine, nicht in Texte

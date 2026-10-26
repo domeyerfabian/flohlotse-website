@@ -552,7 +552,7 @@ function menuHTML() {
   const tool = ([k, h, i, t]) => `<a class="mn-tool" href="${h}">${ic(i)}<span><b>${t}</b><small>${SUB[k]}</small></span>${ic("chev")}</a>`;
   return `<details class="menu-wrap"><summary class="menu-btn">${ic("list", "i i-open")}${ic("x", "i i-shut")}<span>Menü</span></summary>
 <div class="menu"><nav class="mn" aria-label="Alle Bereiche">
-<div class="mn-when"><p class="mn-h">Wann?</p><div class="mn-days">${a("/heute/", "Heute")}${a("/morgen/", "Morgen")}${a("/wochenende/", "Wochenende")}</div>
+<div class="mn-when"><p class="mn-h">Wann?</p><div class="mn-days">${a("/heute/", "Heute")}${a("/morgen/", "Morgen")}${a("/wochenende/", "Wochenende")}</div>${MONTHS.length ? `<div class="mn-mon">${MONTHS.slice(0, 3).map(x => a(`/${x.s}/`, `${ic("cal")}${x.name}`)).join("")}</div>` : ""}
 <div class="mn-rows">${a("/termine/", `${ic("cal")}Alle Termine`)}${a(WEEK_P, `${ic("clock")}Unter der Woche`)}${a("/flohmaerkte/", `${ic("list")}Alle Märkte A–Z`)}${a("/entdecken/", `${ic("heart")}Wischen &amp; merken`)}</div></div>
 <div class="mn-what"><p class="mn-h">Was für ein Markt?</p><div class="mn-chips">${CATS_ON.map(c => a(`/${c.s}/`, `${ic(c.icon)}${esc(MN_SHORT[c.s] || c.chip)}`)).join("")}</div></div>
 <div class="mn-where"><p class="mn-h">Wo?</p><details class="mn-reg"><summary>Hamburg nach Bezirk</summary><div>${reg(false)}</div></details><details class="mn-reg"><summary>Umland bis 30 km</summary><div>${reg(true)}</div></details></div>
@@ -1432,7 +1432,7 @@ ${tabs.map(([id, l, ks, href, ev], i) => `<div class="ab-p" role="tabpanel" id="
 <p class="hero-p">Alle Flohmärkte in Hamburg und Umgebung: wann, wo und wie lange. Ohne Werbebanner, ohne alte Termine.</p>
 ${sxForm(true)}
 ${answerBox()}
-<div class="quick">${PLZ_ROWS.length ? `<a class="chip" href="/termine/#near">${ic("pin")}In meiner Nähe</a>` : ""}${HAS_MAP ? `<a class="chip" href="/flohmaerkte/#karte">${ic("map")}Karte</a>` : ""}<a class="chip" href="/entdecken/">${ic("heart")}Wischen &amp; merken</a></div>
+<div class="quick">${(() => { const mm = TODAY.getUTCDate() >= 20 && MONTHS[1] ? MONTHS[1] : MONTHS[0]; return mm ? `<a class="chip chip-tip" href="/${mm.s}/#mtH">${ic("star")}Tipps für ${mm.name}</a>` : ""; })()}${PLZ_ROWS.length ? `<a class="chip" href="/termine/#near">${ic("pin")}In meiner Nähe</a>` : ""}${HAS_MAP ? `<a class="chip" href="/flohmaerkte/#karte">${ic("map")}Karte</a>` : ""}<a class="chip" href="/entdecken/">${ic("heart")}Wischen &amp; merken</a></div>
 </div><a class="big-sticker" id="bigSt" href="/wochenende/"${stAlt}><b>${weN}</b><span>${weLabel}</span></a></section>
 ${slider}
 ${helpers()}

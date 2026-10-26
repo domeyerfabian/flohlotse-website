@@ -1771,6 +1771,32 @@ ${Object.keys(KC_AREAS).filter(x => KC_AREAS[x].cat === c.s).map(x => kcCta(x)).
 }
 
 /* ---------------------------------------------------------------- Monatsseiten */
+// Monatsseite: „Das bringt der Monat“ (Zahlen) und „Fabians Tipps“ (automatisch ausgewählt, Begründung aus den Daten).
+// Nichts davon muss gepflegt werden. Ausgewählt werden nur Termine ab heute, je Tipp ein anderer Markt.
+const monthExtras = (mo, live) => {
+  const up = live.filter(e => e.k >= key(TODAY)), has = (e, t) => e.m.tags.includes(t);
+  const cntM = f => new Set(live.filter(f).map(e => e.m)).size;
+  const byDay = {}; live.forEach(e => { byDay[e.k] = (byDay[e.k] || 0) + 1; });
+  const topDay = Object.entries(byDay).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))[0];
+  const catOf = t => CATS_ON.find(c => c.tag === t);
+  const tile = (n, lbl, t) => { const c = catOf(t); return n ? `<${c ? `a href="/${c.s}/"` : "span"} class="mx-t">${ic(c ? c.icon : "cal")}<b>${n}</b><span>${lbl}</span></${c ? "a" : "span"}>` : ""; };
+  const tiles = [tile(cntM(e => has(e, "Kinder & Spielzeug")), "Kinderflohmärkte", "Kinder & Spielzeug"), tile(cntM(e => has(e, "Überdacht")), "überdacht oder drinnen", "Überdacht"), tile(cntM(e => has(e, "Abends")), "abends", "Abends")].join("");
+  const dayTile = topDay ? `<span class="mx-t mx-day">${ic("star")}<b>${dDate(new Date(topDay[0] + "T00:00:00Z")).replace(/^(\w+)\.,/, "$1,")}</b><span>der stärkste Tag mit ${topDay[1]} Märkten</span></span>` : "";
+  const winter = [10, 11, 0, 1, 2].includes(mo.mo), used = new Set();
+  const pick = f => { const e = up.filter(x => !used.has(x.m) && f(x)).sort((a, b) => live.filter(x => x.m === b.m).length - live.filter(x => x.m === a.m).length || a.k.localeCompare(b.k))[0]; if (e) used.add(e.m); return e; };
+  const RULES = [
+    winter && ["Bei Schmuddelwetter", e => has(e, "Überdacht") && !has(e, "Abends"), e => "Hier stöberst du überdacht und bleibst trocken, auch wenn es draußen ungemütlich ist."],
+    ["Mit Kindern", e => has(e, "Kinder & Spielzeug"), e => "Als Familienvater weiß ich: Kinder wachsen schneller aus ihren Sachen raus, als man nachkaufen kann. Hier gibt es Nachschub."],
+    ["Nach Feierabend", e => has(e, "Abends"), e => "Stöbern, wenn andere schon auf dem Sofa sitzen: Hier wird abends getrödelt."],
+    ["Für Frühaufsteher", e => e.start && parseInt(tFirst(e.start), 10) <= 7, e => `Wer früh kommt, hat die beste Auswahl. Hier geht es schon um ${hmText(tFirst(e.start))} Uhr los.`],
+    ["Der Klassiker", e => has(e, "Groß & bekannt"), e => "Einer der großen Märkte der Stadt. Hier findest du fast immer etwas."],
+    !winter && ["Bei Schmuddelwetter", e => has(e, "Überdacht") && !has(e, "Abends"), e => "Hier stöberst du überdacht und bleibst trocken, falls das Wetter nicht mitspielt."]
+  ].filter(Boolean);
+  const tips = []; for (const [h, f, why] of RULES) { if (tips.length >= 3) break; const e = pick(f); if (e) tips.push([h, e, why(e)]); }
+  const tipHTML = tips.length ? `<section class="block mtips" aria-labelledby="mtH"><div class="mtips-h">${mePic("me-pic me-pic-s")}<div><h2 id="mtH">${esc(ME_NAME || NAME)}s Tipps für den ${esc(mo.name)}</h2><p class="meta">Ausgesucht aus dem Kalender, passend zur Jahreszeit</p></div></div><ol class="mtips-l">${tips.map(([h, e, w]) => `<li><span class="mtips-k">${h}</span><a href="/flohmarkt/${e.m.slug}/"><b>${esc(e.m.short)}</b></a><span class="meta">${dDate(e.date)}${e.start ? `, ${hmText(tFirst(e.start))}${e.end ? "–" + hmText(tLast(e.end)) : ""} Uhr` : ""} · ${esc(e.m.area)}</span><p>${esc(w)}</p></li>`).join("")}</ol></section>` : "";
+  const statHTML = (tiles || dayTile) ? `<section class="block mx" aria-label="Das bringt der ${esc(mo.name)}"><h2>Das bringt der ${esc(mo.name)}</h2><div class="mx-g">${tiles}${dayTile}</div></section>` : "";
+  return ME_NAME === "" ? statHTML : tipHTML + statHTML;
+};
 for (const mo of MONTHS) {
   const p = `/${mo.s}/`, live = mo.evs.filter(e => !e.cancelled), mkts = [...new Set(live.map(e => e.m))];
   const label = `${mo.name} ${mo.y}`, cr = [[NAME, "/"], ["Termine", "/termine/"], [label]];
@@ -1784,7 +1810,7 @@ for (const mo of MONTHS) {
     `Flohmarkt Hamburg im ${label}: alle ${live.length} Termine mit Uhrzeit und Adresse.`);
   const body = crumbs(cr) + `<article class="kb"><h1>Flohmarkt Hamburg im ${esc(label)}</h1>
 <div class="byline"><span>${ic("cal")}${live.length} Termine</span><span>${ic("pin")}${mkts.length} Märkte</span><span>${ic("update")}Stand: ${STAND}</span></div>
-<div class="answer"><span class="kicker">Kurz gesagt</span><p>${esc(ans)}</p></div>${nearBox()}${dayStrip(mo.evs)}
+<div class="answer"><span class="kicker">Kurz gesagt</span><p>${esc(ans)}</p></div>${monthExtras(mo, live)}${nearBox()}${dayStrip(mo.evs)}
 <section class="block">${groupList(mo.evs, 2, true)}</section>
 <section class="related"><div class="sec-head"><h2>Andere Monate</h2></div>${monthChips(mo.s) || '<p class="meta">Weitere Monate folgen.</p>'}</section>
 <section class="related"><div class="sec-head"><h2>Nach Art des Markts</h2></div>${catChips()}</section>

@@ -45,6 +45,11 @@ Ihr pflegt nur die Tabelle. Die ausführliche Einrichtungsanleitung liegt als Do
 - Welche Looks erscheinen, steht in `build.mjs` unter `IDEAS`. Die Bilder liegen in `src/schilder/ideen/` (echte Aufnahmen aus dem Designer). Fehlt ein Bild, zeigt die Karte nur Farbe und Namen. Ändert sich der Spruch einer Vorlage, sollte das Bild neu aufgenommen werden.
 - Es wird nichts gespeichert: Die Ideen sind von uns, nicht von anderen Besucherinnen.
 
+## Monatsseiten: Tipps und Zahlen von selbst (26. Oktober)
+- Unter „Kurz gesagt“ stehen auf jeder Monatsseite **„Fabians Tipps für den …“**: drei Märkte, automatisch aus dem Kalender gewählt (im Winter zuerst überdacht, dann Kinderflohmarkt, abends, Frühaufsteher, großer Markt), nur Termine ab heute, jeder Markt nur einmal. Die Begründung ist ein fester Satz je Art, mit Foto bzw. Anfangsbuchstabe aus „Über mich“. Nichts zu pflegen.
+- Darunter **„Das bringt der …“**: Zahl der Kinderflohmärkte, überdachten und abendlichen Märkte im Monat (zum Antippen) und der Tag mit den meisten Märkten.
+- Ohne Namen (Zeile `Über mich: Vorname` leer) erscheinen nur die Zahlen.
+
 ## Persönlicher Kasten „Hallo, ich bin …“ (24. Oktober)
 - Auf der Startseite steht nach „Die nächsten Flohmärkte“ ein Kasten mit einer kurzen Vorstellung, auf „Über Flohlotse“ die ganze Geschichte (Abschnitt „Warum es Flohlotse gibt“, Sprungmarke #warum). Titel und Adresse der Seite sind unverändert.
 - **Foto:** eine quadratische Datei `bilder/ich.webp` (oder `bilder/ich.jpg`), mindestens 240 × 240 Pixel. Ohne Foto steht dort der Anfangsbuchstabe im gelben Kreis.

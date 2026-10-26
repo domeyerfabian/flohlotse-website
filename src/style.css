@@ -1864,3 +1864,14 @@ body:has(.menu-wrap[open]) .fab{display:none}
 .mx-day b{font-size:19px}
 @media (hover:hover){a.mx-t:hover{border-color:var(--ink)}}
 @media (min-width:640px){.mtips-l{grid-template-columns:repeat(3,minmax(0,1fr))}.mx-g{grid-template-columns:repeat(4,minmax(0,1fr))}.mx-day{grid-column:auto}}
+/* Offenes Menü am Handy: passt genau in den sichtbaren Bereich (auch mit Browserleiste) und scrollt für sich allein; am Ende läuft das Scrollen nicht auf die Seite dahinter über */
+.menu{max-height:calc(100vh - 70px);max-height:calc(100dvh - var(--menu-top,70px));overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding-bottom:calc(36px + env(safe-area-inset-bottom,0px))}
+
+/* Menü: Monate als kleine Knöpfe unter Heute/Morgen/Wochenende */
+.mn-mon{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:8px}
+.mn-mon a{display:flex;align-items:center;justify-content:center;gap:7px;min-height:42px;padding:0 6px;border:1px solid var(--line);background:var(--surface);border-radius:12px;font-weight:600;font-size:14.5px}
+.mn-mon .i{width:16px;height:16px;color:var(--muted);flex:none}
+@media (hover:hover){.mn-mon a:hover{border-color:var(--ink)}}
+/* Startseite: Schnellzugriff „Tipps für …“ hervorgehoben */
+.quick .chip-tip{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.quick .chip-tip .i{color:var(--sticker);opacity:1}

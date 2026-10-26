@@ -1839,3 +1839,28 @@ body:has(.menu-wrap[open]) .fab{display:none}
 .pg-home .hs-insta .follow-btns .btn{grid-column:auto}.follow-btns .btn{white-space:nowrap}
 .follow-btns .btn{text-decoration:none}
 .social a[href*="whatsapp.com"],.social a[href*="wa.me"]{background:#25D366;color:#fff}
+
+/* Monatsseite: Fabians Tipps und „Das bringt der Monat“ */
+.mtips{margin-top:26px}
+.mtips-h{display:flex;align-items:center;gap:14px;margin-bottom:6px}
+.mtips-h h2{margin:0}
+.mtips-h .meta{margin:2px 0 0}
+.me-pic-s{width:56px;height:56px}.me-pic-s b{font-size:30px}
+.mtips-l{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:10px}
+.mtips-l li{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px 16px;display:grid;gap:2px}
+.mtips-k{font-size:12.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.mtips-l a{color:var(--ink);text-decoration:none;font-family:var(--f-display);font-size:19px;letter-spacing:-.01em}
+.mtips-l a:hover{text-decoration:underline}
+.mtips-l p{margin:6px 0 0;font-size:15px}
+.mx{margin-top:22px}
+.mx h2{margin:0 0 10px}
+.mx-g{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.mx-t{display:grid;grid-template-columns:auto 1fr;column-gap:10px;align-items:center;padding:12px 14px;border-radius:14px;background:var(--surface);border:1px solid var(--line);color:var(--ink);text-decoration:none}
+.mx-t .i{grid-row:span 2;width:22px;height:22px;color:var(--muted)}
+.mx-t b{font-family:var(--f-display);font-size:22px;line-height:1.1}
+.mx-t span{font-size:13.5px;color:var(--muted);line-height:1.3}
+.mx-day{grid-column:1/-1;background:var(--sticker);border-color:var(--sticker);color:var(--sticker-ink)}
+.mx-day span,.mx-day .i{color:var(--sticker-ink)}
+.mx-day b{font-size:19px}
+@media (hover:hover){a.mx-t:hover{border-color:var(--ink)}}
+@media (min-width:640px){.mtips-l{grid-template-columns:repeat(3,minmax(0,1fr))}.mx-g{grid-template-columns:repeat(4,minmax(0,1fr))}.mx-day{grid-column:auto}}

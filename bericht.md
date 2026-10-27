@@ -1,13 +1,12 @@
 # Flohlotse: Website gebaut
 
-Stand 27.10.2026 · 319 Seiten (313 für Google) · 149 Märkte · 186 Termine in den nächsten 120 Tagen · 42 Ratgeber-Artikel · 803 Event-Auszeichnungen
+Stand 28.10.2026 · 319 Seiten (313 für Google) · 149 Märkte · 185 Termine in den nächsten 120 Tagen · 42 Ratgeber-Artikel · 801 Event-Auszeichnungen
 
-## Zu erledigen: 9 Hinweise
+## Zu erledigen: 8 Hinweise
 
 | Bereich | Hinweis |
 |---|---|
 | Termin-Wächter | Flohmarkt Else-Rauch-Platz: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 22.11.2026. Bitte prüfen: https://www.else-rauch-platz.de/ |
-| Termin-Wächter | Flohmarkt auf dem ehemaligen Telekom-Gelände: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 01.11.2026. Bitte prüfen: https://kk-veranstaltungen.de/termine/ |
 | Termin-Wächter | Flohmarkt 73 im Kulturhaus 73: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 05.12.2026, 16.01.2027. Bitte prüfen: https://termine.dreiundsiebzig.de/ |
 | Termin-Wächter | Hallenflohmarkt in der Halle 15: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 29.10.2026. Bitte prüfen: https://www.asb-halle15.de/ |
 | Termin-Wächter | Kinderflohmarkt der TSG Bergedorf: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 09.11.2026, 20.11.2026. Bitte prüfen: https://tsg-bergedorf.de/ |

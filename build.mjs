@@ -2141,19 +2141,22 @@ const SIGN_PAGE_IMGS = new Map(); // für die Bild-Sitemap
 // Farben der Schildfläche: Gelb (Standard), Pink und Mint. Eine Vorlage kann eine andere Farbe voreinstellen (tone).
 const TONES = { gelb: ["Gelb", "#F6E03A"], pink: ["Pink", "#FF8FC0"], mint: ["Mint", "#8EE3C1"], schwarz: ["Schwarz", "#15211B"], karamell: ["Karamell", "#E9A057"], salbei: ["Salbei", "#B5C9A1"], rose: ["Rosé", "#F6C5CD"], papier: ["Papier", "#ECE7DC"] };
 // Schriftfarbe des großen Texts. Gold ist ein Goldton mit leichtem Verlauf (gedruckt nicht glänzend).
-const INKS = { schwarz: ["Schwarz", "#15211B"], weiss: ["Weiß", "#FFFFFF"], gold: ["Gold", "#C9A13B"], pink: ["Pink", "#FF8FC0"] };
+const INKS = { schwarz: ["Schwarz", "#15211B"], weiss: ["Weiß", "#FFFFFF"], gold: ["Gold", "#C9A13B"], pink: ["Pink", "#E8417C"], rot: ["Rot", "#C8102E"] };
 // Alle Paare sind wählbar (Wunsch vom 28.10.), die erste Farbe ist der Standard. Weiß auf heller Fläche bekommt eine dunkle Kontur (Klasse ink-out), Gold bleibt flach ohne Rand.
-const INK_OK = Object.fromEntries([...Object.keys(TONES), "save"].map(k => [k, k === "schwarz" ? ["weiss", "schwarz", "gold", "pink"] : ["schwarz", "weiss", "gold", "pink"]])); // alles kombinierbar, erste Farbe = Standard
-const inkOut = st => { const k = st.ink || inkDefault(st.tone); return k === "weiss" && (st.save || (st.tone || "gelb") !== "schwarz"); };
+// Sinnvolle Paare (Wunsch vom 28.10. spät: nichts Unlesbares wie Schwarz auf Schwarz). Erste Farbe = Standard.
+// „save“ steht für eine weiße Fläche (Sparmodus und die Looks Poster, Letterboard, Coquette), „schwarz“ auch für die Tafel.
+const INK_OK = { gelb: ["schwarz", "rot", "weiss"], pink: ["schwarz", "weiss", "rot", "gold"], mint: ["schwarz", "weiss", "rot", "gold"], schwarz: ["weiss", "gold", "pink"], karamell: ["schwarz", "weiss"], salbei: ["schwarz", "weiss", "rot"], rose: ["schwarz", "rot", "gold", "pink"], papier: ["schwarz", "rot", "pink", "gold"], save: ["schwarz", "rot", "pink", "gold"] };
+const inkSurf = st => st.save || ["poster", "letter", "coquette"].includes(st.deco) ? "save" : st.deco === "tafel" ? "schwarz" : (st.tone || "gelb");
+const inkOut = st => { const k = st.ink || inkDefault(st.tone); return k === "weiss" && !st.deco && (st.save || (st.tone || "gelb") !== "schwarz"); };
 // Formen der Farbfläche. Die genaue Form rechnet site.js passend zur Größe aus; hier nur die kleinen Bilder für die Auswahl.
 const SHAPES = [["rund", "Klassisch"], ["wolke", "Wolke"], ["blume", "Blume"], ["stern", "Stern"], ["blase", "Sprechblase"], ["etikett", "Etikett"], ["bon", "Kassenbon"]];
 /* Fertige Looks: ein Tipp setzt Fläche, Schriftfarbe, Schrift und Form (Schleife auch das Symbol). Aus der Recherche vom 28.10.: warm, nostalgisch, handgemacht. */
 const LOOKS = [["klassik", "Flohlotse", { tone: "gelb", ink: "schwarz", font: "modern", shape: "rund", deco: "" }],
-  ["poster", "Poster", { tone: "pink", ink: "schwarz", font: "schmal", shape: "rund", deco: "poster" }],
-  ["plakat", "Rosa Plakat", { tone: "pink", ink: "schwarz", font: "schmal", shape: "rund", deco: "plakat" }],
-  ["coquette", "Coquette", { tone: "rose", ink: "schwarz", font: "elegant", shape: "blume", sym: "schleife", deco: "coquette" }],
-  ["tafel", "Tafel", { tone: "schwarz", ink: "weiss", font: "schmal", shape: "rund", deco: "tafel" }],
-  ["letter", "Letterboard", { tone: "gelb", ink: "schwarz", font: "schmal", shape: "rund", deco: "letter" }],
+  ["poster", "Poster", { tone: "pink", ink: "pink", font: "schmal", shape: "rund", deco: "poster" }],
+  ["plakat", "Rosa Plakat", { tone: "rose", ink: "rot", font: "schmal", shape: "rund", deco: "plakat" }],
+  ["coquette", "Coquette", { tone: "rose", ink: "rot", font: "elegant", shape: "blume", sym: "schleife", deco: "coquette" }],
+  ["tafel", "Tafel", { tone: "pink", ink: "pink", font: "schmal", shape: "rund", deco: "tafel" }],
+  ["letter", "Letterboard", { tone: "schwarz", ink: "schwarz", font: "schmal", shape: "rund", deco: "letter" }],
   ["retro", "Retro 70er", { tone: "karamell", ink: "schwarz", font: "elegant", shape: "blume", deco: "" }],
   ["bon", "Kassenbon", { tone: "papier", ink: "schwarz", font: "mono", shape: "bon", deco: "" }],
   ["schleife", "Schleife", { tone: "rose", ink: "schwarz", font: "elegant", shape: "rund", sym: "schleife", deco: "" }],
@@ -2299,11 +2302,11 @@ const signThemes = () => [...THEME_ORDER.map(s => SIGN_BY[s]).filter(Boolean), .
 // Ideen zum Antippen: fertige Looks (Spruch, Farbe, Schrift, Form) als kleines Bild. Ein Tipp übernimmt alles, danach Text ändern und drucken.
 // Bilder: src/schilder/ideen/<kennung>.webp (echte Aufnahmen aus dem Designer, entstehen außerhalb des Baus). Fehlt ein Bild, zeigt die Karte Farbe und Namen.
 const IDEAS = [
-  ["poster-kundin", "maedelsflohmarkt", "Du siehst aus wie", { tone: "pink", ink: "schwarz", font: "schmal", shape: "rund", deco: "poster" }, "Poster"],
-  ["plakat-ex", "maedelsflohmarkt", "Zweite Chance", { tone: "pink", ink: "schwarz", font: "schmal", shape: "rund", deco: "plakat" }, "Rosa Plakat"],
-  ["tafel-hot", "maedelsflohmarkt", "Hot People", { tone: "schwarz", ink: "weiss", font: "schmal", shape: "rund", deco: "tafel" }, "Tafel"],
-  ["coquette", "maedelsflohmarkt", "Mir zu klein", { tone: "rose", ink: "schwarz", font: "elegant", shape: "blume", sym: "schleife", deco: "coquette" }, "Coquette"],
-  ["letter-schrank", "maedelsflohmarkt", "Süße Klamotten", { tone: "gelb", ink: "schwarz", font: "schmal", shape: "rund", deco: "letter" }, "Letterboard"],
+  ["poster-kundin", "maedelsflohmarkt", "Du siehst aus wie", { tone: "pink", ink: "pink", font: "schmal", shape: "rund", deco: "poster" }, "Poster"],
+  ["plakat-ex", "maedelsflohmarkt", "Zweite Chance", { tone: "rose", ink: "rot", font: "schmal", shape: "rund", deco: "plakat" }, "Rosa Plakat"],
+  ["tafel-hot", "maedelsflohmarkt", "Hot People", { tone: "pink", ink: "pink", font: "schmal", shape: "rund", deco: "tafel" }, "Tafel"],
+  ["coquette", "maedelsflohmarkt", "Mir zu klein", { tone: "rose", ink: "rot", font: "elegant", shape: "blume", sym: "schleife", deco: "coquette" }, "Coquette"],
+  ["letter-schrank", "maedelsflohmarkt", "Süße Klamotten", { tone: "schwarz", ink: "schwarz", font: "schmal", shape: "rund", deco: "letter" }, "Letterboard"],
   ["second-hand-love", "maedelsflohmarkt", "Second Hand, first Love", { tone: "schwarz", ink: "weiss", font: "verspielt", shape: "wolke" }, "Second Hand"],
   ["retro-ecke", "vintage", "Retro-Ecke", { tone: "karamell", ink: "schwarz", font: "elegant", shape: "blume" }, "Retro 70er"],
   ["kassenbon", "mengenrabatt", "3 für 5 €", { tone: "papier", ink: "schwarz", font: "mono", shape: "bon" }, "Kassenbon"],
@@ -2326,7 +2329,7 @@ const ideasHTML = themes => {
     if (!t || !x || g < 0) { warn("Schilder", `Idee „${k}“: Vorlage „${s}“ / „${l}“ nicht gefunden, die Karte fehlt.`); return ""; }
     const tone = o.tone || x.tone || t.tone || "gelb", ink = o.ink || x.ink || inkDefault(tone), font = fontOk(o.font || x.font || "modern") ? (o.font || x.font || "modern") : "modern";
     if (o.deco && !fontOk(o.font)) return ""; // Look braucht eine Schrift, die fehlt: Karte weglassen
-    if (!INK_OK[tone].includes(ink)) warn("Schilder", `Idee „${k}“: Schriftfarbe ${ink} passt nicht zur Fläche ${tone}.`);
+    if (!INK_OK[inkSurf({ tone, deco: o.deco })].includes(ink)) warn("Schilder", `Idee „${k}“: Schriftfarbe ${ink} passt nicht zur Fläche ${tone}.`);
     const set = { ...signState(t, x), tone, ink, font, shape: o.shape || x.shape || "rund", sym: o.sym && SYM[o.sym] ? o.sym : symOf(t, x), deco: o.deco || "", look: 1, ...(s === "bar-und-paypal" ? { pay: 1 } : {}) };
     const img = ideaImg(k) ? `<img src="/assets/schilder/ideen/${k}.webp" width="200" height="141" alt="" loading="lazy" decoding="async">` : `<i class="idea-ph sw-${tone}" aria-hidden="true"></i>`;
     return `<button type="button" class="idea" data-set="${esc(JSON.stringify(set))}" data-grp="${g}" aria-pressed="false">${img}<span>${esc(name || l)}</span></button>`;
@@ -2340,7 +2343,7 @@ function genHTML(st, themes, act, heading, pay) {
   const fmtBtn = (f, l) => `<button type="button" class="chip" data-fmt="${f}" aria-pressed="${st.fmt === f}">${l}</button>`;
   const tone = st.tone || "gelb", toneBtn = k => `<button type="button" class="swb" data-tone="${k}" data-name="${TONES[k][0]}" aria-pressed="${tone === k}" title="${TONES[k][0]}"><i class="sw sw-${k}"></i><span class="vh">${TONES[k][0]}</span></button>`;
   const symBtn = k => `<button type="button" class="sym-btn" data-sym="${k}" aria-pressed="${(st.sym || "") === k}" aria-label="${k ? "Symbol: " + esc(SYM[k][0]) : "Ohne Symbol"}" title="${k ? esc(SYM[k][0]) : "Ohne"}">${k ? symSVG(k) : "<span>Ohne</span>"}</button>`;
-  const ink = st.ink || inkDefault(tone), inkBtn = k => `<button type="button" class="swb ink ink-b-${k}" data-ink="${k}" data-name="${INKS[k][0]}" aria-pressed="${ink === k}" title="${INKS[k][0]}"${INK_OK[tone].includes(k) ? "" : " disabled"}><b aria-hidden="true">A</b><span class="vh">${INKS[k][0]}</span></button>`;
+  const ink = st.ink || inkDefault(tone), inkBtn = k => `<button type="button" class="swb ink ink-b-${k}" data-ink="${k}" data-name="${INKS[k][0]}" aria-pressed="${ink === k}" title="${INKS[k][0]}"${INK_OK[inkSurf(st)].includes(k) ? "" : " disabled"}><b aria-hidden="true">A</b><span class="vh">${INKS[k][0]}</span></button>`;
   const font = st.font || "modern", fontBtn = ([k, l]) => `<button type="button" class="chip fnt fnt-${k}" data-font="${k}" aria-pressed="${font === k}"><b aria-hidden="true">Aa</b>${l}</button>`;
   const txt = (id, lab, v, max, ph, cls = "only-sign") => `<label class="fld ${cls}"><span>${lab}</span><input id="${id}" type="text" value="${esc(v)}" maxlength="${max}" autocomplete="off" enterkeyhint="done"${ph ? ` placeholder="${ph}"` : ""}></label>`;
   return `<section class="gen" id="gen" data-kind="${st.kind}" data-fmt="${st.fmt}" data-tone="${tone}" data-ink="${ink}" data-font="${font}" data-shape="${st.shape || "rund"}" data-inkok="${esc(JSON.stringify(INK_OK))}" data-sym="${st.sym || ""}"${pay === "auto" ? ' data-pay="0"' : ""} aria-labelledby="genH">

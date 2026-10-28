@@ -245,3 +245,12 @@ Ideen zum Antippen: Die fünf neuen Looks stehen vorn. Dafür sind Prickelnde Pr
 - **Jede Schriftfarbe passt jetzt zu jeder Fläche**, es ist nichts mehr ausgegraut. Standard bleibt Schwarz (auf schwarzer Fläche Weiß).
 - **Gold ist eine flache Farbe** (#C9A13B), ohne Farbverlauf und ohne Rand. Weiß auf heller Fläche behält eine dünne dunkle Kontur, damit man es überhaupt lesen kann.
 - Die Ideen-Bilder „Königliche Preise“ und „Bar & PayPal“ sind mit dem neuen Gold neu aufgenommen.
+
+## Farben mit Sinn, Looks bleiben erhalten (28. Oktober, nachts, Nachtrag)
+
+- **Fläche ändern zerstört keinen Look mehr.** In Poster, Rosa Plakat, Coquette, Tafel und Letterboard färbt die Fläche jetzt den passenden Teil: Hintergrund (Plakat), Rahmen (Tafel, Letterboard), Streifen (Coquette) oder Glitzer (Poster). Nur ein Klick auf eine andere Form beendet den Look (außer bei Coquette).
+- **Unlesbare Paare sind wieder gesperrt**, z. B. Schwarz auf Schwarz oder Gold auf Gelb. Erlaubt sind je Fläche:
+  Gelb: Schwarz, Rot, Weiß · Pink/Mint: Schwarz, Weiß, Rot, Gold · Schwarz: Weiß, Gold, Pink · Karamell: Schwarz, Weiß · Salbei: Schwarz, Weiß, Rot · Rosé: Schwarz, Rot, Gold, Pink · Papier und weiße Flächen: Schwarz, Rot, Pink, Gold. Auf der Tafel gelten die Farben für Schwarz.
+- **Neue Schriftfarbe Rot** (#C8102E). Pink ist kräftiger (#E8417C), damit es auch auf Weiß lesbar ist.
+- Schwarze Fläche auf der Tafel ergibt einen hellen Kreiderahmen, bei Coquette zarte graue Streifen.
+- Die fünf Ideen-Bilder Poster, Rosa Plakat, Tafel, Coquette und Letterboard sind neu aufgenommen.

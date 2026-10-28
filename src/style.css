@@ -1882,3 +1882,17 @@ body:has(.menu-wrap[open]) .fab{display:none}
 .mon-row a{display:flex;align-items:center;justify-content:center;gap:7px;min-height:42px;padding:0 8px;border-radius:12px;background:var(--surface);border:1px solid var(--line);color:var(--ink);font-weight:600;font-size:14.5px;text-decoration:none}
 .mon-row a .i{width:16px;height:16px;color:var(--muted);flex:none}
 @media (hover:hover){.mon-row a:hover{border-color:var(--ink)}}
+
+/* Neu seit dem letzten Besuch: rote Zahl am Menü und Block im Menü */
+:root{--alert:#D92D20;--alert-ink:#FFFFFF}
+.menu-btn{position:relative}
+.neu-n{position:absolute;top:-7px;right:-7px;min-width:20px;height:20px;padding:0 5px;border-radius:999px;background:var(--alert);color:var(--alert-ink);font:700 11px/16px var(--f-body);text-align:center;border:2px solid var(--paper);pointer-events:none}
+.mn-neu{display:grid;gap:8px}
+.mn-neu-l{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.mn-neu-l a{position:relative;display:grid;gap:1px;padding:9px 12px;border:1px solid var(--line);border-radius:12px;background:var(--surface);color:var(--ink);text-decoration:none;min-width:0}
+.mn-neu-l a b{font-weight:700;font-size:14px;line-height:1.25;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mn-neu-l a small{color:var(--muted);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mn-neu-l a.nw::after{content:"";position:absolute;top:9px;right:9px;width:8px;height:8px;border-radius:50%;background:var(--alert)}
+.mn-neu-l a.nw b{padding-right:12px}
+@media (max-width:359px){.mn-neu-l{grid-template-columns:1fr}}
+.menu-btn > .neu-n:not([hidden]){display:block}

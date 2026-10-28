@@ -1390,4 +1390,37 @@
       if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(addr).then(function () { done(true); }, function () { done(false); }); else done(false);
     });
   })();
+  /* Neu seit dem letzten Besuch: rote Zahl am Menü wie bei Nachrichten. Die Liste kommt aus /assets/neu.json (Märkte der letzten 21 Tage),
+     was schon gesehen wurde, merkt sich nur dieser Browser. Beim allerersten Besuch gilt alles als gesehen. Beim Öffnen des Menüs gilt alles als gesehen. */
+  (function () {
+    var wrap = document.querySelector(".menu-wrap"), btn = wrap && wrap.querySelector(".menu-btn"), nav = wrap && wrap.querySelector(".menu .mn");
+    if (!btn || !nav || !window.fetch || !window.JSON) return;
+    var KEY = "flohlotse-neu-gesehen";
+    var load = function () { try { var v = JSON.parse(localStorage.getItem(KEY) || "null"); return v && typeof v === "object" && v.length != null ? v : null; } catch (e) { return null; } };
+    var save = function (a) { try { localStorage.setItem(KEY, JSON.stringify(a.slice(-300))); } catch (e) {} };
+    var esc = function (t) { return String(t).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); };
+    fetch("/assets/neu.json", { cache: "no-cache" }).then(function (r) { return r.ok ? r.json() : null; }).then(function (d) {
+      var list = d && d.m && d.m.length ? d.m : [];
+      var seen = load();
+      if (!seen) { save(list.map(function (x) { return x.s; })); seen = list.map(function (x) { return x.s; }); }
+      var isNew = function (x) { return seen.indexOf(x.s) < 0; };
+      var fresh = list.filter(isNew);
+      var markAll = function () { var a = seen.slice(); list.forEach(function (x) { if (a.indexOf(x.s) < 0) a.push(x.s); }); seen = a; save(a); badge.hidden = true; btn.removeAttribute("aria-label"); };
+      // Zahl am Menü
+      var badge = document.createElement("b"); badge.className = "neu-n"; badge.hidden = true; btn.appendChild(badge);
+      if (fresh.length) { badge.textContent = fresh.length > 9 ? "9+" : String(fresh.length); badge.hidden = false; btn.setAttribute("aria-label", "Menü, " + (fresh.length === 1 ? "ein neuer Markt" : fresh.length + " neue Märkte")); }
+      // Block im Menü: die neuesten Märkte, ungesehene mit rotem Punkt
+      if (list.length) {
+        var box = document.createElement("div"); box.className = "mn-neu";
+        var draw = function () {
+          box.innerHTML = '<p class="mn-h">Neu im Kalender</p><div class="mn-neu-l">' + list.slice(0, 6).map(function (x) {
+            return '<a href="/flohmarkt/' + encodeURIComponent(x.s) + '/"' + (isNew(x) ? ' class="nw"' : "") + '><b>' + esc(x.n) + '</b><small>' + esc([x.t, x.a].filter(Boolean).join(", ")) + '</small></a>';
+          }).join("") + "</div>";
+        };
+        draw(); nav.insertBefore(box, nav.firstChild);
+        wrap.addEventListener("toggle", function () { if (wrap.open) { draw(); if (fresh.length) { markAll(); fresh = []; } } });
+      }
+    }).catch(function () {});
+  })();
+
 })();

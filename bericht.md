@@ -1,8 +1,8 @@
 # Flohlotse: Website gebaut
 
-Stand 28.10.2026 · 322 Seiten (316 für Google) · 152 Märkte · 188 Termine in den nächsten 120 Tagen · 42 Ratgeber-Artikel · 817 Event-Auszeichnungen
+Stand 28.10.2026 · 325 Seiten (319 für Google) · 152 Märkte · 188 Termine in den nächsten 120 Tagen · 42 Ratgeber-Artikel · 817 Event-Auszeichnungen
 
-## Zu erledigen: 9 Hinweise
+## Zu erledigen: 8 Hinweise
 
 | Bereich | Hinweis |
 |---|---|
@@ -13,7 +13,6 @@ Stand 28.10.2026 · 322 Seiten (316 für Google) · 152 Märkte · 188 Termine i
 | Termin-Wächter | HNT Flohmarkt: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 04.11.2026, 06.11.2026, 08.11.2026, 09.11.2026. Bitte prüfen: https://www.hntonline.de/flohmarkt |
 | Termin-Wächter | Flohmarkt famila Winsen (Luhe): Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 29.11.2026. Bitte prüfen: https://flohmaxx.de/flohmarkt/winsen-famila/2026-10-03 |
 | Termin-Wächter | Flohmarkt am Bunthaus: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 14.03.2027, 19.03.2027, 18.04.2027, 06.05.2027, 09.05.2027, 23.07.2027. Bitte prüfen: https://elbepark-bunthaus.de/bunthaus-flohmarkt/ |
-| Termin-Wächter | BILLE Kleidertausch: Die Website des Veranstalters möchte nicht automatisch abgerufen werden (robots.txt). Diese Seite bitte weiter von Hand prüfen: https://www.instagram.com/bille_kleidertausch/ |
 | Serie endet bald | Flohmarkt Else-Rauch-Platz (Sonntag): Die Serie läuft nur bis Montag, 30. November. Bei Bedarf „Gültig bis“ verlängern, sobald der Veranstalter neue Termine bestätigt. |
 
 ## Termin-Wächter: 12 Vorschläge zum Einfügen
@@ -47,5 +46,8 @@ Quellen:
 
 - Antik- und Designmarkt Colonnaden: Als Veranstalter-Website steht nur die Startseite https://www.marktundkultur.de/. Dort stehen auch die Termine anderer Märkte des Veranstalters, deshalb prüft der Termin-Wächter diese Seite nicht. Soll er den Markt mitprüfen, die Seite des Markts eintragen.
 - UpCyclingMarkt Altona: Als Veranstalter-Website steht nur die Startseite https://www.marktlust.de/. Dort stehen auch die Termine anderer Märkte des Veranstalters, deshalb prüft der Termin-Wächter diese Seite nicht. Soll er den Markt mitprüfen, die Seite des Markts eintragen.
+- Vorschaubild für „Größen“ fehlt oder passt nicht mehr zum Text der Vorlage. Bis zum nächsten Update zeigt die Website das einfache gezeichnete Vorschaubild.
+- Vorschaubild für „Kategorien“ fehlt oder passt nicht mehr zum Text der Vorlage. Bis zum nächsten Update zeigt die Website das einfache gezeichnete Vorschaubild.
+- Vorschaubild für „Kleidertausch“ fehlt oder passt nicht mehr zum Text der Vorlage. Bis zum nächsten Update zeigt die Website das einfache gezeichnete Vorschaubild.
 - 62 Märkte haben in den nächsten 120 Tagen keinen Termin (Saisonpause oder noch nicht angekündigt): 5. Kleidertausch-Party, ADLER-Flohmarkt Halstenbek, altonale Flohmarkt an der Museumstraße, Connect Queer Indoor Flohmarkt, Fietsenbörse am Spielbudenplatz, Flohmarkt Ali Paşa Moschee Barmbek, Flohmarkt am Bunthaus, Flohmarkt EDEKA Center Struve Bramfeld, Flohmarkt EDEKA Center Struve Eidelstedt, Flohmarkt Eppendorfer Weg, Flohmarkt famila Ahrensburg, Flohmarkt famila Bargteheide, Flohmarkt famila Buchholz, Flohmarkt famila Geesthacht, Flohmarkt famila Steilshoop, Flohmarkt famila Trittau, Flohmarkt famila Winsen (Luhe), Flohmarkt Flugplatz Heist, Flohmarkt GLOBUS Lurup, Flohmarkt Hansaplatz, Flohmarkt Heidesiedlung Neu Wulmstorf, Flohmarkt Höffner Barsbüttel, Flohmarkt Hoheluftchaussee, Flohmarkt IKEA Altona, Flohmarkt IKEA Moorfleet, Flohmarkt IKEA Schnelsen, Flohmarkt im Lykkeby Familiencafé, Flohmarkt Isestraße, Flohmarkt Kaufland Henstedt-Ulzburg, Flohmarkt Körber (ehemals Hauni) Bergedorf, Flohmarkt Lange Reihe, Flohmarkt Langenhorner Markt, Flohmarkt Lehmweg, Flohmarkt Marktplatz Glinde, Flohmarkt Metro Harburg, Flohmarkt Metro Niendorf, Flohmarkt mit Hofcafé am Kreativhaus, Flohmarkt Moorwegsiedlung Wedel, Flohmarkt Norderstedt Schmuggelstieg, Flohmarkt rund ums Haus bei Café Hulda, Flohmarkt Uetersen bei Lüchau Baustoffe, Flohmarkt Uetersen City, FlohZinn in den Wilhelmsburger Zinnwerken, Frauenflohmarkt im Gemeindehaus St. Salvatoris, Hallenflohmarkt in der Halle 15, Hamburger Schallplattenbörse, K-Pop Flohmarkt Hamburg, Kinderflohmarkt am Tibarg, Kinderflohmarkt im kulturtreff Bergedorf Süd, Kultur-Flohmarkt am Museum der Arbeit, Langschläfer Flohmarkt, Langschläfer Flohmarkt Überseeboulevard, Mädchen Klamotte im AEZ, Mädchen Klamotte in der Hamburger Meile, Nachbarschaftsflohmarkt HausDrei, Nachbarschaftsflohmarkt Herthastraße, Nachbarschaftsflohmarkt Wilhelmsburg, Quickborner famila-Flohmarkt, Rellinger Hagebau-Flohmarkt, Spieleflohmarkt Barmstedt, The Market 5.0, Turmweg-Flohmarkt.
 - Eine Bilddatei im Ordner bilder wird auf keiner Seite verwendet und deshalb nicht hochgeladen: start-4.webp.

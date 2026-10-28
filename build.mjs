@@ -329,10 +329,12 @@ let OLD_STATE = {};
 if (process.env.SEITENSTAND_DATEI) { try { const j = JSON.parse(fs.readFileSync(process.env.SEITENSTAND_DATEI, "utf8")); if (j && typeof j === "object") OLD_STATE = j; } catch { /* kein Merkzettel: alle Seiten bekommen das heutige Datum */ } }
 else if (process.env.SHEET_ID || process.env.SEITENSTAND === "an") { try { const r = await fetch(SITE + "/assets/seiten-stand.json", { signal: AbortSignal.timeout(8000) }); if (r.ok) { const j = await r.json(); if (j && typeof j === "object") OLD_STATE = j; } } catch { /* erster Lauf: alle Seiten bekommen das heutige Datum */ } }
 /* „Neu“: Ein Markt, den es beim letzten Bau noch nicht gab, trägt drei Tage lang ein „Neu“-Schild (Tag des Eintragens und die zwei folgenden).
-   Der Tag des ersten Erscheinens steht im Merkzettel unter _neu. Beim allerersten Bau ohne Merkzettel gilt nichts als neu. */
-const NEU = {};
+   Der Tag des ersten Erscheinens steht im Merkzettel unter _neu und bleibt dort 21 Tage: So weiß die Seite, was seit dem letzten Besuch dazugekommen ist
+   (rote Zahl am Menü, /assets/neu.json). Beim allerersten Bau ohne Merkzettel gilt nichts als neu. */
+const NEU = {}, NEU_SEIT = {};
 { const alt = OLD_STATE._neu && typeof OLD_STATE._neu === "object" ? OLD_STATE._neu : {}, hatStand = Object.keys(OLD_STATE).some(p => p.startsWith("/flohmarkt/")), heute = key(TODAY);
-  for (const m of MARKETS) { const seit = /^\d{4}-\d{2}-\d{2}$/.test(String(alt[m.slug])) ? alt[m.slug] : hatStand && !(`/flohmarkt/${m.slug}/` in OLD_STATE) ? heute : ""; if (seit && (TODAY - new Date(seit + "T00:00:00Z")) / 864e5 < 3) NEU[m.slug] = seit; } }
+  for (const m of MARKETS) { const seit = /^\d{4}-\d{2}-\d{2}$/.test(String(alt[m.slug])) ? alt[m.slug] : hatStand && !(`/flohmarkt/${m.slug}/` in OLD_STATE) ? heute : ""; if (!seit) continue;
+    const alter = (TODAY - new Date(seit + "T00:00:00Z")) / 864e5; if (alter < 21) NEU_SEIT[m.slug] = seit; if (alter < 3) NEU[m.slug] = seit; } }
 const NEU_MS = MARKETS.filter(m => NEU[m.slug]);
 const neuPill = m => NEU[m.slug] ? ' <span class="neu">Neu</span>' : "";
 
@@ -2817,6 +2819,11 @@ fs.writeFileSync(path.join(OUT, "assets/style.css"), withBase(fontCSS) + CSS_SRC
 const JS_OUT = fs.readFileSync(path.join(ROOT, "src/site.js"), "utf8").replace(/^[ \t]*\/\*[\s\S]*?\*\/[ \t]*$/gm, "").split("\n").map(l => l.trim()).filter(l => l && !l.startsWith("//")).join("\n") + "\n";
 fs.writeFileSync(path.join(OUT, "assets/site.js"), JS_OUT);
 fs.writeFileSync(path.join(OUT, "assets/maerkte.json"), MERK_JSON);
+// Neu im Kalender (letzte 21 Tage), für die rote Zahl am Menü und den Hinweis auf der Startseite. Was jemand schon gesehen hat, merkt sich nur sein Browser.
+{ const WDN = ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"];
+  const nx = m => { const e = [...m.events, ...(m.later || [])].filter(e => !e.cancelled && e.k >= key(TODAY)).sort((a, b) => a.k.localeCompare(b.k))[0]; if (!e) return ""; const d = new Date(e.k + "T00:00:00Z"); return `${WDN[d.getUTCDay()]} ${d.getUTCDate()}.${d.getUTCMonth() + 1}.`; };
+  const list = MARKETS.filter(m => NEU_SEIT[m.slug]).sort((a, b) => NEU_SEIT[b.slug].localeCompare(NEU_SEIT[a.slug]) || a.name.localeCompare(b.name, "de")).map(m => ({ s: m.slug, n: m.short || m.name, a: m.area || "", t: nx(m), seit: NEU_SEIT[m.slug] }));
+  fs.writeFileSync(path.join(OUT, "assets/neu.json"), JSON.stringify({ stand: key(TODAY), m: list })); }
 // Werkzeuge für die Suche: [Art, Titel, Adresse, Suchwörter]. Apostrophe zusätzlich ohne Lücke („Levi's“ findet auch „levis“).
 { const kw = (...x) => { const t = x.filter(Boolean).join(" "); return t + " " + t.replace(/['’`]/g, ""); };
   const W = [["sign", "Schilder-Designer", SIGN_BASE, kw("Schilder-Designer schild schilder preisschild preisschilder etikett etiketten vorlage vorlagen drucken ausdrucken pdf gestalten")],
@@ -2865,7 +2872,7 @@ if (fontsFound.length) {
   fs.writeFileSync(path.join(OUT, "fonts/OFL.txt"), [...new Set(fontsFound.map(x => FONT_C[x.fam]).filter(Boolean))].join("\n") + "\n\n" + OFL_TEXT + "\n");
 }
 // Sitemap, bei den Schilder-Seiten mit Vorschaubildern für die Google-Bildersuche. Änderungsdaten: siehe „Änderungsdatum je Seite“ weiter oben.
-PAGE_STATE._neu = NEU;
+PAGE_STATE._neu = NEU_SEIT;
 PAGE_STATE._zahlen = [MARKETS.length, EVENTS.length, MARKETS.length - NO_DATES.length, HORIZON, key(TODAY)]; // Märkte, Termine, Märkte mit Termin, Tage im Voraus, Datum: für die Notbremse im nächsten Bau
 fs.writeFileSync(path.join(OUT, "assets/seiten-stand.json"), JSON.stringify(PAGE_STATE));
 const smImgs = p => [...(PAGE_PHOTOS.get(p) || []).map(u => [u]), ...(SIGN_PAGE_IMGS.get(p) || [])].map(([u, t]) => `<image:image><image:loc>${esc(SITE + u)}</image:loc></image:image>`).join("");

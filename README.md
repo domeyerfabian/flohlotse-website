@@ -184,3 +184,14 @@ Ratgeber-Artikel: Je Bereich wechseln sich mehrere Fotos und Formen ab (`KB_POOL
 - **Versionskürzel** (`?v=…`) tragen jetzt auch die Icon-Sammlung, das Symbol und die Karte. Änderungen an Stil, Skript und Icons kommen dadurch sofort bei allen an. Das Kürzel des Stils berücksichtigt auch die Schriftdateien.
 - **Bilder:** Hochgeladen wird nur, was auf mindestens einer Seite vorkommt. Übrige Dateien im Ordner `bilder` nennt der Bericht unter „Zur Kenntnis“.
 - **Marktseiten mit fernem Termin** (weiter weg als „Tage im Voraus“) zeigen ihn jetzt überall einheitlich: Überschrift, Terminliste, häufige Fragen und Daten für Google.
+
+## Neu seit dem letzten Besuch (28. Oktober)
+
+Wer öfter reinschaut, sieht neue Märkte sofort, ganz ohne Pflege:
+
+- **Rote Zahl am Menü-Knopf:** zeigt, wie viele Märkte seit dem letzten Besuch dazugekommen sind. Beim Öffnen des Menüs gilt alles als gesehen, die Zahl verschwindet.
+- **Im Menü ganz oben „Neu im Kalender“:** die bis zu sechs neuesten Märkte mit nächstem Termin und Stadtteil. Noch nicht gesehene haben einen roten Punkt.
+
+Wie es funktioniert: Der nächtliche Bau merkt sich, an welchem Tag ein Markt zum ersten Mal da war (im Merkzettel `seiten-stand.json`, 21 Tage lang), und schreibt die Liste nach `/assets/neu.json`. Was schon gesehen wurde, speichert nur der Browser des Besuchers, es wird nichts übertragen. Beim allerersten Besuch gilt alles als gesehen, es gibt also keine rote Zahl für Neulinge. Das „Neu“-Schild an den Märkten bleibt wie bisher drei Tage.
+
+Du musst nichts tun: Einfach wie immer Märkte in die Tabelle eintragen.

@@ -470,6 +470,13 @@
     // Form der Farbfläche (Wolke, Blume, Zacken, Sprechblase, Etikett), passend zur gemessenen Größe gerechnet. Gleiche Rechnung wie shapePath in build.mjs.
     var shapePath = function (k, w, h) {
       var p = Math.max(1.5, Math.min(w, h) * 0.02), m = Math.min(w, h), f = function (n) { return Math.round(n * 10) / 10; }, pts = [], i;
+      if (k === "bon") { // Kassenbon: Rechteck mit Zackenrand oben und unten (wie in build.mjs)
+        var z = m * 0.07, zn = Math.max(6, Math.round((w - 2 * p) / (z * 2))), zs = (w - 2 * p) / zn, zd = "M" + f(p) + " " + f(p + z);
+        for (i = 0; i < zn; i++) zd += "L" + f(p + zs * (i + 0.5)) + " " + f(p) + "L" + f(p + zs * (i + 1)) + " " + f(p + z);
+        zd += "L" + f(w - p) + " " + f(h - p - z);
+        for (i = zn - 1; i >= 0; i--) zd += "L" + f(p + zs * (i + 0.5)) + " " + f(h - p) + "L" + f(p + zs * i) + " " + f(h - p - z);
+        return zd + "Z";
+      }
       if (k === "wolke" || k === "blume") {
         var r = k === "wolke" ? m * 0.14 : m * 0.1, x0 = p + r, y0 = p + r, x1 = w - p - r, y1 = h - p - r;
         var side = function (ax, ay, bx, by) { var n = Math.max(2, Math.round(Math.hypot(bx - ax, by - ay) / (2 * r))); for (var j = 0; j < n; j++) { var t = j / n; if (k === "wolke" && j > 0) t += (j % 2 ? 0.16 : -0.1) / n; pts.push([ax + (bx - ax) * t, ay + (by - ay) * t]); } };
@@ -501,6 +508,7 @@
       if (k === "blume") { var bl = p + m * 0.1 + g; return [bl, bl, bl, bl]; }
       if (k === "stern") { var sx = w / 2 - 0.6 * (w / 2 - p), sy = h / 2 - 0.6 * (h / 2 - p); return [sy, sx, sy, sx]; }
       if (k === "blase") return [p + g * 1.4, p + m * 0.1, p + h * 0.17 + g, p + m * 0.1];
+      if (k === "bon") { var bz = p + m * 0.07 + g; return [bz, p + m * 0.08, bz, p + m * 0.08]; }
       if (k === "etikett") { var tip = Math.min(h * 0.42, w * 0.17); return [p + g * 1.3, p + m * 0.08, p + g * 1.3, p + tip + m * 0.07]; }
       return null;
     };
@@ -512,7 +520,7 @@
       gen.querySelectorAll("button[data-ink]").forEach(function (b) { var k = b.getAttribute("data-ink"); b.disabled = ok.indexOf(k) < 0; b.title = (b.getAttribute("data-name") || "") + (b.disabled ? ": auf dieser Fläche schlecht lesbar" : ""); b.setAttribute("aria-pressed", String(k === st.ink)); });
     };
     // Schriften für das Schild lädt der Browser erst bei Auswahl; danach wird neu eingepasst
-    var FONT_FAM = { klar: "800 40px Figtree", elegant: "600 40px Fraunces", verspielt: "400 40px Pacifico" };
+    var FONT_FAM = { klar: "800 40px Figtree", elegant: "600 40px Fraunces", verspielt: "400 40px Pacifico", mono: '500 40px "DM Mono"' };
     var fontLoad = function () { return document.fonts && FONT_FAM[st.font] ? document.fonts.load(FONT_FAM[st.font]).catch(function () {}) : Promise.resolve(); }; // Farbe oder Symbol selbst gewählt: bleibt beim Wechsel der Vorlage erhalten
     // Symbol-Aufkleber: Die Form steckt schon im Auswahlknopf und wird von dort ins Schild kopiert
     var symSrc = function () { var b = st.sym && gen.querySelector('button[data-sym="' + st.sym + '"] svg'); return b || null; };
@@ -643,6 +651,16 @@
       if (shb) { st.shape = shb.getAttribute("data-shape"); shapeSet = true; setPressed("button[data-shape]", shb); render(); }
       var fb = e.target.closest("button[data-font]");
       if (fb) { st.font = fb.getAttribute("data-font"); fontSet = true; setPressed("button[data-font]", fb); render(); fontLoad().then(render); }
+      var lk = e.target.closest("button[data-look]");
+      if (lk) {
+        var o = JSON.parse(lk.getAttribute("data-look"));
+        st.tone = o.tone; toneSet = true; setPressed("button[data-tone]", gen.querySelector('button[data-tone="' + o.tone + '"]'));
+        st.ink = o.ink; inkSet = true;
+        if (gen.querySelector('button[data-font="' + o.font + '"]')) { st.font = o.font; fontSet = true; setPressed("button[data-font]", gen.querySelector('button[data-font="' + o.font + '"]')); }
+        st.shape = o.shape; shapeSet = true; setPressed("button[data-shape]", gen.querySelector('button[data-shape="' + o.shape + '"]'));
+        if (o.sym && gen.querySelector('button[data-sym="' + o.sym + '"]')) { st.sym = o.sym; symSet = true; setPressed("button[data-sym]", gen.querySelector('button[data-sym="' + o.sym + '"]')); symCur(); }
+        inkFix(); setPressed("button[data-look]", lk); render(); fontLoad().then(render);
+      } else if (e.target.closest("button[data-tone],button[data-ink],button[data-font],button[data-shape],[data-set]")) setPressed("button[data-look]", null);
       var sb = e.target.closest("button[data-sym]");
       if (sb) { st.sym = sb.getAttribute("data-sym"); symSet = true; setPressed("button[data-sym]", sb); symCur(); render(); }
       if (f && f.tagName === "BUTTON") { st.fmt = lastSignFmt = f.getAttribute("data-fmt"); setPressed("button[data-fmt]", f); render(); }

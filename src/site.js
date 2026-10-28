@@ -514,8 +514,10 @@
     };
     // Schriftfarbe: Liste kommt aus build.mjs (inzwischen ist jede Kombination erlaubt). Passt die gewählte Farbe nicht, nimmt das Schild die erste.
     var INK_OK = JSON.parse(gen.getAttribute("data-inkok") || "{}");
+    // Welche Fläche liegt hinter der Schrift? Sparmodus, Poster, Letterboard und Coquette: Weiß. Tafel: Schwarz. Sonst die gewählte Fläche.
+    var inkSurf = function () { return st.save || st.deco === "poster" || st.deco === "letter" || st.deco === "coquette" ? "save" : st.deco === "tafel" ? "schwarz" : st.tone; };
     var inkFix = function () {
-      var ok = INK_OK[st.save ? "save" : st.tone] || ["schwarz"];
+      var ok = INK_OK[inkSurf()] || ["schwarz"];
       if (ok.indexOf(st.ink) < 0) st.ink = ok[0];
       gen.querySelectorAll("button[data-ink]").forEach(function (b) { var k = b.getAttribute("data-ink"); b.disabled = ok.indexOf(k) < 0; b.title = (b.getAttribute("data-name") || "") + (b.disabled ? ": auf dieser Fläche schlecht lesbar" : ""); b.setAttribute("aria-pressed", String(k === st.ink)); });
     };
@@ -594,7 +596,7 @@
       var tags = st.kind === "tags", fmt = tags ? "tags" : st.fmt, n = tags ? 24 : ({ zwei: 2, vier: 4, acht: 8 })[fmt] || 1;
       gen.setAttribute("data-kind", st.kind); gen.setAttribute("data-fmt", fmt);
       sheet = document.createElement("div"); sheet.id = "sheet";
-      sheet.className = "sheet f-" + fmt + (st.save ? " save" : "") + (tags && !st.vb ? " novb" : "") + (st.tone && st.tone !== "gelb" ? " tone-" + st.tone : "") + " ink-" + st.ink + (st.ink === "weiss" && (st.save || st.tone !== "schwarz") ? " ink-out" : "") + (st.font && st.font !== "modern" ? " font-" + st.font : "") + (!tags && st.shape && st.shape !== "rund" ? " shp shape-" + st.shape : "") + (!tags && symSrc() ? " sym" : "") + (st.deco ? " deco-" + st.deco : "");
+      sheet.className = "sheet f-" + fmt + (st.save ? " save" : "") + (tags && !st.vb ? " novb" : "") + (st.tone && st.tone !== "gelb" ? " tone-" + st.tone : "") + " ink-" + st.ink + (st.ink === "weiss" && !st.deco && (st.save || st.tone !== "schwarz") ? " ink-out" : "") + (st.font && st.font !== "modern" ? " font-" + st.font : "") + (!tags && st.shape && st.shape !== "rund" ? " shp shape-" + st.shape : "") + (!tags && symSrc() ? " sym" : "") + (st.deco ? " deco-" + st.deco : "");
       var tpl = $(tags ? "tplTag" : "tplSign").content.firstElementChild;
       for (var i = 0; i < n; i++) sheet.appendChild(tpl.cloneNode(true));
       wrap.innerHTML = ""; wrap.appendChild(sheet);
@@ -648,11 +650,11 @@
     $("fSave").addEventListener("change", function () { st.save = this.checked; inkFix(); render(); });
     gen.addEventListener("click", function (e) {
       var f = e.target.closest("[data-fmt]"), p = e.target.closest("[data-set]"), tn = e.target.closest("button[data-tone]");
-      if (tn) { st.tone = tn.getAttribute("data-tone"); toneSet = true; st.deco = ""; setPressed("button[data-tone]", tn); if (!inkSet) st.ink = (INK_OK[st.tone] || ["schwarz"])[0]; inkFix(); render(); }
+      if (tn) { st.tone = tn.getAttribute("data-tone"); toneSet = true; setPressed("button[data-tone]", tn); if (!inkSet && !st.deco) st.ink = (INK_OK[inkSurf()] || ["schwarz"])[0]; inkFix(); render(); } // in einem Look färbt die Fläche den Hintergrund, Rahmen oder die Streifen
       var ik = e.target.closest("button[data-ink]");
       if (ik && !ik.disabled) { st.ink = ik.getAttribute("data-ink"); inkSet = true; inkFix(); render(); }
       var shb = e.target.closest("button[data-shape]");
-      if (shb) { st.shape = shb.getAttribute("data-shape"); shapeSet = true; st.deco = ""; setPressed("button[data-shape]", shb); render(); }
+      if (shb) { st.shape = shb.getAttribute("data-shape"); shapeSet = true; if (st.deco !== "coquette") st.deco = ""; setPressed("button[data-shape]", shb); render(); }
       var fb = e.target.closest("button[data-font]");
       if (fb) { st.font = fb.getAttribute("data-font"); fontSet = true; setPressed("button[data-font]", fb); render(); fontLoad().then(render); }
       var lk = e.target.closest("button[data-look]");
@@ -664,7 +666,7 @@
         st.shape = o.shape; shapeSet = true; setPressed("button[data-shape]", gen.querySelector('button[data-shape="' + o.shape + '"]')); st.deco = o.deco || "";
         if (o.sym && gen.querySelector('button[data-sym="' + o.sym + '"]')) { st.sym = o.sym; symSet = true; setPressed("button[data-sym]", gen.querySelector('button[data-sym="' + o.sym + '"]')); symCur(); }
         inkFix(); setPressed("button[data-look]", lk); render(); fontLoad().then(render);
-      } else if (e.target.closest("button[data-tone],button[data-ink],button[data-font],button[data-shape],[data-set]")) setPressed("button[data-look]", null);
+      } else if (!st.deco && e.target.closest("button[data-tone],button[data-ink],button[data-font],button[data-shape],[data-set]")) setPressed("button[data-look]", null);
       var sb = e.target.closest("button[data-sym]");
       if (sb) { st.sym = sb.getAttribute("data-sym"); symSet = true; setPressed("button[data-sym]", sb); symCur(); render(); }
       if (f && f.tagName === "BUTTON") { st.fmt = lastSignFmt = f.getAttribute("data-fmt"); setPressed("button[data-fmt]", f); render(); }
@@ -682,7 +684,7 @@
         if (!toneSet) { st.tone = d.tone || "gelb"; setPressed("button[data-tone]", gen.querySelector('button[data-tone="' + st.tone + '"]')); }
         if (!symSet) { st.sym = d.sym || ""; setPressed("button[data-sym]", gen.querySelector('button[data-sym="' + st.sym + '"]')); symCur(); }
         if (!shapeSet) { st.shape = d.shape || "rund"; setPressed("button[data-shape]", gen.querySelector('button[data-shape="' + st.shape + '"]')); }
-        if (!inkSet) st.ink = d.ink || (INK_OK[st.tone] || ["schwarz"])[0];
+        if (!inkSet) st.ink = d.ink || (INK_OK[inkSurf()] || ["schwarz"])[0];
         inkFix();
         if (!fontSet && gen.querySelector('button[data-font="' + (d.font || "modern") + '"]')) { st.font = d.font || "modern"; setPressed("button[data-font]", gen.querySelector('button[data-font="' + st.font + '"]')); fontLoad().then(render); }
         if (gen.hasAttribute("data-pay")) gen.setAttribute("data-pay", d.pay ? "1" : "0");

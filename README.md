@@ -218,3 +218,30 @@ Aus der Recherche (im Projekt: `claude/schild-designer-recherche-2026-10-28.md`)
 - **Neue Schrift „Bon“** (DM Mono) für den Kassenbon-Look. Sie nutzt die Datei `fonts/DMMono-Medium.ttf`, die schon im Ordner `fonts` liegt. Fehlt die Datei, erscheinen Schrift und Kassenbon-Look einfach nicht.
 - **Neue Form „Kassenbon“** und **zwei neue Symbole** (Schleife, Blatt; eigene Zeichnungen, im Lizenzhinweis vermerkt).
 - **Ideen zum Antippen:** vier neue Karten mit den Looks (Retro 70er, Kassenbon, Schleife, Natur). Dafür sind Anprobieren erwünscht, Halber Preis, Fehlkauf und Rarität aus der Reihe raus (die Sprüche gibt es weiter in den Vorlagen). Es bleiben 18 Karten. Neue Bilder in `src/schilder/ideen/` mit hochladen.
+
+## Schilder-Designer: Looks wie auf Pinterest (28. Oktober, spät)
+
+Fünf neue Looks, die das ganze Schild gestalten, nicht nur die Farbfläche (inspiriert von Schildern auf Mädelsflohmärkten und in Second-Hand-Läden):
+- **Poster:** weißes Blatt, große schmale Großbuchstaben in Schwarz und Pink, Funkelsterne
+- **Rosa Plakat:** ganzes Blatt rosa, Rot in Großbuchstaben, unten eine Zeile in Schreibschrift wie eine Unterschrift
+- **Coquette:** zarte rosa Streifen, weiße Blumenform mit roter Kontur, rote Schleife
+- **Tafel:** schwarze Fläche mit rosa Rahmen, weiße und rosa Schrift, Herzen (viel Farbe beim Drucken, Sparmodus druckt nur die Schrift)
+- **Letterboard:** hellgraue Rillen, dunkler Rahmen, letzte Zeile in Rot
+
+Technik: Die Looks setzen zusätzlich eine Klasse `deco-…` am Blatt. Wer danach selbst eine Fläche oder Form wählt, bekommt wieder das normale Schild. Neue Schrift **„Plakat“**: eine schmale, extra fette Fassung von Bricolage (Datei `fonts/BricolageCondensed-ExtraBold.woff`, Open Font License, in `fonts/OFL.txt` genannt). **Diese Datei in den Ordner `fonts` hochladen**, sonst fehlen Poster, Rosa Plakat, Tafel und Letterboard.
+
+Neue Sprüche im Mädelsflohmarkt: „Du siehst aus wie meine nächste Kundin“, „Gib Kleidung eine zweite Chance. Nicht deinem Ex.“, „Hot People shoppen Second Hand“, „Coole Leute kaufen Second Hand“, „Kauf jetzt oder heul später“, „Muss nicht neu sein, um toll zu sein“, „Second Hand ist sexy“, „Shopping war nie günstiger“, „Wir haben süße Klamotten. Du hast einen Schrank. Lass uns reden.“
+
+Ideen zum Antippen: Die fünf neuen Looks stehen vorn. Dafür sind Prickelnde Preise, Mir zu klein (Mint), Neu mit Etikett, Glitzer-Ecke und Moin aus der Reihe raus (die Sprüche bleiben in den Vorlagen). Es bleiben 18 Karten.
+
+## Schilder-Designer aufgeräumt (28. Oktober, nachts)
+
+- **Reiter „Stil“:** Jede Gruppe (Look, Fläche, Schriftfarbe, Schrift) hat eine kleine Überschrift und genau eine Reihe. Am Handy wischt man die Reihe seitlich, nichts bricht mehr um.
+- **Looks als kleine Vorschau-Kacheln** statt Text-Knöpfe: Man sieht Farbe und Stil, bevor man tippt. Die Kacheln nutzen nur Schriften, die schon geladen sind, damit die Seite schnell bleibt.
+- **Vorschau am Handy:** Die stehende Vorschau ist ein Band über die ganze Kartenbreite, das Blatt sitzt mittig mit etwas Luft. Hochformat-Blätter (2 und 8 pro Blatt, Preisschilder) werden auf höchstens 42 % der Bildschirmhöhe verkleinert. So rutschen beim Bearbeiten keine Knöpfe mehr seitlich an der Vorschau vorbei.
+
+## Farben frei kombinierbar, Gold flach (28. Oktober, nachts)
+
+- **Jede Schriftfarbe passt jetzt zu jeder Fläche**, es ist nichts mehr ausgegraut. Standard bleibt Schwarz (auf schwarzer Fläche Weiß).
+- **Gold ist eine flache Farbe** (#C9A13B), ohne Farbverlauf und ohne Rand. Weiß auf heller Fläche behält eine dünne dunkle Kontur, damit man es überhaupt lesen kann.
+- Die Ideen-Bilder „Königliche Preise“ und „Bar & PayPal“ sind mit dem neuen Gold neu aufgenommen.

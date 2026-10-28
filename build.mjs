@@ -401,7 +401,7 @@ const plain = t => String(t || "").replace(/\[([^\]]+)\]\([^)]+\)/g, "$1");
 const OFL_TEXT = "This Font Software is licensed under the SIL Open Font License, Version 1.1.\nThis license is copied below, and is also available with a FAQ at:\nhttps://openfontlicense.org\n\n\n-----------------------------------------------------------\nSIL OPEN FONT LICENSE Version 1.1 - 26 February 2007\n-----------------------------------------------------------\n\nPREAMBLE\nThe goals of the Open Font License (OFL) are to stimulate worldwide\ndevelopment of collaborative font projects, to support the font creation\nefforts of academic and linguistic communities, and to provide a free and\nopen framework in which fonts may be shared and improved in partnership\nwith others.\n\nThe OFL allows the licensed fonts to be used, studied, modified and\nredistributed freely as long as they are not sold by themselves. The\nfonts, including any derivative works, can be bundled, embedded, \nredistributed and/or sold with any software provided that any reserved\nnames are not used by derivative works. The fonts and derivatives,\nhowever, cannot be released under any other type of license. The\nrequirement for fonts to remain under this license does not apply\nto any document created using the fonts or their derivatives.\n\nDEFINITIONS\n\"Font Software\" refers to the set of files released by the Copyright\nHolder(s) under this license and clearly marked as such. This may\ninclude source files, build scripts and documentation.\n\n\"Reserved Font Name\" refers to any names specified as such after the\ncopyright statement(s).\n\n\"Original Version\" refers to the collection of Font Software components as\ndistributed by the Copyright Holder(s).\n\n\"Modified Version\" refers to any derivative made by adding to, deleting,\nor substituting -- in part or in whole -- any of the components of the\nOriginal Version, by changing formats or by porting the Font Software to a\nnew environment.\n\n\"Author\" refers to any designer, engineer, programmer, technical\nwriter or other person who contributed to the Font Software.\n\nPERMISSION & CONDITIONS\nPermission is hereby granted, free of charge, to any person obtaining\na copy of the Font Software, to use, study, copy, merge, embed, modify,\nredistribute, and sell modified and unmodified copies of the Font\nSoftware, subject to the following conditions:\n\n1) Neither the Font Software nor any of its individual components,\nin Original or Modified Versions, may be sold by itself.\n\n2) Original or Modified Versions of the Font Software may be bundled,\nredistributed and/or sold with any software, provided that each copy\ncontains the above copyright notice and this license. These can be\nincluded either as stand-alone text files, human-readable headers or\nin the appropriate machine-readable metadata fields within text or\nbinary files as long as those fields can be easily viewed by the user.\n\n3) No Modified Version of the Font Software may use the Reserved Font\nName(s) unless explicit written permission is granted by the corresponding\nCopyright Holder. This restriction only applies to the primary font name as\npresented to the users.\n\n4) The name(s) of the Copyright Holder(s) or the Author(s) of the Font\nSoftware shall not be used to promote, endorse or advertise any\nModified Version, except to acknowledge the contribution(s) of the\nCopyright Holder(s) and the Author(s) or with their explicit written\npermission.\n\n5) The Font Software, modified or unmodified, in part or in whole,\nmust be distributed entirely under this license, and must not be\ndistributed under any other license. The requirement for fonts to\nremain under this license does not apply to any document created\nusing the Font Software.\n\nTERMINATION\nThis license becomes null and void if any of the above conditions are\nnot met.\n\nDISCLAIMER\nTHE FONT SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND,\nEXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO ANY WARRANTIES OF\nMERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT\nOF COPYRIGHT, PATENT, TRADEMARK, OR OTHER RIGHT. IN NO EVENT SHALL THE\nCOPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,\nINCLUDING ANY GENERAL, SPECIAL, INDIRECT, INCIDENTAL, OR CONSEQUENTIAL\nDAMAGES, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING\nFROM, OUT OF THE USE OR INABILITY TO USE THE FONT SOFTWARE OR FROM\nOTHER DEALINGS IN THE FONT SOFTWARE.";
 // Die letzten beiden Einträge sind nur Schriften für den Schilder-Designer: Sie werden nicht vorgeladen, der Browser holt sie erst, wenn jemand sie auswählt.
 // Fraunces liegt bei. Pacifico (verspielt) ist freiwillig: Datei von fonts.google.com in den Ordner fonts legen, dann erscheint die Schrift im Designer.
-const FONT_RULES = [[/bricolage.*\.(woff2|ttf)$/i, "Bricolage Grotesque", "200 800"], [/figtree.*variable.*\.(woff2|ttf)$|^figtree\.(woff2|ttf)$/i, "Figtree", "300 900"], [/fraunces.*\.(woff2|ttf)$/i, "Fraunces", "600", true], [/pacifico.*\.(woff2|ttf)$/i, "Pacifico", "400", true]];
+const FONT_RULES = [[/bricolage.*\.(woff2|ttf)$/i, "Bricolage Grotesque", "200 800"], [/figtree.*variable.*\.(woff2|ttf)$|^figtree\.(woff2|ttf)$/i, "Figtree", "300 900"], [/fraunces.*\.(woff2|ttf)$/i, "Fraunces", "600", true], [/pacifico.*\.(woff2|ttf)$/i, "Pacifico", "400", true], [/dm-?mono-medium\.(woff2|ttf)$/i, "DM Mono", "500", true]];
 const fontDir = path.join(ROOT, "fonts");
 const fontFilesAll = fs.existsSync(fontDir) ? fs.readdirSync(fontDir) : [];
 // Kursive Varianten nie nehmen; bei mehreren Treffern woff2 und variable Schriften bevorzugen
@@ -514,7 +514,7 @@ const ICONS = {
   search: "<path d=\"M228.24,219.76l-51.38-51.38a86.15,86.15,0,1,0-8.48,8.48l51.38,51.38a6,6,0,0,0,8.48-8.48ZM38,112a74,74,0,1,1,74,74A74.09,74.09,0,0,1,38,112Z\"/>",
   frog: "<path d=\"M368 32c41.7 0 75.9 31.8 79.7 72.5l85.6 26.3c25.4 7.8 42.8 31.3 42.8 57.9 0 21.8-11.7 41.9-30.7 52.7l-144.5 82.1 92.5 92.5h50.7c17.7 0 32 14.3 32 32s-14.3 32-32 32h-64c-8.5 0-16.6-3.4-22.6-9.4L346.9 360.2c11.7-36 3.2-77.1-25.4-105.7-40.6-40.6-106.3-40.6-146.9-.1l-73.6 70c-6.4 6.1-6.7 16.2-.6 22.6s16.2 6.6 22.6.6l73.8-70.2.1-.1.1-.1c3.5-3.5 7.3-6.6 11.3-9.2 27.9-18.5 65.9-15.4 90.5 9.2 24.7 24.7 27.7 62.9 9 90.9-2.6 3.8-5.6 7.5-9 10.9l-37 37H352c17.7 0 32 14.3 32 32s-14.3 32-32 32H64c-35.3 0-64-28.7-64-64C0 249.6 127 112.9 289.3 97.5 296.2 60.2 328.8 32 368 32m0 104a24 24 0 1 0 0-48 24 24 0 1 0 0 48\"/>",
 };
-const ICON_LICENSE = "Frosch-Icon (Wetterfrosch) und Symbole im Schilder-Designer: Font Awesome Free 7.1.0 by @fontawesome, https://fontawesome.com\nLizenz: CC BY 4.0, https://creativecommons.org/licenses/by/4.0/ , Copyright 2025 Fonticons, Inc. Unverändert übernommen.\n\nAlle anderen Icons: Phosphor Icons (https://phosphoricons.com), Stil Light\n\nMIT License\n\nCopyright (c) 2023 Phosphor Icons\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\nSOFTWARE.\n";
+const ICON_LICENSE = "Frosch-Icon (Wetterfrosch) und Symbole im Schilder-Designer: Font Awesome Free 7.1.0 by @fontawesome, https://fontawesome.com (ausgenommen Schleife und Blatt, eigene Zeichnungen von Flohlotse)\nLizenz: CC BY 4.0, https://creativecommons.org/licenses/by/4.0/ , Copyright 2025 Fonticons, Inc. Unverändert übernommen.\n\nAlle anderen Icons: Phosphor Icons (https://phosphoricons.com), Stil Light\n\nMIT License\n\nCopyright (c) 2023 Phosphor Icons\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\nSOFTWARE.\n";
 const ICON_VB = { frog: "0 0 576 512" };
 const SPRITE_FILE = `<!-- Icons: Phosphor Icons, MIT License, (c) 2023 Phosphor Icons; Frosch: Font Awesome Free, CC BY 4.0, (c) Fonticons, Inc.; siehe /assets/icons-lizenz.txt --><svg xmlns="http://www.w3.org/2000/svg"><defs>${Object.entries(ICONS).map(([k, v]) => `<symbol id="i-${k}" viewBox="${ICON_VB[k] || "0 0 256 256"}" fill="currentColor">${v}</symbol>`).join("")}</defs></svg>`;
 // Die Icon-Sammlung bekommt wie Stil und Skript ein Versionskürzel: Kommt ein Icon dazu, laden Browser sofort die neue Datei.
@@ -1947,7 +1947,10 @@ const SIGNS = [
     h1: "Kinderflohmarkt-Schild zum Ausdrucken: „Hier verkaufen Kinder“", title: "Kinderflohmarkt-Schild zum Ausdrucken: kostenlos",
     desc: "Schilder für den Kinderflohmarkt: „Hier verkaufen Kinder“, Sparziel oder Spielzeug-Kiste. Kostenlos gestalten und drucken, gern zusammen mit deinem Kind.",
     ans: "Auf dem Kinderflohmarkt verkaufen die Kinder oft selbst. Ein eigenes Schild macht sie stolz und zeigt der Kundschaft, dass hier ein bisschen mehr Geduld gefragt ist. Gestaltet es zusammen: Spruch wählen, Text anpassen, drucken.",
-    v: [{ l: "Hier verkaufen Kinder", top: "Kinderflohmarkt", main: "Hier verkaufen Kinder", bot: "Danke für eure Geduld beim Rechnen" }, { l: "Sparziel", sym: "piggy-bank", top: "Ich spare auf", main: "Ein neues Fahrrad", bot: "Danke für deinen Einkauf!" }, { l: "Spielzeug-Kiste", sym: "puzzle-piece", top: "Spielzeug-Kiste", main: "Alles 50 Cent", bot: "Such dir was Schönes aus" }],
+    v: [{ l: "Hier verkaufen Kinder", top: "Kinderflohmarkt", main: "Hier verkaufen Kinder", bot: "Danke für eure Geduld beim Rechnen" }, { l: "Sparziel", sym: "piggy-bank", top: "Ich spare auf", main: "Ein neues Fahrrad", bot: "Danke für deinen Einkauf!" }, { l: "Spielzeug-Kiste", sym: "puzzle-piece", top: "Spielzeug-Kiste", main: "Alles 50 Cent", bot: "Such dir was Schönes aus" },
+      { l: "Rausgewachsen", sym: "heart", top: "Kinderkleidung", main: "Rausgewachsen, nicht rausgeliebt", bot: "Bereit fürs nächste Kind" },
+      { l: "Schnell gewachsen", sym: "star", top: "Kaum getragen", main: "Schnell gewachsen", bot: "Darum so gut wie neu" },
+      { l: "Chef persönlich", sym: "crown", top: "Hier verhandelt", main: "Der Chef persönlich", bot: "Bitte mit Geduld rechnen" }],
     b: () => [["Kinder verkaufen lassen", `Lass dein Kind die Preise mit aussuchen und runde auf glatte Beträge wie 50 Cent, 1 € oder 2 €, dann klappt das Rechnen leichter. Ein kleines Kästchen mit Wechselgeld und ein Zettel mit den Preisen helfen zusätzlich. Mehr Tipps stehen im Ratgeber ${kl("kinderflohmarkt-verkaufen", "Auf dem Kinderflohmarkt verkaufen")}.`],
       ["Das Sparziel aufs Schild", "Ein Schild mit Sparziel wie „Ich spare auf ein neues Fahrrad“ kommt bei der Kundschaft gut an und motiviert dein Kind. Trag das Ziel in den großen Text ein, die Zeile darüber bleibt „Ich spare auf“."]],
     f: [["Ab welchem Alter können Kinder selbst verkaufen?", "Das hängt vom Kind ab. Viele Kinder im Grundschulalter haben Spaß daran, wenn ein Erwachsener dabei ist und beim Rechnen hilft."],
@@ -1964,7 +1967,10 @@ const SIGNS = [
       { l: "Ausmisten", sym: "dumbbell", top: "", main: "Ausmisten ist mein Sport", bot: "Hilf mir beim Training" },
       { l: "Jetzt bist du dran", sym: "heart", top: "Ich hab's geliebt", main: "Jetzt bist du dran", bot: "Gute Reise, liebes Teil" },
       { l: "Wühlen", sym: "gem", top: "Achtung", main: "Wühlen auf eigene Gefahr", bot: "Schätze möglich, Staub auch" },
-      { l: "Moin", shape: "wolke", sym: "sun", top: "Moin!", main: "Schön, dass du da bist", bot: "Stöbern ausdrücklich erwünscht" }],
+      { l: "Moin", shape: "wolke", sym: "sun", top: "Moin!", main: "Schön, dass du da bist", bot: "Stöbern ausdrücklich erwünscht" },
+      { l: "Gebraucht", sym: "thumbs-up", top: "", main: "Gebraucht, aber nicht verbraucht", bot: "Genau wie ich" },
+      { l: "Kein Ramsch", sym: "gem", top: "Ehrenwort", main: "Kein Ramsch, nur Schätze", bot: "Na gut, fast nur Schätze" },
+      { l: "Mit Liebe aussortiert", sym: "heart", top: "Frisch ausgemistet", main: "Mit Liebe aussortiert", bot: "Jetzt sucht alles ein neues Zuhause" }],
     b: () => [["Warum ein lustiges Schild hilft", "Auf einem vollen Markt laufen die meisten an den Ständen vorbei. Ein Spruch, über den man schmunzelt, ist ein guter Grund, kurz stehen zu bleiben. Häng das Schild auf Augenhöhe und stell deine schönsten Stücke direkt darunter."],
       ["Eigene Sprüche schreiben", `Kurz gewinnt: Drei bis fünf Wörter im großen Text liest man auch im Vorbeigehen. Die Pointe passt oft gut in die kleine Zeile unten. Freundlich bleibt es, wenn du über dich oder deine Sachen witzelst, nicht über die Kundschaft. Was sonst noch an den Stand gehört, steht in der ${kl("checkliste-flohmarktstand", "Checkliste für deinen Flohmarktstand")}.`]],
     f: [["Darf ich die Sprüche verwenden?", "Ja. Die Sprüche sind von uns, du kannst sie für deinen Stand frei nutzen und nach Lust und Laune ändern."],
@@ -1973,7 +1979,7 @@ const SIGNS = [
   { s: "maedelsflohmarkt", fmt: "quer", tone: "pink", chip: "Mädelsflohmarkt", short: "In Pink, mit Krone und Sektglas: Mode, Taschen und Glitzer.",
     h1: "Schilder für den Mädelsflohmarkt: Mode, Taschen und Glitzer", title: "Mädelsflohmarkt-Schilder zum Ausdrucken: kostenlos",
     desc: "Glamouröse Schilder in Pink für Mädels- und Kleiderflohmarkt: „Königliche Preise“, „Anprobieren erwünscht“, „Neu mit Etikett“ und mehr. Kostenlos drucken.",
-    ans: "Auf dem Mädelsflohmarkt dreht sich alles um Kleidung, Taschen, Schuhe und Schmuck. Mit den passenden Schildern findet man sich an deinem Stand sofort zurecht und traut sich eher, etwas anzuprobieren. Die Vorlagen sind pink voreingestellt, unter „Fläche“ gibt es auch Gelb, Mint und Schwarz, dazu eine eigene Schriftfarbe wie Gold oder Weiß, eine elegante Schrift und unter „Symbol“ Krone, Sektglas, Diamant und vieles mehr.",
+    ans: "Auf dem Mädelsflohmarkt dreht sich alles um Kleidung, Taschen, Schuhe und Schmuck. Mit den passenden Schildern findet man sich an deinem Stand sofort zurecht und traut sich eher, etwas anzuprobieren. Die Vorlagen sind pink voreingestellt, unter „Fläche“ gibt es auch Gelb, Mint, Rosé und weitere Farben, unter „Look“ fertige Stile wie „Schleife“, dazu eine eigene Schriftfarbe wie Gold oder Weiß, eine elegante Schrift und unter „Symbol“ Krone, Sektglas, Diamant und vieles mehr.",
     v: [{ l: "Königliche Preise", sym: "crown", top: "Mädelsflohmarkt", main: "Königliche Preise", bot: "Für alle Queens" },
       { l: "Prickelnde Preise", shape: "wolke", sym: "champagne-glasses", top: "Gönn dir", main: "Prickelnde Preise", bot: "Alles unter 10 €" },
       { l: "Anprobieren erwünscht", shape: "blase", sym: "shirt", top: "", main: "Anprobieren erwünscht", bot: "Der Spiegel steht gleich links" },
@@ -1982,10 +1988,16 @@ const SIGNS = [
       { l: "Mir zu klein", shape: "blume", sym: "heart", top: "", main: "Mir zu klein, dir perfekt", bot: "Probier es einfach an" },
       { l: "Nix zum Anziehen?", sym: "bag-shopping", top: "Nix zum Anziehen?", main: "Hier schon", bot: "Mode, Taschen und Schuhe" },
       { l: "Glitzer-Ecke", sym: "gem", top: "Schmuck und Accessoires", main: "Glitzer-Ecke", bot: "Alles, was funkelt" },
-      { l: "Gold-Edition", sym: "crown", tone: "schwarz", ink: "gold", font: "elegant", top: "Mädelsflohmarkt", main: "Königliche Preise", bot: "Für alle Queens" }],
+      { l: "Gold-Edition", sym: "crown", tone: "schwarz", ink: "gold", font: "elegant", top: "Mädelsflohmarkt", main: "Königliche Preise", bot: "Für alle Queens" },
+      { l: "Einmal getragen", sym: "heart", top: "Preloved", main: "Einmal getragen, zweimal geliebt", bot: "Jetzt bist du dran" },
+      { l: "Second Hand, first Love", shape: "wolke", sym: "heart", top: "", main: "Second Hand, first Love", bot: "Mode mit Geschichte" },
+      { l: "Nur mit Anprobieren", shape: "blase", sym: "bag-shopping", top: "Wie online shoppen", main: "Nur mit Anprobieren", bot: "Und ganz ohne Versandkosten" },
+      { l: "Probier mich an", shape: "blase", sym: "shirt", top: "", main: "Probier mich an!", bot: "Der Spiegel steht gleich daneben" },
+      { l: "Kleiderschrank-Diät", sym: "shirt", top: "Achtung", main: "Mein Kleiderschrank macht Diät", bot: "Hilf ihm dabei" },
+      { l: "Taschen-Glück", sym: "bag-shopping", top: "Taschen und Schuhe", main: "Taschen-Glück ab 5 €", bot: "Nur einmal ausgeführt" }],
     b: () => [["So wirkt dein Stand wie eine kleine Boutique", "Häng Kleidung auf eine Stange statt sie zu stapeln und sortier nach Größen. Taschen und Schuhe stehen am besten auf Augenhöhe, Schmuck kommt in eine eigene Ecke mit Schild. Ein Spiegel neben dem Stand verkauft mehr als jeder Rabatt, weil sich die Leute gleich vorstellen können, wie das Teil an ihnen aussieht."],
-      ["Preise und Größen auf einen Blick", `Ein Festpreis für die ganze Stange spart Fragen und macht das Stöbern entspannt. Für einzelne Teile nimmst du die <a href="${SIGN_BASE}preisschilder/">Preisschilder</a>, auch die gibt es in Pink. Mit dem Format „8 pro Blatt“ druckst du kleine Größen-Schilder wie „Größe 36 bis 38“ für die Stange. Worauf Käuferinnen bei Vintage achten, steht im Ratgeber ${kl("vintage-kleidung-flohmarkt", "Vintage-Kleidung auf dem Flohmarkt kaufen")}.`]],
-    f: [["Kann ich die Schilder auch in Gelb drucken?", "Ja. Unter „Fläche“ wählst du Gelb, Pink, Mint oder Schwarz. Im Sparmodus druckt das Schild ganz ohne Farbfläche, nur mit Rahmen."],
+      ["Preise und Größen auf einen Blick", `Ein Festpreis für die ganze Stange spart Fragen und macht das Stöbern entspannt. Für einzelne Teile nimmst du die <a href="${SIGN_BASE}preisschilder/">Preisschilder</a>, auch die gibt es in Pink. Für die Stange gibt es fertige <a href="${SIGN_BASE}groessenschilder/">Größenschilder</a> von S bis XL. Worauf Käuferinnen bei Vintage achten, steht im Ratgeber ${kl("vintage-kleidung-flohmarkt", "Vintage-Kleidung auf dem Flohmarkt kaufen")}.`]],
+    f: [["Kann ich die Schilder auch in Gelb drucken?", "Ja. Unter „Fläche“ wählst du aus acht Farben, von Gelb über Rosé bis Salbei. Im Sparmodus druckt das Schild ganz ohne Farbfläche, nur mit Rahmen."],
       ["Gibt es die Schrift auch in Gold?", "Ja. Unter „Schriftfarbe“ wählst du Gold, am schönsten auf schwarzer Fläche wie bei der Vorlage „Gold-Edition“. Ein normaler Drucker druckt Gold als warmen Goldton, nicht glänzend. Für echten Glanz druckst du im Sparmodus auf Gold- oder Glitzerpapier."],
       ["Wie viel verlange ich für Kleidung?", `Das hängt von Marke und Zustand ab. Viele setzen für Alltagskleidung einen Festpreis pro Stange und für Markenteile einzelne Preise. Tipps dazu stehen im Ratgeber ${kl("preise-festlegen-flohmarkt", "Preise auf dem Flohmarkt festlegen")}.`]],
     kb: ["vintage-kleidung-flohmarkt", "preise-festlegen-flohmarkt", "was-verkauft-sich-gut-flohmarkt"] },
@@ -2054,6 +2066,62 @@ const SIGNS = [
     f: [["Was schreibe ich bei teilweise defekten Geräten?", "Nenn den Fehler in der kleinen Zeile, zum Beispiel „Lautsprecher knistert“ oder „Akku hält nur kurz“. Je genauer, desto eher findet sich jemand, der genau das reparieren kann."],
       ["Brauche ich Strom zum Testen?", "Auf vielen Flohmärkten gibt es keine Steckdose. Batteriegeräte führst du mit frischen Batterien vor, für andere reicht ein kurzes Video vom Test zu Hause auf dem Handy."]],
     kb: ["elektrogeraete-flohmarkt", "gekauft-wie-gesehen", "preise-festlegen-flohmarkt"] }
+  ,
+  // Seit 28.10.: Größenschilder, Kategorien und Kleidertausch (aus der Recherche: Ordnung verkauft, Kleidertausch wächst)
+  { s: "groessenschilder", fmt: "vier", sym: "shirt", chip: "Größen", short: "Größenschilder für Kleiderstange und Kiste: Kinder, Damen, Schuhe.",
+    h1: "Größenschilder für den Flohmarkt: Kinder, Damen und Schuhe", title: "Größenschilder für den Flohmarkt zum Ausdrucken",
+    desc: "Größenschilder für deinen Flohmarktstand: Kindergrößen von 50 bis 152, Damen S bis XL und Schuhgrößen. Vier Schilder pro A4-Blatt, kostenlos drucken.",
+    ans: "Sortierte Kleidung verkauft sich besser: Wer Größe 104 sucht, sieht sofort, wo es sich zu wühlen lohnt, und muss nicht alles durchsehen. Wähl eine Größe oder tipp deine eigene ein und druck vier Schilder pro Blatt für Kisten und Kleiderstange.",
+    v: [{ l: "Kinder 92–104", top: "Kindergröße", main: "92–104", bot: "Hier lohnt sich das Wühlen" },
+      { l: "Baby 50–68", sym: "baby", top: "Babygröße", main: "50–68", bot: "Für die Allerkleinsten" },
+      { l: "Kinder 74–86", sym: "baby", top: "Kindergröße", main: "74–86", bot: "Sortiert und gewaschen" },
+      { l: "Kinder 110–128", top: "Kindergröße", main: "110–128", bot: "Sortiert und gewaschen" },
+      { l: "Kinder 134–152", top: "Kindergröße", main: "134–152", bot: "Sortiert und gewaschen" },
+      { l: "Damen S", tone: "pink", sym: "bag-shopping", top: "Damen", main: "S", bot: "Anprobieren erwünscht" },
+      { l: "Damen M", tone: "pink", sym: "bag-shopping", top: "Damen", main: "M", bot: "Anprobieren erwünscht" },
+      { l: "Damen L", tone: "pink", sym: "bag-shopping", top: "Damen", main: "L", bot: "Anprobieren erwünscht" },
+      { l: "Damen 38–40", tone: "pink", sym: "bag-shopping", top: "Damen", main: "38–40", bot: "Anprobieren erwünscht" },
+      { l: "Herren L", tone: "mint", top: "Herren", main: "L", bot: "Hemden, Pullis, Jacken" },
+      { l: "Schuhe 38", top: "Schuhgröße", main: "38", bot: "Gern anprobieren" }],
+    b: () => [["Warum sortierte Größen mehr verkaufen", "Auf Kinder- und Mädelsflohmärkten suchen die meisten gezielt nach einer Größe. Liegt alles durcheinander, wühlen sie kurz und gehen weiter. Mit einem Schild pro Kiste oder Abschnitt der Kleiderstange finden sie sofort ihre Größe und schauen sich in Ruhe um."],
+      ["So setzt du die Schilder ein", `Mit „4 pro Blatt“ bekommst du handliche Schilder für Kisten und Stangenabschnitte, mit „8 pro Blatt“ kleine Kärtchen. Bei Kinderkleidung passen zwei bis drei Größen auf ein Schild, das spart Platz am Tisch. An der Kleiderstange hält das Schild mit einer Wäscheklammer oder gelocht an einem Stück Band. Mehr Tipps stehen im Ratgeber ${kl("kinderflohmarkt-verkaufen", "Auf dem Kinderflohmarkt verkaufen")}.`]],
+    f: [["Welche Größen fasse ich zusammen?", "Babys wachsen schnell aus ihren Sachen heraus, da passen Bereiche wie 50 bis 68 oder 74 bis 86 gut. Bei Damen reichen oft S, M, L und XL oder zwei Konfektionsgrößen pro Schild."],
+      ["Kann ich verschiedene Größen auf ein Blatt drucken?", "Auf einem Blatt stehen immer vier gleiche Schilder. Druck einfach für jede Größe ein Blatt. Wer flexibel bleiben will, tippt in die Mitte nur einen Strich wie „___“ und schreibt die Größe mit dickem Filzstift darüber."]],
+    kb: ["kinderflohmarkt-verkaufen", "vintage-kleidung-flohmarkt", "checkliste-flohmarktstand"] },
+  { s: "kategorien", fmt: "quer", sym: "book-open", chip: "Kategorien", short: "Schilder für Bereiche wie Damen, Bücher, Haushalt oder Deko.",
+    h1: "Kategorie-Schilder für den Flohmarkt: Damen, Bücher, Haushalt & mehr", title: "Kategorie-Schilder für den Flohmarkt: Damen, Bücher, Deko",
+    desc: "Schilder für die Bereiche an deinem Flohmarktstand: Damen, Herren, Kinder, Bücher, Haushalt, Deko, Spielzeug und Schmuck. Kostenlos gestalten und drucken.",
+    ans: "Ein großer Stand wirkt schnell wie ein einziger Wühltisch. Mit Schildern für die einzelnen Bereiche sehen die Leute auf einen Blick, was es bei dir gibt, und bleiben länger. Bereich wählen, einen Preis oder Hinweis in die kleine Zeile tippen, drucken.",
+    v: [{ l: "Bücher", top: "Lesestoff", main: "Bücher", bot: "Taschenbuch 1 €, Hardcover 2 €" },
+      { l: "Damen", sym: "bag-shopping", top: "Mode", main: "Damen", bot: "Kleider, Blusen, Jacken" },
+      { l: "Herren", sym: "shirt", top: "Mode", main: "Herren", bot: "Hemden, Hosen, Jacken" },
+      { l: "Kinder", sym: "baby", top: "Mode", main: "Kinder", bot: "Sortiert nach Größen" },
+      { l: "Haushalt", sym: "mug-hot", top: "Küche und Co.", main: "Haushalt", bot: "Geschirr, Gläser, Töpfe" },
+      { l: "Deko", sym: "lightbulb", top: "Für dein Zuhause", main: "Deko", bot: "Vasen, Lampen, Bilder" },
+      { l: "Spielzeug", sym: "puzzle-piece", top: "Für Kinder", main: "Spielzeug", bot: "Spiele, Puzzle, Kuscheltiere" },
+      { l: "Schmuck", sym: "gem", top: "Accessoires", main: "Schmuck", bot: "Ketten, Ringe, Ohrringe" },
+      { l: "Schuhe & Taschen", sym: "bag-shopping", top: "Accessoires", main: "Schuhe & Taschen", bot: "Gern anprobieren" },
+      { l: "Platten & CDs", sym: "record-vinyl", top: "Musik und Filme", main: "Platten & CDs", bot: "Stöbern erwünscht" }],
+    b: () => [["Warum Bereiche helfen", "Viele Besucher suchen gezielt nach Büchern, Kinderkleidung oder Geschirr. Ein Schild über jedem Bereich zeigt schon aus ein paar Metern, ob sich das Stehenbleiben lohnt. Gleichzeitig wirkt dein Stand aufgeräumt, und das schafft Vertrauen in die Ware."],
+      ["Preise gleich mit aufs Schild", `Nutz die kleine Zeile für einen Festpreis pro Bereich, etwa „Taschenbuch 1 €, Hardcover 2 €“. Dann musst du nicht jedes Teil einzeln auszeichnen. Für Einzelstücke nimmst du die <a href="${SIGN_BASE}preisschilder/">Preisschilder</a>. Wie du gute Preise findest, steht im Ratgeber ${kl("preise-festlegen-flohmarkt", "Preise auf dem Flohmarkt festlegen")}.`]],
+    f: [["Welches Format passt für Kategorie-Schilder?", "Für einen Tisch reicht meist „2 pro Blatt“, das ergibt Schilder halb so groß wie ein A4-Blatt. Über einer Kleiderstange oder einem großen Bereich wirkt „1 pro Blatt“ besser."],
+      ["Kann ich eigene Bereiche anlegen?", "Ja. Tipp deinen Bereich in den großen Text, zum Beispiel „Werkzeug“ oder „Sammlerstücke“, und such dir unter „Symbol“ ein passendes Bild aus."]],
+    kb: ["checkliste-flohmarktstand", "preise-festlegen-flohmarkt", "was-verkauft-sich-gut-flohmarkt"] },
+  { s: "kleidertausch", fmt: "quer", tone: "mint", sym: "shirt", chip: "Kleidertausch", short: "Für Tauschpartys: „Bring eins, nimm eins“, Annahme und Regeln.",
+    h1: "Kleidertausch-Schilder für Tauschparty und Tauschecke", title: "Kleidertausch-Schilder zum Ausdrucken: kostenlos",
+    desc: "Schilder für Kleidertauschparty und Tauschecke: „Bring eins, nimm eins“, Annahme, Regeln und Umkleide. Kostenlos gestalten, drucken oder als PDF speichern.",
+    ans: "Beim Kleidertausch zahlt niemand, trotzdem brauchen die Gäste Orientierung: Wo gibt man Sachen ab, wie viele Teile darf man mitbringen, wo ist die Umkleide? Mit ein paar Schildern läuft die Tauschparty fast von allein. Spruch wählen, anpassen, drucken.",
+    v: [{ l: "Bring eins, nimm eins", sym: "handshake", top: "Kleidertausch", main: "Bring eins, nimm eins", bot: "Tauschen statt kaufen" },
+      { l: "Das neue Shoppen", sym: "bag-shopping", top: "", main: "Tauschen ist das neue Shoppen", bot: "Heute zahlt hier niemand" },
+      { l: "Annahme", sym: "box-open", top: "Hier abgeben", main: "Annahme", bot: "Sauber, ganz und gern getragen" },
+      { l: "Max. 10 Teile", top: "Damit es für alle reicht", main: "Max. 10 Teile", bot: "Pro Person" },
+      { l: "Umkleide", top: "Erst probieren", main: "Umkleide →", bot: "Der Spiegel wartet schon" },
+      { l: "Nimm, was dich glücklich macht", sym: "heart", top: "Gratis", main: "Nimm, was dich glücklich macht", bot: "Und erzähl es weiter" }],
+    b: () => [["So läuft eine Tauschparty entspannt", `Eine feste Annahme am Eingang, eine Obergrenze pro Person und Kleiderstangen nach Größen sortiert: Mehr braucht es meist nicht. Klare Schilder ersparen dir, jede Regel zehnmal zu erklären. Für die Stangen gibt es passende <a href="${SIGN_BASE}groessenschilder/">Größenschilder</a>.`],
+      ["Was am Ende übrig bleibt", `Plant vorher, wohin die Kleidung geht, die niemand mitgenommen hat, zum Beispiel an eine Kleiderkammer. Schreibt es ruhig auf ein Schild, das freut die Gäste. Warum Gebrauchtes gut für die Umwelt ist, steht im Ratgeber ${kl("second-hand-nachhaltig", "Second Hand und Flohmarkt")}.`]],
+    f: [["Wie viele Teile darf man zum Kleidertausch mitbringen?", "Das legt jede Tauschparty selbst fest. Viele begrenzen auf etwa zehn Teile pro Person, damit genug für alle da ist. Trag eure Zahl einfach ins Schild ein."],
+      ["Kann ich die Schilder in einer anderen Farbe drucken?", "Ja. Die Vorlagen sind in Mint voreingestellt, unter „Fläche“ gibt es sieben weitere Farben. Passend zum Kleidertausch ist der Look „Natur“ in Salbeigrün. Im Sparmodus druckt das Schild nur mit Rahmen."]],
+    kb: ["second-hand-nachhaltig", "vintage-kleidung-flohmarkt", "kita-flohmarkt-organisieren"] }
 ];
 const SIGN_BY = Object.fromEntries(SIGNS.map(t => [t.s, t]));
 for (const sp of ["/", TIPS_P]) { const hp = pages.get(sp); if (hp) hp.html = hp.html.split("%%SIGN_N%%").join(String(SIGNS.length)); }
@@ -2062,18 +2130,27 @@ const SIGN_PAGE_IMGS = new Map(); // für die Bild-Sitemap
 
 // Startzustand einer Vorlage (erste Variante)
 // Farben der Schildfläche: Gelb (Standard), Pink und Mint. Eine Vorlage kann eine andere Farbe voreinstellen (tone).
-const TONES = { gelb: ["Gelb", "#F6E03A"], pink: ["Pink", "#FF8FC0"], mint: ["Mint", "#8EE3C1"], schwarz: ["Schwarz", "#15211B"] };
+const TONES = { gelb: ["Gelb", "#F6E03A"], pink: ["Pink", "#FF8FC0"], mint: ["Mint", "#8EE3C1"], schwarz: ["Schwarz", "#15211B"], karamell: ["Karamell", "#E9A057"], salbei: ["Salbei", "#B5C9A1"], rose: ["Rosé", "#F6C5CD"], papier: ["Papier", "#ECE7DC"] };
 // Schriftfarbe des großen Texts. Gold ist ein Goldton mit leichtem Verlauf (gedruckt nicht glänzend).
 const INKS = { schwarz: ["Schwarz", "#15211B"], weiss: ["Weiß", "#FFFFFF"], gold: ["Gold", "#C9A13B"], pink: ["Pink", "#FF8FC0"] };
 // Erlaubte Paare, erste Farbe = Standard. Weiß und Gold auf heller Fläche bekommen automatisch eine dunkle Kontur (Klasse ink-out), damit sie lesbar bleiben.
-const INK_OK = { gelb: ["schwarz", "weiss"], pink: ["schwarz", "weiss", "gold"], mint: ["schwarz", "weiss", "gold"], schwarz: ["weiss", "gold", "pink"], save: ["schwarz", "gold", "pink"] };
+const INK_OK = { gelb: ["schwarz", "weiss"], pink: ["schwarz", "weiss", "gold"], mint: ["schwarz", "weiss", "gold"], schwarz: ["weiss", "gold", "pink"], karamell: ["schwarz", "weiss"], salbei: ["schwarz", "weiss"], rose: ["schwarz", "gold", "weiss"], papier: ["schwarz"], save: ["schwarz", "gold", "pink"] };
 const inkOut = st => { const k = st.ink || inkDefault(st.tone); return (k === "weiss" || k === "gold") && (st.save || (st.tone || "gelb") !== "schwarz"); };
 // Formen der Farbfläche. Die genaue Form rechnet site.js passend zur Größe aus; hier nur die kleinen Bilder für die Auswahl.
-const SHAPES = [["rund", "Klassisch"], ["wolke", "Wolke"], ["blume", "Blume"], ["stern", "Stern"], ["blase", "Sprechblase"], ["etikett", "Etikett"]];
+const SHAPES = [["rund", "Klassisch"], ["wolke", "Wolke"], ["blume", "Blume"], ["stern", "Stern"], ["blase", "Sprechblase"], ["etikett", "Etikett"], ["bon", "Kassenbon"]];
+/* Fertige Looks: ein Tipp setzt Fläche, Schriftfarbe, Schrift und Form (Schleife auch das Symbol). Aus der Recherche vom 28.10.: warm, nostalgisch, handgemacht. */
+const LOOKS = [["klassik", "Flohlotse", { tone: "gelb", ink: "schwarz", font: "modern", shape: "rund" }], ["retro", "Retro 70er", { tone: "karamell", ink: "schwarz", font: "elegant", shape: "blume" }], ["bon", "Kassenbon", { tone: "papier", ink: "schwarz", font: "mono", shape: "bon" }], ["schleife", "Schleife", { tone: "rose", ink: "schwarz", font: "elegant", shape: "rund", sym: "schleife" }], ["natur", "Natur", { tone: "salbei", ink: "schwarz", font: "klar", shape: "wolke", sym: "blatt" }]];
 const shapeOk = k => SHAPES.some(([x]) => x === k);
 // gleiche Rechnung wie shapePath in site.js (für die Auswahlbilder)
 function shapePath(k, w, h) {
   const p = Math.max(1.5, Math.min(w, h) * 0.02), f = n => Math.round(n * 10) / 10, m = Math.min(w, h);
+  if (k === "bon") { // Kassenbon: Rechteck mit Zackenrand oben und unten
+    const z = m * 0.07, n = Math.max(6, Math.round((w - 2 * p) / (z * 2))), st = (w - 2 * p) / n; let d = `M${f(p)} ${f(p + z)}`;
+    for (let i = 0; i < n; i++) d += `L${f(p + st * (i + 0.5))} ${f(p)}L${f(p + st * (i + 1))} ${f(p + z)}`;
+    d += `L${f(w - p)} ${f(h - p - z)}`;
+    for (let i = n - 1; i >= 0; i--) d += `L${f(p + st * (i + 0.5))} ${f(h - p)}L${f(p + st * i)} ${f(h - p - z)}`;
+    return d + "Z";
+  }
   if (k === "wolke" || k === "blume") {
     const r = k === "wolke" ? m * 0.14 : m * 0.1, x0 = p + r, y0 = p + r, x1 = w - p - r, y1 = h - p - r, pts = [];
     const side = (ax, ay, bx, by) => { const n = Math.max(2, Math.round(Math.hypot(bx - ax, by - ay) / (2 * r))); for (let i = 0; i < n; i++) { let t = i / n; if (k === "wolke" && i > 0) t += (i % 2 ? 0.16 : -0.1) / n; pts.push([ax + (bx - ax) * t, ay + (by - ay) * t]); } };
@@ -2100,7 +2177,7 @@ function shapePath(k, w, h) {
 }
 const inkDefault = tone => INK_OK[tone || "gelb"][0];
 // Schriften für den Schildtext; eine Schrift erscheint nur, wenn ihre Datei im Ordner fonts liegt
-const SIGN_FONTS = [["modern", "Modern", "Bricolage Grotesque"], ["klar", "Klar", "Figtree"], ["elegant", "Elegant", "Fraunces"], ["verspielt", "Verspielt", "Pacifico"]].filter(([k, , fam]) => k === "modern" || fontsFound.some(x => x.fam === fam));
+const SIGN_FONTS = [["modern", "Modern", "Bricolage Grotesque"], ["klar", "Klar", "Figtree"], ["elegant", "Elegant", "Fraunces"], ["verspielt", "Verspielt", "Pacifico"], ["mono", "Bon", "DM Mono"]].filter(([k, , fam]) => k === "modern" || fontsFound.some(x => x.fam === fam));
 const fontOk = k => SIGN_FONTS.some(([x]) => x === k);
 // Symbole für die Schilder: Font Awesome Free 7.1.0 (Solid), Lizenz CC BY 4.0, Copyright 2025 Fonticons, Inc., unverändert übernommen.
 // Kräftige, gefüllte Formen passen zur fetten Schilder-Schrift. [Beschriftung, viewBox, Pfad]
@@ -2151,7 +2228,10 @@ const SYM = {
   "face-grin-wink": ["Zwinker-Smiley", "0 0 512 512", "M256 512a256 256 0 1 0 0-512 256 256 0 1 0 0 512m130.7-203.1c11.9-3.7 23.9 6.3 19.6 18.1C383.9 388.3 325 432.1 256 432.1s-127.9-43.9-150.3-105.2c-4.3-11.8 7.7-21.8 19.6-18.1C164.5 321 209 327.9 256 327.9s91.5-6.9 130.7-19.1zM328 196c-11 0-20 9-20 20s-9 20-20 20-20-9-20-20c0-33.1 26.9-60 60-60h16c33.1 0 60 26.9 60 60 0 11-9 20-20 20s-20-9-20-20-9-20-20-20zm-152-20a32 32 0 1 1 0 64 32 32 0 1 1 0-64"],
   "dumbbell": ["Hantel", "0 0 640 512", "M96 112c0-26.5 21.5-48 48-48s48 21.5 48 48v112h256V112c0-26.5 21.5-48 48-48s48 21.5 48 48v16h16c26.5 0 48 21.5 48 48v48c17.7 0 32 14.3 32 32s-14.3 32-32 32v48c0 26.5-21.5 48-48 48h-16v16c0 26.5-21.5 48-48 48s-48-21.5-48-48V288H192v112c0 26.5-21.5 48-48 48s-48-21.5-48-48v-16H80c-26.5 0-48-21.5-48-48v-48c-17.7 0-32-14.3-32-32s14.3-32 32-32v-48c0-26.5 21.5-48 48-48h16z"],
   "wine-glass": ["Glas", "0 0 320 512", "M32.6 25.7C35.6 10.8 48.7 0 64 0h192c15.3 0 28.4 10.8 31.4 25.7L316.8 173c2.1 10.5 3.2 21.2 3.2 32v3c0 77.4-55 142-128 156.8V480h64c17.7 0 32 14.3 32 32s-14.3 32-32 32H64c-17.7 0-32-14.3-32-32s14.3-32 32-32h64V364.8C55 350 0 285.4 0 208v-3c0-10.7 1.1-21.4 3.2-32zM77.4 128h165.1l-12.8-64H90.2z"] };
-const symSVG = k => SYM[k] ? `<svg viewBox="${SYM[k][1]}" aria-hidden="true" focusable="false"><path d="${SYM[k][2]}"/></svg>` : "";
+// Schleife und Blatt: eigene Zeichnungen von Flohlotse (Löcher per Füllregel „evenodd“)
+SYM["schleife"] = ["Schleife", "16 95 480 400", "M206 236C168 176 114 132 72 140C30 148 22 214 48 254C74 294 148 304 206 284ZM184 246C156 216 124 200 104 206C88 212 88 234 100 248C114 262 150 266 184 262ZM306 236C344 176 398 132 440 140C482 148 490 214 464 254C438 294 364 304 306 284ZM328 246C356 216 388 200 408 206C424 212 424 234 412 248C398 262 362 266 328 262ZM228 220H284A14 14 0 0 1 298 234V282A14 14 0 0 1 284 296H228A14 14 0 0 1 214 282V234A14 14 0 0 1 228 220ZM228 300L186 440L218 426L238 458L256 300ZM284 300L326 440L294 426L274 458L256 300Z", "evenodd"];
+SYM["blatt"] = ["Blatt", "0 0 512 512", "M104 408C96 214 214 96 424 88C416 298 298 416 104 408ZM150 366L370 146L378 154L158 374ZM96 416L60 452L70 462L106 426Z", "evenodd"];
+const symSVG = k => SYM[k] ? `<svg viewBox="${SYM[k][1]}" aria-hidden="true" focusable="false"><path${SYM[k][3] ? ` fill-rule="${SYM[k][3]}"` : ""} d="${SYM[k][2]}"/></svg>` : "";
 // Symbol einer Variante: eigene Angabe (auch "" für keins) geht vor der Angabe der Vorlage
 const symOf = (t, x) => { const k = x.sym !== undefined ? x.sym : t.sym; return k && SYM[k] ? k : ""; };
 const signState = (t, x = t.v[0]) => ({ kind: t.kind || "sign", fmt: t.kind === "tags" ? "tags" : (t.fmt || "quer"), top: x.top || "", main: x.main || "", bot: x.bot || "", price: x.price || "", ...((x.tone || t.tone) && (x.tone || t.tone) !== "gelb" ? { tone: x.tone || t.tone } : {}), ...(t.kind !== "tags" && symOf(t, x) ? { sym: symOf(t, x) } : {}), ...(x.ink && x.ink !== inkDefault(x.tone || t.tone) ? { ink: x.ink } : {}), ...(x.font && x.font !== "modern" && fontOk(x.font) ? { font: x.font } : {}), ...(t.kind !== "tags" && x.shape && x.shape !== "rund" && shapeOk(x.shape) ? { shape: x.shape } : {}) });
@@ -2194,24 +2274,30 @@ function sheetHTML(st) {
 }
 // Themen im Designer: jede Vorlage mit all ihren Sprüchen, dazu „Eigener Text“. So findet man jeden Spruch auf jeder Designer-Seite.
 // Reihenfolge: Beliebtes und Lustiges zuerst.
-const THEME_ORDER = ["alles-1-euro", "lustige-sprueche", "maedelsflohmarkt", "preisschilder", "bar-und-paypal", "handeln-erwuenscht", "mengenrabatt", "alles-muss-raus", "reserviert-verkauft", "zu-verschenken", "bin-gleich-zurueck", "bitte-nicht-anfassen", "hofflohmarkt", "kinderflohmarkt", "kaffee-und-kuchen", "guter-zweck", "vintage", "getestet", "weihnachtsflohmarkt"];
+const THEME_ORDER = ["alles-1-euro", "lustige-sprueche", "maedelsflohmarkt", "kleidertausch", "preisschilder", "groessenschilder", "kategorien", "bar-und-paypal", "handeln-erwuenscht", "mengenrabatt", "alles-muss-raus", "reserviert-verkauft", "zu-verschenken", "bin-gleich-zurueck", "bitte-nicht-anfassen", "hofflohmarkt", "kinderflohmarkt", "kaffee-und-kuchen", "guter-zweck", "vintage", "getestet", "weihnachtsflohmarkt"];
 const signThemes = () => [...THEME_ORDER.map(s => SIGN_BY[s]).filter(Boolean), ...SIGNS.filter(t => !THEME_ORDER.includes(t.s))]
   .map(t => ({ s: t.s, l: { mengenrabatt: "Mengenrabatt", "reserviert-verkauft": "Reserviert & Verkauft" }[t.s] || t.chip, items: t.v.map(x => ({ l: x.l, set: t.s === "bar-und-paypal" ? { ...signState(t, x), pay: x.l === "Nur Bargeld" ? 0 : 1 } : signState(t, x) })) }))
   .concat([{ s: "", l: "Eigener Text", items: [{ l: "Eigener Text", set: { kind: "sign", fmt: "quer", top: "", main: "Dein Text", bot: "" } }] }]);
 // Ideen zum Antippen: fertige Looks (Spruch, Farbe, Schrift, Form) als kleines Bild. Ein Tipp übernimmt alles, danach Text ändern und drucken.
 // Bilder: src/schilder/ideen/<kennung>.webp (echte Aufnahmen aus dem Designer, entstehen außerhalb des Baus). Fehlt ein Bild, zeigt die Karte Farbe und Namen.
 const IDEAS = [
+  ["second-hand-love", "maedelsflohmarkt", "Second Hand, first Love", { tone: "schwarz", ink: "weiss", font: "verspielt", shape: "wolke" }, "Second Hand"],
+  ["retro-ecke", "vintage", "Retro-Ecke", { tone: "karamell", ink: "schwarz", font: "elegant", shape: "blume" }, "Retro 70er"],
+  ["bring-eins", "kleidertausch", "Bring eins, nimm eins", { tone: "mint", font: "modern", shape: "etikett" }, "Kleidertausch"],
+  ["kassenbon", "mengenrabatt", "3 für 5 €", { tone: "papier", ink: "schwarz", font: "mono", shape: "bon" }, "Kassenbon"],
+  ["einmal-getragen", "maedelsflohmarkt", "Einmal getragen", { tone: "pink", ink: "schwarz", font: "elegant" }],
+  ["schleife", "maedelsflohmarkt", "Kleiderstange", { tone: "rose", ink: "schwarz", font: "elegant", shape: "rund", sym: "schleife" }, "Schleife"],
+  ["rausgewachsen", "kinderflohmarkt", "Rausgewachsen", { tone: "gelb", ink: "schwarz", font: "verspielt", shape: "blume" }],
+  ["natur", "kleidertausch", "Das neue Shoppen", { tone: "salbei", ink: "schwarz", font: "klar", shape: "wolke", sym: "blatt" }, "Natur"],
+  ["kein-ramsch", "lustige-sprueche", "Kein Ramsch", { tone: "gelb", ink: "schwarz", font: "elegant", shape: "etikett" }],
+  ["nur-mit-anprobieren", "maedelsflohmarkt", "Nur mit Anprobieren", { tone: "pink", ink: "weiss", font: "klar", shape: "blase" }, "Anprobieren"],
   ["prickelnde-preise", "maedelsflohmarkt", "Prickelnde Preise", { tone: "pink", ink: "weiss", font: "verspielt", shape: "wolke" }],
   ["koenigliche-preise", "maedelsflohmarkt", "Gold-Edition", {}, "Königliche Preise"],
   ["mir-zu-klein", "maedelsflohmarkt", "Mir zu klein", { tone: "mint", ink: "weiss", font: "verspielt", shape: "blume" }],
   ["neu-mit-etikett", "maedelsflohmarkt", "Neu mit Etikett", { tone: "pink", ink: "gold", font: "elegant", shape: "etikett" }],
   ["glitzer-ecke", "maedelsflohmarkt", "Glitzer-Ecke", { tone: "schwarz", ink: "pink", shape: "stern" }],
-  ["anprobieren", "maedelsflohmarkt", "Anprobieren erwünscht", { tone: "mint", ink: "schwarz", font: "elegant", shape: "blase" }, "Anprobieren"],
   ["alles-1-euro", "alles-1-euro", "1 €", {}, "Alles 1 €"],
-  ["halber-preis", "alles-muss-raus", "Halber Preis", {}],
-  ["fehlkauf", "lustige-sprueche", "Fehlkauf", {}],
   ["moin", "lustige-sprueche", "Moin", { tone: "mint", font: "verspielt" }],
-  ["raritaet", "vintage", "Rarität", { tone: "pink", font: "verspielt", shape: "etikett" }],
   ["bar-und-paypal", "bar-und-paypal", "Bar & PayPal", { tone: "schwarz", ink: "gold", font: "verspielt", shape: "etikett" }]
 ];
 const IDEA_DIR = path.join(ROOT, "src", "schilder", "ideen");
@@ -2222,7 +2308,7 @@ const ideasHTML = themes => {
     if (!t || !x || g < 0) { warn("Schilder", `Idee „${k}“: Vorlage „${s}“ / „${l}“ nicht gefunden, die Karte fehlt.`); return ""; }
     const tone = o.tone || x.tone || t.tone || "gelb", ink = o.ink || x.ink || inkDefault(tone), font = fontOk(o.font || x.font || "modern") ? (o.font || x.font || "modern") : "modern";
     if (!INK_OK[tone].includes(ink)) warn("Schilder", `Idee „${k}“: Schriftfarbe ${ink} passt nicht zur Fläche ${tone}.`);
-    const set = { ...signState(t, x), tone, ink, font, shape: o.shape || x.shape || "rund", sym: symOf(t, x), look: 1, ...(s === "bar-und-paypal" ? { pay: 1 } : {}) };
+    const set = { ...signState(t, x), tone, ink, font, shape: o.shape || x.shape || "rund", sym: o.sym && SYM[o.sym] ? o.sym : symOf(t, x), look: 1, ...(s === "bar-und-paypal" ? { pay: 1 } : {}) };
     const img = ideaImg(k) ? `<img src="/assets/schilder/ideen/${k}.webp" width="200" height="141" alt="" loading="lazy" decoding="async">` : `<i class="idea-ph sw-${tone}" aria-hidden="true"></i>`;
     return `<button type="button" class="idea" data-set="${esc(JSON.stringify(set))}" data-grp="${g}" aria-pressed="false">${img}<span>${esc(name || l)}</span></button>`;
   }).join("");
@@ -2254,8 +2340,9 @@ ${pay ? `<label class="fld only-sign gen-pay"><span>PayPal</span><span class="pf
 ${txt("fPrice", "Preis", st.price, 12, "leer = zum Beschriften", "only-tags")}
 </div>
 <div class="gen-panel gp-look" data-panel="look" role="tabpanel">
-<div class="sw-row" role="group" aria-label="Farbe der Fläche"><span class="seg-l">Fläche</span>${Object.keys(TONES).map(toneBtn).join("")}</div>
-<div class="sw-row" role="group" aria-label="Schriftfarbe (nur gut lesbare Paare)"><span class="seg-l">Schrift&shy;farbe</span>${Object.keys(INKS).map(inkBtn).join("")}</div>
+<div class="sw-row look-row only-sign" role="group" aria-label="Fertiger Look"><span class="seg-l">Look</span><span class="look-set">${LOOKS.filter(([, , o]) => fontOk(o.font)).map(([k, l, o]) => `<button type="button" class="chip look-btn look-${k}" data-look="${esc(JSON.stringify(o))}" aria-pressed="false"><i class="sw sw-${o.tone}" aria-hidden="true"></i>${l}</button>`).join("")}</span></div>
+<div class="sw-row" role="group" aria-label="Farbe der Fläche"><span class="seg-l">Fläche</span><span class="sw-set">${Object.keys(TONES).map(toneBtn).join("")}</span></div>
+<div class="sw-row" role="group" aria-label="Schriftfarbe (nur gut lesbare Paare)"><span class="seg-l">Schrift&shy;farbe</span><span class="sw-set">${Object.keys(INKS).map(inkBtn).join("")}</span></div>
 ${SIGN_FONTS.length > 1 ? `<div class="seg hs seg-font only-sign" role="group" aria-label="Schrift">${SIGN_FONTS.map(fontBtn).join("")}</div>` : ""}
 </div>
 <div class="gen-panel gp-shape" data-panel="shape" role="tabpanel" hidden><div class="seg hs shape-row" role="group" aria-label="Form der Farbfläche">${SHAPES.map(([k, l]) => `<button type="button" class="chip shp-btn" data-shape="${k}" aria-pressed="${(st.shape || "rund") === k}"><svg viewBox="0 0 44 26" aria-hidden="true"><path fill-rule="evenodd" d="${shapePath(k, 44, 26)}"/></svg>${l}</button>`).join("")}</div></div>
@@ -2296,6 +2383,8 @@ function signPreviewSVG(t) {
     + `<text x="283" y="203" text-anchor="end" font-family="${B}" font-size="5" fill="#5A6961">flohlotse.de</text></svg>\n`;
 }
 const signAlt = t => t.kind === "tags" ? "Vorlage: Preisschilder für den Flohmarkt zum Ausdrucken" : `Vorlage: „${t.chip}“-Schild für den Flohmarkt`;
+// Vorlagen-Raster: nie zwei Spalten (dann wären die Vorschaubilder riesig), sonst wie grid()
+const signGrid = cards => cards.length % 3 === 0 ? grid(cards) : `<div class="news fit">${cards.join("")}</div>`;
 const signCard = t => `<a class="card sg-card" href="${signUrl(t)}"><img src="${signImg(t)}" width="297" height="210" alt="${esc(signAlt(t))}" loading="lazy" decoding="async"><h3>${esc(t.chip)}</h3><p>${esc(t.short)}</p></a>`;
 const signLD = (p, crumbsArr, faq) => G([crumbLD(crumbsArr),
   { "@type": "WebApplication", name: `${NAME} Schilder-Designer`, url: SITE + p, applicationCategory: "DesignApplication", operatingSystem: "Web", inLanguage: "de", isAccessibleForFree: true, offers: { "@type": "Offer", price: "0", priceCurrency: "EUR" } },
@@ -2313,8 +2402,8 @@ const faqHTML = f => `<section class="faq"><h2>Häufige Fragen</h2>${f.map(([q, 
   const body = crumbs(cr) + `<article class="kb"><h1>Flohmarkt-Schilder und Preisschilder zum Ausdrucken</h1>${signByline}
 <p class="lead">Der Schilder-Designer für deinen Stand: Vorlage wählen, Text eintippen, drucken. Ohne Drucker speicherst du das Schild als PDF und druckst es im Copyshop.</p>
 ${genHTML(signState(first), themes, 0, "Schild gestalten und drucken", "auto")}
-<section class="related"><div class="sec-head"><h2>Alle Vorlagen</h2></div>${grid(SIGNS.map(signCard))}</section>
-<div class="kb-body"><h2>Welche Schilder lohnen sich am Stand?</h2><p>Ein großes Schild für die Wühlkiste wie <a href="${signUrl(first)}">„Alles 1 €“</a> erspart dir an einem vollen Markttag Dutzende Fragen. Ein <a href="${signUrl(SIGN_BY["bar-und-paypal"])}">Zahlungsschild</a> verhindert peinliche Momente an der Kasse, und <a href="${signUrl(SIGN_BY["handeln-erwuenscht"])}">„Handeln erwünscht“</a> holt Leute ins Gespräch, die sonst nur gucken. Für einzelne Stücke nimmst du <a href="${signUrl(SIGN_BY.preisschilder)}">kleine Preisschilder</a>. Für den Hofflohmarkt gibt es <a href="${signUrl(SIGN_BY.hofflohmarkt)}">Wegweiser mit Pfeil</a>, für die letzte Stunde <a href="${signUrl(SIGN_BY["alles-muss-raus"])}">„Alles muss raus“</a> und für den Stand deiner Kinder ein eigenes <a href="${signUrl(SIGN_BY.kinderflohmarkt)}">Kinderflohmarkt-Schild</a>. Für gute Laune gibt es <a href="${signUrl(SIGN_BY["lustige-sprueche"])}">lustige Sprüche</a>, für den <a href="${signUrl(SIGN_BY.maedelsflohmarkt)}">Mädelsflohmarkt</a> Schilder in Pink. Für Retro-Schätze gibt es <a href="${signUrl(SIGN_BY.vintage)}">Vintage-Schilder</a>, für Elektronik <a href="${signUrl(SIGN_BY.getestet)}">„Getestet“</a> und für Kita- und Schulflohmärkte <a href="${signUrl(SIGN_BY["kaffee-und-kuchen"])}">Kaffee &amp; Kuchen</a> und <a href="${signUrl(SIGN_BY["guter-zweck"])}">„Für den guten Zweck“</a>. Jedes Schild kannst du in Gelb, Pink oder Mint drucken und mit einem Symbol verzieren, von der Krone bis zum Sektglas.</p>
+<section class="related"><div class="sec-head"><h2>Alle Vorlagen</h2></div>${signGrid(SIGNS.map(signCard))}</section>
+<div class="kb-body"><h2>Welche Schilder lohnen sich am Stand?</h2><p>Ein großes Schild für die Wühlkiste wie <a href="${signUrl(first)}">„Alles 1 €“</a> erspart dir an einem vollen Markttag Dutzende Fragen. Ein <a href="${signUrl(SIGN_BY["bar-und-paypal"])}">Zahlungsschild</a> verhindert peinliche Momente an der Kasse, und <a href="${signUrl(SIGN_BY["handeln-erwuenscht"])}">„Handeln erwünscht“</a> holt Leute ins Gespräch, die sonst nur gucken. Für einzelne Stücke nimmst du <a href="${signUrl(SIGN_BY.preisschilder)}">kleine Preisschilder</a>. Für den Hofflohmarkt gibt es <a href="${signUrl(SIGN_BY.hofflohmarkt)}">Wegweiser mit Pfeil</a>, für die letzte Stunde <a href="${signUrl(SIGN_BY["alles-muss-raus"])}">„Alles muss raus“</a> und für den Stand deiner Kinder ein eigenes <a href="${signUrl(SIGN_BY.kinderflohmarkt)}">Kinderflohmarkt-Schild</a>. Für gute Laune gibt es <a href="${signUrl(SIGN_BY["lustige-sprueche"])}">lustige Sprüche</a>, für den <a href="${signUrl(SIGN_BY.maedelsflohmarkt)}">Mädelsflohmarkt</a> Schilder in Pink. Ordnung schaffen <a href="${signUrl(SIGN_BY.groessenschilder)}">Größenschilder</a> für Kiste und Kleiderstange und <a href="${signUrl(SIGN_BY.kategorien)}">Kategorie-Schilder</a> wie Bücher, Damen oder Haushalt, für Tauschpartys gibt es <a href="${signUrl(SIGN_BY.kleidertausch)}">Kleidertausch-Schilder</a>. Für Retro-Schätze gibt es <a href="${signUrl(SIGN_BY.vintage)}">Vintage-Schilder</a>, für Elektronik <a href="${signUrl(SIGN_BY.getestet)}">„Getestet“</a> und für Kita- und Schulflohmärkte <a href="${signUrl(SIGN_BY["kaffee-und-kuchen"])}">Kaffee &amp; Kuchen</a> und <a href="${signUrl(SIGN_BY["guter-zweck"])}">„Für den guten Zweck“</a>. Jedes Schild kannst du in acht Farben drucken und mit einem Symbol verzieren, von der Krone bis zur Schleife. Unter „Stil“ gibt es außerdem fertige Looks: Retro 70er, Kassenbon, Schleife und Natur.</p>
 ${sideImg("seite-schilder", "quer kante")}<h2>So hält dein Schild den ganzen Tag</h2><p>Steck das Blatt in eine Klarsichthülle, dann übersteht es Nieselregen und Kaffeeflecken. Mit Wäscheklammern oder Kreppband hält es an Kisten und Tischkanten, bei Wind hilft ein Stück Pappe dahinter. Was sonst noch in die Tasche gehört, steht in der ${kl("checkliste-flohmarktstand", "Checkliste für deinen Flohmarktstand")}.</p>
 <h2>Drucken ohne eigenen Drucker</h2><p>Tipp im Designer auf „Speichern“ und wähl im Fenster „Als PDF speichern“. Das PDF druckst du im Copyshop oder bei Freunden aus. Für die gelbe Fläche reicht ein normaler Farbdrucker, im Sparmodus genügt Schwarzweiß.</p></div>
 ${faqHTML(faq)}
@@ -2330,7 +2419,7 @@ for (const t of SIGNS) {
 ${(() => { const th = signThemes(); return genHTML(signState(t), th, th.findIndex(g => g.s === t.s), t.kind === "tags" ? "Preisschilder gestalten" : `„${esc(t.chip)}“-Schild gestalten`, t.s === "bar-und-paypal" ? true : "auto"); })()}
 <div class="kb-body"><p class="intro">${esc(t.ans)}</p>${t.b().map(([h, x]) => `<h2>${esc(h)}</h2><p>${x}</p>`).join("")}</div>
 ${faqHTML(t.f)}
-<section class="related"><div class="sec-head"><h2>Weitere Schilder-Vorlagen</h2>${more(SIGN_BASE, "Alle")}</div>${grid(others.map(signCard))}</section>
+<section class="related"><div class="sec-head"><h2>Weitere Schilder-Vorlagen</h2>${more(SIGN_BASE, "Alle")}</div>${signGrid(others.map(signCard))}</section>
 <section class="related"><div class="sec-head"><h2>Aus dem Ratgeber</h2></div>${grid(t.kb.filter(s => KBY[s]).map(kbCard))}</section></article>`;
   layout({ p, title: `${t.title} | ${NAME}`, desc: t.desc, body, nav: "schilder", ld: signLD(p, cr, t.f) });
   SIGN_PAGE_IMGS.set(p, others.map(x => [signImg(x), signAlt(x)]));

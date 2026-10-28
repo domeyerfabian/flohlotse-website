@@ -1,21 +1,22 @@
 # Flohlotse: Website gebaut
 
-Stand 28.10.2026 · 319 Seiten (313 für Google) · 149 Märkte · 185 Termine in den nächsten 120 Tagen · 42 Ratgeber-Artikel · 801 Event-Auszeichnungen
+Stand 28.10.2026 · 322 Seiten (316 für Google) · 152 Märkte · 188 Termine in den nächsten 120 Tagen · 42 Ratgeber-Artikel · 817 Event-Auszeichnungen
 
-## Zu erledigen: 8 Hinweise
+## Zu erledigen: 9 Hinweise
 
 | Bereich | Hinweis |
 |---|---|
 | Termin-Wächter | Flohmarkt Else-Rauch-Platz: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 22.11.2026. Bitte prüfen: https://www.else-rauch-platz.de/ |
 | Termin-Wächter | Flohmarkt 73 im Kulturhaus 73: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 05.12.2026, 16.01.2027. Bitte prüfen: https://termine.dreiundsiebzig.de/ |
-| Termin-Wächter | Hallenflohmarkt in der Halle 15: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 29.10.2026. Bitte prüfen: https://www.asb-halle15.de/ |
+| Termin-Wächter | Hallenflohmarkt in der Halle 15: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 29.10.2026, 15.11.2026. Bitte prüfen: https://www.asb-halle15.de/ |
 | Termin-Wächter | Kinderflohmarkt der TSG Bergedorf: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 09.11.2026, 20.11.2026. Bitte prüfen: https://tsg-bergedorf.de/ |
 | Termin-Wächter | HNT Flohmarkt: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 04.11.2026, 06.11.2026, 08.11.2026, 09.11.2026. Bitte prüfen: https://www.hntonline.de/flohmarkt |
 | Termin-Wächter | Flohmarkt famila Winsen (Luhe): Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 29.11.2026. Bitte prüfen: https://flohmaxx.de/flohmarkt/winsen-famila/2026-10-03 |
 | Termin-Wächter | Flohmarkt am Bunthaus: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 14.03.2027, 19.03.2027, 18.04.2027, 06.05.2027, 09.05.2027, 23.07.2027. Bitte prüfen: https://elbepark-bunthaus.de/bunthaus-flohmarkt/ |
+| Termin-Wächter | BILLE Kleidertausch: Die Website des Veranstalters möchte nicht automatisch abgerufen werden (robots.txt). Diese Seite bitte weiter von Hand prüfen: https://www.instagram.com/bille_kleidertausch/ |
 | Serie endet bald | Flohmarkt Else-Rauch-Platz (Sonntag): Die Serie läuft nur bis Montag, 30. November. Bei Bedarf „Gültig bis“ verlängern, sobald der Veranstalter neue Termine bestätigt. |
 
-## Termin-Wächter: 11 Vorschläge zum Einfügen
+## Termin-Wächter: 12 Vorschläge zum Einfügen
 
 Diese Tage stehen neu auf Veranstalterseiten und fehlen in der Tabelle. **Erst auf der Seite des Veranstalters prüfen**, ob es wirklich ein Markttermin ist und ob die Uhrzeit stimmt (eingesetzt ist die übliche Uhrzeit des Markts; ist sie leer, kennt die Tabelle noch keine). Dann die Zeilen markieren, kopieren und im Blatt „Termine“ in die erste freie Zeile einfügen. Die Spalten sind: Markt, Datum, Beginn, Ende, Status, Hinweis. Ein Vorschlag bleibt sieben Tage stehen und verschwindet, sobald der Tag in der Tabelle steht.
 
@@ -28,6 +29,7 @@ flohmarkt-am-bunthaus	06.05.2027	12:00	18:00	Findet statt
 flohmarkt-am-bunthaus	09.05.2027	12:00	18:00	Findet statt	
 flohmarkt-else-rauch-platz	22.11.2026	10:00	16:00	Findet statt	
 flohmarkt-famila-winsen	29.11.2026	11:00	16:00	Findet statt	
+hallenflohmarkt-halle-15-rissen	15.11.2026	10:00	15:00	Findet statt	
 hnt-flohmarkt-hausbruch	06.11.2026	09:00	14:00	Findet statt	
 hnt-flohmarkt-hausbruch	08.11.2026	09:00	14:00	Findet statt	
 hnt-flohmarkt-hausbruch	09.11.2026	09:00	14:00	Findet statt	
@@ -38,6 +40,7 @@ Quellen:
 - https://elbepark-bunthaus.de/bunthaus-flohmarkt/
 - https://www.else-rauch-platz.de/
 - https://flohmaxx.de/flohmarkt/winsen-famila/2026-10-03
+- https://www.asb-halle15.de/
 - https://www.hntonline.de/flohmarkt
 
 ## Zur Kenntnis

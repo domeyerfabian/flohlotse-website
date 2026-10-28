@@ -451,7 +451,7 @@ a.route .i{width:17px;height:17px}
 .gen-presets[hidden]{display:none}
 .gen-presets .chip{flex:none}
 .sheet-wrap{position:relative;overflow:hidden;border-radius:10px;border:1px solid var(--line);background:#fff;aspect-ratio:297/210}
-.gen[data-fmt="hoch"] .sheet-wrap,.gen[data-fmt="acht"] .sheet-wrap,.gen[data-fmt="zwei"] .sheet-wrap,.gen[data-fmt="tags"] .sheet-wrap{aspect-ratio:210/297;max-width:420px;width:100%;justify-self:center}
+.gen[data-fmt="hoch"] .sheet-wrap,.gen[data-fmt="acht"] .sheet-wrap,.gen[data-fmt="zwei"] .sheet-wrap,.gen[data-fmt="tags"] .sheet-wrap{aspect-ratio:210/297}
 .gen-form{display:grid;gap:12px}
 .gen-form label{font-size:14px}
 .gen-form label small{font-weight:400;color:var(--muted)}
@@ -465,11 +465,10 @@ a.route .i{width:17px;height:17px}
 .gp-sym .sym-grid{padding:0}
 /* Vorschau bleibt beim Bearbeiten oben im Blick (Handy: unter der Kopfzeile) */
 .gen .sheet-wrap{position:sticky;top:76px;z-index:2;box-shadow:0 8px 20px -14px rgba(21,33,27,.35)}
-.gen[data-fmt="hoch"] .sheet-wrap,.gen[data-fmt="acht"] .sheet-wrap,.gen[data-fmt="zwei"] .sheet-wrap,.gen[data-fmt="tags"] .sheet-wrap{max-width:min(420px,calc(42vh * 210 / 297))}
 .seg{display:flex;flex-wrap:wrap;gap:8px}
 .seg .sw{display:inline-block;width:14px;height:14px;border-radius:50%;border:1px solid rgba(0,0,0,.18);margin-right:7px;vertical-align:-2px;flex:none}
 .sw-gelb{background:#F6E03A}.sw-pink{background:#FF8FC0}.sw-mint{background:#8EE3C1}.sw-schwarz{background:#15211B}.sw-karamell{background:#E9A057}.sw-salbei{background:#B5C9A1}.sw-rose{background:#F6C5CD}.sw-papier{background:#ECE7DC;box-shadow:inset 0 0 0 1px rgba(0,0,0,.14)}
-.sw-i-schwarz{background:#15211B}.sw-i-weiss{background:#fff}.sw-i-pink{background:#FF8FC0}.sw-i-gold{background:linear-gradient(135deg,#F7E08B,#C9A13B 50%,#8C6A1C)}
+.sw-i-schwarz{background:#15211B}.sw-i-weiss{background:#fff}.sw-i-pink{background:#FF8FC0}.sw-i-gold{background:#C9A13B}
 .chip[aria-pressed="true"] .sw-schwarz,.chip[aria-pressed="true"] .sw-i-schwarz{border-color:rgba(255,255,255,.7)}
 .seg-l{flex-basis:100%;font-size:13px;font-weight:600;color:var(--muted)}
 .seg-l small{font-weight:500}
@@ -513,7 +512,7 @@ a.route .i{width:17px;height:17px}
 .swb.ink b{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:#15211B;font:800 17px/1 var(--f-display)}
 .ink-b-schwarz b{background:#F2F4F0!important;color:#15211B;box-shadow:inset 0 0 0 1px rgba(0,0,0,.18)}
 .ink-b-weiss b{color:#fff}.ink-b-pink b{color:#FF8FC0}
-.ink-b-gold b{color:#D4AF37}
+.ink-b-gold b{color:#C9A13B}
 /* Lange Reihen (Schriften, Formate, Symbole) wischen statt umbrechen */
 .seg.hs{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin-inline:-16px;padding:2px 16px 4px}
 .seg.hs::-webkit-scrollbar{display:none}
@@ -559,7 +558,7 @@ a.route .i{width:17px;height:17px}
 /* Schriftfarbe des großen Texts (und des Preises auf Preisschildern) */
 .ink-weiss :is(.sg-main span,.tg-price span){color:#fff}
 .ink-pink :is(.sg-main span,.tg-price span){color:#FF8FC0}
-.ink-gold :is(.sg-main span,.tg-price span){color:#C9A13B;background:linear-gradient(170deg,#F4DC86 0%,#D4AF37 36%,#9E7620 60%,#E6C35E 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.ink-gold :is(.sg-main span,.tg-price span){color:#C9A13B} /* Gold flach, ohne Verlauf und ohne Rand (Wunsch vom 28.10.) */
 .ink-gold .sg-main .sg-arw path{stroke:#C9A13B}
 .tg-price.blank span{-webkit-text-fill-color:currentColor}
 /* Schrift */
@@ -575,7 +574,7 @@ a.route .i{width:17px;height:17px}
 .tone-pink .sg-sym svg{fill:#FF8FC0}
 .tone-mint .sg-sym svg{fill:#8EE3C1}
 .tone-karamell .sg-sym svg{fill:#E9A057}.tone-salbei .sg-sym svg{fill:#B5C9A1}.tone-rose .sg-sym svg{fill:#F6C5CD}.tone-papier .sg-sym svg{fill:#ECE7DC}
-.tone-schwarz .sg-sym svg{fill:#fff}.tone-schwarz.ink-gold .sg-sym svg{fill:#D4AF37}.tone-schwarz.ink-pink .sg-sym svg{fill:#FF8FC0}
+.tone-schwarz .sg-sym svg{fill:#fff}.tone-schwarz.ink-gold .sg-sym svg{fill:#C9A13B}.tone-schwarz.ink-pink .sg-sym svg{fill:#FF8FC0}
 /* Platz für den Aufkleber: Die Fläche rückt rechts (und ohne Zeile oben auch oben) etwas ein, die Schrift hält Abstand zur Ecke */
 .sym .sg-mw{margin-right:19mm}
 .sym .sg-top:empty + .sg-mw{margin-top:13mm}
@@ -622,7 +621,6 @@ a.route .i{width:17px;height:17px}
 .tg-brand{position:absolute;right:3.5mm;bottom:2.6mm;font-family:var(--f-body);font-size:2.3mm;color:#7a867f}
 /* Kontur für Weiß und Gold auf heller Fläche: bleibt aus der Entfernung lesbar */
 .ink-out :is(.sg-main span,.tg-price span){-webkit-text-stroke:.06em #15211B;paint-order:stroke fill}
-.ink-out.ink-gold :is(.sg-main span,.tg-price span){-webkit-text-stroke:0;filter:drop-shadow(.03em 0 0 #15211B) drop-shadow(-.03em 0 0 #15211B) drop-shadow(0 .03em 0 #15211B) drop-shadow(0 -.03em 0 #15211B)} /* Gold mit Kontur per Schatten: Bei Strich-Kontur würden Linien im Inneren der Buchstaben sichtbar */
 .ink-out .sg-main .sg-arw path{stroke:#15211B}
 /* Formen der Farbfläche: Die Form zeichnet site.js als SVG hinter den Text, passend zur Größe */
 .sg-main{position:relative}
@@ -639,8 +637,6 @@ a.route .i{width:17px;height:17px}
 .font-verspielt .sg-main > span{padding:.16em .08em}
 .font-elegant .sg-main > span{padding:.06em 0}
 /* Gold-Schrift ist ein Farbverlauf, der nur innerhalb der Textbox gemalt wird: Unterlängen (y, g, p) brauchen dort Platz, sonst fehlt ihr Ende */
-.ink-gold .sg-main > span{padding-bottom:.2em}
-.ink-gold.font-verspielt .sg-main > span{padding:.2em .1em .36em}
 /* Drucken: nur das Schild */
 #print-root{display:none}
 @media print{
@@ -1904,10 +1900,83 @@ body:has(.menu-wrap[open]) .fab{display:none}
 @media (max-width:359px){.mn-neu-l{grid-template-columns:1fr}}
 .menu-btn > .neu-n:not([hidden]){display:block}
 
-/* Looks im Reiter „Stil“ und umbrechende Farbfelder (acht Flächen passen sonst nicht aufs Handy) */
-.sw-set,.look-set{display:flex;flex-wrap:wrap;gap:8px;min-width:0}
-.sw-row{align-items:flex-start}
-.sw-row .seg-l{padding-top:10px}
-.look-row .seg-l{padding-top:8px}
-.look-btn{display:inline-flex;align-items:center;gap:7px}
-.look-btn .sw{width:16px;height:16px;border-radius:50%;flex:none}
+
+/* Looks mit ganzem Blatt (Reiter „Stil“ > „Look“, siehe LOOKS in build.mjs): Poster, Rosa Plakat, Coquette, Tafel, Letterboard.
+   Inspiriert von Schildern auf Mädelsflohmärkten und in Second-Hand-Läden: große schmale Großbuchstaben, ganze Fläche in Farbe, Streifen, Schleifen. */
+.font-schmal :is(.sg-top,.sg-main span,.tg-price span){font-family:"Bricolage Condensed","Bricolage Grotesque",sans-serif;font-weight:800;text-transform:uppercase;letter-spacing:0}
+.font-schmal .sg-main span{line-height:.9}
+.sheet[class*="deco-"] .sg{position:relative}
+.sheet:is(.deco-poster,.deco-plakat,.deco-tafel,.deco-letter) .sg-main{background:none!important;border:0!important}
+.sheet:is(.deco-poster,.deco-plakat,.deco-tafel,.deco-letter) .sg-shape{display:none!important}
+.sheet[class*="deco-"] .sg::before,.sheet[class*="deco-"] .sg::after{content:none;position:absolute;aspect-ratio:1;background:center/contain no-repeat;pointer-events:none}
+/* Poster: weißes Blatt, Schwarz und kräftiges Pink, Funkelsterne */
+.sheet.deco-poster .sg-main span{color:#E8417C!important;-webkit-text-fill-color:#E8417C!important;-webkit-text-stroke:0!important}
+.sheet.deco-poster .sg-top{color:#15211B}
+.sheet.deco-poster .sg::before,.sheet.deco-poster .sg::after{content:"";background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath fill='%23E8417C' d='M50 0C54 36 64 46 100 50C64 54 54 64 50 100C46 64 36 54 0 50C36 46 46 36 50 0Z'/%3E%3C/svg%3E")}
+.sheet.deco-poster .sg::before{width:6%;top:9%;right:7%}
+.sheet.deco-poster .sg::after{width:4.5%;bottom:22%;left:6%}
+/* Rosa Plakat: ganze Fläche Rosa, Rot in Großbuchstaben, unten wie eine Unterschrift */
+.sheet.deco-plakat .sg{background:#F7B9CB}
+.sheet.deco-plakat :is(.sg-top,.sg-bot){color:#C8102E}
+.sheet.deco-plakat .sg-main span{color:#C8102E!important;-webkit-text-fill-color:#C8102E!important;-webkit-text-stroke:0!important}
+.sheet.deco-plakat .sg-bot{font-family:"Pacifico","Fraunces",cursive;font-weight:400;line-height:1.7;letter-spacing:0}
+/* Coquette: zarte Streifen, weiße Blumenform mit roter Kontur, rote Schleife */
+.sheet.deco-coquette .sg{background:repeating-linear-gradient(90deg,#FBDDE5 0 8mm,#fff 8mm 16mm)}
+.sheet.deco-coquette .sg-shape path{fill:#fff!important;stroke:#C8102E;stroke-width:1mm;stroke-linejoin:round}
+.sheet.deco-coquette.f-acht .sg-shape path{stroke-width:.45mm}
+.sheet.deco-coquette .sg-main span{color:#C8102E!important;-webkit-text-fill-color:#C8102E!important;-webkit-text-stroke:0!important}
+.sheet.deco-coquette :is(.sg-top,.sg-bot){color:#C8102E}
+.sheet.deco-coquette .sg-sym{background:#C8102E}.sheet.deco-coquette .sg-sym svg{fill:#fff!important}
+/* Tafel: schwarze Fläche mit rosa Rahmen, weiße und rosa Schrift, Herzen */
+.sheet.deco-tafel .sg{background:#1E211F;box-shadow:inset 0 0 0 5mm #F29BBE}
+.sheet.deco-tafel.f-acht .sg{box-shadow:inset 0 0 0 2mm #F29BBE}
+.sheet.deco-tafel :is(.sg-top,.sg-bot){color:#fff}
+.sheet.deco-tafel .sg-main span{color:#F7A8C8!important;-webkit-text-fill-color:#F7A8C8!important;-webkit-text-stroke:0!important}
+.sheet.deco-tafel .sg-foot{color:#C9CFCB}.sheet.deco-tafel .sg-foot b{color:#fff}
+.sheet.deco-tafel .sg-sym{background:#F29BBE;border-color:#1E211F}.sheet.deco-tafel .sg-sym svg{fill:#1E211F!important}
+.sheet.deco-tafel .sg::before,.sheet.deco-tafel .sg::after{content:"";background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath fill='%23F29BBE' d='M50 90C20 66 4 49 4 30C4 16 15 6 28 6C38 6 46 12 50 21C54 12 62 6 72 6C85 6 96 16 96 30C96 49 80 66 50 90Z'/%3E%3C/svg%3E")}
+.sheet.deco-tafel .sg::before{width:5%;top:12%;left:7%;transform:rotate(-14deg)}
+.sheet.deco-tafel .sg::after{width:4%;bottom:24%;right:8%;transform:rotate(12deg)}
+/* Letterboard: hellgraue Rillen, dunkler Rahmen, letzte Zeile in Rot */
+.sheet.deco-letter .sg{background:repeating-linear-gradient(180deg,#F1F1EE 0 7.2mm,#DADAD5 7.2mm 7.7mm);box-shadow:inset 0 0 0 3.5mm #2A2A2A}
+.sheet.deco-letter.f-acht .sg{box-shadow:inset 0 0 0 1.5mm #2A2A2A}
+.sheet.deco-letter :is(.sg-top,.sg-main span){color:#232323!important;-webkit-text-fill-color:#232323!important;-webkit-text-stroke:0!important;letter-spacing:.04em}
+.sheet.deco-letter .sg-bot{color:#D62B3A;font-family:"Bricolage Condensed","Bricolage Grotesque",sans-serif;font-weight:800;text-transform:uppercase;letter-spacing:.04em}
+/* Sparmodus: kein Farbfond, dunkle Schrift */
+.sheet.save[class*="deco-"] .sg{background:#fff!important;box-shadow:none!important}
+.sheet.save.deco-tafel :is(.sg-top,.sg-bot,.sg-main span){color:#15211B!important;-webkit-text-fill-color:#15211B!important}
+.sheet.save.deco-tafel .sg-foot b{color:#15211B}
+
+/* Reiter „Stil“: jede Gruppe mit kleiner Überschrift und genau einer Reihe. Am Handy wischt man die Reihe, nichts bricht um. */
+.st-grp{display:grid;gap:6px;min-width:0}
+.st-l{font-size:12px;font-weight:700;letter-spacing:.02em;color:var(--muted)}
+.st-row{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin-inline:-16px;padding:2px 16px 4px;scroll-padding-inline:16px}
+.st-row::-webkit-scrollbar{display:none}
+.st-row > *{flex:none}
+.st-row .swb{width:38px;height:38px}
+.st-row .swb .sw,.st-row .swb.ink b{width:28px;height:28px}
+.gp-look{gap:16px}
+/* Look-Kacheln: kleine Vorschau statt Text-Knopf */
+.look-btn{display:grid;justify-items:center;gap:5px;width:70px;padding:0;border:0;background:none;color:var(--ink);font:600 11.5px/1.2 var(--f-body);text-align:center;cursor:pointer}
+.lt{width:66px;height:46px;border-radius:9px;border:1px solid var(--line);background:#fff;display:grid;place-items:center;overflow:hidden;box-sizing:border-box}
+.lt b{font:800 17px/1 var(--f-display);color:#15211B;padding:5px 9px;border-radius:7px}
+.look-btn[aria-pressed="true"] .lt{box-shadow:0 0 0 2px var(--surface),0 0 0 4px var(--ink)}
+.look-btn:focus-visible{outline:none}.look-btn:focus-visible .lt{box-shadow:0 0 0 2px var(--surface),0 0 0 4px var(--ink)}
+@media (hover:hover){.look-btn:hover .lt{border-color:var(--ink)}}
+.lt-klassik b{background:#F6E03A}
+.lt-retro b{background:#E9A057;font-family:Georgia,"Fraunces",serif;font-weight:700;border-radius:12px}
+.lt-bon b{background:#ECE7DC;font-family:ui-monospace,Menlo,Consolas,monospace;font-weight:600;border-radius:2px}
+.lt-schleife b{background:#F6C5CD;font-family:Georgia,"Fraunces",serif;font-weight:700}
+.lt-natur b{background:#B5C9A1;font-family:var(--f-body);border-radius:12px}
+.lt-poster b,.lt-plakat b,.lt-tafel b,.lt-letter b{text-transform:uppercase;transform:scaleX(.82);padding:0;font-size:19px}
+.lt-poster b{color:#E8417C}
+.lt-plakat{background:#F7B9CB;border-color:#F7B9CB}.lt-plakat b{color:#C8102E}
+.lt-tafel{background:#1E211F;border:3px solid #F29BBE}.lt-tafel b{color:#F7A8C8}
+.lt-letter{background:repeating-linear-gradient(180deg,#F1F1EE 0 6px,#DADAD5 6px 7px);border:2px solid #2A2A2A}.lt-letter b{color:#232323}
+.lt-coquette{background:repeating-linear-gradient(90deg,#FBDDE5 0 6px,#fff 6px 12px)}.lt-coquette b{background:#fff;border:1px solid #C8102E;color:#C8102E;font-family:Georgia,"Fraunces",serif;font-weight:700}
+@media (min-width:700px){.st-row{flex-wrap:wrap;overflow:visible;margin-inline:0;padding-inline:0}}
+/* Handy: Die stehende Vorschau ist ein Band über die ganze Kartenbreite, damit beim Wischen nichts seitlich daran vorbeirutscht */
+@media (max-width:699px){
+  .gen .sheet-wrap{margin-inline:-16px;border-radius:0;border-width:1px 0;background:var(--surface);box-shadow:0 10px 18px -16px rgba(21,33,27,.45)}
+  .gen .sheet-wrap .sheet{box-shadow:0 0 0 1px var(--line),0 6px 16px -10px rgba(21,33,27,.35)}
+}

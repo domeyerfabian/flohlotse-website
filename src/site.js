@@ -465,7 +465,7 @@
   var gen = document.getElementById("gen");
   if (gen) {
     var wrap = document.getElementById("sheetWrap"), $ = function (id) { return document.getElementById(id); };
-    var st = { kind: gen.getAttribute("data-kind"), fmt: gen.getAttribute("data-fmt"), top: $("fTop").value, main: $("fMain").value, bot: $("fBot").value, price: $("fPrice").value, vb: true, save: false, pay: null, tone: gen.getAttribute("data-tone") || "gelb", ink: gen.getAttribute("data-ink") || "schwarz", font: gen.getAttribute("data-font") || "modern", shape: gen.getAttribute("data-shape") || "rund", sym: gen.getAttribute("data-sym") || "" };
+    var st = { kind: gen.getAttribute("data-kind"), fmt: gen.getAttribute("data-fmt"), top: $("fTop").value, main: $("fMain").value, bot: $("fBot").value, price: $("fPrice").value, vb: true, save: false, pay: null, tone: gen.getAttribute("data-tone") || "gelb", ink: gen.getAttribute("data-ink") || "schwarz", font: gen.getAttribute("data-font") || "modern", shape: gen.getAttribute("data-shape") || "rund", sym: gen.getAttribute("data-sym") || "", deco: "" };
     var toneSet = false, symSet = false, inkSet = false, fontSet = false, shapeSet = false;
     // Form der Farbfläche (Wolke, Blume, Zacken, Sprechblase, Etikett), passend zur gemessenen Größe gerechnet. Gleiche Rechnung wie shapePath in build.mjs.
     var shapePath = function (k, w, h) {
@@ -512,7 +512,7 @@
       if (k === "etikett") { var tip = Math.min(h * 0.42, w * 0.17); return [p + g * 1.3, p + m * 0.08, p + g * 1.3, p + tip + m * 0.07]; }
       return null;
     };
-    // Schriftfarbe: nur gut lesbare Paare zulassen (Liste kommt aus build.mjs). Passt die gewählte Farbe nicht mehr, nimmt das Schild die erste passende.
+    // Schriftfarbe: Liste kommt aus build.mjs (inzwischen ist jede Kombination erlaubt). Passt die gewählte Farbe nicht, nimmt das Schild die erste.
     var INK_OK = JSON.parse(gen.getAttribute("data-inkok") || "{}");
     var inkFix = function () {
       var ok = INK_OK[st.save ? "save" : st.tone] || ["schwarz"];
@@ -520,8 +520,8 @@
       gen.querySelectorAll("button[data-ink]").forEach(function (b) { var k = b.getAttribute("data-ink"); b.disabled = ok.indexOf(k) < 0; b.title = (b.getAttribute("data-name") || "") + (b.disabled ? ": auf dieser Fläche schlecht lesbar" : ""); b.setAttribute("aria-pressed", String(k === st.ink)); });
     };
     // Schriften für das Schild lädt der Browser erst bei Auswahl; danach wird neu eingepasst
-    var FONT_FAM = { klar: "800 40px Figtree", elegant: "600 40px Fraunces", verspielt: "400 40px Pacifico", mono: '500 40px "DM Mono"' };
-    var fontLoad = function () { return document.fonts && FONT_FAM[st.font] ? document.fonts.load(FONT_FAM[st.font]).catch(function () {}) : Promise.resolve(); }; // Farbe oder Symbol selbst gewählt: bleibt beim Wechsel der Vorlage erhalten
+    var FONT_FAM = { klar: "800 40px Figtree", elegant: "600 40px Fraunces", verspielt: "400 40px Pacifico", mono: '500 40px "DM Mono"', schmal: '800 40px "Bricolage Condensed"' };
+    var fontLoad = function () { if (!document.fonts) return Promise.resolve(); var l = []; if (FONT_FAM[st.font]) l.push(FONT_FAM[st.font]); if (st.deco === "plakat") l.push(FONT_FAM.verspielt); return Promise.all(l.map(function (x) { return document.fonts.load(x).catch(function () {}); })); }; // Rosa Plakat: Unterschrift in Schreibschrift // Farbe oder Symbol selbst gewählt: bleibt beim Wechsel der Vorlage erhalten
     // Symbol-Aufkleber: Die Form steckt schon im Auswahlknopf und wird von dort ins Schild kopiert
     var symSrc = function () { var b = st.sym && gen.querySelector('button[data-sym="' + st.sym + '"] svg'); return b || null; };
     var symCur = function () { var c = gen.querySelector(".sym-cur"), b = gen.querySelector('button[data-sym="' + (symSrc() ? st.sym : "") + '"]'); if (!c) return; c.textContent = ""; if (symSrc()) { c.appendChild(symSrc().cloneNode(true)); c.appendChild(document.createTextNode(b.getAttribute("title"))); } else c.textContent = "Ohne"; };
@@ -582,15 +582,19 @@
     var scale = function () {
       if (!sheet) return;
       sheet.style.transform = "none"; wrap.style.aspectRatio = "auto";
-      var r = sheet.getBoundingClientRect(), s = wrap.clientWidth / r.width;
-      sheet.style.transform = "scale(" + s + ")";
-      wrap.style.height = (r.height * s + (wrap.offsetHeight - wrap.clientHeight)) + "px";
+      // Höchstens 42 % der Bildschirmhöhe am Handy (72 % am Computer): Hochformat-Blätter werden kleiner und mittig gesetzt,
+      // der Rahmen bleibt volle Breite. So rutscht beim Bearbeiten nichts seitlich an der stehenden Vorschau vorbei.
+      var r = sheet.getBoundingClientRect(), cw = wrap.clientWidth, maxH = window.innerHeight * (window.innerWidth >= 1080 ? 0.72 : 0.42);
+      var pad = window.matchMedia && matchMedia("(max-width: 699px)").matches ? 32 : 0; // Handy: Band über die volle Breite, das Blatt mit Luft daneben
+      var s = Math.min((cw - pad) / r.width, (maxH - pad / 2) / r.height), dx = Math.max(0, (cw - r.width * s) / 2), dy = pad / 4;
+      sheet.style.transform = "translate(" + dx.toFixed(1) + "px," + dy + "px) scale(" + s + ")";
+      wrap.style.height = (r.height * s + dy * 2 + (wrap.offsetHeight - wrap.clientHeight)) + "px";
     };
     var render = function () {
       var tags = st.kind === "tags", fmt = tags ? "tags" : st.fmt, n = tags ? 24 : ({ zwei: 2, vier: 4, acht: 8 })[fmt] || 1;
       gen.setAttribute("data-kind", st.kind); gen.setAttribute("data-fmt", fmt);
       sheet = document.createElement("div"); sheet.id = "sheet";
-      sheet.className = "sheet f-" + fmt + (st.save ? " save" : "") + (tags && !st.vb ? " novb" : "") + (st.tone && st.tone !== "gelb" ? " tone-" + st.tone : "") + " ink-" + st.ink + ((st.ink === "weiss" || st.ink === "gold") && (st.save || st.tone !== "schwarz") ? " ink-out" : "") + (st.font && st.font !== "modern" ? " font-" + st.font : "") + (!tags && st.shape && st.shape !== "rund" ? " shp shape-" + st.shape : "") + (!tags && symSrc() ? " sym" : "");
+      sheet.className = "sheet f-" + fmt + (st.save ? " save" : "") + (tags && !st.vb ? " novb" : "") + (st.tone && st.tone !== "gelb" ? " tone-" + st.tone : "") + " ink-" + st.ink + (st.ink === "weiss" && (st.save || st.tone !== "schwarz") ? " ink-out" : "") + (st.font && st.font !== "modern" ? " font-" + st.font : "") + (!tags && st.shape && st.shape !== "rund" ? " shp shape-" + st.shape : "") + (!tags && symSrc() ? " sym" : "") + (st.deco ? " deco-" + st.deco : "");
       var tpl = $(tags ? "tplTag" : "tplSign").content.firstElementChild;
       for (var i = 0; i < n; i++) sheet.appendChild(tpl.cloneNode(true));
       wrap.innerHTML = ""; wrap.appendChild(sheet);
@@ -644,11 +648,11 @@
     $("fSave").addEventListener("change", function () { st.save = this.checked; inkFix(); render(); });
     gen.addEventListener("click", function (e) {
       var f = e.target.closest("[data-fmt]"), p = e.target.closest("[data-set]"), tn = e.target.closest("button[data-tone]");
-      if (tn) { st.tone = tn.getAttribute("data-tone"); toneSet = true; setPressed("button[data-tone]", tn); if (!inkSet) st.ink = (INK_OK[st.tone] || ["schwarz"])[0]; inkFix(); render(); }
+      if (tn) { st.tone = tn.getAttribute("data-tone"); toneSet = true; st.deco = ""; setPressed("button[data-tone]", tn); if (!inkSet) st.ink = (INK_OK[st.tone] || ["schwarz"])[0]; inkFix(); render(); }
       var ik = e.target.closest("button[data-ink]");
       if (ik && !ik.disabled) { st.ink = ik.getAttribute("data-ink"); inkSet = true; inkFix(); render(); }
       var shb = e.target.closest("button[data-shape]");
-      if (shb) { st.shape = shb.getAttribute("data-shape"); shapeSet = true; setPressed("button[data-shape]", shb); render(); }
+      if (shb) { st.shape = shb.getAttribute("data-shape"); shapeSet = true; st.deco = ""; setPressed("button[data-shape]", shb); render(); }
       var fb = e.target.closest("button[data-font]");
       if (fb) { st.font = fb.getAttribute("data-font"); fontSet = true; setPressed("button[data-font]", fb); render(); fontLoad().then(render); }
       var lk = e.target.closest("button[data-look]");
@@ -657,7 +661,7 @@
         st.tone = o.tone; toneSet = true; setPressed("button[data-tone]", gen.querySelector('button[data-tone="' + o.tone + '"]'));
         st.ink = o.ink; inkSet = true;
         if (gen.querySelector('button[data-font="' + o.font + '"]')) { st.font = o.font; fontSet = true; setPressed("button[data-font]", gen.querySelector('button[data-font="' + o.font + '"]')); }
-        st.shape = o.shape; shapeSet = true; setPressed("button[data-shape]", gen.querySelector('button[data-shape="' + o.shape + '"]'));
+        st.shape = o.shape; shapeSet = true; setPressed("button[data-shape]", gen.querySelector('button[data-shape="' + o.shape + '"]')); st.deco = o.deco || "";
         if (o.sym && gen.querySelector('button[data-sym="' + o.sym + '"]')) { st.sym = o.sym; symSet = true; setPressed("button[data-sym]", gen.querySelector('button[data-sym="' + o.sym + '"]')); symCur(); }
         inkFix(); setPressed("button[data-look]", lk); render(); fontLoad().then(render);
       } else if (e.target.closest("button[data-tone],button[data-ink],button[data-font],button[data-shape],[data-set]")) setPressed("button[data-look]", null);
@@ -668,7 +672,7 @@
         var d = JSON.parse(p.getAttribute("data-set"));
         // Idee zum Antippen: übernimmt den ganzen Look (Farbe, Schriftfarbe, Schrift, Form, Symbol) und zeigt die Sprüche ihrer Kategorie
         if (d.look) {
-          toneSet = symSet = inkSet = fontSet = shapeSet = false;
+          toneSet = symSet = inkSet = fontSet = shapeSet = false; st.deco = d.deco || "";
           var gi = p.getAttribute("data-grp");
           if (themeSel && gi !== null) { themeSel.value = gi; gen.querySelectorAll(".gen-presets[data-grp]").forEach(function (r) { r.hidden = r.getAttribute("data-grp") !== gi; }); }
         }

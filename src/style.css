@@ -2058,3 +2058,7 @@ body:has(.menu-wrap[open]) .fab{display:none}
 .org-lock-box b{color:#F6E03A}
 .org-lock-box small{font-size:13px;color:#C9CFCB}
 .org-lock-btn{justify-self:start;background:none;border:0;padding:2px 0;font:inherit;font-size:14px;color:var(--muted);text-decoration:underline;cursor:pointer}
+
+.bdg-et{display:grid;gap:6px;margin-top:14px;font-size:14px;font-weight:600}
+.bdg-et input{font:inherit;font-size:16px;font-weight:500;padding:11px 14px;border-radius:10px;border:1px solid var(--line);background:var(--paper);color:var(--ink);width:100%}
+.bdg-et small{font-weight:400;color:var(--muted);font-size:13px}

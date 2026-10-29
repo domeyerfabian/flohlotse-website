@@ -2001,7 +2001,7 @@ body:has(.menu-wrap[open]) .fab{display:none}
 
 /* Etikett oben (Marktname vom Veranstalter-Link oder selbst eingetippt): dunkler Reiter oben mittig */
 .sg{position:relative}
-.sg-org{position:absolute;top:0;left:50%;transform:translateX(-50%);max-width:62%;box-sizing:border-box;padding:3mm 8mm 3.2mm;border-radius:0 0 5mm 5mm;background:#15211B;color:#fff;font-family:var(--f-body);font-weight:700;font-size:9mm;line-height:1.15;letter-spacing:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-transform:none;-webkit-text-stroke:0}
+.sg-org{position:absolute;top:0;left:50%;transform:translateX(-50%);max-width:82%;box-sizing:border-box;padding:3mm 8mm 3.2mm;border-radius:0 0 5mm 5mm;background:#15211B;color:#fff;font-family:var(--f-body);font-weight:700;font-size:9mm;line-height:1.15;letter-spacing:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-transform:none;-webkit-text-stroke:0}
 .sg-org:empty{display:none}
 .sg-org::before{content:"";display:inline-block;width:.85em;height:.78em;margin-right:.35em;vertical-align:-.05em;background:#F6E03A;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M50 90C20 66 4 49 4 30C4 16 15 6 28 6C38 6 46 12 50 21C54 12 62 6 72 6C85 6 96 16 96 30C96 49 80 66 50 90Z'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M50 90C20 66 4 49 4 30C4 16 15 6 28 6C38 6 46 12 50 21C54 12 62 6 72 6C85 6 96 16 96 30C96 49 80 66 50 90Z'/%3E%3C/svg%3E") center/contain no-repeat}
 .sheet.org .sg{padding-top:26mm}

@@ -1,8 +1,8 @@
 # Flohlotse: Website gebaut
 
-Stand 29.10.2026 · 326 Seiten (320 für Google) · 153 Märkte · 182 Termine in den nächsten 120 Tagen · 42 Ratgeber-Artikel · 806 Event-Auszeichnungen
+Stand 29.10.2026 · 327 Seiten (321 für Google) · 154 Märkte · 183 Termine in den nächsten 120 Tagen · 42 Ratgeber-Artikel · 811 Event-Auszeichnungen
 
-## Zu erledigen: 8 Hinweise
+## Zu erledigen: 10 Hinweise
 
 | Bereich | Hinweis |
 |---|---|
@@ -11,6 +11,8 @@ Stand 29.10.2026 · 326 Seiten (320 für Google) · 153 Märkte · 182 Termine i
 | Termin-Wächter | Hallenflohmarkt in der Halle 15: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 15.11.2026. Bitte prüfen: https://www.asb-halle15.de/ |
 | Termin-Wächter | Kinderflohmarkt der TSG Bergedorf: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 09.11.2026, 20.11.2026. Bitte prüfen: https://tsg-bergedorf.de/ |
 | Termin-Wächter | HNT Flohmarkt: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 04.11.2026, 06.11.2026, 08.11.2026, 09.11.2026. Bitte prüfen: https://www.hntonline.de/flohmarkt |
+| Termin-Wächter | Flohmarkt Uetersen City: Die Website des Veranstalters möchte nicht automatisch abgerufen werden (robots.txt). Diese Seite bitte weiter von Hand prüfen: https://hmf24.eu/uetersen-city |
+| Termin-Wächter | Flohmarkt Uetersen bei Lüchau Baustoffe: Die Website des Veranstalters möchte nicht automatisch abgerufen werden (robots.txt). Diese Seite bitte weiter von Hand prüfen: https://hmf24.eu/uetersen |
 | Termin-Wächter | Flohmarkt famila Winsen (Luhe): Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 29.11.2026. Bitte prüfen: https://flohmaxx.de/flohmarkt/winsen-famila/2026-10-03 |
 | Termin-Wächter | Flohmarkt am Bunthaus: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 14.03.2027, 19.03.2027, 18.04.2027, 06.05.2027, 09.05.2027, 23.07.2027. Bitte prüfen: https://elbepark-bunthaus.de/bunthaus-flohmarkt/ |
 | Serie endet bald | Flohmarkt Else-Rauch-Platz (Sonntag): Die Serie läuft nur bis Montag, 30. November. Bei Bedarf „Gültig bis“ verlängern, sobald der Veranstalter neue Termine bestätigt. |

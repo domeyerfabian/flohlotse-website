@@ -2001,14 +2001,51 @@ body:has(.menu-wrap[open]) .fab{display:none}
 
 /* Etikett oben (Marktname vom Veranstalter-Link oder selbst eingetippt): dunkler Reiter oben mittig */
 .sg{position:relative}
-.sg-org{position:absolute;top:0;left:50%;transform:translateX(-50%);max-width:82%;box-sizing:border-box;padding:3mm 8mm 3.2mm;border-radius:0 0 5mm 5mm;background:#15211B;color:#fff;font-family:var(--f-body);font-weight:700;font-size:9mm;line-height:1.15;letter-spacing:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-transform:none;-webkit-text-stroke:0}
+.sg-org{position:absolute;top:0;left:50%;transform:translateX(-50%);max-width:62%;box-sizing:border-box;padding:3mm 8mm 3.2mm;border-radius:0 0 5mm 5mm;background:#15211B;color:#fff;font-family:var(--f-body);font-weight:700;font-size:9mm;line-height:1.15;letter-spacing:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-transform:none;-webkit-text-stroke:0}
 .sg-org:empty{display:none}
 .sg-org::before{content:"";display:inline-block;width:.85em;height:.78em;margin-right:.35em;vertical-align:-.05em;background:#F6E03A;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M50 90C20 66 4 49 4 30C4 16 15 6 28 6C38 6 46 12 50 21C54 12 62 6 72 6C85 6 96 16 96 30C96 49 80 66 50 90Z'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M50 90C20 66 4 49 4 30C4 16 15 6 28 6C38 6 46 12 50 21C54 12 62 6 72 6C85 6 96 16 96 30C96 49 80 66 50 90Z'/%3E%3C/svg%3E") center/contain no-repeat}
-.sheet.org .sg{padding-top:26mm}
-.sheet.org.f-hoch .sg{padding-top:30mm}
-.sheet.org.f-acht .sg{padding-top:8.5mm}
+.sheet.has-org .sg{padding-top:26mm}
+.sheet.has-org.f-hoch .sg{padding-top:30mm}
+.sheet.has-org.f-acht .sg{padding-top:8.5mm}
 .sheet.deco-tafel .sg-org{background:var(--tone);color:#1E211F}.sheet.deco-tafel .sg-org::before{background:#1E211F}
 .f-acht .sg-org{font-size:3.6mm;padding:1.1mm 3mm 1.2mm;border-radius:0 0 2mm 2mm}
 .sheet.save .sg-org{background:#fff;color:#15211B;border:.5mm solid #15211B;border-top:0}
 .sheet.save .sg-org::before{background:#15211B}
 .bdg-type{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+
+/* Menü: Veranstalter ganz oben, gut sichtbar */
+.mn-org{display:flex;align-items:center;gap:12px;padding:12px 14px;margin-bottom:18px;border-radius:var(--r);background:#15211B;color:#fff;text-decoration:none}
+.mn-org > .i:first-child{width:38px;height:38px;padding:9px;border-radius:11px;background:#F6E03A;color:#15211B;flex:none}
+.mn-org span{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.3}
+.mn-org b{font-weight:700;font-size:15px;color:#F6E03A}
+.mn-org small{font-size:13px;color:#C9CFCB}
+.mn-org > .i:last-child{width:16px;height:16px;color:#F6E03A;flex:none}
+@media (min-width:860px){.mn{grid-template-areas:"org org org" "when what tools" "where what tools" "more more more"}.mn-org{grid-area:org;margin-bottom:0}}
+/* Veranstalter-Seite */
+.org-quick{display:grid;gap:10px;margin:18px 0 6px}
+@media (min-width:700px){.org-quick{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.org-btns{display:flex;flex-wrap:wrap;gap:10px;margin:6px 0 4px}
+.btn.btn-ghost{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 2px var(--ink)}
+.org-d{border-top:1px solid var(--line)}
+.org-d:last-child{border-bottom:1px solid var(--line)}
+.org-d summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 0;font-weight:700}
+.org-d summary::-webkit-details-marker{display:none}
+.org-d summary::after{content:"+";font-size:22px;font-weight:400;line-height:1;color:var(--muted)}
+.org-d[open] summary::after{content:"–"}
+.org-d > p,.org-d > ol{margin-top:0}
+.org-quick .cta-box{margin:0;max-width:none}
+.org-btns .btn{display:inline-flex;align-items:center;gap:8px}.org-btns .btn .i{width:18px;height:18px}
+
+/* Beispielschilder unter dem Schilder-Button: Etikett wie auf dem echten Schild (Maße relativ zur Bildbreite) */
+.bdg-ex{margin-top:14px;--heart:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M50 90C20 66 4 49 4 30C4 16 15 6 28 6C38 6 46 12 50 21C54 12 62 6 72 6C85 6 96 16 96 30C96 49 80 66 50 90Z'/%3E%3C/svg%3E")}
+.bdg-ex .small{margin:0 0 8px}
+.bdg-ex-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.bdg-ex figure{position:relative;margin:0;container-type:inline-size;border-radius:6px;overflow:hidden;box-shadow:0 4px 14px rgba(21,33,27,.12);line-height:0}
+.bdg-ex img{width:100%;height:auto;display:block}
+.bdg-ex-tab{position:absolute;top:0;left:50%;transform:translateX(-50%);max-width:82%;padding:1.01cqw 2.7cqw 1.08cqw;border-radius:0 0 1.7cqw 1.7cqw;background:#15211B;color:#fff;font-family:var(--f-body);font-weight:700;font-size:3.05cqw;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bdg-ex-tab::before{content:"";display:inline-block;width:.85em;height:.78em;margin-right:.35em;vertical-align:-.05em;background:#F6E03A;-webkit-mask:var(--heart) center/contain no-repeat;mask:var(--heart) center/contain no-repeat}
+@media (max-width:699px){.bdg-ex-row{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:6px;margin-inline:-4px;padding-inline:4px}.bdg-ex figure{flex:0 0 80%;scroll-snap-align:start}}
+
+.org-note{margin:4px 0 12px;padding:10px 14px;border-radius:12px;background:#15211B;color:#fff;font-size:14px;line-height:1.4}
+.org-note b{color:#F6E03A}
+.bdg-hits .bdg-none a{color:var(--ink);font-weight:700}

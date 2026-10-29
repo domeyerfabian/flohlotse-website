@@ -374,11 +374,20 @@
   if (bdg) {
     var code = document.getElementById("bdgCode"), prev = document.getElementById("bdgPrev"), cp = document.getElementById("bdgCopy");
     var bType = /[?&]button=schilder/.test(location.search) ? "schilder" : "termine";
+    // Kacheln oben auf der Seite: Button-Art wählen und zum Baukasten springen, ohne die Seite neu zu laden
+    document.querySelectorAll('.org-quick a[href*="button="]').forEach(function (a) {
+      a.addEventListener("click", function (e) {
+        var t = /button=schilder/.test(a.getAttribute("href")) ? "schilder" : "termine", btn = document.querySelector('.bdg-type [data-bt="' + t + '"]');
+        if (!btn) return; e.preventDefault(); btn.click(); document.getElementById("badge").scrollIntoView({ behavior: "smooth", block: "start" }); setTimeout(function () { q.focus({ preventScroll: true }); }, 400);
+      });
+    });
     document.querySelectorAll(".bdg-type [data-bt]").forEach(function (b) {
       b.setAttribute("aria-pressed", String(b.getAttribute("data-bt") === bType));
       b.addEventListener("click", function () { bType = b.getAttribute("data-bt"); document.querySelectorAll(".bdg-type [data-bt]").forEach(function (x) { x.setAttribute("aria-pressed", String(x === b)); }); make(); });
     });
+    var ex = document.getElementById("bdgEx");
     var make = function () {
+      if (ex) { ex.hidden = bType !== "schilder"; var so = bdg.options[bdg.selectedIndex], nm = so && so.value ? so.getAttribute("data-s") || so.textContent : "Dein Markt"; ex.querySelectorAll(".bdg-ex-tab").forEach(function (t) { t.textContent = nm; }); }
       if (!bdg.value) { code.value = ""; prev.innerHTML = '<p class="bdg-wait">Such oben deinen Markt, dann erscheint hier dein Link.</p>'; cp.disabled = true; return; }
       cp.disabled = false;
       var sch = bType === "schilder", url = bdg.getAttribute("data-site") + (sch ? "/flohmarkt-schilder/?markt=" : "/flohmarkt/") + bdg.value + (sch ? "" : "/");
@@ -399,7 +408,7 @@
       if (!w.length) { close(); return; }
       shown = opts.filter(function (o) { return w.every(function (x) { return o.q.indexOf(x) > -1; }); })
         .sort(function (a, b) { return (norm(b.n).indexOf(w[0]) === 0) - (norm(a.n).indexOf(w[0]) === 0); }).slice(0, 8);
-      if (!shown.length) { var e = document.createElement("li"); e.className = "bdg-none"; e.textContent = "Kein Markt gefunden. Versuch es mit dem Stadtteil."; hits.appendChild(e); }
+      if (!shown.length) { var e = document.createElement("li"); e.className = "bdg-none"; e.innerHTML = 'Kein Treffer. Versuch es mit dem Stadtteil, oder <a href="#kontakt">trag deinen Markt kostenlos ein</a>.'; hits.appendChild(e); }
       shown.forEach(function (o) { var li = document.createElement("li"); li.setAttribute("role", "option"); li.setAttribute("data-v", o.v); li.textContent = o.n; hits.appendChild(li); });
       hits.hidden = false; q.setAttribute("aria-expanded", "true");
     };
@@ -651,7 +660,7 @@
         var sy = symSrc(); for (i = 0; i < n; i++) { var slot = units[i].querySelector(".sg-sym"); slot.textContent = ""; if (sy) slot.appendChild(sy.cloneNode(true)); }
         var top = u.querySelector(".sg-top"), main = u.querySelector(".sg-main"), ms = main.querySelector(":scope > span"), bot = u.querySelector(".sg-bot");
         signText(top, st.top, ""); signText(ms, st.main, " "); signText(bot, st.bot, "");
-        if (st.org) { sheet.classList.add("org"); for (i = 0; i < n; i++) units[i].querySelector(".sg-org").textContent = st.org; }
+        if (st.org) { sheet.classList.add("has-org"); for (i = 0; i < n; i++) units[i].querySelector(".sg-org").textContent = st.org; }
         var base = top.parentNode.clientWidth, sizes = [];
         [top, bot].forEach(function (el) { if (el.firstChild) { el.style.fontSize = ""; var mx = parseFloat(getComputedStyle(el).fontSize); sizes.push(fit(el, el, mx, 4)); } else sizes.push(null); });
         // Form: Innenabstand aus der Form rechnen (mit Platz für den Symbol-Aufkleber), dann erst die Schrift einpassen
@@ -689,7 +698,7 @@
     ["fOrg", "fTop", "fMain", "fBot", "fPrice"].forEach(function (id) { $(id).addEventListener("input", function () { st[{ fOrg: "org", fTop: "top", fMain: "main", fBot: "bot", fPrice: "price" }[id]] = this.value.trim() === "" && id === "fOrg" ? "" : this.value; render(); }); });
     // Link vom Veranstalter: /flohmarkt-schilder/?markt=kennung schreibt den Marktnamen ins Etikett oben auf dem Schild
     var mk = (location.search.match(/[?&]markt=([a-z0-9-]+)/) || [])[1];
-    if (mk && window.fetch) fetch("/assets/markt-namen.json").then(function (r) { return r.ok ? r.json() : {}; }).then(function (d) { if (d[mk]) { st.org = d[mk]; $("fOrg").value = d[mk]; render(); } }).catch(function () {});
+    if (mk && window.fetch) fetch("/assets/markt-namen.json").then(function (r) { return r.ok ? r.json() : {}; }).then(function (d) { if (d[mk]) { st.org = d[mk]; $("fOrg").value = d[mk]; render(); var nt = document.createElement("p"); nt.className = "org-note"; nt.innerHTML = '<b></b> Dein Veranstalter hat das Etikett oben vorbereitet. Ändern oder löschen kannst du es unter „Text“.'; nt.firstChild.textContent = "Schilder für " + d[mk] + "."; var hd = gen.querySelector(".gen-head"); if (hd) hd.parentNode.insertBefore(nt, hd.nextSibling); else wrap.parentNode.insertBefore(nt, wrap); } }).catch(function () {});
     $("fVb").addEventListener("change", function () { st.vb = this.checked; render(); });
     $("fSave").addEventListener("change", function () { st.save = this.checked; inkFix(); render(); });
     gen.addEventListener("click", function (e) {

@@ -1,8 +1,8 @@
 # Flohlotse: Website gebaut
 
-Stand 29.10.2026 · 325 Seiten (319 für Google) · 152 Märkte · 185 Termine in den nächsten 120 Tagen · 42 Ratgeber-Artikel · 807 Event-Auszeichnungen
+Stand 29.10.2026 · 326 Seiten (320 für Google) · 153 Märkte · 186 Termine in den nächsten 120 Tagen · 42 Ratgeber-Artikel · 810 Event-Auszeichnungen
 
-## Zu erledigen: 8 Hinweise
+## Zu erledigen: 9 Hinweise
 
 | Bereich | Hinweis |
 |---|---|
@@ -13,6 +13,7 @@ Stand 29.10.2026 · 325 Seiten (319 für Google) · 152 Märkte · 185 Termine i
 | Termin-Wächter | HNT Flohmarkt: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 04.11.2026, 06.11.2026, 08.11.2026, 09.11.2026. Bitte prüfen: https://www.hntonline.de/flohmarkt |
 | Termin-Wächter | Flohmarkt famila Winsen (Luhe): Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 29.11.2026. Bitte prüfen: https://flohmaxx.de/flohmarkt/winsen-famila/2026-10-03 |
 | Termin-Wächter | Flohmarkt am Bunthaus: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 14.03.2027, 19.03.2027, 18.04.2027, 06.05.2027, 09.05.2027, 23.07.2027. Bitte prüfen: https://elbepark-bunthaus.de/bunthaus-flohmarkt/ |
+| Termin-Wächter | Weihnachts-Hofverkauf bei Nutzmüll: Die Website des Veranstalters möchte nicht automatisch abgerufen werden (robots.txt). Diese Seite bitte weiter von Hand prüfen: https://www.nutzmuell.de |
 | Serie endet bald | Flohmarkt Else-Rauch-Platz (Sonntag): Die Serie läuft nur bis Montag, 30. November. Bei Bedarf „Gültig bis“ verlängern, sobald der Veranstalter neue Termine bestätigt. |
 
 ## Termin-Wächter: 12 Vorschläge zum Einfügen

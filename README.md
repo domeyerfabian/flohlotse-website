@@ -283,3 +283,9 @@ Ideen zum Antippen: Die fünf neuen Looks stehen vorn. Dafür sind Prickelnde Pr
 ## Etikett vom Veranstalter vorgegeben (29. Oktober, nachts)
 
 - Kommt man über den Link eines Veranstalters (`?markt=…`), steht im Reiter „Text“ statt des Eingabefelds ein dunkler Kasten „🔒 [Markt], vom Veranstalter vorgegeben“. Erst ein Tipp auf „Etikett ändern oder entfernen“ zeigt das normale Feld. Der Hinweis über dem Schild lautet „Schilder für [Markt]. Das Etikett oben gibt dein Veranstalter vor.“ Ohne Link bleibt das Feld wie bisher frei.
+
+## Etikett-Text frei wählbar für Veranstalter (30. Oktober)
+
+- Im Baukasten erscheint beim Schilder-Button das Feld **„Text auf dem Etikett“**. Vorgeschlagen ist der Kurzname des Markts, Veranstalter können ihn ändern (z. B. auf den Namen des Veranstalters statt „… Arena“).
+- Der Link bekommt dann `&etikett=…`, z. B. `flohlotse.de/schilder?markt=maedchen-klamotte-qbeyond-arena&etikett=M%C3%A4dchen+Klamotte`. Ohne den Zusatz steht wie bisher der Kurzname drauf. Höchstens 40 Zeichen.
+- Auch `/veranstalter/?markt=…&button=schilder&etikett=…#badge` füllt das Feld vor.

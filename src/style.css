@@ -1998,3 +1998,17 @@ body:has(.menu-wrap[open]) .fab{display:none}
   .gen .sheet-wrap{margin-inline:-16px;border-radius:0;border-width:1px 0;background:var(--surface);box-shadow:0 10px 18px -16px rgba(21,33,27,.45)}
   .gen .sheet-wrap .sheet{box-shadow:0 0 0 1px var(--line),0 6px 16px -10px rgba(21,33,27,.35)}
 }
+
+/* Etikett oben (Marktname vom Veranstalter-Link oder selbst eingetippt): dunkler Reiter oben mittig */
+.sg{position:relative}
+.sg-org{position:absolute;top:0;left:50%;transform:translateX(-50%);max-width:62%;box-sizing:border-box;padding:3mm 8mm 3.2mm;border-radius:0 0 5mm 5mm;background:#15211B;color:#fff;font-family:var(--f-body);font-weight:700;font-size:9mm;line-height:1.15;letter-spacing:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-transform:none;-webkit-text-stroke:0}
+.sg-org:empty{display:none}
+.sg-org::before{content:"";display:inline-block;width:.85em;height:.78em;margin-right:.35em;vertical-align:-.05em;background:#F6E03A;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M50 90C20 66 4 49 4 30C4 16 15 6 28 6C38 6 46 12 50 21C54 12 62 6 72 6C85 6 96 16 96 30C96 49 80 66 50 90Z'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M50 90C20 66 4 49 4 30C4 16 15 6 28 6C38 6 46 12 50 21C54 12 62 6 72 6C85 6 96 16 96 30C96 49 80 66 50 90Z'/%3E%3C/svg%3E") center/contain no-repeat}
+.sheet.org .sg{padding-top:26mm}
+.sheet.org.f-hoch .sg{padding-top:30mm}
+.sheet.org.f-acht .sg{padding-top:8.5mm}
+.sheet.deco-tafel .sg-org{background:var(--tone);color:#1E211F}.sheet.deco-tafel .sg-org::before{background:#1E211F}
+.f-acht .sg-org{font-size:3.6mm;padding:1.1mm 3mm 1.2mm;border-radius:0 0 2mm 2mm}
+.sheet.save .sg-org{background:#fff;color:#15211B;border:.5mm solid #15211B;border-top:0}
+.sheet.save .sg-org::before{background:#15211B}
+.bdg-type{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}

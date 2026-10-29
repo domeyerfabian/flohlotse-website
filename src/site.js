@@ -373,11 +373,16 @@
   var bdg = document.getElementById("bdgSel");
   if (bdg) {
     var code = document.getElementById("bdgCode"), prev = document.getElementById("bdgPrev"), cp = document.getElementById("bdgCopy");
+    var bType = /[?&]button=schilder/.test(location.search) ? "schilder" : "termine";
+    document.querySelectorAll(".bdg-type [data-bt]").forEach(function (b) {
+      b.setAttribute("aria-pressed", String(b.getAttribute("data-bt") === bType));
+      b.addEventListener("click", function () { bType = b.getAttribute("data-bt"); document.querySelectorAll(".bdg-type [data-bt]").forEach(function (x) { x.setAttribute("aria-pressed", String(x === b)); }); make(); });
+    });
     var make = function () {
       if (!bdg.value) { code.value = ""; prev.innerHTML = '<p class="bdg-wait">Such oben deinen Markt, dann erscheint hier dein Link.</p>'; cp.disabled = true; return; }
       cp.disabled = false;
-      var url = bdg.getAttribute("data-site") + "/flohmarkt/" + bdg.value + "/";
-      var html = '<a href="' + url + '" style="display:inline-block;padding:10px 18px;border-radius:999px;background:#F6E03A;color:#15211B;font:700 15px/1.2 system-ui,sans-serif;text-decoration:none">Alle Termine auf Flohlotse</a>';
+      var sch = bType === "schilder", url = bdg.getAttribute("data-site") + (sch ? "/flohmarkt-schilder/?markt=" : "/flohmarkt/") + bdg.value + (sch ? "" : "/");
+      var html = '<a href="' + url + '" style="display:inline-block;padding:10px 18px;border-radius:999px;background:#F6E03A;color:#15211B;font:700 15px/1.2 system-ui,sans-serif;text-decoration:none">' + (sch ? "Kostenlose Standschilder" : "Alle Termine auf Flohlotse") + '</a>';
       code.value = html; prev.innerHTML = html;
     };
     // Suche: Name, Kurzname, Stadtteil, Ort oder Veranstalter, ohne Rücksicht auf Umlaute und Groß/klein
@@ -500,7 +505,7 @@
   var gen = document.getElementById("gen");
   if (gen) {
     var wrap = document.getElementById("sheetWrap"), $ = function (id) { return document.getElementById(id); };
-    var st = { kind: gen.getAttribute("data-kind"), fmt: gen.getAttribute("data-fmt"), top: $("fTop").value, main: $("fMain").value, bot: $("fBot").value, price: $("fPrice").value, vb: true, save: false, pay: null, tone: gen.getAttribute("data-tone") || "gelb", ink: gen.getAttribute("data-ink") || "schwarz", font: gen.getAttribute("data-font") || "modern", shape: gen.getAttribute("data-shape") || "rund", sym: gen.getAttribute("data-sym") || "", deco: "" };
+    var st = { kind: gen.getAttribute("data-kind"), fmt: gen.getAttribute("data-fmt"), org: "", top: $("fTop").value, main: $("fMain").value, bot: $("fBot").value, price: $("fPrice").value, vb: true, save: false, pay: null, tone: gen.getAttribute("data-tone") || "gelb", ink: gen.getAttribute("data-ink") || "schwarz", font: gen.getAttribute("data-font") || "modern", shape: gen.getAttribute("data-shape") || "rund", sym: gen.getAttribute("data-sym") || "", deco: "" };
     var toneSet = false, symSet = false, inkSet = false, fontSet = false, shapeSet = false;
     // Form der Farbfläche (Wolke, Blume, Zacken, Sprechblase, Etikett), passend zur gemessenen Größe gerechnet. Gleiche Rechnung wie shapePath in build.mjs.
     var shapePath = function (k, w, h) {
@@ -646,6 +651,7 @@
         var sy = symSrc(); for (i = 0; i < n; i++) { var slot = units[i].querySelector(".sg-sym"); slot.textContent = ""; if (sy) slot.appendChild(sy.cloneNode(true)); }
         var top = u.querySelector(".sg-top"), main = u.querySelector(".sg-main"), ms = main.querySelector(":scope > span"), bot = u.querySelector(".sg-bot");
         signText(top, st.top, ""); signText(ms, st.main, " "); signText(bot, st.bot, "");
+        if (st.org) { sheet.classList.add("org"); for (i = 0; i < n; i++) units[i].querySelector(".sg-org").textContent = st.org; }
         var base = top.parentNode.clientWidth, sizes = [];
         [top, bot].forEach(function (el) { if (el.firstChild) { el.style.fontSize = ""; var mx = parseFloat(getComputedStyle(el).fontSize); sizes.push(fit(el, el, mx, 4)); } else sizes.push(null); });
         // Form: Innenabstand aus der Form rechnen (mit Platz für den Symbol-Aufkleber), dann erst die Schrift einpassen
@@ -680,7 +686,10 @@
       });
     });
     var setPressed = function (sel, el) { gen.querySelectorAll(sel).forEach(function (x) { x.setAttribute("aria-pressed", String(x === el)); }); };
-    ["fTop", "fMain", "fBot", "fPrice"].forEach(function (id) { $(id).addEventListener("input", function () { st[{ fTop: "top", fMain: "main", fBot: "bot", fPrice: "price" }[id]] = this.value; render(); }); });
+    ["fOrg", "fTop", "fMain", "fBot", "fPrice"].forEach(function (id) { $(id).addEventListener("input", function () { st[{ fOrg: "org", fTop: "top", fMain: "main", fBot: "bot", fPrice: "price" }[id]] = this.value.trim() === "" && id === "fOrg" ? "" : this.value; render(); }); });
+    // Link vom Veranstalter: /flohmarkt-schilder/?markt=kennung schreibt den Marktnamen ins Etikett oben auf dem Schild
+    var mk = (location.search.match(/[?&]markt=([a-z0-9-]+)/) || [])[1];
+    if (mk && window.fetch) fetch("/assets/markt-namen.json").then(function (r) { return r.ok ? r.json() : {}; }).then(function (d) { if (d[mk]) { st.org = d[mk]; $("fOrg").value = d[mk]; render(); } }).catch(function () {});
     $("fVb").addEventListener("change", function () { st.vb = this.checked; render(); });
     $("fSave").addEventListener("change", function () { st.save = this.checked; inkFix(); render(); });
     gen.addEventListener("click", function (e) {

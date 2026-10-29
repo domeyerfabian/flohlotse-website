@@ -279,3 +279,7 @@ Ideen zum Antippen: Die fünf neuen Looks stehen vorn. Dafür sind Prickelnde Pr
 - **Markt nicht gefunden:** Findet die Suche im Baukasten nichts, steht dort ein Link „trag deinen Markt kostenlos ein“, der zum Kontakt springt.
 - **„Markt eintragen“-Mail:** Die E-Mail öffnet sich mit einer kleinen Vorlage (Name, Datum oder Rhythmus, Uhrzeit, Adresse, Website). Das spart Rückfragen.
 - **Kacheln oben** wählen die Button-Art und springen ohne Neuladen zum Baukasten. Der Text im Baukasten ist auf zwei Sätze gekürzt.
+
+## Etikett vom Veranstalter vorgegeben (29. Oktober, nachts)
+
+- Kommt man über den Link eines Veranstalters (`?markt=…`), steht im Reiter „Text“ statt des Eingabefelds ein dunkler Kasten „🔒 [Markt], vom Veranstalter vorgegeben“. Erst ein Tipp auf „Etikett ändern oder entfernen“ zeigt das normale Feld. Der Hinweis über dem Schild lautet „Schilder für [Markt]. Das Etikett oben gibt dein Veranstalter vor.“ Ohne Link bleibt das Feld wie bisher frei.

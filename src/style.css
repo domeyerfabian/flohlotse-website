@@ -2049,3 +2049,12 @@ body:has(.menu-wrap[open]) .fab{display:none}
 .org-note{margin:4px 0 12px;padding:10px 14px;border-radius:12px;background:#15211B;color:#fff;font-size:14px;line-height:1.4}
 .org-note b{color:#F6E03A}
 .bdg-hits .bdg-none a{color:var(--ink);font-weight:700}
+
+.org-lock{display:grid;gap:6px;margin-bottom:14px}
+.org-lock-l{font-size:14px;font-weight:600}
+.org-lock-box{display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:12px;background:#15211B;color:#fff}
+.org-lock-ic{font-size:18px}
+.org-lock-box span:last-child{display:flex;flex-direction:column;line-height:1.3}
+.org-lock-box b{color:#F6E03A}
+.org-lock-box small{font-size:13px;color:#C9CFCB}
+.org-lock-btn{justify-self:start;background:none;border:0;padding:2px 0;font:inherit;font-size:14px;color:var(--muted);text-decoration:underline;cursor:pointer}

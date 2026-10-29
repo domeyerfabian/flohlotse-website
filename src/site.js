@@ -698,7 +698,12 @@
     ["fOrg", "fTop", "fMain", "fBot", "fPrice"].forEach(function (id) { $(id).addEventListener("input", function () { st[{ fOrg: "org", fTop: "top", fMain: "main", fBot: "bot", fPrice: "price" }[id]] = this.value.trim() === "" && id === "fOrg" ? "" : this.value; render(); }); });
     // Link vom Veranstalter: /flohmarkt-schilder/?markt=kennung schreibt den Marktnamen ins Etikett oben auf dem Schild
     var mk = (location.search.match(/[?&]markt=([a-z0-9-]+)/) || [])[1];
-    if (mk && window.fetch) fetch("/assets/markt-namen.json").then(function (r) { return r.ok ? r.json() : {}; }).then(function (d) { if (d[mk]) { st.org = d[mk]; $("fOrg").value = d[mk]; render(); var nt = document.createElement("p"); nt.className = "org-note"; nt.innerHTML = '<b></b> Dein Veranstalter hat das Etikett oben vorbereitet. Ändern oder löschen kannst du es unter „Text“.'; nt.firstChild.textContent = "Schilder für " + d[mk] + "."; var hd = gen.querySelector(".gen-head"); if (hd) hd.parentNode.insertBefore(nt, hd.nextSibling); else wrap.parentNode.insertBefore(nt, wrap); } }).catch(function () {});
+    if (mk && window.fetch) fetch("/assets/markt-namen.json").then(function (r) { return r.ok ? r.json() : {}; }).then(function (d) { if (d[mk]) { st.org = d[mk]; $("fOrg").value = d[mk]; render(); var nt = document.createElement("p"); nt.className = "org-note"; nt.innerHTML = '<b></b> Das Etikett oben gibt dein Veranstalter vor.';
+          // Etikett vorgegeben: statt Eingabefeld ein Kasten mit Schloss, frei erst nach einem Tipp auf „ändern oder entfernen“
+          var fl = $("fOrg").closest("label"), lk = document.createElement("div"); lk.className = "org-lock only-sign";
+          lk.innerHTML = '<span class="org-lock-l">Etikett</span><div class="org-lock-box"><span class="org-lock-ic" aria-hidden="true">🔒</span><span><b></b><small>vom Veranstalter vorgegeben</small></span></div><button type="button" class="org-lock-btn">Etikett ändern oder entfernen</button>';
+          lk.querySelector("b").textContent = d[mk]; fl.hidden = true; fl.parentNode.insertBefore(lk, fl);
+          lk.querySelector("button").addEventListener("click", function () { lk.remove(); fl.hidden = false; $("fOrg").focus(); }); nt.firstChild.textContent = "Schilder für " + d[mk] + "."; var hd = gen.querySelector(".gen-head"); if (hd) hd.parentNode.insertBefore(nt, hd.nextSibling); else wrap.parentNode.insertBefore(nt, wrap); } }).catch(function () {});
     $("fVb").addEventListener("change", function () { st.vb = this.checked; render(); });
     $("fSave").addEventListener("change", function () { st.save = this.checked; inkFix(); render(); });
     gen.addEventListener("click", function (e) {

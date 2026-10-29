@@ -374,11 +374,46 @@
   if (bdg) {
     var code = document.getElementById("bdgCode"), prev = document.getElementById("bdgPrev"), cp = document.getElementById("bdgCopy");
     var make = function () {
+      if (!bdg.value) { code.value = ""; prev.innerHTML = '<p class="bdg-wait">Such oben deinen Markt, dann erscheint hier dein Link.</p>'; cp.disabled = true; return; }
+      cp.disabled = false;
       var url = bdg.getAttribute("data-site") + "/flohmarkt/" + bdg.value + "/";
       var html = '<a href="' + url + '" style="display:inline-block;padding:10px 18px;border-radius:999px;background:#F6E03A;color:#15211B;font:700 15px/1.2 system-ui,sans-serif;text-decoration:none">Alle Termine auf Flohlotse</a>';
       code.value = html; prev.innerHTML = html;
     };
-    bdg.addEventListener("change", make); make();
+    // Suche: Name, Kurzname, Stadtteil, Ort oder Veranstalter, ohne Rücksicht auf Umlaute und Groß/klein
+    var q = document.getElementById("bdgQ"), hits = document.getElementById("bdgHits"), pick = document.getElementById("bdgPick");
+    var norm = function (t) { return (t || "").toLowerCase().replace(/ä/g, "ae").replace(/ö/g, "oe").replace(/ü/g, "ue").replace(/ß/g, "ss").normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, " ").trim(); };
+    var opts = Array.prototype.filter.call(bdg.options, function (o) { return o.value; }).map(function (o) { return { v: o.value, n: o.textContent, q: norm(o.getAttribute("data-q") + " " + o.textContent) }; });
+    var act = -1, shown = [];
+    var showPick = function () { var o = bdg.options[bdg.selectedIndex]; pick.textContent = o && o.value ? "Ausgewählt: " + o.textContent : ""; };
+    var close = function () { hits.hidden = true; q.setAttribute("aria-expanded", "false"); act = -1; };
+    var choose = function (v) { bdg.value = v; make(); showPick(); q.value = bdg.options[bdg.selectedIndex].textContent; close(); };
+    var mark = function () { Array.prototype.forEach.call(hits.children, function (li, i) { li.setAttribute("aria-selected", i === act ? "true" : "false"); }); };
+    var find = function () {
+      var w = norm(q.value).split(" ").filter(Boolean); hits.innerHTML = ""; act = -1;
+      if (!w.length) { close(); return; }
+      shown = opts.filter(function (o) { return w.every(function (x) { return o.q.indexOf(x) > -1; }); })
+        .sort(function (a, b) { return (norm(b.n).indexOf(w[0]) === 0) - (norm(a.n).indexOf(w[0]) === 0); }).slice(0, 8);
+      if (!shown.length) { var e = document.createElement("li"); e.className = "bdg-none"; e.textContent = "Kein Markt gefunden. Versuch es mit dem Stadtteil."; hits.appendChild(e); }
+      shown.forEach(function (o) { var li = document.createElement("li"); li.setAttribute("role", "option"); li.setAttribute("data-v", o.v); li.textContent = o.n; hits.appendChild(li); });
+      hits.hidden = false; q.setAttribute("aria-expanded", "true");
+    };
+    q.addEventListener("input", find);
+    q.addEventListener("focus", function () { if (q.value) find(); });
+    q.addEventListener("keydown", function (e) {
+      if (hits.hidden || !shown.length) return;
+      if (e.key === "ArrowDown") { act = Math.min(shown.length - 1, act + 1); mark(); e.preventDefault(); }
+      else if (e.key === "ArrowUp") { act = Math.max(0, act - 1); mark(); e.preventDefault(); }
+      else if (e.key === "Enter") { choose(shown[Math.max(0, act)].v); e.preventDefault(); }
+      else if (e.key === "Escape") close();
+    });
+    hits.addEventListener("mousedown", function (e) { var li = e.target.closest("li[data-v]"); if (li) { e.preventDefault(); choose(li.getAttribute("data-v")); } });
+    document.addEventListener("click", function (e) { if (!e.target.closest(".bdg-find")) close(); });
+    bdg.addEventListener("change", function () { make(); showPick(); q.value = ""; });
+    // Direktlink aus der Mail: /veranstalter/?markt=kennung#badge
+    var pre = (location.search.match(/[?&]markt=([a-z0-9-]+)/) || [])[1];
+    if (pre && opts.some(function (o) { return o.v === pre; })) { bdg.value = pre; q.value = bdg.options[bdg.selectedIndex].textContent; }
+    make(); showPick();
     cp.addEventListener("click", function () {
       code.select();
       var ok = function () { cp.textContent = "Kopiert!"; setTimeout(function () { cp.textContent = "Code kopieren"; }, 2000); };

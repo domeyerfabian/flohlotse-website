@@ -254,3 +254,10 @@ Ideen zum Antippen: Die fünf neuen Looks stehen vorn. Dafür sind Prickelnde Pr
 - **Neue Schriftfarbe Rot** (#C8102E). Pink ist kräftiger (#E8417C), damit es auch auf Weiß lesbar ist.
 - Schwarze Fläche auf der Tafel ergibt einen hellen Kreiderahmen, bei Coquette zarte graue Streifen.
 - Die fünf Ideen-Bilder Poster, Rosa Plakat, Tafel, Coquette und Letterboard sind neu aufgenommen.
+
+## Für Veranstalter: Markt suchen statt scrollen (29. Oktober)
+
+- **Im Baukasten „Link zu deinen Terminen“ gibt es ein Suchfeld.** Veranstalter tippen Name, Stadtteil, Ort oder Veranstalter ein, z. B. „bergedorf“ oder „telekom“, und wählen ihren Markt aus der Trefferliste (höchstens 8 Treffer). Umlaute und Groß- oder Kleinschreibung spielen keine Rolle, Pfeiltasten und Enter gehen auch.
+- Die lange Liste bleibt darunter als „Oder aus der Liste wählen“.
+- Das Suchfeld hat eine Lupe. Solange kein Markt gewählt ist, zeigen Vorschau und Code nichts an, und „Code kopieren“ ist ausgegraut. So landet kein fremder Markt im Code.
+- **Direktlink für Mails:** `https://www.flohlotse.de/veranstalter/?markt=KENNUNG#badge` öffnet den Baukasten mit dem Markt schon ausgewählt (Kennung aus dem Blatt Märkte).

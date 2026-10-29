@@ -269,3 +269,13 @@ Ideen zum Antippen: Die fünf neuen Looks stehen vorn. Dafür sind Prickelnde Pr
 - **Veranstalter-Seite, Baukasten:** Zwei Buttons zur Wahl, „Termine“ (wie bisher) und „Schilder für Aussteller“ (Button „Kostenlose Standschilder“ mit dem Link oben). Direktlink für Mails: `/veranstalter/?markt=KENNUNG&button=schilder#badge`.
 - **Kurzlink:** `flohlotse.de/schilder?markt=KENNUNG` geht genauso (die Weiterleitung unter /schilder/ gibt den Zusatz jetzt an den Designer weiter). Ohne Zusatz landet man wie bisher im Designer.
 - Das Etikett darf bis 82 % der Schildbreite nutzen, damit auch lange Marktnamen wie „Flohmarkt Telekom-Gelände Wandsbek“ ganz drauf passen.
+- **Wortlaut:** Im Menü und auf der Veranstalterseite heißt es jetzt „kostenlose Schilder für deine Aussteller“.
+- **Beispielschilder beim Schilder-Button:** Wählt man „Schilder für Aussteller“, erscheinen drei Beispielschilder. Oben steht „Dein Markt“, nach der Marktsuche der echte Name des Markts. Die Bilder liegen in `src/schilder/beispiele/` (beispiel-1 bis -3.webp, Aufnahmen aus dem Designer mit freiem Platz oben, das Etikett setzt die Seite darüber). Am Handy wischt man durch die Beispiele.
+- **Fehler behoben:** Mit Etikett waren bei 2, 4 und 8 Schildern pro Blatt die Schilder in der Vorschau nach rechts verrutscht und am Rand abgeschnitten (die Klasse „org“ gab es schon für den Kontaktkasten). Das Blatt heißt jetzt intern „has-org“.
+
+## Customer Journey geprüft (29. Oktober, nachts)
+
+- **Aussteller über den Link des Veranstalters:** Gleich unter „Schild gestalten“ steht ein dunkler Hinweis „Schilder für [Markt]. Dein Veranstalter hat das Etikett oben vorbereitet …“. So wissen Aussteller sofort, warum dort ein Marktname steht und wo sie ihn ändern.
+- **Markt nicht gefunden:** Findet die Suche im Baukasten nichts, steht dort ein Link „trag deinen Markt kostenlos ein“, der zum Kontakt springt.
+- **„Markt eintragen“-Mail:** Die E-Mail öffnet sich mit einer kleinen Vorlage (Name, Datum oder Rhythmus, Uhrzeit, Adresse, Website). Das spart Rückfragen.
+- **Kacheln oben** wählen die Button-Art und springen ohne Neuladen zum Baukasten. Der Text im Baukasten ist auf zwei Sätze gekürzt.

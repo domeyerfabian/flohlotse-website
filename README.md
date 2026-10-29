@@ -261,3 +261,9 @@ Ideen zum Antippen: Die fünf neuen Looks stehen vorn. Dafür sind Prickelnde Pr
 - Die lange Liste bleibt darunter als „Oder aus der Liste wählen“.
 - Das Suchfeld hat eine Lupe. Solange kein Markt gewählt ist, zeigen Vorschau und Code nichts an, und „Code kopieren“ ist ausgegraut. So landet kein fremder Markt im Code.
 - **Direktlink für Mails:** `https://www.flohlotse.de/veranstalter/?markt=KENNUNG#badge` öffnet den Baukasten mit dem Markt schon ausgewählt (Kennung aus dem Blatt Märkte).
+
+## Etikett mit Marktnamen auf dem Schild (29. Oktober, abends)
+
+- **Neues Feld „Etikett“ im Designer (Reiter Text):** Ein dunkler Reiter oben mittig auf dem Schild, mit gelbem Herz und dem eingetippten Namen. Leer = kein Etikett. Im Sparmodus wird er weiß mit dunklem Rand, im Look „Tafel“ übernimmt er die Flächenfarbe.
+- **Link für Veranstalter:** `https://www.flohlotse.de/flohmarkt-schilder/?markt=KENNUNG` schreibt den Kurznamen des Markts (Spalte „Kurzname“) automatisch ins Etikett. Die Namen kommen aus `/assets/markt-namen.json`, die der Build schreibt; geladen wird sie nur, wenn der Link genutzt wird. Eine unbekannte Kennung wird ignoriert.
+- **Veranstalter-Seite, Baukasten:** Zwei Buttons zur Wahl, „Termine“ (wie bisher) und „Schilder für Aussteller“ (Button „Kostenlose Standschilder“ mit dem Link oben). Direktlink für Mails: `/veranstalter/?markt=KENNUNG&button=schilder#badge`.

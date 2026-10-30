@@ -289,3 +289,12 @@ Ideen zum Antippen: Die fünf neuen Looks stehen vorn. Dafür sind Prickelnde Pr
 - Im Baukasten erscheint beim Schilder-Button das Feld **„Text auf dem Etikett“**. Vorgeschlagen ist der Kurzname des Markts, Veranstalter können ihn ändern (z. B. auf den Namen des Veranstalters statt „… Arena“).
 - Der Link bekommt dann `&etikett=…`, z. B. `flohlotse.de/schilder?markt=maedchen-klamotte-qbeyond-arena&etikett=M%C3%A4dchen+Klamotte`. Ohne den Zusatz steht wie bisher der Kurzname drauf. Höchstens 40 Zeichen.
 - Auch `/veranstalter/?markt=…&button=schilder&etikett=…#badge` füllt das Feld vor.
+
+## Veranstalterseite aufgeräumt (30. Oktober, früh)
+
+- **„Kurz gesagt“** endet mit dem Link „Mehr dazu ↓“, der zu „Gut zu wissen“ springt und den ersten Punkt aufklappt.
+- **Baukasten in drei nummerierten Schritten:** 1 Markt suchen, 2 Button wählen, 3 Code kopieren. Die lange Liste und die Zeile „Ausgewählt“ sind weg, die Suche reicht (die Liste bleibt unsichtbar für Screenreader erhalten).
+- **Etikett:** statt eines Felds nur „Auf den Schildern steht: [Name] ändern“. Das Feld erscheint erst nach dem Tipp auf „ändern“.
+- **Neu: „Schilder selbst ausprobieren: alle Vorlagen, Looks und Farben ↗“** unter den Beispielen, öffnet den Designer mit dem gewählten Markt und Etikett in einem neuen Tab.
+- **Vorschau des Buttons** steht jetzt unter dem Code: „Vorschau auf deiner Website“, als dunkles Fähnchen oben links im Vorschau-Kasten (wie das Etikett auf den Schildern).
+- **Schritt 2 heißt „Was soll dein Button tun?“** und bietet zwei Karten mit Erklärung: „Termine zeigen“ (Besucher sehen alle Termine, Uhrzeiten und die Anfahrt) und „Schilder für Aussteller“ (Aussteller gestalten kostenlos Standschilder mit deinem Namen).

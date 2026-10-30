@@ -2,7 +2,7 @@
 
 Stand 30.10.2026 · 328 Seiten (322 für Google) · 155 Märkte · 186 Termine in den nächsten 120 Tagen · 42 Ratgeber-Artikel · 822 Event-Auszeichnungen
 
-## Zu erledigen: 9 Hinweise
+## Zu erledigen: 11 Hinweise
 
 | Bereich | Hinweis |
 |---|---|
@@ -10,13 +10,15 @@ Stand 30.10.2026 · 328 Seiten (322 für Google) · 155 Märkte · 186 Termine i
 | Termin-Wächter | Flohmarkt 73 im Kulturhaus 73: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 05.12.2026, 16.01.2027. Bitte prüfen: https://termine.dreiundsiebzig.de/ |
 | Termin-Wächter | Hallenflohmarkt in der Halle 15: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 15.11.2026. Bitte prüfen: https://www.asb-halle15.de/ |
 | Termin-Wächter | Kinderflohmarkt der TSG Bergedorf: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 09.11.2026, 20.11.2026. Bitte prüfen: https://tsg-bergedorf.de/ |
+| Termin-Wächter | Flohmarkt rund ums Kind in der Philemon-Kirche: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 07.11.2026. Bitte prüfen: https://www.kirche-poppenbuettel.de/ |
 | Termin-Wächter | HNT Flohmarkt: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 04.11.2026, 06.11.2026, 08.11.2026, 09.11.2026. Bitte prüfen: https://www.hntonline.de/flohmarkt |
 | Termin-Wächter | Flohmarkt famila Winsen (Luhe): Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 29.11.2026. Bitte prüfen: https://flohmaxx.de/flohmarkt/winsen-famila/2026-10-03 |
 | Termin-Wächter | Flohmarkt am Bunthaus: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 14.03.2027, 19.03.2027, 18.04.2027, 06.05.2027, 09.05.2027, 23.07.2027. Bitte prüfen: https://elbepark-bunthaus.de/bunthaus-flohmarkt/ |
-| Termin-Wächter | Flohpol: Nachtflohmarkt im Südpol: Die Website des Veranstalters möchte nicht automatisch abgerufen werden (robots.txt). Diese Seite bitte weiter von Hand prüfen: https://www.instagram.com/suedpol_hamburg/ |
+| Termin-Wächter | Halstenbeker Kleidermarkt mit Trödel und Kunst: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 06.01.2027. Bitte prüfen: https://www.buergerstiftung-brunohelms.de/termine/ |
+| Termin-Wächter | DoBo Flohmarkt im Treibhaus: Die Website des Veranstalters möchte nicht automatisch abgerufen werden (robots.txt). Diese Seite bitte weiter von Hand prüfen: https://www.instagram.com/kicky_weise/ |
 | Serie endet bald | Flohmarkt Else-Rauch-Platz (Sonntag): Die Serie läuft nur bis Montag, 30. November. Bei Bedarf „Gültig bis“ verlängern, sobald der Veranstalter neue Termine bestätigt. |
 
-## Termin-Wächter: 12 Vorschläge zum Einfügen
+## Termin-Wächter: 13 Vorschläge zum Einfügen
 
 Diese Tage stehen neu auf Veranstalterseiten und fehlen in der Tabelle. **Erst auf der Seite des Veranstalters prüfen**, ob es wirklich ein Markttermin ist und ob die Uhrzeit stimmt (eingesetzt ist die übliche Uhrzeit des Markts; ist sie leer, kennt die Tabelle noch keine). Dann die Zeilen markieren, kopieren und im Blatt „Termine“ in die erste freie Zeile einfügen. Die Spalten sind: Markt, Datum, Beginn, Ende, Status, Hinweis. Ein Vorschlag bleibt sieben Tage stehen und verschwindet, sobald der Tag in der Tabelle steht.
 
@@ -33,6 +35,7 @@ hallenflohmarkt-halle-15-rissen	15.11.2026	10:00	15:00	Findet statt
 hnt-flohmarkt-hausbruch	06.11.2026	09:00	14:00	Findet statt	
 hnt-flohmarkt-hausbruch	08.11.2026	09:00	14:00	Findet statt	
 hnt-flohmarkt-hausbruch	09.11.2026	09:00	14:00	Findet statt	
+kinderflohmarkt-philemon-kirche	07.11.2026	09:00	13:00	Findet statt	
 ```
 
 Quellen:
@@ -42,6 +45,7 @@ Quellen:
 - https://flohmaxx.de/flohmarkt/winsen-famila/2026-10-03
 - https://www.asb-halle15.de/
 - https://www.hntonline.de/flohmarkt
+- https://www.kirche-poppenbuettel.de/
 
 ## Zur Kenntnis
 

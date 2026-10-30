@@ -385,20 +385,23 @@
       b.setAttribute("aria-pressed", String(b.getAttribute("data-bt") === bType));
       b.addEventListener("click", function () { bType = b.getAttribute("data-bt"); document.querySelectorAll(".bdg-type [data-bt]").forEach(function (x) { x.setAttribute("aria-pressed", String(x === b)); }); make(); });
     });
-    var ex = document.getElementById("bdgEx"), etIn = document.getElementById("bdgEt"), etBox = etIn && etIn.closest(".bdg-et"), etDirty = false;
+    document.querySelectorAll('a.ans-more[href="#gut"]').forEach(function (l) { l.addEventListener("click", function () { var d = document.querySelector("#gut details"); if (d) d.open = true; }); });
+    var ex = document.getElementById("bdgEx"), etIn = document.getElementById("bdgEt"), etBox = etIn && etIn.closest(".bdg-et"), etDirty = false, etShow = document.getElementById("bdgEtShow"), tryA = document.getElementById("bdgTry");
+    var etEdit = document.getElementById("bdgEtEdit");
+    if (etEdit) etEdit.addEventListener("click", function () { document.getElementById("bdgEtLab").hidden = false; etEdit.parentNode.hidden = true; etIn.focus(); etIn.select(); });
     var etPre = (location.search.match(/[?&]etikett=([^&#]+)/) || [])[1];
     if (etIn && etPre) { try { etIn.value = decodeURIComponent(etPre.replace(/\+/g, " ")).slice(0, 40); etDirty = true; } catch (e) {} }
     if (etIn) etIn.addEventListener("input", function () { etDirty = true; make(); });
     var make = function () {
       if (etBox) etBox.hidden = bType !== "schilder";
       if (etIn && !etDirty) { var so0 = bdg.options[bdg.selectedIndex]; etIn.value = so0 && so0.value ? so0.getAttribute("data-s") || so0.textContent : ""; }
-      if (ex) { ex.hidden = bType !== "schilder"; var so = bdg.options[bdg.selectedIndex], nm = etIn && etIn.value.trim() ? etIn.value.trim() : so && so.value ? so.getAttribute("data-s") || so.textContent : "Dein Markt"; ex.querySelectorAll(".bdg-ex-tab").forEach(function (t) { t.textContent = nm; }); }
+      if (ex) { ex.hidden = bType !== "schilder"; var so = bdg.options[bdg.selectedIndex], nm = etIn && etIn.value.trim() ? etIn.value.trim() : so && so.value ? so.getAttribute("data-s") || so.textContent : "Dein Markt"; if (etShow) etShow.textContent = nm; if (tryA) { var sv = bdg.value, ev = etIn ? etIn.value.replace(/\s+/g, " ").trim() : "", so1 = bdg.options[bdg.selectedIndex], sh1 = so1 && so1.value ? so1.getAttribute("data-s") || so1.textContent : ""; tryA.href = "/flohmarkt-schilder/" + (sv ? "?markt=" + sv + (ev && ev !== sh1 ? "&etikett=" + encodeURIComponent(ev).replace(/%20/g, "+") : "") : ""); } ex.querySelectorAll(".bdg-ex-tab").forEach(function (t) { t.textContent = nm; }); }
       if (!bdg.value) { code.value = ""; prev.innerHTML = '<p class="bdg-wait">Such oben deinen Markt, dann erscheint hier dein Link.</p>'; cp.disabled = true; return; }
       cp.disabled = false;
       var so2 = bdg.options[bdg.selectedIndex], short = so2 ? so2.getAttribute("data-s") || so2.textContent : "", etv = etIn ? etIn.value.replace(/\s+/g, " ").trim() : "";
       var sch = bType === "schilder", url = bdg.getAttribute("data-site") + (sch ? "/flohmarkt-schilder/?markt=" : "/flohmarkt/") + bdg.value + (sch ? (etv && etv !== short ? "&etikett=" + encodeURIComponent(etv).replace(/%20/g, "+") : "") : "/");
       var html = '<a href="' + url + '" style="display:inline-block;padding:10px 18px;border-radius:999px;background:#F6E03A;color:#15211B;font:700 15px/1.2 system-ui,sans-serif;text-decoration:none">' + (sch ? "Kostenlose Standschilder" : "Alle Termine auf Flohlotse") + '</a>';
-      code.value = html; prev.innerHTML = html;
+      code.value = html; prev.innerHTML = '<p class="bdg-prev-l">Vorschau auf deiner Website</p>' + html;
     };
     // Suche: Name, Kurzname, Stadtteil, Ort oder Veranstalter, ohne Rücksicht auf Umlaute und Groß/klein
     var q = document.getElementById("bdgQ"), hits = document.getElementById("bdgHits"), pick = document.getElementById("bdgPick");

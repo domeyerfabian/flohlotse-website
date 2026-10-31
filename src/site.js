@@ -1520,28 +1520,67 @@
     }).catch(function () {});
   })();
 
-  // Intro-Video auf der Startseite: Antippen öffnet das Video groß. Ohne Skript oder ohne <dialog> führt der Link zur Über-Seite.
+  // Intro-Video: Karte (Slider der Startseite, Über-Seite) und Menü-Button öffnen es groß mit Ton und „An Freunde schicken“.
+  // Am Handy geht dabei das Video selbst mit (Teilen-Funktion des Geräts), sonst die Nachricht mit Link.
   (function () {
-    var cards = document.querySelectorAll("[data-iv]");
-    if (!cards.length || typeof HTMLDialogElement !== "function") return;
-    var d, v;
-    var build = function () {
-      d = document.createElement("dialog"); d.className = "iv-dlg"; d.setAttribute("aria-label", "Video");
-      d.innerHTML = '<button type="button" class="iv-x" aria-label="Video schließen">×</button><video controls playsinline preload="none"></video><p class="iv-cr"></p>';
-      document.body.appendChild(d); v = d.querySelector("video");
-      d.querySelector(".iv-x").addEventListener("click", function () { d.close(); });
-      d.addEventListener("click", function (e) { if (e.target === d) d.close(); });
-      d.addEventListener("close", function () { v.pause(); });
+    var holders = document.querySelectorAll("[data-iv]");
+    if (!holders.length) return;
+    var useEl = document.querySelector('use[href*="icons.svg"]'), sprite = useEl ? useEl.getAttribute("href").split("#")[0] : "/assets/icons.svg";
+    var icon = function (n) { return '<svg class="i" aria-hidden="true" focusable="false"><use href="' + sprite + "#i-" + n + '"/></svg>'; };
+    var canFiles = !!(navigator.canShare && window.File && window.fetch);
+    var calm = (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches) || (navigator.connection && navigator.connection.saveData);
+    var blobs = {};
+    var getBlob = function (src) { if (!blobs[src]) blobs[src] = fetch(src).then(function (r) { if (!r.ok) throw new Error("x"); return r.blob(); }); return blobs[src]; };
+    var share = function (h, btn) {
+      var t = h.getAttribute("data-share") || "", src = h.getAttribute("data-iv");
+      var label = btn && btn.querySelector("span"), old = label ? label.textContent : "";
+      var copy = function () { if (!navigator.clipboard) return; navigator.clipboard.writeText(t).then(function () { if (label) { label.textContent = "Kopiert"; setTimeout(function () { label.textContent = old; }, 2000); } }, function () {}); };
+      var plain = function () { if (navigator.share) navigator.share({ text: t }).catch(function () {}); else copy(); };
+      if (!canFiles || !blobs[src]) { plain(); return; }
+      blobs[src].then(function (bl) {
+        var f = new File([bl], src.split("/").pop(), { type: "video/mp4" });
+        if (!navigator.canShare({ files: [f] })) { plain(); return; }
+        return navigator.share({ files: [f], text: t });
+      }).catch(function (e) { if (!e || e.name !== "AbortError") plain(); });
     };
-    Array.prototype.forEach.call(cards, function (a) {
-      a.addEventListener("click", function (e) {
-        e.preventDefault(); if (!d) build();
-        if (v.getAttribute("src") !== a.dataset.iv) { v.poster = a.dataset.poster || ""; v.src = a.dataset.iv; }
-        d.setAttribute("aria-label", (a.querySelector("b") || a).textContent);
-        d.querySelector(".iv-cr").textContent = a.dataset.cr || "";
-        d.showModal(); try { v.currentTime = 0; } catch (err) {} var pr = v.play(); if (pr && pr.catch) pr.catch(function () {});
-      });
+    // Großes Fenster mit Ton
+    var d, dv, cur;
+    var open = function (h, play) {
+      if (typeof HTMLDialogElement !== "function") { location.href = h.getAttribute("data-iv"); return; }
+      if (!d) {
+        d = document.createElement("dialog"); d.className = "iv-dlg";
+        d.innerHTML = '<button type="button" class="iv-x" aria-label="Video schließen">×</button><video controls playsinline preload="none"></video>'
+          + '<button type="button" class="iv-share">' + icon("share") + '<span>An Freunde schicken</span></button><p class="iv-cr"></p>';
+        document.body.appendChild(d); dv = d.querySelector("video");
+        d.querySelector(".iv-x").addEventListener("click", function () { d.close(); });
+        d.addEventListener("click", function (e) { if (e.target === d) d.close(); });
+        d.addEventListener("close", function () { dv.pause(); if (location.hash === "#video") history.replaceState(null, "", location.pathname + location.search); });
+        d.querySelector(".iv-share").addEventListener("click", function () { share(cur, this); });
+      }
+      cur = h; var src = h.getAttribute("data-iv");
+      d.setAttribute("aria-label", h.getAttribute("aria-label") || "Video");
+      if (dv.getAttribute("data-s") !== src) { dv.poster = h.getAttribute("data-poster") || ""; dv.src = src; dv.setAttribute("data-s", src); }
+      if (canFiles) getBlob(src);
+      d.querySelector(".iv-cr").textContent = h.getAttribute("data-cr") || "";
+      var mw = h.closest(".menu-wrap"); if (mw) mw.open = false;
+      d.showModal();
+      if (play) { try { dv.currentTime = 0; } catch (err) {} var pr = dv.play(); if (pr && pr.catch) pr.catch(function () {}); }
+    };
+    Array.prototype.forEach.call(holders, function (h) {
+      h.addEventListener("click", function (e) { e.preventDefault(); open(h, true); });
+      // Kurzer Ausschnitt in der Karte: läuft stumm, solange sie zu sehen ist (nicht bei „Bewegung reduzieren“ oder Datensparen)
+      var rv = h.querySelector("video[data-src]");
+      if (!rv || calm || !("IntersectionObserver" in window)) return;
+      new IntersectionObserver(function (es) {
+        es.forEach(function (en) {
+          if (en.isIntersecting) { if (!rv.getAttribute("src")) rv.src = rv.getAttribute("data-src"); var pr = rv.play(); if (pr && pr.catch) pr.catch(function () {}); }
+          else rv.pause();
+        });
+      }, { threshold: 0.2 }).observe(rv);
     });
+    // Link mit #video (z. B. von Freunden geschickt): großes Fenster gleich öffnen, Abspielen per Antippen
+    var tgt = document.getElementById("video");
+    if (location.hash === "#video" && tgt && tgt.hasAttribute("data-iv")) open(tgt, false);
   })();
 
 })();

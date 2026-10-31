@@ -543,10 +543,17 @@ const TIME_TAGS = ["Frühaufsteher", "Langschläfer"];
 // Der Ordner darf video oder Video heißen (GitHub unterscheidet Groß- und Kleinschreibung).
 const IV_DIR = path.join(ROOT, "src", (fs.existsSync(path.join(ROOT, "src")) ? fs.readdirSync(path.join(ROOT, "src")) : []).find(d => d.toLowerCase() === "video") || "video"), IV_F = "flohlotse-in-26-sekunden";
 const IV = [".mp4", ".webp", "-klein.webp"].every(x => fs.existsSync(path.join(IV_DIR, IV_F + x)));
+const IV_CLIP = [".mp4", ".webp"].every(x => fs.existsSync(path.join(IV_DIR, IV_F + "-karte" + x))) ? `/assets/video/${IV_F}-karte` : "";
 const IV_SRC = `/assets/video/${IV_F}.mp4`, IV_POSTER = `/assets/video/${IV_F}.webp`, IV_THUMB = `/assets/video/${IV_F}-klein.webp`;
 const IV_PHOTO = "https://www.magnific.com/free-photo/young-beautiful-woman-smiling-happy-confident-standing-with-smile-face-looking-jumble-sale-town-street_42513081.htm";
 const IV_CREDIT_TXT = "Foto: designed by krakenimages.com – Magnific.com · Musik: Art Media / Jamendo via Adobe Stock";
 const IV_CREDIT = `Foto: designed by <a href="${IV_PHOTO}" rel="noopener">krakenimages.com – Magnific.com</a> · Musik: Art Media / Jamendo via Adobe Stock`;
+const IV_SHARE = "Kennst du schon Flohlotse? 🛍️ Alle Flohmärkte in Hamburg und Umgebung mit Uhrzeit und Route, dazu kostenlose Schilder für deinen Stand. Schau mal: " + SITE + "/";
+// Kärtchen zum Video (Startseite, Über-Seite, Menü): Antippen öffnet das Video groß, darunter „An Freunde schicken“. Ohne Skript führt es zur Über-Seite.
+const ivData = () => `data-iv="${IV_SRC}" data-poster="${IV_POSTER}" data-cr="${esc(IV_CREDIT_TXT)}" data-share="${esc(IV_SHARE)}"`;
+// Video-Karte: dunkle Karte im Wisch-Slider der Startseite und auf der Über-Seite. Rechts läuft ein kurzer stummer Ausschnitt (ca. 140 KB),
+// Antippen öffnet das Video groß mit Ton und „An Freunde schicken“.
+const ivSlide = (cls = "hl-slide hl-card", id = "") => `<a class="${cls} hl-vid"${id ? ` id="${id}"` : ""} href="${ABOUT_P}#video" ${ivData()} aria-label="Flohmarkt Hamburg? Film ab! Video über ${esc(NAME)} abspielen"><span class="hv-txt"><span class="hv-k">${ic("play")}Neu hier?</span><b>Flohmarkt Hamburg? Film&nbsp;ab!</b><span class="hv-p">Alle Termine, eigene Schilder, WhatsApp-Kanal.</span><span class="hv-go"><span>${ic("play")}</span>Abspielen</span></span><span class="hv-media" aria-hidden="true"><span class="hv-dot"></span><span class="hv-ph">${IV_CLIP ? `<video muted loop playsinline preload="none" poster="${IV_CLIP}.webp" data-src="${IV_CLIP}.mp4" width="290" height="590" tabindex="-1"></video>` : `<img src="${IV_THUMB}" alt="" width="72" height="128" decoding="async">`}</span></span></a>`;
 const TIPS_P = "/flohmarkt-tipps/", WEEK_P = "/flohmarkt-hamburg-unter-der-woche/", FEE_P = "/flohmarkt-standgebuehr-hamburg/", ABOUT_P = "/ueber-flohlotse/";
 // Wer hinter den Artikeln steht: Google empfiehlt bei Artikeln einen Link auf eine Seite, die den Autor beschreibt (hier: Über Flohlotse).
 const ORG_AUTHOR = { "@type": "Organization", name: NAME, url: SITE + ABOUT_P }, ORG_PUB = { "@type": "Organization", name: NAME, url: SITE + "/" };
@@ -568,7 +575,7 @@ function menuHTML() {
 <div class="mn-rows">${a("/termine/", `${ic("cal")}Alle Termine`)}${a(WEEK_P, `${ic("clock")}Unter der Woche`)}${a("/flohmaerkte/", `${ic("list")}Alle Märkte A–Z`)}${a("/entdecken/", `${ic("heart")}Wischen &amp; merken`)}</div></div>
 <div class="mn-what"><p class="mn-h">Was für ein Markt?</p><div class="mn-chips">${CATS_ON.map(c => a(`/${c.s}/`, `${ic(c.icon)}${esc(MN_SHORT[c.s] || c.chip)}`)).join("")}</div></div>
 <div class="mn-where"><p class="mn-h">Wo?</p><details class="mn-reg"><summary>Hamburg nach Bezirk</summary><div>${reg(false)}</div></details><details class="mn-reg"><summary>Umland bis 30 km</summary><div>${reg(true)}</div></details></div>
-<div class="mn-tools"><p class="mn-h">Für deinen Flohmarkt</p>${TOOLS().map(tool).join("")}${socialHTML("mn-social")}</div>
+<div class="mn-tools"><p class="mn-h">Für deinen Flohmarkt</p>${TOOLS().map(tool).join("")}${socialHTML("mn-social")}${IV ? `<a class="mn-rec" href="${ABOUT_P}#video" ${ivData()}>${ic("share")}<span>Flohlotse empfehlen</span></a>` : ""}</div>
 <div class="mn-more">${a(FEE_P, "Standgebühren")}${a(TIPS_P, "Tipps &amp; Vorlagen")}${a(ABOUT_P, "Über Flohlotse")}${a("/impressum/", "Impressum")}${a("/datenschutz/", "Datenschutz")}</div>
 </nav></div></details>`;
 }
@@ -1385,6 +1392,8 @@ ${NEWS_TABS.length > 1 ? '<div class="akt-bar js-only" aria-hidden="true"><i id=
   const slides = [
     sImg ? `<figure class="hl-slide hl-photo"><img src="${imgUrl((sSmall || sImg).f)}" srcset="${[sMini && `${imgUrl(sMini.f)} 640w`, sSmall && `${imgUrl(sSmall.f)} 760w`, `${imgUrl(sImg.f)} 1520w`].filter(Boolean).join(", ")}" sizes="(max-width: 640px) 86vw, (max-width: 800px) 100vw, 760px" width="760" height="507" alt="${esc(altOf(sImg))}" fetchpriority="high" decoding="async"><figcaption>${capOf(sImg)}</figcaption></figure>` : "",
     ...hlEvs.map(e => `<a class="hl-slide hl-card" href="/flohmarkt/${e.m.slug}/" data-day="${e.k}"><span class="kicker">${ic("star")}Wochen-Highlight</span><b>${esc(e.m.short)}</b><span class="hl-when">${esc(fmtDate(e.date))}${e.start ? " · " + esc(timeText(e)) : ""}</span><span class="hl-where">${ic("pin")}${esc(e.m.area || e.m.place)}</span><span class="promo-go">Zum Markt${ic("chev")}</span></a>`)].filter(Boolean);
+  // Video-Karte als erste Karte nach dem Foto (am Handy ist das Foto ausgeblendet, dort ist sie die erste)
+  if (IV) slides.splice(slides[0] && slides[0].includes("hl-photo") ? 1 : 0, 0, ivSlide());
   const slider = slides.length ? `<section class="hl" aria-label="Highlights"><div class="hl-track" id="hlTrack">${slides.join("")}</div>${slides.length > 1 ? `<div class="hl-dots js-only" id="hlDots">${slides.map((_, i) => `<button type="button" aria-label="Bild ${i + 1} von ${slides.length}"${i ? "" : ' aria-current="true"'}></button>`).join("")}</div>` : ""}</section>` : "";
   // Laufband über der Startseite mit dem Instagram-Hinweis. Bei „Bewegung reduzieren“ steht es still.
   // Zweiter Weg auf der Startseite, gleich nach dem Wochen-Highlight: Schilder, Kauf-Check und Ratgeber als drei Kacheln.
@@ -1446,7 +1455,6 @@ ${sxForm(true)}
 ${answerBox()}
 <div class="quick">${(() => { const mm = TODAY.getUTCDate() >= 20 && MONTHS[1] ? MONTHS[1] : MONTHS[0]; return mm ? `<a class="chip chip-tip" href="/${mm.s}/#mtH">${ic("star")}Tipps für ${mm.name}</a>` : ""; })()}${PLZ_ROWS.length ? `<a class="chip" href="/termine/#near">${ic("pin")}In meiner Nähe</a>` : ""}${HAS_MAP ? `<a class="chip" href="/flohmaerkte/#karte">${ic("map")}Karte</a>` : ""}<a class="chip" href="/entdecken/">${ic("heart")}Wischen &amp; merken</a></div>
 </div><a class="big-sticker" id="bigSt" href="/wochenende/"${stAlt}><b>${weN}</b><span>${weLabel}</span></a></section>
-${IV ? `<a class="iv-card" href="${ABOUT_P}#video" data-iv="${IV_SRC}" data-poster="${IV_POSTER}" data-cr="${esc(IV_CREDIT_TXT)}"><span class="iv-thumb"><img src="${IV_THUMB}" alt="" width="72" height="128" loading="lazy" decoding="async">${ic("play")}</span><span class="iv-txt"><b>Neu hier? ${esc(NAME)} in 26 Sekunden</b><span>Termine, Schilder, WhatsApp-Kanal: kurz im Video erklärt.</span></span>${ic("chev")}</a>` : ""}
 ${slider}
 ${helpers()}
 ${newsBox}
@@ -2770,7 +2778,7 @@ ${EX_IMGS.length ? `<div class="bdg-ex js-only" id="bdgEx" hidden><p class="smal
   const respHTML = f("Impressum: Verantwortlich nach § 18 MStV") ? esc(f("Impressum: Verantwortlich nach § 18 MStV")) : `${ph("Impressum: Name oder Firma", "Vor- und Nachname")}, Anschrift wie oben`;
   const lic = [
     IMGS.size ? `<h3>Bilder</h3><p>Die Bilder auf dieser Website sind Symbolbilder und zeigen keinen der hier gelisteten Flohmärkte.${ANY_KI ? " Einige wurden mit künstlicher Intelligenz erzeugt und sind am Bild als „KI-generiert“ gekennzeichnet." : ""}${f("Bildnachweis") ? " " + esc(f("Bildnachweis")) : ""}</p>${CRED_SRC && (CREDITS.werke || []).length ? `<p>Fotos von ${esc(CRED_SRC.name)}, kostenlose Lizenz mit Namensnennung: ${credLink()}. Verwendet werden Ausschnitte dieser Fotos:</p><ul>${CREDITS.werke.filter(w => /^https:\/\//.test(w[2] || "")).map(w => `<li>„${esc(w[0])}“, Urheber: ${esc(w[1])}, <a href="${esc(w[2])}" rel="noopener nofollow">zum Foto bei ${esc(CRED_SRC.name)}</a></li>`).join("")}</ul>` : ""}` : "",
-    IV ? `<h3>Video</h3><p>Intro-Video „${esc(NAME)} in 26 Sekunden“: ${IV_CREDIT}. Die Musik ist über Adobe Express lizenziert.</p>` : "",
+    IV ? `<h3>Video</h3><p>Intro-Video von ${esc(NAME)}: ${IV_CREDIT}. Die Musik ist über Adobe Express lizenziert.</p>` : "",
     `<h3>Texte</h3><p>Texte auf dieser Website entstehen mit Unterstützung von künstlicher Intelligenz.</p>`,
     PLZ_ROWS.length ? `<h3>Postleitzahlen und Karte</h3><p>Postleitzahlen und ihre Lage: <a href="https://www.geonames.org" rel="noopener">GeoNames</a>, Lizenz <a href="https://creativecommons.org/licenses/by/4.0/deed.de" rel="noopener">CC BY 4.0</a>.${HAS_MAP ? ` Karte: <a href="https://leafletjs.com" rel="noopener">Leaflet</a> (BSD-2-Clause), Kartendaten © <a href="https://www.openstreetmap.org/copyright" rel="noopener">OpenStreetMap-Mitwirkende</a>, Lizenz ODbL.` : ""}</p>` : "",
     `<h3>Wetter</h3><p>Quelle der Wettervorhersage: <a href="https://www.dwd.de" rel="noopener">Deutscher Wetterdienst</a> (DWD), Lizenz <a href="https://creativecommons.org/licenses/by/4.0/deed.de" rel="noopener">CC BY 4.0</a>, abgerufen über <a href="https://brightsky.dev" rel="noopener">Bright Sky</a>. Die Daten wurden zu kurzen Hinweisen zusammengefasst. Die Vorhersage wird einmal pro Aktualisierung der Website geladen und kann sich kurzfristig ändern.</p>`,
@@ -2800,7 +2808,7 @@ ${f("Impressum: Register") || f("Impressum: USt-IdNr.") ? `<h2>Register und Umsa
     const body = crumbs(cr) + `<article class="kb"><h1>Über ${esc(NAME)}</h1>
 <div class="byline"><span>${ic("update")}Stand: ${SEITE_TIME}</span></div>
 <div class="answer"><span class="kicker">Kurz gesagt</span><p>${esc(NAME)} hat zwei Teile: einen Kalender mit den Flohmärkten in Hamburg und bis 30 Kilometer drumherum, und Hilfen fürs Kaufen und Verkaufen, die auf jedem Flohmarkt in Deutschland funktionieren. Alles ist kostenlos und ohne Anmeldung.</p></div>
-${IV ? `<figure class="iv" id="video"><video controls playsinline preload="none" poster="${IV_POSTER}" width="720" height="1280"><source src="${IV_SRC}" type="video/mp4">Dein Browser spielt dieses Video nicht ab. <a href="${IV_SRC}">Video öffnen</a></video><figcaption><b>${esc(NAME)} in 26 Sekunden</b><span>Termine finden, Schilder gestalten, nichts verpassen: alles Wichtige auf einen Blick.</span><small>${IV_CREDIT}</small></figcaption></figure>` : ""}
+${IV ? ivSlide("hl-vid-solo", "video") : ""}
 <div class="kb-body">
 ${ME_NAME ? `<h2 id="warum">Warum es ${esc(NAME)} gibt</h2>
 <div class="me-story">${mePic("me-pic me-pic-l")}<div>
@@ -2820,7 +2828,7 @@ ${ME_NAME ? `<h2 id="warum">Warum es ${esc(NAME)} gibt</h2>
 <p>Sag uns Bescheid, am einfachsten über die Seite <a href="/veranstalter/">Für Veranstalter</a>. Wer hinter ${esc(NAME)} steht, steht im <a href="/impressum/">Impressum</a>.</p>
 </div></article>`;
     layout({ p: ABOUT_P, title: `Über ${NAME}: So entstehen die Termine`, desc: `Wie ${NAME} arbeitet: Termine für Hamburg und Umgebung nach Angaben der Veranstalter, dazu Ratgeber, Schilder und Kauf-Check für jeden Flohmarkt.`,
-      body, nav: "", ld: G([crumbLD(cr), { "@type": "AboutPage", name: `Über ${NAME}`, url: SITE + ABOUT_P }, ...(IV ? [{ "@type": "VideoObject", name: `${NAME} in 26 Sekunden`, description: `Kurz erklärt: Mit ${NAME} findest du alle Flohmärkte in Hamburg und Umgebung mit Uhrzeit, Adresse und Route, gestaltest kostenlos Schilder für deinen Stand und bekommst neue Termine im WhatsApp-Kanal.`, thumbnailUrl: SITE + IV_POSTER, contentUrl: SITE + IV_SRC, uploadDate: "2026-10-31T22:00:00+01:00", duration: "PT26S", inLanguage: "de", publisher: ORG_PUB }] : [])]) });
+      body, nav: "", ld: G([crumbLD(cr), { "@type": "AboutPage", name: `Über ${NAME}`, url: SITE + ABOUT_P }]) });
   }
   const isGitHub = /github/i.test(f("Datenschutz: Hoster"));
   const formKind = !FORM ? "mail" : /^mailto:/i.test(FORM) ? "mail" : /docs\.google\.com\/forms|forms\.gle/i.test(FORM) ? "google" : "other";
@@ -3103,7 +3111,7 @@ fs.writeFileSync(path.join(OUT, "assets/icons-lizenz.txt"), ICON_LICENSE);
 fs.writeFileSync(path.join(OUT, "assets/icons.svg"), SPRITE_FILE);
 if (WATCH_ON) fs.writeFileSync(path.join(OUT, "assets/waechter.json"), JSON.stringify(WATCH));
 fs.mkdirSync(path.join(OUT, "assets/schilder"), { recursive: true });
-if (IV) { fs.mkdirSync(path.join(OUT, "assets/video"), { recursive: true }); for (const x of [".mp4", ".webp", "-klein.webp"]) fs.copyFileSync(path.join(IV_DIR, IV_F + x), path.join(OUT, "assets/video", IV_F + x)); }
+if (IV) { fs.mkdirSync(path.join(OUT, "assets/video"), { recursive: true }); for (const x of [".mp4", ".webp", "-klein.webp", ...(IV_CLIP ? ["-karte.mp4", "-karte.webp"] : [])]) fs.copyFileSync(path.join(IV_DIR, IV_F + x), path.join(OUT, "assets/video", IV_F + x)); }
 if (EX_IMGS.length) { fs.mkdirSync(path.join(OUT, "assets/schilder/beispiele"), { recursive: true }); for (const f of EX_IMGS) fs.copyFileSync(path.join(EX_DIR, f), path.join(OUT, "assets/schilder/beispiele", f)); }
 if (IDEAS.some(([k]) => ideaImg(k))) { fs.mkdirSync(path.join(OUT, "assets/schilder/ideen"), { recursive: true }); for (const [k] of IDEAS) if (ideaImg(k)) fs.copyFileSync(path.join(IDEA_DIR, `${k}.webp`), path.join(OUT, `assets/schilder/ideen/${k}.webp`)); }
 for (const t of SIGNS) { fs.writeFileSync(path.join(OUT, `assets/schilder/flohmarkt-${t.s}-vorlage.svg`), signPreviewSVG(t)); if (signWebp(t)) fs.copyFileSync(path.join(SIGN_PREV_DIR, `flohmarkt-${t.s}-vorlage.webp`), path.join(OUT, `assets/schilder/flohmarkt-${t.s}-vorlage.webp`)); }

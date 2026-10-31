@@ -2113,3 +2113,10 @@ body:has(.menu-wrap[open]) .fab{display:none}
 .kb-live-more{display:inline-flex;align-items:center;gap:4px;margin-top:12px;font-weight:700;font-size:15px;color:var(--ink)}
 .kb-live-more .i{width:16px;height:16px}
 .kb-live .rain,.kb-live .wx-say{margin:4px 0 8px}
+
+/* Ratgeber-Suche: Lupe, Hinweis und Treffer direkt unter dem Feld */
+.kb-search input{padding-left:48px;border:2px solid var(--ink);background:var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%235A6961' stroke-width='2.4' stroke-linecap='round'%3E%3Ccircle cx='10.5' cy='10.5' r='6.5'/%3E%3Cpath d='M15.5 15.5 21 21'/%3E%3C/svg%3E") no-repeat 16px 50%/22px}
+.kb-hint{margin:8px 0 0;font-size:13px;color:var(--muted)}
+.kb-hits{margin-top:12px}
+.kb-hits-n{margin:0 0 8px;font-size:14px;font-weight:600}
+body.kb-q .cluster,body.kb-q main .cta-box,body.kb-q .cl-cred,body.kb-q #kbLeer{display:none!important}

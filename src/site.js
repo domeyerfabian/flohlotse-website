@@ -260,16 +260,20 @@
       document.getElementById("feeLeer").hidden = any;
     });
   }
+  // Ratgeber-Suche: Treffer erscheinen direkt unter dem Suchfeld (Überschrift zuerst), Kästen und Bereiche darunter treten so lange zurück
   var q = document.getElementById("kbSearch");
   if (q) {
+    var hits = document.getElementById("kbHits"), hitsL = document.getElementById("kbHitsL"), hitsN = document.getElementById("kbHitsN"), hint = document.getElementById("kbHint");
+    var all = Array.prototype.slice.call(document.querySelectorAll(".cluster .qlist a"));
     q.addEventListener("input", function () {
-      var v = q.value.trim().toLowerCase(), any = false;
-      document.querySelectorAll(".cluster").forEach(function (c) {
-        var n = 0;
-        c.querySelectorAll(".qlist a").forEach(function (a) { var ok = !v || a.getAttribute("data-q").indexOf(v) > -1; a.hidden = !ok; if (ok) n++; });
-        c.hidden = n === 0; if (n) any = true;
-      });
-      document.getElementById("kbLeer").hidden = any;
+      var v = q.value.trim().toLowerCase();
+      document.body.classList.toggle("kb-q", !!v); hint.hidden = !!v; hits.hidden = !v; hitsL.innerHTML = "";
+      if (!v) return;
+      var found = all.filter(function (a) { return a.getAttribute("data-q").indexOf(v) > -1; });
+      found.sort(function (a, b) { return (b.textContent.toLowerCase().indexOf(v) > -1) - (a.textContent.toLowerCase().indexOf(v) > -1); });
+      found.forEach(function (a) { hitsL.appendChild(a.cloneNode(true)); });
+      hitsL.hidden = !found.length;
+      hitsN.textContent = found.length ? (found.length === 1 ? "1 Artikel" : found.length + " Artikel") + " zu „" + q.value.trim() + "“" : "Dazu gibt es noch keinen Artikel. Versuch einen anderen Begriff, etwa „Steuern“ oder „Stand“.";
     });
   }
   // Kauf-Check: angetippte Punkte zählen und eine Einschätzung zeigen. Nichts wird gespeichert.

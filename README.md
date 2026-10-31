@@ -322,3 +322,9 @@ Die Google-Suche beantwortet allgemeine Fragen oft selbst (KI-Übersicht), dann 
 - Die Berechnung der Standgebühren (`FEE`) teilen sich jetzt die Seite „Standgebühren im Vergleich“ und die Kästen, damit überall dieselben Zahlen stehen.
 - `llms.txt` erwähnt die Kästen.
 - Titel, Adressen und Texte der Artikel bleiben unverändert.
+
+## Ratgeber-Suche: Treffer direkt unter dem Feld (31. Oktober)
+
+- Wer im Ratgeber ein Stichwort tippt, sieht die passenden Artikel sofort direkt unter dem Suchfeld, mit Anzahl („2 Artikel zu „Regen““). Artikel mit dem Wort in der Überschrift stehen oben.
+- Solange gesucht wird, treten Kauf-Check- und Schilder-Kasten sowie die Bereiche darunter zurück. Feld leeren zeigt wieder alles.
+- Das Feld hat eine Lupe, darunter steht „Die passenden Artikel erscheinen direkt hier, schon beim Tippen.“ Findet die Suche nichts, steht der Hinweis direkt unter dem Feld.

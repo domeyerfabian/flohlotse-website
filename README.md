@@ -298,3 +298,27 @@ Ideen zum Antippen: Die fünf neuen Looks stehen vorn. Dafür sind Prickelnde Pr
 - **Neu: „Schilder selbst ausprobieren: alle Vorlagen, Looks und Farben ↗“** unter den Beispielen, öffnet den Designer mit dem gewählten Markt und Etikett in einem neuen Tab.
 - **Vorschau des Buttons** steht jetzt unter dem Code: „Vorschau auf deiner Website“, als dunkles Fähnchen oben links im Vorschau-Kasten (wie das Etikett auf den Schildern).
 - **Schritt 2 heißt „Was soll dein Button tun?“** und bietet zwei Karten mit Erklärung: „Termine zeigen“ (Besucher sehen alle Termine, Uhrzeiten und die Anfahrt) und „Schilder für Aussteller“ (Aussteller gestalten kostenlos Standschilder mit deinem Namen).
+
+## Ratgeber: Kasten „Aktuell in Hamburg“ (31. Oktober)
+
+Die Google-Suche beantwortet allgemeine Fragen oft selbst (KI-Übersicht), dann klickt niemand. Was sie nicht hat, sind die Zahlen aus diesem Kalender. Deshalb steht in zehn Ratgeber-Artikeln direkt unter „Kurz gesagt“ ein Kasten mit aktuellen Hamburg-Zahlen, jede Nacht neu berechnet, mit Link zur passenden Übersicht. Alles kommt aus den Blättern Märkte, Serien und Termine, nichts muss gepflegt werden.
+
+| Artikel | Was im Kasten steht |
+|---|---|
+| standgebuehr-flohmarkt | Meterpreise in Hamburg (meist … bis … €, typisch …), die drei günstigsten Märkte, Märkte mit Restplätzen |
+| flohmarktstand-anmelden | Märkte mit Online-Anmeldung, die nächsten Termine mit Anmelde-Link (frühestens in drei Tagen) |
+| flohmarkt-bei-regen | Zahl der überdachten Märkte, die nächsten Termine; bei Regen-Vorhersage der Regen-Kasten des Wetterfroschs |
+| flohmarkt-troedelmarkt-antikmarkt | Zahl aller Märkte und der Antik-, Trödel- und Sammlermärkte, die nächsten Termine |
+| steuern-flohmarkt | Märkte nur für Privatverkäufer und Märkte mit Händlern (Spalte „Händler“), die nächsten privaten Märkte |
+| wechselgeld-flohmarkt | Märkte am Wochenende, wer am frühesten öffnet |
+| bezahlen-auf-dem-flohmarkt | Eintritt frei oder kostenpflichtig (Spalte „Eintritt“), mit Beispielen |
+| beste-uhrzeit-flohmarkt | häufigste Öffnungs- und Schlusszeit (je Markt), Frühaufsteher- und Langschläfer-Märkte |
+| verbotene-waren-flohmarkt | Märkte, die Neuware ausschließen oder erlauben (aus den Texten im Blatt Märkte), Link zum Kauf-Check |
+| was-verkauft-sich-gut-flohmarkt | Termine der Kinder-, Frauen-, Antik- und Fahrradflohmärkte in den nächsten 30 Tagen |
+
+- Reichen die Daten nicht (zu wenige Märkte mit Angabe), entfällt der Kasten von selbst.
+- Der Kasten zählt nicht für das Änderungsdatum der Seite (Sitemap) und nicht für „Stand“ des Artikels. Er trägt sein eigenes Tagesdatum.
+- Wo der Kasten schon auf eine Übersicht verlinkt, entfällt der gleiche Hinweis-Kasten weiter unten (z. B. „Standgebühren im Vergleich“).
+- Die Berechnung der Standgebühren (`FEE`) teilen sich jetzt die Seite „Standgebühren im Vergleich“ und die Kästen, damit überall dieselben Zahlen stehen.
+- `llms.txt` erwähnt die Kästen.
+- Titel, Adressen und Texte der Artikel bleiben unverändert.

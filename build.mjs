@@ -2456,6 +2456,136 @@ const FEE_CTA = new Set(["standgebuehr-flohmarkt", "flohmarktstand-anmelden", "c
 const feeCta = () => MARKETS.filter(m => m.fee).length >= 5 ? `<a class="cta-box" href="${FEE_P}">${ic("tag")}<span><b>Standgebühren im Vergleich</b>Was ein Stand auf den Märkten in Hamburg kostet, mit Link zur Anmeldung.</span>${ic("chev")}</a>` : "";
 const signCta = t => `<a class="cta-box" href="${t ? signUrl(t) : SIGN_BASE}">${ic("printer")}<span><b>${!t ? "Gratis: Schilder für deinen Stand" : t.kind === "tags" ? "Gratis: Preisschilder zum Ausdrucken" : `Gratis-Vorlage: „${esc(t.chip)}“-Schild`}</b>${t ? esc(t.short) : "Preisschilder, „Alles 1 €“ und mehr, direkt drucken."}</span>${ic("chev")}</a>`;
 
+// Günstigster Meterpreis aus dem Text der Spalte „Standgebühr“: „13 € pro Meter, mit PKW 15 €“ → 13, „Sa 12 €, Mi 10 € pro Meter“ → 10,
+// „Privat ab 30 € für 3 m“ → 10 (ungefähr). Aufschläge („+3 €“, „2 € pro Meter mehr“) zählen nicht. Kein Meterpreis erkennbar → null.
+const feePerMeter = fee => {
+  const t = String(fee || ""), v = [], N = "(\\d+(?:,\\d+)?)(?:\\s*[–-]\\s*\\d+(?:,\\d+)?)?\\s*€", PM = "pro\\s+(?:Stand|Tisch)?meter", num = x => parseFloat(x.replace(",", "."));
+  for (const x of t.matchAll(new RegExp(`${N}\\s*(?:${PM}|\\/\\s*m(?![a-zäöü]))`, "gi"))) {
+    if (/\+\s*$/.test(t.slice(Math.max(0, x.index - 2), x.index)) || /^\s*mehr/.test(t.slice(x.index + x[0].length))) continue;
+    v.push({ pm: num(x[1]), approx: false });
+  }
+  for (const x of t.matchAll(new RegExp(`${N}\\s*,\\s*[^\\d,;€]{1,14}?\\d+(?:,\\d+)?\\s*€\\s*${PM}`, "gi"))) v.push({ pm: num(x[1]), approx: false });
+  for (const x of t.matchAll(new RegExp(`${N}\\s*(?:pro|für)\\s+(\\d)\\s*m\\b`, "gi"))) v.push({ pm: num(x[1]) / +x[2], approx: num(x[1]) % +x[2] !== 0 });
+  return v.length ? v.sort((a, b) => a.pm - b.pm)[0] : null;
+};
+const FEE_SPONTAN = /restpl|ohne (vor)?anmeldung|keine anmeldung|platzvergabe|oder vor ort|vor ort ab \d/i;
+
+/* ---------------------------------------------------------------- Standgebühren: gemeinsame Zahlen
+   Für die Seite „Standgebühren im Vergleich“ und für die Kästen „Aktuell in Hamburg“ in den Ratgeber-Artikeln. */
+const FEE = (() => {
+  const rows = MARKETS.filter(m => m.fee || m.signup || m.signupHint || m.sellers).map(m => {
+    const pm = feePerMeter(m.fee), free = /^(kostenlos|gratis)\b/i.test(m.fee);
+    const sp = FEE_SPONTAN.test(m.signupHint) && !/anwohner/i.test(m.signupHint), priv = /^nur privat/i.test(m.sellers);
+    return { m, pm, free, sp, priv, cheap: free || (pm && pm.pm <= 10), n: nextEv(m) };
+  });
+  const withPm = rows.filter(r => r.pm).map(r => r.pm.pm).sort((a, b) => a - b);
+  const q = f => withPm.length ? withPm[Math.min(withPm.length - 1, Math.max(0, Math.round((withPm.length - 1) * f)))] : 0;
+  const q1 = Math.round(q(.25)), q3 = Math.round(q(.75)), med = q(.5);
+  const sp = rows.filter(r => r.sp), priv = rows.filter(r => r.priv), free = rows.filter(r => r.free), cheap = rows.filter(r => r.cheap);
+  const car = rows.filter(r => /(?:mit\s+(?:pkw|auto|kfz|fahrzeug)|autostand|fahrzeug)\s*(?:\+|zzgl\.)?\s*\d/i.test(r.m.fee));
+  const cheapest = rows.filter(r => r.pm).sort((a, b) => a.pm.pm - b.pm.pm || ((a.n || {}).k || "9").localeCompare((b.n || {}).k || "9")).slice(0, 3);
+  return { rows, withPm, q1, q3, med, sp, priv, free, cheap, car, cheapest };
+})();
+const eurN = v => (Math.round(v * 100) / 100).toFixed(2).replace(/[.,]00$/, "").replace(".", ",");
+
+/* ---------------------------------------------------------------- Ratgeber: Kasten „Aktuell in Hamburg“
+   Allgemeine Fragen („Was kostet ein Flohmarktstand?“) beantwortet die Google-Suche oft schon selbst. Was sie nicht hat: die aktuellen
+   Zahlen aus diesem Kalender. Deshalb steht unter der Kurz-Antwort ausgewählter Artikel ein Kasten mit Zahlen und Terminen für Hamburg,
+   jede Nacht neu berechnet, mit Link zur passenden Übersicht. Nur Angaben aus dem Blatt Märkte und den Terminen, nichts geschätzt.
+   Reichen die Daten nicht (zu wenige Märkte mit Angabe), entfällt der Kasten. Für das Änderungsdatum der Seite zählt er nicht mit. */
+const lvSoon = (days = 30) => EVENTS.filter(e => !e.cancelled && (e.date - TODAY) / 864e5 < days);
+const lvFirst = evs => { const seen = new Set(); return evs.filter(e => !seen.has(e.m.slug) && seen.add(e.m.slug)); };
+const lvA = m => `<a href="/flohmarkt/${m.slug}/">${esc(m.short)}</a>`;
+const lvLi = (e, extra = "") => `<li>${lvA(e.m)}<span>${fmtShort(e.date)}${e.start ? ` · ${hmText(tFirst(e.start))}${e.end ? "–" + hmText(tLast(e.end)) : ""} Uhr` : ""}${extra}</span></li>`;
+const lvByNext = ms => ms.map(m => ({ m, n: nextEv(m) })).sort((a, b) => ((a.n || {}).k || "9").localeCompare((b.n || {}).k || "9")).map(x => x.m);
+// Neuware: Was der Veranstalter laut den Texten im Blatt Märkte ausschließt oder erlaubt (Kurzbeschreibung, Einleitung, Tipps, Hinweis, Standgebühr, Anmeldung, Händler)
+const mText = m => [m.note, m.intro, (m.tips || []).join(" "), m.hint, m.fee, m.signupHint, m.sellers].join(" ");
+const NW_NO = /keine\s+Neuware|ohne\s+(?:[^.;]{0,30}\s)?Neuware|Neuware[^.;]{0,60}?(?:ausgeschlossen|nicht erlaubt|nicht zugelassen|verboten|untersagt|unerwünscht|nicht gestattet|gibt es nicht)|(?:ausgeschlossen|verboten|untersagt|nicht erlaubt|nicht gestattet)\s*(?:sind|ist)?[^.;]{0,30}?Neuware/i;
+const NW_FEE = /Neuware\s*(?:\+|ab\s*)?\s*\d/i, NW_OK = /Neuware\s*(?:\+|ab\s*)?\s*\d|Neuware\s+erlaubt|Neuware\s+(?:ist\s+)?(?:laut Veranstalter\s+)?(?:erlaubt|möglich)/i;
+function kbLive(a) {
+  const P = t => `<p>${t.replace(/(\d) (?=€|Uhr\b)/g, "$1&nbsp;")}</p>`; // Zahl und Einheit bleiben in einer Zeile
+  const box = (txt, list, more) => ({ href: more ? more[0] : "", html: `<section class="kb-live" aria-label="Aktuell in Hamburg"><p class="kb-live-k">${ic("pin")}<span>Aktuell in Hamburg</span><small>Stand ${STAND}</small></p>${txt}${list && list.length ? `<ul class="kb-live-l">${list.join("")}</ul>` : ""}${more ? `<a class="kb-live-more" href="${more[0]}">${esc(more[1])}${ic("chev")}</a>` : ""}</section>` });
+  const none = { href: "", html: "" };
+  switch (a.s) {
+    case "standgebuehr-flohmarkt": {
+      if (FEE.withPm.length < 5) return none;
+      const c = FEE.cheapest.map((r, i) => `${lvA(r.m)} (ab ${r.pm.approx ? `rund ${Math.round(r.pm.pm)}` : eurN(r.pm.pm)} €${i ? "" : " pro Meter"})`);
+      return box(P(`Laut Veranstaltern kostet ein Meter Standfläche auf den Flohmärkten in Hamburg und im Umland meist <b>${FEE.q1} bis ${FEE.q3} €</b>, typisch sind ${eurN(FEE.med)} €. Grundlage sind ${FEE.withPm.length} Märkte mit Meterpreis im Kalender.`)
+        + (c.length ? P(`Am günstigsten: ${listNames(c, 3)}.${FEE.sp.length ? ` Bei ${FEE.sp.length} Märkten gibt es Restplätze am Markttag oder keine Voranmeldung.` : ""}`) : ""), null, [FEE_P, "Alle Standgebühren im Vergleich"]);
+    }
+    case "flohmarktstand-anmelden": {
+      const sm = MARKETS.filter(m => m.signup); if (sm.length < 5) return none;
+      const nx = lvFirst(lvSoon(45).filter(e => e.m.signup && (e.date - TODAY) / 864e5 >= 3)).slice(0, 4); // in den nächsten zwei Tagen ist die Anmeldung meist schon zu
+      return box(P(`<b>${sm.length} Märkte</b> im Kalender haben eine Anmeldung im Netz.${FEE.sp.length ? ` Bei ${FEE.sp.length} Märkten gibt es laut Veranstalter Restplätze am Markttag oder keine Voranmeldung.` : ""}${nx.length ? " Die nächsten Termine mit Online-Anmeldung:" : ""}`),
+        nx.map(e => lvLi(e, ` · <a href="${esc(e.m.signup)}" rel="noopener">Anmeldung</a>`)), [FEE_P, "Standgebühren und Anmeldung aller Märkte"]);
+    }
+    case "flohmarkt-bei-regen": {
+      const c = CAT_BY_S["hallenflohmarkt-hamburg"]; if (!c) return none;
+      const nx = lvFirst(lvSoon(14).filter(e => c.ms.includes(e.m))).slice(0, 5), rb = rainBox(lvSoon(4));
+      // Sagt der Wetterfrosch Regen voraus, nennt der Regen-Kasten schon die überdachten Märkte des Tages: dann keine zweite Liste
+      return box((rb || frogLine(lvSoon(3))) + P(`<b>${c.ms.length} Flohmärkte</b> im Kalender sind überdacht oder finden drinnen statt, in Hallen, Parkhäusern oder Einkaufszentren.${nx.length && !rb ? " Die nächsten Termine:" : ""}`),
+        rb ? [] : nx.map(e => lvLi(e)), rb ? null : [`/${c.s}/`, "Alle überdachten Flohmärkte"]);
+    }
+    case "flohmarkt-troedelmarkt-antikmarkt": {
+      const c = CAT_BY_S["antikmarkt-hamburg"]; if (!c) return none;
+      const nx = lvFirst(lvSoon(60).filter(e => c.ms.includes(e.m))).slice(0, 4);
+      return box(P(`Der ${esc(NAME)}-Kalender führt <b>${MARKETS.length} Märkte</b> in Hamburg und im Umland, davon ${c.ms.length} Antik-, Trödel- und Sammlermärkte.${nx.length ? " Die nächsten Termine:" : ""}`),
+        nx.map(e => lvLi(e)), [`/${c.s}/`, "Alle Antik-, Trödel- und Sammlermärkte"]);
+    }
+    case "steuern-flohmarkt": {
+      const ws = MARKETS.filter(m => m.sellers), pv = ws.filter(m => /^nur privat/i.test(m.sellers)), gw = ws.filter(m => /gewerblich/i.test(m.sellers) && !/^nur privat/i.test(m.sellers));
+      if (ws.length < 10 || pv.length < 3) return none;
+      const nx = lvFirst(lvSoon().filter(e => pv.includes(e.m))).slice(0, 4);
+      return box(P(`Von ${ws.length} Märkten mit Angabe nehmen laut Veranstalter <b>${pv.length} nur Privatverkäufer</b>, ${gw.length} lassen auch gewerbliche Händler zu.${nx.length ? " Die nächsten Märkte nur für Privatleute:" : ""}`),
+        nx.map(e => lvLi(e)), [FEE_P, "Alle Märkte mit Angaben zu den Verkäufern"]);
+    }
+    case "wechselgeld-flohmarkt": {
+      const { sat, sun, sunOnly } = weekendDays(), days = sunOnly ? [key(sun)] : [key(sat), key(sun)];
+      const we = EVENTS.filter(e => !e.cancelled && days.includes(e.k)); if (we.length < 2) return none;
+      const timed = we.filter(e => e.start).sort((x, y) => tFirst(x.start).localeCompare(tFirst(y.start)) || x.k.localeCompare(y.k));
+      const t0 = timed.length ? tFirst(timed[0].start) : "", early = [...new Set(timed.filter(e => tFirst(e.start) === t0).map(e => e.m))];
+      const span = sat.getUTCMonth() === sun.getUTCMonth() ? `${sat.getUTCDate()}./${sun.getUTCDate()}. ${MON[sun.getUTCMonth()]}` : `${sat.getUTCDate()}.${sat.getUTCMonth() + 1}./${sun.getUTCDate()}.${sun.getUTCMonth() + 1}.`;
+      const nM = new Set(we.map(e => e.m)).size;
+      return box(P(`${sunOnly ? "Heute, am Sonntag," : `Am Wochenende ${span}`} ${nM === 1 ? "hat ein Flohmarkt" : `haben <b>${nM} Flohmärkte</b>`} in Hamburg und im Umland geöffnet.${t0 ? ` Am frühesten ${early.length === 1 ? "öffnet" : "öffnen"} ${listMore(early.map(lvA), 3)} um ${hmText(t0)} Uhr. In der ersten Stunde brauchst du das meiste Kleingeld.` : ""}`),
+        lvFirst(timed).slice(0, 5).map(e => lvLi(e)), ["/wochenende/", "Alle Flohmärkte am Wochenende"]);
+    }
+    case "bezahlen-auf-dem-flohmarkt": {
+      const we = MARKETS.filter(m => m.entry); if (we.length < 10) return none;
+      const free = we.filter(m => /^(?:eintritt\s+)?(?:frei|kostenlos|gratis)\b/i.test(m.entry));
+      const paid = lvByNext(we.filter(m => !free.includes(m) && /\d(?:,\d+)?\s*€/.test(m.entry))).map(m => ({ m, v: parseFloat(m.entry.match(/(\d+(?:,\d+)?)\s*€/)[1].replace(",", ".")) }));
+      const vs = paid.map(x => x.v), lo = Math.min(...vs), hi = Math.max(...vs);
+      return box(P(`Eintritt: Bei <b>${free.length} von ${we.length} Märkten</b> mit Angabe im Kalender ist der Eintritt frei.${paid.length ? ` ${paid.length === 1 ? "Ein Markt nimmt" : `${paid.length} Märkte nehmen`} Eintritt, ${lo === hi ? `${eurN(lo)} €` : `${eurN(lo)} bis ${eurN(hi)} €`}, zum Beispiel ${listNames(paid.map(x => `${lvA(x.m)} (${eurN(x.v)} €)`), 3)}.` : ""}`), null, null);
+    }
+    case "beste-uhrzeit-flohmarkt": {
+      const tm = EVENTS.filter(e => !e.cancelled && e.start), perM = lvFirst(tm); if (perM.length < 10) return none; // je Markt der nächste Termin mit Uhrzeit
+      const top = (f, list) => { const c = {}; for (const e of list) { const v = f(e); if (v) c[v] = (c[v] || 0) + 1; } return (Object.entries(c).sort((x, y) => y[1] - x[1] || x[0].localeCompare(y[0]))[0] || [""])[0]; };
+      const ts = top(e => tFirst(e.start), perM), te = top(e => e.end ? tLast(e.end) : "", perM);
+      const early = lvFirst(tm.filter(e => hourOf(tFirst(e.start)) <= 6)), late = lvFirst(tm.filter(e => { const h = hourOf(tFirst(e.start)); return h >= 11 && h < 15; })), eve = lvFirst(tm.filter(e => hourOf(tFirst(e.start)) >= 15));
+      const eMin = early.length ? early.map(e => tFirst(e.start)).sort()[0] : "";
+      const lastHour = te ? hmText(`${pad(Math.max(0, hourOf(te) - 1))}${te.slice(2)}`) : "";
+      return box(P(`Am häufigsten öffnen die Märkte im Kalender um <b>${hmText(ts)} Uhr</b>${te ? ` und schließen um <b>${hmText(te)} Uhr</b>. Die letzte Stunde vor Marktende, in der es oft die besten Preise gibt, beginnt also meist um ${lastHour} Uhr` : ""}.`)
+        + P([early.length ? `Frühaufsteher: ${listMore(early.map(e => lvA(e.m)), 3)} ${early.length === 1 ? "öffnet" : "öffnen"} schon ab ${hmText(eMin)} Uhr.` : "",
+          late.length ? `Langschläfer: ${listMore(late.map(e => lvA(e.m)), 3)} ${late.length === 1 ? "öffnet" : "öffnen"} erst ab 11 Uhr.` : "",
+          eve.length ? `${eve.length === 1 ? "Ein Markt öffnet" : `${eve.length} Märkte öffnen`} erst am Nachmittag oder Abend, zum Beispiel ${lvA(eve[0].m)}.` : ""].filter(Boolean).join(" ")),
+        null, ["/termine/", "Alle Termine mit Uhrzeiten"]);
+    }
+    case "verbotene-waren-flohmarkt": {
+      const no = MARKETS.filter(m => NW_NO.test(mText(m))), ok = MARKETS.filter(m => !no.includes(m) && NW_OK.test(mText(m))), fee = ok.filter(m => NW_FEE.test(mText(m)));
+      if (no.length < 3) return none;
+      return box(P(`Neuware ist nicht überall erlaubt: Bei <b>${no.length} Märkten</b> im Kalender schließt der Veranstalter Neuware aus, zum Beispiel ${listNames(lvByNext(no).map(lvA), 3)}.${ok.length ? ` Bei ${ok.length} Märkten ist Neuware erlaubt${fee.length ? `, bei ${fee.length} davon gegen Aufpreis auf die Standgebühr` : ""}.` : ""} Im Zweifel steht die Regel auf der Marktseite oder beim Veranstalter.`),
+        null, KC_ON ? [KC_P, "Markenware vorher prüfen: zum Kauf-Check"] : [FEE_P, "Standgebühren und Regeln aller Märkte"]);
+    }
+    case "was-verkauft-sich-gut-flohmarkt": {
+      const items = [["kinderflohmarkt-hamburg", "Kinderkleidung und Spielzeug", "Kinderflohmärkte"], ["frauenflohmarkt-hamburg", "Mode und Accessoires", "Frauen- und Mädelsflohmärkte"], ["antikmarkt-hamburg", "Platten, Antikes und Sammlerstücke", "Antik- und Sammlermärkte"], ["fahrradflohmarkt-hamburg", "Fahrräder", "Fahrradflohmärkte"]]
+        .map(([s, what, pl]) => { const c = CAT_BY_S[s]; if (!c) return ""; const evs = c.evs.filter(e => !e.cancelled && (e.date - TODAY) / 864e5 < 30); if (!evs.length) return "";
+          return `<li><a href="/${s}/">${what}</a><span>${pl}: ${evs.length === 1 ? "1 Termin" : `${evs.length} Termine`}, der nächste am ${dDate(evs[0].date)}</span></li>`; }).filter(Boolean);
+      if (items.length < 2) return none;
+      return box(P("Auf Märkten mit Schwerpunkt suchen die Besucher gezielt nach diesen Sachen. Termine in den nächsten 30 Tagen:"), items, ["/termine/", "Alle Flohmarkt-Termine"]);
+    }
+  }
+  return none;
+}
+
 /* ---------------------------------------------------------------- Ratgeber */
 // Bildform je Bereich im Artikel: Banner (leer), „kante“ (schwarze Kante), „rund“ oder „rund links“ (Kreis neben dem Text).
 // Damit nicht jeder Artikel eines Bereichs dasselbe Foto zeigt, wechseln sich je Bereich mehrere Fotos und Formen ab (Bild, Form).
@@ -2486,15 +2616,17 @@ ${CRED_SRC ? `<p class="meta cl-cred">Symbolfotos: ${credLink()}${S["Bildnachwei
 <div class="empty" id="kbLeer" hidden>Dazu gibt es noch keinen Artikel. Versuch einen anderen Begriff, etwa „Steuern“ oder „Stand“.</div>`;
   layout({ p: "/ratgeber/", title: `Flohmarkt-Ratgeber: Die wichtigsten Fragen | ${NAME}`, desc: "Kaufen, verkaufen, handeln, Knigge und Tipps für Veranstalter: Der Ratgeber beantwortet die häufigsten Fragen rund um den Flohmarkt, kurz und verständlich.", body, nav: "ratgeber", ld: G([crumbLD([[NAME, "/"], ["Ratgeber"]]), { "@type": "CollectionPage", name: "Flohmarkt-Ratgeber", hasPart: KB.map(a => ({ "@type": "Article", headline: a.h, url: `${SITE}/ratgeber/${a.s}/` })) }]) });
 }
+let KB_LIVE_N = 0; // Artikel mit Kasten „Aktuell in Hamburg“ (für llms.txt)
 for (const a of KB) {
   const cl = CLUSTERS[a.c] || { t: a.c }, ph = kbPhoto(a);
-  const words = (plain(a.a) + " " + a.b.map(x => x.join(" ")).join(" ")).split(/\s+/).length;
+  const words = (plain(a.a) + " " + a.b.map(x => x.join(" ")).join(" ")).split(/\s+/).length, lv = kbLive(a);
+  if (lv.html) KB_LIVE_N++;
   const body = crumbs([[NAME, "/"], ["Ratgeber", "/ratgeber/"], [cl.t, `/ratgeber/#${a.c}`]]) + `<article class="kb"><h1>${esc(a.h)}</h1>
 <div class="byline">${kbHH(a) ? `<span>${ic("pin")}Speziell für Hamburg</span>` : `<span>${ic("globe")}Für jeden Flohmarkt</span>`}<span>${ic("update")}Stand: ${AKT_TIME}</span><span>${ic("clock")}${Math.max(2, Math.round(words / 200))} Min. Lesezeit</span></div>
-<div class="answer"><span class="kicker">Kurz gesagt</span><p>${rich(a.a)}</p></div>
+<div class="answer"><span class="kicker">Kurz gesagt</span><p>${rich(a.a)}</p></div>${lv.html}
 ${/rund/.test(ph[1]) ? "" : clusterImg(a.c, `kb-photo${ph[1] ? " " + ph[1] : ""}`, false, ph[0])}<div class="kb-body">${/rund/.test(ph[1]) ? sideImg(pickImg(ph[0] + "-klein") ? ph[0] + "-klein" : ph[0], ph[1]) : ""}${a.b.map(([h, p]) => `<h2>${esc(h)}</h2><p>${rich(p)}</p>`).join("")}</div>
-${FEE_CTA.has(a.s) ? feeCta() : ""}${a.s in SIGN_CTA || a.c === "verkaufen" ? signCta(SIGN_BY[SIGN_CTA[a.s]]) : ""}
-${CAT_BY_S[ART_CTA[a.s]] ? catCta(CAT_BY_S[ART_CTA[a.s]]) : ""}${a.s in KC_ART ? (KC_ART[a.s] ? kcCta(KC_ART[a.s]) : kcHubCta()) : ""}
+${FEE_CTA.has(a.s) && lv.href !== FEE_P ? feeCta() : ""}${a.s in SIGN_CTA || a.c === "verkaufen" ? signCta(SIGN_BY[SIGN_CTA[a.s]]) : ""}
+${CAT_BY_S[ART_CTA[a.s]] && lv.href !== `/${ART_CTA[a.s]}/` ? catCta(CAT_BY_S[ART_CTA[a.s]]) : ""}${a.s in KC_ART ? (KC_ART[a.s] ? kcCta(KC_ART[a.s]) : kcHubCta()) : ""}
 ${a.f.length ? `<section class="faq"><h2>Häufige Fragen</h2>${a.f.map(([q, x]) => `<details><summary>${esc(q)}</summary><p>${rich(x)}</p></details>`).join("")}</section>` : ""}
 ${a.x ? '<p class="hint">Unser Tipp: Verbindliche Auskünfte für deinen Fall bekommst du bei den zuständigen Stellen, zum Beispiel beim Finanzamt, beim Bezirksamt oder beim Veranstalter des Markts.</p>' : ""}
 <p class="ai-note">Dieser Text ist mit Unterstützung von künstlicher Intelligenz entstanden.</p>
@@ -2742,33 +2874,10 @@ ${faqBlock(faq)}
 }
 
 /* ---------------------------------------------------------------- Standgebühren im Vergleich */
-// Günstigster Meterpreis aus dem Text der Spalte „Standgebühr“: „13 € pro Meter, mit PKW 15 €“ → 13, „Sa 12 €, Mi 10 € pro Meter“ → 10,
-// „Privat ab 30 € für 3 m“ → 10 (ungefähr). Aufschläge („+3 €“, „2 € pro Meter mehr“) zählen nicht. Kein Meterpreis erkennbar → null.
-const feePerMeter = fee => {
-  const t = String(fee || ""), v = [], N = "(\\d+(?:,\\d+)?)(?:\\s*[–-]\\s*\\d+(?:,\\d+)?)?\\s*€", PM = "pro\\s+(?:Stand|Tisch)?meter", num = x => parseFloat(x.replace(",", "."));
-  for (const x of t.matchAll(new RegExp(`${N}\\s*(?:${PM}|\\/\\s*m(?![a-zäöü]))`, "gi"))) {
-    if (/\+\s*$/.test(t.slice(Math.max(0, x.index - 2), x.index)) || /^\s*mehr/.test(t.slice(x.index + x[0].length))) continue;
-    v.push({ pm: num(x[1]), approx: false });
-  }
-  for (const x of t.matchAll(new RegExp(`${N}\\s*,\\s*[^\\d,;€]{1,14}?\\d+(?:,\\d+)?\\s*€\\s*${PM}`, "gi"))) v.push({ pm: num(x[1]), approx: false });
-  for (const x of t.matchAll(new RegExp(`${N}\\s*(?:pro|für)\\s+(\\d)\\s*m\\b`, "gi"))) v.push({ pm: num(x[1]) / +x[2], approx: num(x[1]) % +x[2] !== 0 });
-  return v.length ? v.sort((a, b) => a.pm - b.pm)[0] : null;
-};
-const FEE_SPONTAN = /restpl|ohne (vor)?anmeldung|keine anmeldung|platzvergabe|oder vor ort|vor ort ab \d/i;
 {
   const eur = v => (Math.round(v * 100) / 100).toFixed(2).replace(/[.,]00$/, "").replace(".", ",");
   const eurT = x => x.approx ? `rund ${Math.round(x.pm)} €` : `${eur(x.pm)} €`;
-  const rows = MARKETS.filter(m => m.fee || m.signup || m.signupHint || m.sellers).map(m => {
-    const pm = feePerMeter(m.fee), free = /^(kostenlos|gratis)\b/i.test(m.fee);
-    const sp = FEE_SPONTAN.test(m.signupHint) && !/anwohner/i.test(m.signupHint), priv = /^nur privat/i.test(m.sellers);
-    return { m, pm, free, sp, priv, cheap: free || (pm && pm.pm <= 10), n: nextEv(m) };
-  });
-  const withPm = rows.filter(r => r.pm).map(r => r.pm.pm).sort((a, b) => a - b);
-  const q = f => withPm.length ? withPm[Math.min(withPm.length - 1, Math.max(0, Math.round((withPm.length - 1) * f)))] : 0;
-  const q1 = Math.round(q(.25)), q3 = Math.round(q(.75)), med = q(.5);
-  const sp = rows.filter(r => r.sp), priv = rows.filter(r => r.priv), free = rows.filter(r => r.free), cheap = rows.filter(r => r.cheap);
-  const car = rows.filter(r => /(?:mit\s+(?:pkw|auto|kfz|fahrzeug)|autostand|fahrzeug)\s*(?:\+|zzgl\.)?\s*\d/i.test(r.m.fee));
-  const cheapest = rows.filter(r => r.pm).sort((a, b) => a.pm.pm - b.pm.pm || ((a.n || {}).k || "9").localeCompare((b.n || {}).k || "9")).slice(0, 3);
+  const { rows, withPm, q1, q3, med, sp, priv, free, cheap, car, cheapest } = FEE; // berechnet vor dem Ratgeber (auch für die Kästen in den Artikeln)
   const mLink = m => `[${m.name}](/flohmarkt/${m.slug}/)`;
   const stats = withPm.length >= 5, nFee = rows.filter(r => r.m.fee).length;
   const ans = `${stats ? `Ein Meter Standfläche kostet auf den meisten Flohmärkten in Hamburg und im Umland ${q1} bis ${q3} €, typisch sind ${eur(med)} €. ` : ""}Hier stehen die Angaben von ${rows.length} Märkten im Vergleich, mit Standgebühr, Verkäufern und Anmeldung.${sp.length ? ` Bei ${sp.length} Märkten gibt es laut Veranstalter auch Restplätze am Markttag oder keine Voranmeldung.` : ""} Alle Angaben stammen von den Veranstaltern, ohne Gewähr.`;
@@ -2882,7 +2991,8 @@ for (const [p, pg] of pages) {
    wenn die Angaben verlässlich sind, und ein Datum, das jede Nacht neu ist, ohne dass sich etwas geändert hat, gilt als geschönt.
    Als Inhalt einer Seite zählen Titel, Beschreibung, strukturierte Daten und der Hauptteil. Nicht mit zählen: Kopf, Menü, Fuß,
    Versionskürzel von Stil, Skript und Icons, die Werkzeug- und Hamburg-Hinweise am Seitenende und der Text in Hinweiskästen
-   (cta-box, etwa „der nächste am …“), von denen nur zählt, wohin sie verlinken, und die wechselnden Beispiele bei den
+   (cta-box, etwa „der nächste am …“), von denen nur zählt, wohin sie verlinken, der Kasten „Aktuell in Hamburg“ in Ratgeber-Artikeln
+   (kb-live, nur dass es ihn gibt), und die wechselnden Beispiele bei den
    Werkzeugen (Kauf-Check-Beispiel, Ratgeber-Fragen, Fragenliste auf /flohmarkt-tipps/). Ein neuer Menüpunkt, ein neuer Anstrich, ein weitergerücktes Datum in einem
    Kasten oder ein anderes Tagesbeispiel ist kein neuer Inhalt.
    Artikel (Ratgeber, Kauf-Check) haben zusätzlich ein Datum für ihren Wortlaut. Es ändert sich nur, wenn sich Überschrift, Text oder
@@ -2899,7 +3009,7 @@ const LASTMOD = {}, PAGE_STATE = {}, ART_STATE = {};
   const fp = t => hashOf("sha1").update(t).digest("hex").slice(0, 12);
   const one = (html, re) => (html.match(re) || [""])[0];
   const sigOf = html => fp([one(html, /<title>[\s\S]*?<\/title>/), one(html, /<meta name="description"[^>]*>/), ...(html.match(/<script type="application\/ld\+json">[\s\S]*?<\/script>/g) || []), one(html, /<main[\s\S]*?<\/main>/)].join("\n")
-    .replace(/<section class="sec (?:more-tools|lp-hh|lp-qs)">[\s\S]*?<\/section>/g, "").replace(/<a class="cta-box" href="([^"]*)">[\s\S]*?<\/a>/g, "[$1]")
+    .replace(/<section class="sec (?:more-tools|lp-hh|lp-qs)">[\s\S]*?<\/section>/g, "").replace(/<a class="cta-box" href="([^"]*)">[\s\S]*?<\/a>/g, "[$1]").replace(/<section class="kb-live"[\s\S]*?<\/section>/g, "[kb-live]")
     .replace(/<fieldset class="st-check"[\s\S]*?<\/fieldset>/g, "").replace(/<div class="st-vis st-qs">[\s\S]*?<\/div>/g, "")
     .split(STAND).join("").split(today).join("").replace(/\?v=[0-9a-f]{8}/g, ""));
   for (const p of indexable) {
@@ -3027,7 +3137,7 @@ ${CATS_ON.map(c => `- [${c.chip}](${SITE}/${c.s}/): ${c.ms.length} Märkte`).joi
 
 ## Zahlen und Wissen
 - [Flohmärkte in Hamburg in Zahlen](${SITE}${STATS_P}): Anzahl der Märkte und Termine nach Bezirk, Art, Wochentag und Uhrzeit
-- [Ratgeber](${SITE}/ratgeber/): ${KB.length} Artikel zu Kaufen, Verkaufen, Handeln und Organisieren
+- [Ratgeber](${SITE}/ratgeber/): ${KB.length} Artikel zu Kaufen, Verkaufen, Handeln und Organisieren${KB_LIVE_N ? `. ${KB_LIVE_N} davon haben einen Kasten „Aktuell in Hamburg“ mit tagesaktuellen Zahlen aus dem Kalender, etwa zu Standgebühren, Uhrzeiten, Eintritt und überdachten Märkten` : ""}
 
 ## Praktisches
 - [Schilder-Designer](${SITE}/flohmarkt-schilder/): Preisschilder und Standschilder kostenlos gestalten und drucken

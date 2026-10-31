@@ -1520,4 +1520,28 @@
     }).catch(function () {});
   })();
 
+  // Intro-Video auf der Startseite: Antippen öffnet das Video groß. Ohne Skript oder ohne <dialog> führt der Link zur Über-Seite.
+  (function () {
+    var cards = document.querySelectorAll("[data-iv]");
+    if (!cards.length || typeof HTMLDialogElement !== "function") return;
+    var d, v;
+    var build = function () {
+      d = document.createElement("dialog"); d.className = "iv-dlg"; d.setAttribute("aria-label", "Video");
+      d.innerHTML = '<button type="button" class="iv-x" aria-label="Video schließen">×</button><video controls playsinline preload="none"></video><p class="iv-cr"></p>';
+      document.body.appendChild(d); v = d.querySelector("video");
+      d.querySelector(".iv-x").addEventListener("click", function () { d.close(); });
+      d.addEventListener("click", function (e) { if (e.target === d) d.close(); });
+      d.addEventListener("close", function () { v.pause(); });
+    };
+    Array.prototype.forEach.call(cards, function (a) {
+      a.addEventListener("click", function (e) {
+        e.preventDefault(); if (!d) build();
+        if (v.getAttribute("src") !== a.dataset.iv) { v.poster = a.dataset.poster || ""; v.src = a.dataset.iv; }
+        d.setAttribute("aria-label", (a.querySelector("b") || a).textContent);
+        d.querySelector(".iv-cr").textContent = a.dataset.cr || "";
+        d.showModal(); try { v.currentTime = 0; } catch (err) {} var pr = v.play(); if (pr && pr.catch) pr.catch(function () {});
+      });
+    });
+  })();
+
 })();

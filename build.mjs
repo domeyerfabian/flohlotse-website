@@ -540,7 +540,8 @@ const TIME_TAGS = ["Frühaufsteher", "Langschläfer"];
 // Zwei Seiten, die auch unter der Woche gesucht werden: Märkte von Montag bis Freitag und Standgebühren im Vergleich
 // Intro-Video „Flohlotse in 26 Sekunden“: src/video/flohlotse-in-26-sekunden.mp4 mit Vorschaubild (.webp) und kleinem Bild (-klein.webp).
 // Fehlt eine der Dateien, erscheint das Video nirgends. Es lädt erst beim Antippen (preload="none"), die Ladezeit der Seiten bleibt gleich.
-const IV_DIR = path.join(ROOT, "src/video"), IV_F = "flohlotse-in-26-sekunden";
+// Der Ordner darf video oder Video heißen (GitHub unterscheidet Groß- und Kleinschreibung).
+const IV_DIR = path.join(ROOT, "src", (fs.existsSync(path.join(ROOT, "src")) ? fs.readdirSync(path.join(ROOT, "src")) : []).find(d => d.toLowerCase() === "video") || "video"), IV_F = "flohlotse-in-26-sekunden";
 const IV = [".mp4", ".webp", "-klein.webp"].every(x => fs.existsSync(path.join(IV_DIR, IV_F + x)));
 const IV_SRC = `/assets/video/${IV_F}.mp4`, IV_POSTER = `/assets/video/${IV_F}.webp`, IV_THUMB = `/assets/video/${IV_F}-klein.webp`;
 const IV_PHOTO = "https://www.magnific.com/free-photo/young-beautiful-woman-smiling-happy-confident-standing-with-smile-face-looking-jumble-sale-town-street_42513081.htm";

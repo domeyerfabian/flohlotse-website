@@ -2,10 +2,11 @@
 
 Stand 31.10.2026 · 329 Seiten (323 für Google) · 156 Märkte · 188 Termine in den nächsten 120 Tagen · 42 Ratgeber-Artikel · 837 Event-Auszeichnungen
 
-## Zu erledigen: 1 Hinweis
+## Zu erledigen: 2 Hinweise
 
 | Bereich | Hinweis |
 |---|---|
+| Termin-Wächter | The Market 5.0: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 04.11.2026, 08.11.2026. Bitte prüfen: https://ms-altona.de/the-market |
 | Serie endet bald | Flohmarkt Else-Rauch-Platz (Sonntag): Die Serie läuft nur bis Montag, 30. November. Bei Bedarf „Gültig bis“ verlängern, sobald der Veranstalter neue Termine bestätigt. |
 
 ## Zur Kenntnis

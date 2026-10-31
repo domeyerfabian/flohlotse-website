@@ -1554,7 +1554,7 @@
         document.body.appendChild(d); dv = d.querySelector("video");
         d.querySelector(".iv-x").addEventListener("click", function () { d.close(); });
         d.addEventListener("click", function (e) { if (e.target === d) d.close(); });
-        d.addEventListener("close", function () { dv.pause(); if (location.hash === "#video") history.replaceState(null, "", location.pathname + location.search); });
+        d.addEventListener("close", function () { document.documentElement.classList.remove("iv-lock"); dv.pause(); if (location.hash === "#video") history.replaceState(null, "", location.pathname + location.search); });
         d.querySelector(".iv-share").addEventListener("click", function () { share(cur, this); });
       }
       cur = h; var src = h.getAttribute("data-iv");
@@ -1563,6 +1563,7 @@
       if (canFiles) getBlob(src);
       d.querySelector(".iv-cr").textContent = h.getAttribute("data-cr") || "";
       var mw = h.closest(".menu-wrap"); if (mw) mw.open = false;
+      document.documentElement.classList.add("iv-lock");
       d.showModal();
       if (play) { try { dv.currentTime = 0; } catch (err) {} var pr = dv.play(); if (pr && pr.catch) pr.catch(function () {}); }
     };

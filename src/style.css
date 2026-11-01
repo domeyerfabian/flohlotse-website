@@ -2259,3 +2259,81 @@ body:has(.toast.on) .fab{opacity:0;pointer-events:none;transition:opacity .2s}
 @media (max-width:559px){.top > .wrap{gap:14px}.top .brand{margin-right:auto}.tlb{font-size:10px;letter-spacing:-.01em}}
 @media (max-width:400px){.top > .wrap{gap:12px}}
 @media (max-width:359px){.top > .wrap{gap:9px}.tlb{font-size:9px}.brand{font-size:17px}}
+
+/* Handy und Tablet: Die Schrittleiste bleibt direkt unter der stehenden Vorschau sichtbar, auch beim Scrollen */
+@media (max-width:1079px){
+  .gen-steps{position:sticky;top:calc(76px + var(--pvh, 0px));z-index:2;background:var(--surface);margin-inline:-16px;padding:10px 16px 8px;border-bottom:1px solid var(--line)}
+  .gen-form{gap:12px}
+}
+@media (min-width:700px) and (max-width:1079px){.gen-steps{margin-inline:-24px;padding-inline:24px}}
+
+/* Feinschliff Designer: Leiste liegt über der Vorschau (verschwindet nie dahinter), Formen ohne Wischen sichtbar, Leiste auch am Computer stehend */
+.gen-steps{z-index:3}
+.gx .seg.hs.shape-row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;overflow:visible}
+.gx .shape-row .chip{flex-direction:column;justify-content:center;gap:4px;padding:9px 4px 8px;font-size:12px;white-space:nowrap}
+.gx .shape-row svg{width:40px;height:24px;margin:0}
+@media (min-width:1080px){main.wide .gen-steps{position:sticky;top:74px;z-index:3;background:var(--surface);padding:12px 0 10px;margin-top:-12px}}
+
+/* Designer am Handy kompakt: Vorschau, Leiste, Schritt und Knöpfe passen zusammen auf einen Bildschirm, ohne hoch und runter zu scrollen */
+.gs-note{margin:0;font-size:13.5px;line-height:1.45;color:var(--muted)}.gs-note b{color:var(--ink)}
+@media (max-width:1079px){
+  .gen-steps{padding:7px 16px 6px}
+  .gen-steps button{gap:3px;font-size:11.5px}
+  .gen-steps b{width:27px;height:27px;font-size:12.5px}
+  .gen-steps li + li::before{top:13px}
+  .gen-step{gap:10px}
+  .gs-h{font-size:19px;margin-top:2px}
+  .gs-s{margin-top:-6px;font-size:13px;line-height:1.4}
+  .gen-nav{padding-top:9px;padding-bottom:calc(9px + env(safe-area-inset-bottom,0px))}
+  .gn-back{width:46px;height:46px}
+  .gn-next,.gn-print{min-height:46px;padding-block:10px}
+  /* Schritt 3: Beschriftung links neben den Farbreihen statt darüber */
+  .gs-3 .st-grp{grid-template-columns:86px minmax(0,1fr);align-items:center;gap:6px}
+  .gs-3 .st-grp:has(.look-set){grid-template-columns:1fr}
+  .gs-3 .st-l small{display:none}
+  .gs-3 .st-grp .st-row{margin-inline:0 -16px;padding-left:0}
+  .gs-3 .st-row .swb{width:34px;height:34px}
+  .gs-3 .st-row .swb .sw,.gs-3 .st-row .swb.ink b{width:26px;height:26px}
+  .gs-3 .lt{height:40px}
+  /* Schritt 5: kleinere Mini-Blätter */
+  .fmt-row .fmt-btn{padding:8px 4px 7px;font-size:11.5px}
+  .fmt-sheet{width:22px;height:30px;padding:2px;margin-bottom:4px}
+  .fmt-btn b{font-size:14px}
+  .gs-ok{padding:9px 12px;font-size:13px}
+}
+/* Niedrige Bildschirme (kleine Handys): Unterzeilen weg, Vorschau etwas kleiner */
+@media (max-width:1079px) and (max-height:820px){ .gs-s{display:none} }
+@media (max-width:1079px) and (max-height:720px){ .gs-note{display:none} .gen-step{gap:8px} }
+
+/* ===== Schilder-Designer im Vollbild (Handy und Tablet) ===== */
+.gen-open,.gen-open-sub,.gen-top{display:none}
+@media (max-width:1079px){
+  /* Auf der Seite: nur das Schild als Vorschau und ein großer Knopf */
+  .gen:not(.is-full) > .gen-form{display:none!important}
+  .gen:not(.is-full) > .sheet-wrap{position:relative;top:auto;cursor:pointer}
+  .gen-open{display:flex;align-items:center;justify-content:center;gap:10px;min-height:54px;border:0;border-radius:999px;background:var(--ink);color:var(--sticker);font:inherit;font-weight:900;font-size:17px;cursor:pointer}
+  .gen-open span{font-size:19px}
+  .gen-open-sub{display:block;margin:-6px 0 0;text-align:center;font-size:13.5px;color:var(--muted)}
+  /* Vollbild */
+  html.gen-lock,html.gen-lock body{overflow:hidden}
+  html.gen-lock .fab,html.gen-lock .toast{display:none!important}
+  .gen.is-full{position:fixed;left:0;right:0;top:0;height:var(--vvh,100dvh);z-index:60;margin:0;border:0;border-radius:0;padding:0;display:flex;flex-direction:column;gap:0;overflow:hidden;background:var(--surface)}
+  .gen.is-full > .gen-head,.gen.is-full > .org-note,.gen.is-full > .gen-open,.gen.is-full > .gen-open-sub{display:none}
+  .gen.is-full > .gen-form{display:contents}
+  .gen.is-full > .sheet-wrap{order:2;flex:none;position:relative;top:auto;margin:0;border-radius:0;border-width:0 0 1px;box-shadow:none;cursor:default}
+  .gen.is-full .gen-step{order:4;flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:14px 16px 16px;align-content:start}
+  .gen.is-full .gen-step[hidden]{display:none}
+  .gen.is-full .gen-nav{order:5;flex:none;position:relative;margin:0;border-radius:0}
+  /* Oben: gelbe Leiste mit fetter Überschrift und ×. Darunter Schild, dann die Schrittleiste wie gewohnt */
+  .gen.is-full > .gen-top{order:1;flex:none;display:flex;align-items:center;gap:12px;padding:calc(8px + env(safe-area-inset-top,0px)) 10px 8px 16px;background:#F6E03A;color:#15211B}
+  .gen-top b{flex:1;font-family:var(--f-display);font-size:20px;font-weight:800;letter-spacing:-.01em;line-height:1.1}
+  .gen-top .gen-x{flex:none;display:grid;place-items:center;width:40px;height:40px;padding:0;border:0;border-radius:50%;background:#15211B;color:#F6E03A;font:inherit;font-size:26px;line-height:1;cursor:pointer}
+  .gen.is-full .gen-steps{order:3;flex:none;position:relative;top:auto;margin:0}
+  .gen.is-full .gs-s{display:block}
+}
+@media (max-width:1079px) and (max-height:700px){.gen.is-full .gs-s{display:none}}
+@media (max-width:1079px){.gen.is-full .gen-step{grid-auto-rows:max-content}}
+/* Dunkel: Farbpunkte mit heller Kante, damit Schwarz und dunkle Töne sichtbar bleiben */
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .swb .sw{border-color:rgba(255,255,255,.35)}}
+:root[data-theme="dark"] .swb .sw{border-color:rgba(255,255,255,.35)}
+@media (max-width:1079px){.gen.is-full .gs-h{display:none}.gen.is-full .gs-s{margin-top:0}.gen-top b{font-size:clamp(17px,5.1vw,21px)}}

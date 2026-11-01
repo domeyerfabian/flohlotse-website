@@ -89,7 +89,7 @@
     var fShow = function () {
       if (fOpen) return;
       // Solange der Schilder-Designer den Bildschirm füllt, weicht der Knopf aus (er läge sonst über Feldern und dem Weiter-Knopf)
-      if (fGen) { var gr = fGen.getBoundingClientRect(); if (gr.top < window.innerHeight * 0.5 && gr.bottom > window.innerHeight * 0.6) { fHintOff(); fab.hidden = true; return; } }
+      if (fGen) { var gr = fGen.getBoundingClientRect(); if (gr.top < window.innerHeight - 140 && gr.bottom > window.innerHeight * 0.6) { fHintOff(); fab.hidden = true; return; } }
       var was = fab.hidden; fab.hidden = false;
       // Kein Hinweis, wenn gerade der Wisch-Stapel im Bild ist (der aufgeklappte Schriftzug läge über den Knöpfen)
       if (was && !fab.hidden && fHint) { fHint = false; var dkB = document.getElementById("deck"), dkR = dkB && !dkB.hidden && dkB.getBoundingClientRect(); if (!(dkR && dkR.height && dkR.bottom > 0 && dkR.top < window.innerHeight) && !document.querySelector("main.pg-start")) { fY0 = window.scrollY; fab.classList.add("fab-hint"); fHT = setTimeout(fHintOff, 3200); } }
@@ -101,6 +101,8 @@
     window.addEventListener("scroll", function () { if (fT) return; fT = setTimeout(function () { fT = 0; fShow(); }, 100); }, { passive: true });
     // Der Knopf bleibt immer sichtbar (auch über Wisch-Knöpfen und Karte). Der Kartenhinweis steht deshalb unten links.
     fShow();
+    // Erst nach dem Laden stehen alle Größen fest (Schriften, Vorschau): dann noch einmal prüfen
+    window.addEventListener("load", function () { setTimeout(fShow, 300); }); window.addEventListener("resize", function () { setTimeout(fShow, 150); });
   }
   // Startseite: Antwort-Kasten (Heute | Morgen | Wochenende). Heute schon beendete Märkte raus, dann den ersten Reiter mit Einträgen wählen.
   var ab = document.getElementById("ab");
@@ -648,11 +650,12 @@
       sheet.style.transform = "none"; wrap.style.aspectRatio = "auto";
       // Höchstens 42 % der Bildschirmhöhe am Handy (72 % am Computer): Hochformat-Blätter werden kleiner und mittig gesetzt,
       // der Rahmen bleibt volle Breite. So rutscht beim Bearbeiten nichts seitlich an der stehenden Vorschau vorbei.
-      var r = sheet.getBoundingClientRect(), cw = wrap.clientWidth, maxH = window.innerHeight * (window.innerWidth >= 1080 ? 0.72 : 0.42);
+      var r = sheet.getBoundingClientRect(), cw = wrap.clientWidth, vvh = window.visualViewport ? window.visualViewport.height : window.innerHeight, maxH = gen.classList.contains("is-full") ? vvh * (vvh < 720 ? 0.27 : 0.34) : window.innerHeight * (window.innerWidth >= 1080 ? 0.72 : window.innerHeight < 720 ? 0.26 : window.innerHeight < 800 ? 0.36 : 0.42);
       var pad = window.matchMedia && matchMedia("(max-width: 699px)").matches ? 32 : 0; // Handy: Band über die volle Breite, das Blatt mit Luft daneben
       var s = Math.min((cw - pad) / r.width, (maxH - pad / 2) / r.height), dx = Math.max(0, (cw - r.width * s) / 2), dy = pad / 4;
       sheet.style.transform = "translate(" + dx.toFixed(1) + "px," + dy + "px) scale(" + s + ")";
       wrap.style.height = (r.height * s + dy * 2 + (wrap.offsetHeight - wrap.clientHeight)) + "px";
+      gen.style.setProperty("--pvh", wrap.offsetHeight + "px"); // Höhe der stehenden Vorschau: darunter bleibt die Schrittleiste stehen
     };
     var render = function () {
       var tags = st.kind === "tags", fmt = tags ? "tags" : st.fmt, n = tags ? 24 : ({ zwei: 2, vier: 4, acht: 8 })[fmt] || 1;
@@ -694,22 +697,25 @@
     };
     // Handy: Beim Tippen das Eingabefeld direkt unter die stehende Vorschau schieben, damit weder Feld noch Schild verdeckt sind (auch wenn die Tastatur aufgeht)
     var keepVis = function (el) {
+      if (el && el.matches && el.matches(".gen-form input[type=text]") && gen.classList.contains("is-full")) { (el.closest(".fld") || el).scrollIntoView({ block: "nearest" }); return; }
       if (!el || !el.matches || !el.matches(".gen-form input[type=text]") || getComputedStyle(wrap).position !== "sticky" || window.innerWidth >= 1080) return;
-      var w = wrap.getBoundingClientRect(), f = el.getBoundingClientRect(), vh = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+      var w = gen.querySelector(".gen-steps").getBoundingClientRect(), f = (el.closest(".fld") || el).getBoundingClientRect(), vh = window.visualViewport ? window.visualViewport.height : window.innerHeight;
       var nh = nav ? nav.offsetHeight : 0;
       if (f.top < w.bottom + 8 || f.bottom > vh - 8 - nh) window.scrollBy(0, f.top - (w.bottom + 12));
     };
     gen.addEventListener("focusin", function (e) { setTimeout(function () { keepVis(e.target); }, 350); });
-    if (window.visualViewport) window.visualViewport.addEventListener("resize", function () { keepVis(document.activeElement); });
+    if (window.visualViewport) window.visualViewport.addEventListener("resize", function () { if (gen.classList.contains("is-full")) { gen.style.setProperty("--vvh", window.visualViewport.height + "px"); scale(); } keepVis(document.activeElement); });
     // Schritte 1 bis 5 (Vorlage, Text, Look, Extras, Drucken). Die Leiste oben ist antippbar, unten Zurück und Weiter, im letzten Schritt der Druckknopf.
     // Preisschilder haben keine Extras (Form, Symbol, PayPal, Etikett gibt es dort nicht): Schritt 4 wird dann übersprungen.
     var stepEls = gen.querySelectorAll(".gen-step"), stepBtns = gen.querySelectorAll(".gen-steps [data-step]"), stepBar = gen.querySelector(".gen-steps");
     var nav = gen.querySelector(".gen-nav"), nBack = nav.querySelector(".gn-back"), nNext = nav.querySelector(".gn-next"), nSkip = nav.querySelector(".gn-skip"), nPrint = $("doPrint");
-    var STEP_N = { 1: "Vorlage", 2: "Text", 3: "Look", 4: "Extras", 5: "Drucken" }, cur = 1;
+    var STEP_N = { 1: "Vorlage", 2: "Text", 3: "Look", 4: "Extras", 5: "Fertig" }, cur = 1;
     var stepList = function () { return st.kind === "tags" ? [1, 2, 3, 5] : [1, 2, 3, 4, 5]; };
     var go = function (n, move) {
       var L = stepList(); if (L.indexOf(n) < 0) n = n === 4 ? 5 : L[0];
       cur = n; gen.setAttribute("data-step", n);
+      // Vollbild: Die Frage des Schritts steht oben in der gelben Leiste, passend zum Fortschritt darunter
+      var topB = gen.querySelector(".gen-top b"), stepH = gen.querySelector('.gen-step[data-step="' + n + '"] .gs-h'); if (topB && stepH) topB.textContent = stepH.textContent;
       stepEls.forEach(function (el) { el.hidden = +el.getAttribute("data-step") !== n; });
       stepBtns.forEach(function (b) {
         var k = +b.getAttribute("data-step"), li = b.parentNode, i = L.indexOf(k);
@@ -719,18 +725,41 @@
       });
       var i = L.indexOf(n), nx = L[i + 1];
       nBack.hidden = i === 0; nSkip.hidden = n !== 4; nNext.hidden = !nx; nPrint.hidden = !!nx;
-      if (nx) nNext.textContent = "Weiter: " + STEP_N[nx] + " ›";
-      if (move) {
+      if (nx) nNext.textContent = nx === 5 ? "Fertig ›" : "Weiter: " + STEP_N[nx] + " ›";
+      if (move && gen.classList.contains("is-full")) { var se = gen.querySelector('.gen-step[data-step="' + n + '"]'); if (se) se.scrollTop = 0; }
+      else if (move) {
         // Neuer Schritt: die Leiste direkt unter die stehende Vorschau holen (Handy) bzw. oben ins Bild (Computer)
+        // Ziel: Vorschau steht oben (unter der Kopfzeile), direkt darunter beginnt die Schrittleiste. So ist alles in einem Bildschirm.
         var sticky = getComputedStyle(wrap).position === "sticky" && window.innerWidth < 1080;
-        var top = sticky ? wrap.getBoundingClientRect().bottom + 8 : 90, d = stepBar.getBoundingClientRect().top - top;
-        if (d < 0 || d > 60) window.scrollBy(0, d);
+        var top = sticky ? (parseFloat(getComputedStyle(wrap).top) || 76) + wrap.offsetHeight : 74, d = gen.querySelector(".gen-form").getBoundingClientRect().top - top;
+        if (Math.abs(d) > 4) window.scrollBy(0, d);
       }
     };
     gen.querySelectorAll(".gen-steps [data-step], .gs-tip [data-step]").forEach(function (b) { b.addEventListener("click", function () { go(+b.getAttribute("data-step"), true); }); });
     nNext.addEventListener("click", function () { var L = stepList(); go(L[L.indexOf(cur) + 1], true); });
     nSkip.addEventListener("click", function () { go(5, true); });
     nBack.addEventListener("click", function () { var L = stepList(); go(L[Math.max(0, L.indexOf(cur) - 1)], true); });
+    // Handy und Tablet: Der Designer öffnet sich im Vollbild (wie eine App). Oben gelbe Leiste mit den Schritten und ×, darunter Schild, Schritt und Knöpfe.
+    // Die Zurück-Taste des Handys schließt ihn (Eintrag „#gestalten“ im Verlauf). Das Schild bleibt beim Schließen erhalten. Am Computer bleibt alles auf der Seite.
+    var openB = gen.querySelector(".gen-open"), xB = gen.querySelector(".gen-x"), narrow = window.matchMedia ? window.matchMedia("(max-width: 1079px)") : { matches: false };
+    var isFull = function () { return gen.classList.contains("is-full"); };
+    var setFull = function (on) {
+      if (on === isFull()) return;
+      gen.classList.toggle("is-full", on); document.documentElement.classList.toggle("gen-lock", on);
+      if (on) { gen.setAttribute("role", "dialog"); gen.setAttribute("aria-modal", "true"); gen.style.setProperty("--vvh", (window.visualViewport ? window.visualViewport.height : window.innerHeight) + "px"); }
+      else { gen.removeAttribute("role"); gen.removeAttribute("aria-modal"); gen.style.removeProperty("--vvh"); }
+      scale(); go(cur);
+      var f = on ? gen.querySelector(".gen-steps li.on button") : openB; if (f) try { f.focus({ preventScroll: true }); } catch (e) {}
+    };
+    var openFull = function () { if (!narrow.matches || isFull()) return; try { history.pushState({ genFull: 1 }, "", location.pathname + location.search + "#gestalten"); } catch (e) {} setFull(true); };
+    var closeFull = function () { if (!isFull()) return; if (history.state && history.state.genFull) history.back(); else setFull(false); };
+    if (openB) openB.addEventListener("click", openFull);
+    wrap.addEventListener("click", function () { if (!isFull()) openFull(); });
+    if (xB) xB.addEventListener("click", closeFull);
+    window.addEventListener("popstate", function (e) { if (isFull() && !(e.state && e.state.genFull)) setFull(false); });
+    document.addEventListener("keydown", function (e) { if (e.key === "Escape" && isFull()) closeFull(); });
+    window.addEventListener("resize", function () { if (isFull() && !narrow.matches) setFull(false); });
+    if (location.hash === "#gestalten") try { history.replaceState(null, "", location.pathname + location.search); } catch (e) {}
     var setPressed = function (sel, el) { gen.querySelectorAll(sel).forEach(function (x) { x.setAttribute("aria-pressed", String(x === el)); }); };
     ["fOrg", "fTop", "fMain", "fBot", "fPrice"].forEach(function (id) { $(id).addEventListener("input", function () { st[{ fOrg: "org", fTop: "top", fMain: "main", fBot: "bot", fPrice: "price" }[id]] = this.value.trim() === "" && id === "fOrg" ? "" : this.value; render(); }); });
     // Link vom Veranstalter: /flohmarkt-schilder/?markt=kennung schreibt den Marktnamen ins Etikett oben auf dem Schild

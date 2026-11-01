@@ -456,12 +456,6 @@ a.route .i{width:17px;height:17px}
 .gen-form label{font-size:14px}
 .gen-form label small{font-weight:400;color:var(--muted)}
 .gen-form input[type=text]{background:var(--paper);font-size:17px;padding:12px 14px}
-.gen-tabs{display:flex;gap:4px;padding:4px;background:var(--paper);border:1px solid var(--line);border-radius:999px;overflow-x:auto;scrollbar-width:none}
-.gen-tabs::-webkit-scrollbar{display:none}
-.gen-tabs button{flex:1 0 auto;border:0;background:transparent;color:var(--muted);font:inherit;font-size:14px;font-weight:700;padding:9px 7px;border-radius:999px;cursor:pointer;white-space:nowrap}
-.gen-tabs button[aria-selected="true"]{background:var(--ink);color:var(--paper)}
-.gen-panel{display:grid;gap:12px;align-content:start}
-.gen-panel[hidden]{display:none}
 .gp-sym .sym-grid{padding:0}
 /* Vorschau bleibt beim Bearbeiten oben im Blick (Handy: unter der Kopfzeile) */
 .gen .sheet-wrap{position:sticky;top:76px;z-index:2;box-shadow:0 8px 20px -14px rgba(21,33,27,.35)}
@@ -1668,12 +1662,10 @@ main.pg-start > .sec{border-top:0;margin-top:0;padding-top:48px}
   /* Schilder-Designer: Vorschau links (sieben Spalten), Eingaben rechts (fünf) */
   main.wide .gen{grid-template-columns:repeat(12,minmax(0,1fr));column-gap:var(--gut);align-items:start;padding:28px 32px 32px}
   main.wide .gen > *{grid-column:1/-1}
-  main.wide .gen > .sheet-wrap{grid-column:1/8;grid-row:5/span 3;top:90px}
-  main.wide .gen > .gen-form,main.wide .gen > .gen-print,main.wide .gen > .gen-hint{grid-column:8/-1}
-  main.wide .gen > .gen-form{grid-row:5}
-  main.wide .gen > .gen-hint{grid-row:6;align-self:start}
+  main.wide .gen > .sheet-wrap{grid-column:1/8;top:90px}
+  main.wide .gen > .gen-form{grid-column:8/-1}
   main.wide .gen-presets{flex-wrap:wrap}
-  main.wide .idea-row{grid-template-columns:repeat(6,minmax(0,1fr))}
+  main.wide .gen-form .idea-row{grid-template-columns:repeat(3,minmax(0,1fr))}
   /* Wischen & merken (eigene Seite und Startseite): Stapel mittig über die Spalten 4 bis 9 */
   main.wide > .deck,main.wide > #dkEmpty{grid-column:4/10;margin-top:40px}
   /* Der Stapel: Spalten 3 bis 10, die Karte hochkant in der Mitte (5 bis 8), die Daumen links und rechts daneben */
@@ -2160,3 +2152,110 @@ body.kb-q .cluster,body.kb-q main .cta-box,body.kb-q .cl-cred,body.kb-q #kbLeer{
 .iv-share .i{width:20px;height:20px}
 .iv-cr{margin:10px 4px 0;color:#d7dfd9;font-size:12px;line-height:1.4;text-align:center}
 html.iv-lock,html.iv-lock body{overflow:hidden;overscroll-behavior:none}
+
+/* Schilder-Designer in 5 Schritten: Leiste 1–5 (antippbar), je Schritt ein Bereich, unten Zurück / Weiter / Drucken */
+.gen-steps{list-style:none;margin:0;padding:0;display:flex}
+.gen-steps li{flex:1;position:relative;min-width:0}
+.gen-steps li + li::before{content:"";position:absolute;top:15px;right:50%;width:100%;height:2px;background:var(--line)}
+.gen-steps li.on::before,.gen-steps li.done::before{background:var(--ink)}
+.gen-steps button{position:relative;width:100%;display:flex;flex-direction:column;align-items:center;gap:5px;background:none;border:0;padding:0;font:inherit;font-size:12.5px;font-weight:800;color:var(--muted);cursor:pointer}
+.gen-steps b{width:31px;height:31px;border-radius:50%;display:grid;place-items:center;background:var(--surface);border:2px solid var(--line);font-size:13.5px;line-height:1}
+.gen-steps li.on button,.gen-steps li.done button{color:var(--ink)}
+.gen-steps li.on b{background:var(--sticker);border-color:var(--ink);color:var(--sticker-ink)}
+.gen-steps li.done b{background:var(--ink);border-color:var(--ink);color:var(--sticker)}
+.gen-steps button:focus-visible{outline:none}.gen-steps button:focus-visible b{box-shadow:0 0 0 3px var(--sticker),0 0 0 5px var(--ink)}
+.gen-step{display:grid;gap:12px;align-content:start;min-width:0}
+.gen-step[hidden]{display:none}
+.gs-h{margin:4px 0 0;font-family:var(--f-display);font-size:21px;font-weight:800;line-height:1.15;letter-spacing:-.01em}
+.gs-s{margin:-6px 0 0;font-size:14px;line-height:1.45;color:var(--muted)}
+.gs-s b{color:var(--ink)}
+.gs-1 .gen-sub{margin:4px 0 -4px}
+.st-l small{font-weight:500;color:var(--muted);margin-left:6px}
+/* Schritt 4: Extras zum Aufklappen */
+.gx{border:1px solid var(--line);border-radius:14px;background:var(--surface)}
+.gx[open]{border-color:var(--ink)}
+.gx summary{display:flex;align-items:center;gap:10px;padding:13px 14px;font-weight:800;font-size:15px;cursor:pointer;list-style:none}
+.gx summary::-webkit-details-marker{display:none}
+.gx summary em{margin-left:auto;font-style:normal;font-weight:600;font-size:13px;color:var(--muted);text-align:right;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gx summary::after{content:"";flex:none;width:7px;height:7px;border-right:2px solid var(--ink);border-bottom:2px solid var(--ink);transform:rotate(45deg);margin:-3px 2px 0 0;transition:transform .15s}
+.gx[open] summary::after{transform:rotate(-135deg);margin-top:3px}
+.gx > :not(summary){margin:0 14px 14px}
+.gx .sym-grid{padding:0}
+/* Schritt 5: Formate als Mini-Blatt */
+.fmt-row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.fmt-row .fmt-btn{display:flex;flex-direction:column;align-items:center;gap:1px;border-radius:14px;padding:10px 4px 9px;font-size:12px;line-height:1.2;white-space:normal;text-align:center}
+.fmt-btn b{font-size:15px}
+.fmt-btn small{font-size:11px;font-weight:600;opacity:.75}
+.fmt-sheet{display:grid;width:28px;height:39px;padding:3px;gap:2px;margin-bottom:6px;border:1.5px solid currentColor;border-radius:4px;background:#fff}
+.fmt-sheet i{background:var(--sticker);border-radius:1.5px}
+.fs-quer{grid-template:1fr/1fr}.fs-zwei{grid-template:repeat(2,1fr)/1fr}.fs-vier{grid-template:repeat(2,1fr)/repeat(2,1fr)}.fs-acht{grid-template:repeat(4,1fr)/repeat(2,1fr)}
+.gs-ok{display:flex;gap:10px;align-items:flex-start;margin:0;padding:11px 13px;border-radius:12px;background:rgba(46,160,90,.12);font-size:13.5px;font-weight:600;line-height:1.4}
+.gs-ok > .i{flex:none;width:18px;height:18px;margin-top:1px}
+/* Knöpfe unten: bleiben am unteren Rand stehen, solange der Designer im Bild ist */
+.gen-nav{position:sticky;bottom:0;z-index:3;display:flex;align-items:center;gap:10px;margin:2px -16px -20px;padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px));background:var(--surface);border-top:1px solid var(--line);border-radius:0 0 20px 20px}
+.gen-nav [hidden]{display:none!important}
+.gn-back{flex:none;width:50px;height:50px;border-radius:50%;border:1.5px solid var(--ink);background:transparent;color:var(--ink);font:inherit;font-size:24px;font-weight:700;line-height:1;cursor:pointer}
+.gn-next,.gn-print{flex:1;display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:50px;border:0;border-radius:999px;padding:13px 18px;font:inherit;font-size:16px;font-weight:900;cursor:pointer}
+.gn-next{background:var(--ink);color:var(--sticker)}
+.gn-print{background:var(--sticker);color:var(--sticker-ink)}
+.gn-print .i{width:20px;height:20px}
+.gn-skip{flex:none;background:none;border:0;padding:6px 4px;font:inherit;font-size:14px;font-weight:700;color:var(--muted);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+@media (min-width:700px){.gen-nav{margin:4px -24px -24px;padding-inline:24px}}
+@media (min-width:1080px){main.wide .gen-nav{margin:6px 0 0;padding:14px 0 4px;border-radius:0}}
+.gen-step > *{min-width:0}
+.gx{overflow:hidden;min-width:0}
+.gx .seg.hs{margin:0 0 14px;padding:2px 14px 4px}
+@media (min-width:700px){.gx .seg.hs{padding-inline:14px}}
+.gs-2 .fld{flex-direction:column;align-items:stretch}
+.gs-2 .fld > span:first-child{width:auto;padding:9px 12px 0;font-size:12px}
+.gen-form .gs-2 .fld input[type=text]{padding:3px 12px 11px}
+.gn-next,.gn-print{white-space:nowrap;padding-inline:14px;font-size:15.5px}
+.gen-steps li + li::before{z-index:0}
+.gen-steps b{position:relative;z-index:1}
+.gen-steps li.done b{font-size:15px;font-weight:900}
+.gs-tip{margin:0;font-size:14px;color:var(--muted)}.gs-tip button{background:none;border:0;padding:0;font:inherit;font-weight:800;color:var(--ink);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+/* Dunkel: Weiter-Knopf und Haken hell mit dunkler Schrift (Gelb auf Hell wäre kaum lesbar) */
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .gn-next,:root:not([data-theme="light"]) .gen-steps li.done b{color:var(--paper)}}
+:root[data-theme="dark"] .gn-next,:root[data-theme="dark"] .gen-steps li.done b{color:var(--paper)}
+
+/* Kopfzeile: kleine Beschriftungen unter den runden Symbolen (Suchen, Melden, Gemerkt, Menü) */
+.srch-top,.mail-top,.fav-top{position:relative}
+.tlb{position:absolute;top:100%;left:50%;transform:translateX(-50%);margin-top:3px;font-size:10.5px;font-weight:700;line-height:1;color:var(--muted);white-space:nowrap;pointer-events:none}
+.top{padding-bottom:22px}
+.menu-btn > .tlb{display:none}
+@media (max-width:559px){.menu-btn > .tlb{display:block;position:absolute}}
+.srch-top[aria-current] .tlb,.fav-top[aria-current] .tlb{color:var(--ink)}
+.fav-top.ping{animation:fav-ping 1.4s ease-out 2}
+@keyframes fav-ping{0%{box-shadow:0 0 0 0 rgba(246,224,58,.95)}70%{box-shadow:0 0 0 12px rgba(246,224,58,0)}100%{box-shadow:0 0 0 0 rgba(246,224,58,0)}}
+@media (prefers-reduced-motion:reduce){.fav-top.ping{animation:none;border-color:var(--ink)}}
+/* Menü: Anleitung und Termin melden */
+.mn-help{display:flex;flex-wrap:wrap;gap:8px;padding-top:12px;border-top:1px solid var(--line)}
+.mn .mn-help a{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:999px;padding:8px 14px;font-weight:700;font-size:14px;color:var(--ink);text-decoration:none;background:var(--surface)}
+.mn-help .i{width:17px;height:17px}
+@media (hover:hover){.mn .mn-help a:hover{border-color:var(--ink)}}
+/* WhatsApp: Hinweis zur Privatsphäre */
+.wa-note{display:block;font-size:12.5px;line-height:1.4;opacity:.8;max-width:34ch}
+/* So funktioniert Flohlotse */
+.how-steps{list-style:none;margin:26px 0 8px;padding:0;display:grid;gap:14px}
+.how-steps li{display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:start;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:18px}
+.how-ic{position:relative;display:grid;place-items:center;width:52px;height:52px;border-radius:50%;background:var(--sticker);color:var(--sticker-ink)}
+.how-ic .i{width:24px;height:24px}
+.how-ic b{position:absolute;right:-4px;top:-4px;width:22px;height:22px;border-radius:50%;background:var(--ink);color:var(--paper);display:grid;place-items:center;font-size:12px}
+.how-steps h2{margin:4px 0 6px;font-size:20px}
+.how-steps p{margin:0 0 12px}
+.how-btns{display:flex;flex-wrap:wrap;gap:8px}
+.how-go{display:inline-flex;align-items:center;gap:4px;border:1px solid var(--ink);border-radius:999px;padding:7px 12px 7px 14px;font-weight:700;font-size:14px;color:var(--ink);text-decoration:none}
+.how-go .i{width:16px;height:16px}
+.how .hl-vid-solo{margin-top:20px}
+@media (max-width:559px){.how-steps li{grid-template-columns:1fr;gap:10px}}
+/* Hinweis unten hat Vorrang: der schwebende Knopf tritt so lange zurück */
+.toast{z-index:31}
+body:has(.toast.on) .fab{opacity:0;pointer-events:none;transition:opacity .2s}
+@media (max-width:559px){.menu-btn > span.tlb{width:auto;height:auto;overflow:visible;clip-path:none}}
+:root{--top-h:73px}
+.mn-help{flex-wrap:nowrap;gap:8px}
+.mn .mn-help a{flex:1 1 auto;justify-content:center;white-space:nowrap;padding:8px 10px;font-size:13.5px;gap:6px}
+/* Beschriftungen unter den Symbolen: genug Luft, damit die Wörter nicht aneinanderstoßen */
+@media (max-width:559px){.top > .wrap{gap:14px}.top .brand{margin-right:auto}.tlb{font-size:10px;letter-spacing:-.01em}}
+@media (max-width:400px){.top > .wrap{gap:12px}}
+@media (max-width:359px){.top > .wrap{gap:9px}.tlb{font-size:9px}.brand{font-size:17px}}

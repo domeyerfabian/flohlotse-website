@@ -88,8 +88,8 @@
     var fGen = document.getElementById("gen");
     var fShow = function () {
       if (fOpen) return;
-      // Handy: Solange der Schilder-Designer den Bildschirm füllt, weicht der Knopf aus (er läge sonst über Feldern und Knöpfen)
-      if (fGen && window.innerWidth < 1080) { var gr = fGen.getBoundingClientRect(); if (gr.top < window.innerHeight * 0.5 && gr.bottom > window.innerHeight * 0.6) { fHintOff(); fab.hidden = true; return; } }
+      // Solange der Schilder-Designer den Bildschirm füllt, weicht der Knopf aus (er läge sonst über Feldern und dem Weiter-Knopf)
+      if (fGen) { var gr = fGen.getBoundingClientRect(); if (gr.top < window.innerHeight * 0.5 && gr.bottom > window.innerHeight * 0.6) { fHintOff(); fab.hidden = true; return; } }
       var was = fab.hidden; fab.hidden = false;
       // Kein Hinweis, wenn gerade der Wisch-Stapel im Bild ist (der aufgeklappte Schriftzug läge über den Knöpfen)
       if (was && !fab.hidden && fHint) { fHint = false; var dkB = document.getElementById("deck"), dkR = dkB && !dkB.hidden && dkB.getBoundingClientRect(); if (!(dkR && dkR.height && dkR.bottom > 0 && dkR.top < window.innerHeight) && !document.querySelector("main.pg-start")) { fY0 = window.scrollY; fab.classList.add("fab-hint"); fHT = setTimeout(fHintOff, 3200); } }
@@ -182,7 +182,7 @@
     clr.addEventListener("click", reset);
     geo.addEventListener("click", function () {
       if (!navigator.geolocation) { document.getElementById("nearMsg").textContent = "Dein Browser kann den Standort nicht bestimmen."; return; }
-      document.getElementById("nearMsg").textContent = "Standort wird bestimmt …";
+      document.getElementById("nearMsg").textContent = "Dein Browser fragt gleich nach deinem Standort. Er wird nur hier auf deinem Gerät genutzt, um Entfernungen zu berechnen, und weder gespeichert noch verschickt.";
       navigator.geolocation.getCurrentPosition(function (p) { F.origin = [p.coords.latitude, p.coords.longitude]; F.label = "deinen Standort"; plzIn.value = ""; clr.hidden = false; apply(); sync(); if (hhKm(F.origin) > 60) sayFar("Dein Standort liegt außerhalb unseres Kalenders."); },
         function () { document.getElementById("nearMsg").textContent = "Standort nicht verfügbar. Gib stattdessen deine Postleitzahl ein."; }, { timeout: 10000, maximumAge: 600000 });
     });
@@ -696,17 +696,41 @@
     var keepVis = function (el) {
       if (!el || !el.matches || !el.matches(".gen-form input[type=text]") || getComputedStyle(wrap).position !== "sticky" || window.innerWidth >= 1080) return;
       var w = wrap.getBoundingClientRect(), f = el.getBoundingClientRect(), vh = window.visualViewport ? window.visualViewport.height : window.innerHeight;
-      if (f.top < w.bottom + 8 || f.bottom > vh - 8) window.scrollBy(0, f.top - (w.bottom + 12));
+      var nh = nav ? nav.offsetHeight : 0;
+      if (f.top < w.bottom + 8 || f.bottom > vh - 8 - nh) window.scrollBy(0, f.top - (w.bottom + 12));
     };
     gen.addEventListener("focusin", function (e) { setTimeout(function () { keepVis(e.target); }, 350); });
     if (window.visualViewport) window.visualViewport.addEventListener("resize", function () { keepVis(document.activeElement); });
-    // Reiter: Stil (Fläche, Schriftfarbe, Schrift, ist beim Öffnen zu sehen), Text, Form, Symbol, Format. Die Vorschau bleibt dabei im Blick.
-    gen.querySelectorAll(".gen-tabs [data-tab]").forEach(function (t) {
-      t.addEventListener("click", function () {
-        gen.querySelectorAll(".gen-tabs [data-tab]").forEach(function (x) { x.setAttribute("aria-selected", String(x === t)); });
-        gen.querySelectorAll(".gen-panel").forEach(function (pn) { pn.hidden = pn.getAttribute("data-panel") !== t.getAttribute("data-tab"); });
+    // Schritte 1 bis 5 (Vorlage, Text, Look, Extras, Drucken). Die Leiste oben ist antippbar, unten Zurück und Weiter, im letzten Schritt der Druckknopf.
+    // Preisschilder haben keine Extras (Form, Symbol, PayPal, Etikett gibt es dort nicht): Schritt 4 wird dann übersprungen.
+    var stepEls = gen.querySelectorAll(".gen-step"), stepBtns = gen.querySelectorAll(".gen-steps [data-step]"), stepBar = gen.querySelector(".gen-steps");
+    var nav = gen.querySelector(".gen-nav"), nBack = nav.querySelector(".gn-back"), nNext = nav.querySelector(".gn-next"), nSkip = nav.querySelector(".gn-skip"), nPrint = $("doPrint");
+    var STEP_N = { 1: "Vorlage", 2: "Text", 3: "Look", 4: "Extras", 5: "Drucken" }, cur = 1;
+    var stepList = function () { return st.kind === "tags" ? [1, 2, 3, 5] : [1, 2, 3, 4, 5]; };
+    var go = function (n, move) {
+      var L = stepList(); if (L.indexOf(n) < 0) n = n === 4 ? 5 : L[0];
+      cur = n; gen.setAttribute("data-step", n);
+      stepEls.forEach(function (el) { el.hidden = +el.getAttribute("data-step") !== n; });
+      stepBtns.forEach(function (b) {
+        var k = +b.getAttribute("data-step"), li = b.parentNode, i = L.indexOf(k);
+        li.classList.toggle("on", k === n); li.classList.toggle("done", i > -1 && i < L.indexOf(n));
+        if (k === n) b.setAttribute("aria-current", "step"); else b.removeAttribute("aria-current");
+        if (i > -1) b.firstChild.textContent = i < L.indexOf(n) ? "✓" : String(i + 1);
       });
-    });
+      var i = L.indexOf(n), nx = L[i + 1];
+      nBack.hidden = i === 0; nSkip.hidden = n !== 4; nNext.hidden = !nx; nPrint.hidden = !!nx;
+      if (nx) nNext.textContent = "Weiter: " + STEP_N[nx] + " ›";
+      if (move) {
+        // Neuer Schritt: die Leiste direkt unter die stehende Vorschau holen (Handy) bzw. oben ins Bild (Computer)
+        var sticky = getComputedStyle(wrap).position === "sticky" && window.innerWidth < 1080;
+        var top = sticky ? wrap.getBoundingClientRect().bottom + 8 : 90, d = stepBar.getBoundingClientRect().top - top;
+        if (d < 0 || d > 60) window.scrollBy(0, d);
+      }
+    };
+    gen.querySelectorAll(".gen-steps [data-step], .gs-tip [data-step]").forEach(function (b) { b.addEventListener("click", function () { go(+b.getAttribute("data-step"), true); }); });
+    nNext.addEventListener("click", function () { var L = stepList(); go(L[L.indexOf(cur) + 1], true); });
+    nSkip.addEventListener("click", function () { go(5, true); });
+    nBack.addEventListener("click", function () { var L = stepList(); go(L[Math.max(0, L.indexOf(cur) - 1)], true); });
     var setPressed = function (sel, el) { gen.querySelectorAll(sel).forEach(function (x) { x.setAttribute("aria-pressed", String(x === el)); }); };
     ["fOrg", "fTop", "fMain", "fBot", "fPrice"].forEach(function (id) { $(id).addEventListener("input", function () { st[{ fOrg: "org", fTop: "top", fMain: "main", fBot: "bot", fPrice: "price" }[id]] = this.value.trim() === "" && id === "fOrg" ? "" : this.value; render(); }); });
     // Link vom Veranstalter: /flohmarkt-schilder/?markt=kennung schreibt den Marktnamen ins Etikett oben auf dem Schild
@@ -717,7 +741,7 @@
           // Etikett vorgegeben: statt Eingabefeld ein Kasten mit Schloss, frei erst nach einem Tipp auf „ändern oder entfernen“
           var fl = $("fOrg").closest("label"), lk = document.createElement("div"); lk.className = "org-lock only-sign";
           lk.innerHTML = '<span class="org-lock-l">Etikett</span><div class="org-lock-box"><span class="org-lock-ic" aria-hidden="true">🔒</span><span><b></b><small>vom Veranstalter vorgegeben</small></span></div><button type="button" class="org-lock-btn">Etikett ändern oder entfernen</button>';
-          lk.querySelector("b").textContent = d[mk]; fl.hidden = true; fl.parentNode.insertBefore(lk, fl);
+          lk.querySelector("b").textContent = d[mk]; fl.hidden = true; fl.parentNode.insertBefore(lk, fl); var gxo = $("gxOrg"); if (gxo) gxo.textContent = "vom Veranstalter vorgegeben";
           lk.querySelector("button").addEventListener("click", function () { lk.remove(); fl.hidden = false; $("fOrg").focus(); }); nt.firstChild.textContent = "Schilder für " + d[mk] + "."; var hd = gen.querySelector(".gen-head"); if (hd) hd.parentNode.insertBefore(nt, hd.nextSibling); else wrap.parentNode.insertBefore(nt, wrap); } }).catch(function () {});
     $("fVb").addEventListener("change", function () { st.vb = this.checked; render(); });
     $("fSave").addEventListener("change", function () { st.save = this.checked; inkFix(); render(); });
@@ -753,7 +777,6 @@
         }
         st.kind = d.kind; st.top = d.top || ""; st.main = d.main || ""; st.bot = d.bot || ""; st.price = d.price || "";
         st.fmt = d.kind === "tags" ? "tags" : lastSignFmt;
-        if (d.kind === "tags") { var symTab = gen.querySelector('.gen-tabs [data-tab="sym"][aria-selected="true"]'); if (symTab) gen.querySelector('.gen-tabs [data-tab="text"]').click(); }
         if (!toneSet) { st.tone = d.tone || "gelb"; setPressed("button[data-tone]", gen.querySelector('button[data-tone="' + st.tone + '"]')); }
         if (!symSet) { st.sym = d.sym || ""; setPressed("button[data-sym]", gen.querySelector('button[data-sym="' + st.sym + '"]')); symCur(); }
         if (!shapeSet) { st.shape = d.shape || "rund"; setPressed("button[data-shape]", gen.querySelector('button[data-shape="' + st.shape + '"]')); }
@@ -763,8 +786,11 @@
         if (gen.hasAttribute("data-pay")) gen.setAttribute("data-pay", d.pay ? "1" : "0");
         $("fTop").value = st.top; $("fMain").value = st.main; $("fBot").value = st.bot; $("fPrice").value = st.price;
         setPressed("button[data-set]", p); setPressed("button[data-fmt]", gen.querySelector('button[data-fmt="' + st.fmt + '"]')); render();
+        go(cur); // Wechsel zwischen Schild und Preisschildern: Schrittleiste und Knöpfe anpassen (Preisschilder ohne Schritt „Extras“)
       }
     });
+    // Schritt „Extras“: In der Zeile „Form“ steht die gewählte Form (ändert sich auch durch Looks und Ideen)
+    gen.addEventListener("click", function () { setTimeout(function () { var gxs = $("gxShape"), on = gen.querySelector('button[data-shape][aria-pressed="true"]'); if (gxs && on) gxs.textContent = on.textContent; }, 0); });
     // Thema wählen: zeigt die Sprüche dieses Themas und übernimmt gleich den ersten
     var themeSel = $("genTheme");
     if (themeSel) themeSel.addEventListener("change", function () {
@@ -790,6 +816,7 @@
     window.addEventListener("beforeprint", prep); window.addEventListener("afterprint", done);
     $("doPrint").addEventListener("click", function () { prep(); window.print(); });
     window.addEventListener("resize", scale);
+    go(1);
     inkFix();
     (document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve()).then(function () { return fontLoad(); }).then(render);
     render();
@@ -835,6 +862,13 @@
       if (on === null) return;
       if (b.classList.contains("fav")) { b.classList.remove("pop"); void b.offsetWidth; if (on) b.classList.add("pop"); }
       if (document.getElementById("merk")) return;
+      // Beim allerersten Merken einmalig erklären, wo die Liste ist und dass kein Konto nötig ist; das Herz oben leuchtet kurz auf
+      var firstSeen = false; try { firstSeen = !!localStorage.getItem("flohlotse-merk-tipp"); } catch (x) { firstSeen = true; }
+      if (on && !firstSeen) {
+        try { localStorage.setItem("flohlotse-merk-tipp", "1"); } catch (x) {}
+        document.querySelectorAll(".fav-top").forEach(function (x) { x.classList.remove("ping"); void x.offsetWidth; x.classList.add("ping"); });
+        toast("Gemerkt! Deine Liste findest du oben unter „Gemerkt“. Ohne Anmeldung, sie bleibt auf diesem Gerät.", "Ansehen", ROOT + "/merkliste/", 8000); return;
+      }
       var grp = on && b.closest(".group"), same = grp ? grp.querySelectorAll('button[data-fav][aria-pressed="true"]').length : 0;
       if (same > 1) { var gk = grp.getAttribute("data-day"); toast(same + " Märkte am " + ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"][new Date(gk + "T12:00:00Z").getUTCDay()] + " gemerkt", "Als Tour planen", ROOT + "/merkliste/#tour-" + gk); return; }
       var calA = on && document.querySelector(".cal-dd .cal-pop a"), calSeen = false; try { calSeen = !!localStorage.getItem("flohlotse-kal-tipp"); } catch (x) {}
@@ -1019,6 +1053,7 @@
       geoB.addEventListener("click", function () {
         if (geoB.getAttribute("aria-pressed") === "true") { setO(null, "", false); return; }
         if (!navigator.geolocation) { toast("Dein Browser kann den Standort nicht bestimmen. Gib stattdessen deine Postleitzahl ein."); return; }
+        toast("Dein Browser fragt gleich nach deinem Standort. Er bleibt auf deinem Gerät und wird nur für die Entfernungen genutzt.");
         navigator.geolocation.getCurrentPosition(function (p) { plzI.value = ""; setO([p.coords.latitude, p.coords.longitude], "dein Standort", true); }, function () { toast("Standort nicht verfügbar. Gib stattdessen deine Postleitzahl ein."); }, { timeout: 10000, maximumAge: 600000 });
       });
       var byPlz = function () {

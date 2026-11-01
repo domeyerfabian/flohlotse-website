@@ -190,7 +190,7 @@ const WA = WA_KIND ? WA_RAW : "";
 if (WA_RAW && !WA) warn("WhatsApp", "Der Eintrag „WhatsApp“ im Blatt Einstellungen ist kein gültiger Link. Erlaubt: https://whatsapp.com/channel/…, https://chat.whatsapp.com/… oder https://wa.me/49… (Nummer ohne +, Leerzeichen und führende 0).");
 const WA_LABEL = WA_KIND === "kanal" ? "WhatsApp-Kanal" : WA_KIND === "community" ? "WhatsApp-Community" : "WhatsApp-Chat";
 // Zeile „Flohmarkt-Tipps direkt aufs Handy“ unter den Terminen (Heute, Morgen, Wochenende, Samstag, Sonntag)
-const waStrip = () => WA ? `<a class="wa-strip" href="${WA}" rel="noopener">${ic("whatsapp")}<span><b>Flohmarkt-Tipps direkt aufs Handy</b><span>Kostenlos im ${WA_LABEL} von ${esc(NAME)}</span></span>${ic("chev")}</a>` : "";
+const waStrip = () => WA ? `<a class="wa-strip" href="${WA}" rel="noopener">${ic("whatsapp")}<span><b>Flohmarkt-Tipps direkt aufs Handy</b><span>Kostenlos im ${WA_LABEL} von ${esc(NAME)}. Deine Nummer bleibt privat.</span></span>${ic("chev")}</a>` : "";
 const SOCIAL = [...(INSTA ? [[INSTA, "insta", "Instagram"]] : []), ...(TIKTOK ? [[TIKTOK, "tiktok", "TikTok"]] : []), ...(WA ? [[WA, "whatsapp", "WhatsApp"]] : [])];
 // Runde Knöpfe mit Logo, je ein Link aufs eigene Profil (keine eingebetteten Inhalte)
 const socialHTML = cls => SOCIAL.length ? `<div class="social ${cls}"><span>Folge ${esc(NAME)}</span>${SOCIAL.map(([h, i, l]) => `<a href="${h}" rel="noopener me" aria-label="${esc(NAME)} auf ${l}">${ic(i)}</a>`).join("")}</div>` : "";
@@ -214,8 +214,8 @@ const msSheet = mk => {
     : msMail("Termin melden", ["ich möchte einen Flohmarkt-Termin melden.", "", "Name des Markts: ", "Datum: ", "Uhrzeit von/bis: ", "Adresse: ", "Link zur Website (falls vorhanden): ", "", "Ich veranstalte den Markt selbst: ja / nein"]);
   const alt = msMail(mk ? `Änderung: ${mk.name}` : "Änderung oder Absage", [mk ? "bei diesem Markt hat sich etwas geändert." : "bei einem Termin hat sich etwas geändert.", "", ...(mk ? [`Markt: ${mk.name}`, u, ""] : ["Name des Markts: "]), "Betroffener Termin (Datum): ", "Was ist neu? (abgesagt, verschoben, andere Uhrzeit): ", "Quelle oder Link (falls vorhanden): "]);
   return `<dialog class="ms" id="mailSheet" aria-labelledby="msH"><div class="ms-grab" aria-hidden="true"></div><button type="button" class="ms-x" aria-label="Schließen" data-ms-close>${ic("x")}</button>
-<p class="ms-h" id="msH">${mk ? `Termin für ${esc(mk.name)} melden` : "Termin melden"}</p><p class="ms-p">${mk ? "Fehlt ein Termin, hat sich die Uhrzeit geändert oder fällt er aus? Wir prüfen jeden Hinweis." : "Neuer Flohmarkt, fehlender Termin oder eine Änderung? Schreib uns kurz, wir prüfen jeden Hinweis."}</p>
-<a class="ms-opt" href="${esc(neu)}"><span class="ms-ic">${ic("cal")}</span><span><b>${mk ? "Termin nachreichen" : "Neuen Termin melden"}</b><small>${mk ? "Datum und Uhrzeit, mehr nicht" : "Markt, Datum, Uhrzeit und Adresse"}</small></span>${ic("chev")}</a>
+<p class="ms-h" id="msH">${mk ? `Neuer Termin oder Änderung bei ${esc(mk.name)}?` : "Termin eintragen oder ändern"}</p><p class="ms-p">${mk ? "Fehlt ein Termin, hat sich die Uhrzeit geändert oder fällt er aus? Wir prüfen jeden Hinweis." : "Neuer Flohmarkt, fehlender Termin oder eine Änderung? Schreib uns kurz, wir prüfen jeden Hinweis."}</p>
+<a class="ms-opt" href="${esc(neu)}"><span class="ms-ic">${ic("cal")}</span><span><b>${mk ? "Termin nachreichen" : "Neuen Termin eintragen"}</b><small>${mk ? "Datum und Uhrzeit, mehr nicht" : "Markt, Datum, Uhrzeit und Adresse"}</small></span>${ic("chev")}</a>
 <a class="ms-opt" href="${esc(alt)}"><span class="ms-ic dk">${ic("update")}</span><span><b>Änderung oder Absage</b><small>Termin verschoben, abgesagt oder falsch</small></span>${ic("chev")}</a>
 <div class="ms-alt"><span>Kein Mail-Programm?</span><button type="button" data-copy="${esc(MS_ADDR)}">E-Mail-Adresse kopieren</button></div></dialog>`;
 };
@@ -554,7 +554,7 @@ const ivData = () => `data-iv="${IV_SRC}" data-poster="${IV_POSTER}" data-cr="${
 // Video-Karte: dunkle Karte im Wisch-Slider der Startseite und auf der Über-Seite. Rechts läuft ein kurzer stummer Ausschnitt (ca. 140 KB),
 // Antippen öffnet das Video groß mit Ton und „An Freunde schicken“.
 const ivSlide = (cls = "hl-slide hl-card", id = "") => `<a class="${cls} hl-vid"${id ? ` id="${id}"` : ""} href="${ABOUT_P}#video" ${ivData()} aria-label="Flohmarkt Hamburg? Film ab! Video über ${esc(NAME)} abspielen"><span class="hv-txt"><span class="hv-k">${ic("play")}Neu hier?</span><b>Flohmarkt Hamburg? Film&nbsp;ab!</b><span class="hv-p">Alle Termine, eigene Schilder, WhatsApp-Kanal.</span><span class="hv-go"><span>${ic("play")}</span>Abspielen</span></span><span class="hv-media" aria-hidden="true"><span class="hv-dot"></span><span class="hv-ph">${IV_CLIP ? `<video muted loop playsinline preload="none" poster="${IV_CLIP}.webp" data-src="${IV_CLIP}.mp4" width="290" height="590" tabindex="-1"></video>` : `<img src="${IV_THUMB}" alt="" width="72" height="128" decoding="async">`}</span></span></a>`;
-const TIPS_P = "/flohmarkt-tipps/", WEEK_P = "/flohmarkt-hamburg-unter-der-woche/", FEE_P = "/flohmarkt-standgebuehr-hamburg/", ABOUT_P = "/ueber-flohlotse/";
+const TIPS_P = "/flohmarkt-tipps/", WEEK_P = "/flohmarkt-hamburg-unter-der-woche/", FEE_P = "/flohmarkt-standgebuehr-hamburg/", ABOUT_P = "/ueber-flohlotse/", HOW_P = "/so-funktioniert-flohlotse/";
 // Wer hinter den Artikeln steht: Google empfiehlt bei Artikeln einen Link auf eine Seite, die den Autor beschreibt (hier: Über Flohlotse).
 const ORG_AUTHOR = { "@type": "Organization", name: NAME, url: SITE + ABOUT_P }, ORG_PUB = { "@type": "Organization", name: NAME, url: SITE + "/" };
 // Zahl und Einheit bleiben in einer Zeile („4 m“, „12 €“, „7 Uhr“)
@@ -568,7 +568,7 @@ function menuHTML() {
   const reg = um => REGIONS.filter(r => !!r.umland === um).map(r => a(`/flohmarkt-hamburg/${r.k}/`, `${esc(r.name)} <small>${cnt(r.k)}</small>`)).join("");
   const SUB = { sign: "Preisschilder gratis drucken", kc: "Echt oder Fälschung?", kb: `${KB.length} kurze Antworten` };
   const tool = ([k, h, i, t]) => `<a class="mn-tool" href="${h}">${ic(i)}<span><b>${t}</b><small>${SUB[k]}</small></span>${ic("chev")}</a>`;
-  return `<details class="menu-wrap"><summary class="menu-btn">${ic("list", "i i-open")}${ic("x", "i i-shut")}<span>Menü</span></summary>
+  return `<details class="menu-wrap"><summary class="menu-btn">${ic("list", "i i-open")}${ic("x", "i i-shut")}<span>Menü</span><span class="tlb" aria-hidden="true">Menü</span></summary>
 <div class="menu"><nav class="mn" aria-label="Alle Bereiche">
 <a class="mn-org" href="/veranstalter/">${ic("user")}<span><b>Für Veranstalter</b><small>Markt eintragen, Button für deine Website, kostenlose Schilder für deine Aussteller</small></span>${ic("chev")}</a>
 <div class="mn-when"><p class="mn-h">Wann?</p><div class="mn-days">${a("/heute/", "Heute")}${a("/morgen/", "Morgen")}${a("/wochenende/", "Wochenende")}</div>${MONTHS.length ? `<div class="mn-mon">${MONTHS.slice(0, 3).map(x => a(`/${x.s}/`, `${ic("cal")}${x.name}`)).join("")}</div>` : ""}
@@ -576,6 +576,7 @@ function menuHTML() {
 <div class="mn-what"><p class="mn-h">Was für ein Markt?</p><div class="mn-chips">${CATS_ON.map(c => a(`/${c.s}/`, `${ic(c.icon)}${esc(MN_SHORT[c.s] || c.chip)}`)).join("")}</div></div>
 <div class="mn-where"><p class="mn-h">Wo?</p><details class="mn-reg"><summary>Hamburg nach Bezirk</summary><div>${reg(false)}</div></details><details class="mn-reg"><summary>Umland bis 30 km</summary><div>${reg(true)}</div></details></div>
 <div class="mn-tools"><p class="mn-h">Für deinen Flohmarkt</p>${TOOLS().map(tool).join("")}${socialHTML("mn-social")}${IV ? `<a class="mn-rec" href="${ABOUT_P}#video" ${ivData()}>${ic("share")}<span>Flohlotse empfehlen</span></a>` : ""}</div>
+<div class="mn-help">${a(HOW_P, `${ic("book")}So funktioniert’s`)}${msLink("", `${ic("mail")}Termin eintragen`, "")}</div>
 <div class="mn-more">${a(FEE_P, "Standgebühren")}${a(TIPS_P, "Tipps &amp; Vorlagen")}${a(ABOUT_P, "Über Flohlotse")}${a("/impressum/", "Impressum")}${a("/datenschutz/", "Datenschutz")}</div>
 </nav></div></details>`;
 }
@@ -608,7 +609,7 @@ function layout({ p, title, desc, body, ld, noindex, nav, extraHead = "", img = 
   // Google zeigt rund 60 Zeichen. Ist der Titel länger, fällt der angehängte Markenname weg (Google ergänzt den Seitennamen selbst).
   if (title.length > 60 && title.endsWith(` | ${NAME}`)) title = title.slice(0, -(` | ${NAME}`).length);
   // Am Computer (ab 1080 px) sind Übersichtsseiten breit („wide“). Lese- und Detailseiten behalten eine bequeme Lesebreite („read“).
-  const readPg = /^\/(flohmarkt|ratgeber)\/[^/]+\/$/.test(p) || (p.startsWith(KC_P) && p !== KC_P) || ["/veranstalter/", "/impressum/", ABOUT_P, "/datenschutz/", "/404.html", "/flohmarkt-hamburg-statistik/"].includes(p);
+  const readPg = /^\/(flohmarkt|ratgeber)\/[^/]+\/$/.test(p) || (p.startsWith(KC_P) && p !== KC_P) || ["/veranstalter/", "/impressum/", ABOUT_P, HOW_P, "/datenschutz/", "/404.html", "/flohmarkt-hamburg-statistik/"].includes(p);
   const mainCls = `wrap ${readPg ? "read" : "wide"}${p === "/" ? " pg-home" : p === TIPS_P ? " pg-start" : ""}`;
   // Hauptmenü in zwei Bereichen: der Kalender für Hamburg und die Werkzeuge, die auf jedem Flohmarkt helfen. Adressen bleiben, wie sie sind.
   const navK = toolK === "kc" ? "kc" : nav;
@@ -642,9 +643,9 @@ ${ld ? `<script type="application/ld+json">${JSON.stringify(ld).replace(/</g, "\
 <header class="top"><div class="wrap">
 <a class="brand" href="/"><i>€</i>${esc(NAME)}</a>
 <nav class="nav" aria-label="Hauptmenü">${navHTML}</nav>
-<a class="srch-top" href="/suche/" aria-label="Flohmarkt suchen"${nav === "suche" ? ' aria-current="page"' : ""}>${ic("search")}</a>
-${msLink("mail-top", ic("mail"), "Termin melden")}
-<a class="fav-top" href="/merkliste/" aria-label="Merkliste"${nav === "merk" ? ' aria-current="page"' : ""}>${ic("heart")}<span class="fav-n" hidden></span></a>
+<a class="srch-top" href="/suche/" aria-label="Flohmarkt suchen"${nav === "suche" ? ' aria-current="page"' : ""}>${ic("search")}<span class="tlb" aria-hidden="true">Suchen</span></a>
+${msLink("mail-top", ic("mail") + '<span class="tlb" aria-hidden="true">Kontakt</span>', "Kontakt: Termin eintragen oder ändern")}
+<a class="fav-top" href="/merkliste/" aria-label="Merkliste"${nav === "merk" ? ' aria-current="page"' : ""}>${ic("heart")}<span class="fav-n" hidden></span><span class="tlb" aria-hidden="true">Gemerkt</span></a>
 ${MENU()}
 </div></header>
 <main class="${mainCls}" id="inhalt">
@@ -655,7 +656,7 @@ ${shyHeads(body.replace(/<h1>([^<]{3,80}?): ([^<]+)<\/h1>/, '<h1>$1:<span class=
 <details class="foot-grp"><summary>Flohmarkt Hamburg</summary><nav class="foot-links" aria-label="Flohmarkt Hamburg"><a href="/heute/">Heute</a><a href="/morgen/">Morgen</a><a href="/wochenende/">Wochenende</a><a href="/samstag/">Samstag</a><a href="/sonntag/">Sonntag</a><a href="${WEEK_P}">Unter der Woche</a>${REGIONS.map(r => `<a href="/flohmarkt-hamburg/${r.k}/">${esc(r.name)}</a>`).join("")}<a href="${FEE_P}">Standgebühren im Vergleich</a><a href="/flohmarkt-hamburg-statistik/">Flohmärkte in Zahlen</a></nav></details>
 <details class="foot-grp"><summary>Nach Art und Monat</summary><nav class="foot-links" aria-label="Nach Art und Monat">${CATS_ON.map(c => `<a href="/${c.s}/">${esc(c.chip)}</a>`).join("")}${MONTHS.map(x => `<a href="/${x.s}/">${x.name} ${x.y}</a>`).join("")}</nav></details>
 <details class="foot-grp"><summary>Für jeden Flohmarkt</summary><nav class="foot-links" aria-label="Für jeden Flohmarkt"><a href="${TIPS_P}">Tipps &amp; Vorlagen</a><a href="/ratgeber/">Ratgeber</a>${KC_ON ? `<a href="${KC_P}">Kauf-Check</a>` : ""}<a href="/flohmarkt-schilder/">Schilder-Designer</a></nav></details>
-<details class="foot-grp"><summary>${esc(NAME)}</summary><nav class="foot-links" aria-label="${esc(NAME)}"><a href="${ABOUT_P}">Über Flohlotse</a><a href="/veranstalter/">Für Veranstalter</a>${INSTA ? instaA("Instagram") : ""}<a href="/impressum/">Impressum</a><a href="/datenschutz/">Datenschutz</a></nav></details>
+<details class="foot-grp"><summary>${esc(NAME)}</summary><nav class="foot-links" aria-label="${esc(NAME)}"><a href="${HOW_P}">So funktioniert Flohlotse</a><a href="${ABOUT_P}">Über Flohlotse</a><a href="/veranstalter/">Für Veranstalter</a>${INSTA ? instaA("Instagram") : ""}<a href="/impressum/">Impressum</a><a href="/datenschutz/">Datenschutz</a></nav></details>
 ${socialHTML("foot-social")}<p class="foot-stand">Stand der Termine: ${STAND}</p>
 </footer>
 ${msSheet(mkOfPath(p))}${fabHTML(toolK || (p === "/entdecken/" ? "dk" : p === "/termine/" ? "tm" : ""))}
@@ -1469,7 +1470,7 @@ ${MONTHS.length ? `<section class="sec hs-mon"><div class="sec-head"><h2>Termine
 ${NEWS.length ? `<section class="sec hs-news"><div class="sec-head"><h2>Neuigkeiten</h2></div>${grid(NEWS.map(n => `<a class="card" href="${esc(safeHref(n["Link"], "Neuigkeiten: " + n["Titel"]) || "/")}"><span class="kicker">${esc(n["Kicker"])}</span><h3>${esc(n["Titel"])}</h3><p>${esc(n["Text"])}</p></a>`))}</section>` : ""}
 <div class="sec band band-seo"><section class="sec kb-body home-seo"><h2>Flohmarkt in Hamburg: das Wichtigste</h2>${homeText.map(x => `<p>${rich(x)}</p>`).join("")}</section>
 ${faqBlock(homeFaq, "Häufige Fragen zu Flohmärkten in Hamburg")}</div>
-${WA ? `<section class="sec hs-insta"><div class="follow follow-wa"><span class="follow-at" aria-hidden="true">${ic("whatsapp")}</span><span class="follow-txt"><span class="kicker">Neu auf WhatsApp</span><b>Flohmarkt-Tipps direkt aufs Handy</b><span>Die besten Märkte fürs Wochenende, Tipps fürs Kaufen und Verkaufen und Neues von Flohlotse. Kostenlos und jederzeit abbestellbar.</span></span><span class="follow-btns"><a class="btn" href="${WA}" rel="noopener">Im ${WA_LABEL} folgen${ic("chev")}</a>${INSTA ? `<a class="follow-alt" href="${INSTA}" rel="noopener me">oder auf Instagram ${esc(INSTA_AT)}</a>` : ""}</span></div></section>` : INSTA ? `<section class="sec hs-insta"><a class="follow" href="${INSTA}" rel="noopener me"><span class="follow-at" aria-hidden="true">@</span><span class="follow-txt"><span class="kicker">Neu auf Instagram</span><b>Jeden Donnerstag: dein Flohmarkt-Wochenende</b><span>Alle Märkte fürs Wochenende in drei Bildern. Zum Speichern und Weiterschicken.</span></span><span class="btn">${esc(INSTA_AT)} folgen${ic("chev")}</span></a></section>` : ""}
+${WA ? `<section class="sec hs-insta"><div class="follow follow-wa"><span class="follow-at" aria-hidden="true">${ic("whatsapp")}</span><span class="follow-txt"><span class="kicker">Neu auf WhatsApp</span><b>Flohmarkt-Tipps direkt aufs Handy</b><span>Die besten Märkte fürs Wochenende, Tipps fürs Kaufen und Verkaufen und Neues von Flohlotse. Kostenlos und jederzeit abbestellbar.</span></span><span class="follow-btns"><a class="btn" href="${WA}" rel="noopener">Im ${WA_LABEL} folgen${ic("chev")}</a><small class="wa-note">Du bekommst nur Nachrichten von ${esc(NAME)}. Niemand sieht deine Nummer, austreten geht jederzeit.</small>${INSTA ? `<a class="follow-alt" href="${INSTA}" rel="noopener me">oder auf Instagram ${esc(INSTA_AT)}</a>` : ""}</span></div></section>` : INSTA ? `<section class="sec hs-insta"><a class="follow" href="${INSTA}" rel="noopener me"><span class="follow-at" aria-hidden="true">@</span><span class="follow-txt"><span class="kicker">Neu auf Instagram</span><b>Jeden Donnerstag: dein Flohmarkt-Wochenende</b><span>Alle Märkte fürs Wochenende in drei Bildern. Zum Speichern und Weiterschicken.</span></span><span class="btn">${esc(INSTA_AT)} folgen${ic("chev")}</span></a></section>` : ""}
 <section class="sec hs-org" id="veranstalter"><div class="org"><h2>Du veranstaltest einen Flohmarkt?</h2><p>Trag deinen Termin kostenlos ein. Wir prüfen jeden Eintrag, bevor er erscheint.</p><a class="btn" href="/veranstalter/">Termin eintragen${ic("chev")}</a></div></section>`;
   layout({ p: "/", title: `Flohmarkt Hamburg: Alle Flohmärkte & Termine ${YEAR} | ${NAME}`,
     desc: pickDesc(`Alle ${MARKETS.length} Flohmärkte in Hamburg und Umgebung mit Terminen, Uhrzeiten und Adressen.${weN ? ` ${sunOnly ? "Heute" : "Am Wochenende"}: ${weN} Märkte.` : ""} Täglich aktualisiert, ohne Werbebanner.`, "Alle Flohmärkte in Hamburg und Umgebung, aufgeräumt: Termine, Zeiten, Adressen und ein Ratgeber mit Antworten auf die wichtigsten Flohmarkt-Fragen."),
@@ -2359,46 +2360,62 @@ const ideasHTML = themes => {
   return cards ? `<div class="gen-ideas js-only"><p class="gen-sub" id="genIdeasH">Ideen zum Antippen</p><div class="idea-row" role="group" aria-labelledby="genIdeasH">${cards}</div></div>` : "";
 };
 function genHTML(st, themes, act, heading, pay) {
-  // Aufbau fürs Handy: oben Überschrift mit Druckknopf, eine wischbare Zeile mit Thema und Sprüchen, die Vorschau (bleibt beim Bearbeiten stehen),
-  // darunter vier Reiter mit kurzen Bereichen. So passt alles auf einen Bildschirm, ohne hin und her zu scrollen.
+  // Aufbau in 5 Schritten: oben die Vorschau (bleibt beim Bearbeiten stehen), darunter eine Leiste 1 bis 5 (antippbar) und je Schritt ein Bereich:
+  // 1 Vorlage (Ideen und alle Sprüche nach Kategorie), 2 Text, 3 Look, 4 Extras (Form, Symbol, PayPal, Etikett; nur Schilder), 5 Drucken.
+  // Unten stehen Zurück und Weiter, im letzten Schritt der Druckknopf. Alle Funktionen von vorher sind da, nur sortiert.
   const pj = p => esc(JSON.stringify(p));
-  const fmtBtn = (f, l) => `<button type="button" class="chip" data-fmt="${f}" aria-pressed="${st.fmt === f}">${l}</button>`;
+  const fmtBtn = (f, n, l, cells) => `<button type="button" class="chip fmt-btn" data-fmt="${f}" aria-pressed="${st.fmt === f}"><i class="fmt-sheet fs-${f}" aria-hidden="true">${"<i></i>".repeat(cells)}</i><b>${n}</b> pro Blatt<small>${l}</small></button>`;
   const tone = st.tone || "gelb", toneBtn = k => `<button type="button" class="swb" data-tone="${k}" data-name="${TONES[k][0]}" aria-pressed="${tone === k}" title="${TONES[k][0]}"><i class="sw sw-${k}"></i><span class="vh">${TONES[k][0]}</span></button>`;
   const symBtn = k => `<button type="button" class="sym-btn" data-sym="${k}" aria-pressed="${(st.sym || "") === k}" aria-label="${k ? "Symbol: " + esc(SYM[k][0]) : "Ohne Symbol"}" title="${k ? esc(SYM[k][0]) : "Ohne"}">${k ? symSVG(k) : "<span>Ohne</span>"}</button>`;
   const ink = st.ink || inkDefault(tone), inkBtn = k => `<button type="button" class="swb ink ink-b-${k}" data-ink="${k}" data-name="${INKS[k][0]}" aria-pressed="${ink === k}" title="${INKS[k][0]}"${INK_OK[inkSurf(st)].includes(k) ? "" : " disabled"}><b aria-hidden="true">A</b><span class="vh">${INKS[k][0]}</span></button>`;
   const font = st.font || "modern", fontBtn = ([k, l]) => `<button type="button" class="chip fnt fnt-${k}" data-font="${k}" aria-pressed="${font === k}"><b aria-hidden="true">Aa</b>${l}</button>`;
   const txt = (id, lab, v, max, ph, cls = "only-sign") => `<label class="fld ${cls}"><span>${lab}</span><input id="${id}" type="text" value="${esc(v)}" maxlength="${max}" autocomplete="off" enterkeyhint="done"${ph ? ` placeholder="${ph}"` : ""}></label>`;
-  return `<section class="gen" id="gen" data-kind="${st.kind}" data-fmt="${st.fmt}" data-tone="${tone}" data-ink="${ink}" data-font="${font}" data-shape="${st.shape || "rund"}" data-inkok="${esc(JSON.stringify(INK_OK))}" data-sym="${st.sym || ""}"${pay === "auto" ? ' data-pay="0"' : ""} aria-labelledby="genH">
-<div class="gen-head"><h2 id="genH">${heading}</h2><button class="btn gen-print js-only" id="doPrint" type="button" aria-label="Als PDF speichern oder drucken">${ic("download")}<span>Speichern</span></button></div>
-${ideasHTML(themes)}<p class="gen-sub js-only" id="genPickH">Alle Vorlagen nach Kategorie</p>
-<div class="gen-pick js-only"><div class="gen-theme"><label for="genTheme" class="vh">Kategorie</label><select id="genTheme"><option value="" selected disabled>Kategorie wählen</option>${themes.map((g, i) => `<option value="${i}">${esc(g.l)}</option>`).join("")}</select></div>
-${themes.map((g, i) => `<div class="gen-presets" data-grp="${i}" role="group" aria-label="${esc(g.l)}: Spruch wählen"${i === act ? "" : " hidden"}>${g.items.map((p, j) => `<button type="button" class="chip" data-set="${pj(p.set)}" aria-pressed="${i === act && j === 0}">${esc(p.l)}</button>`).join("")}</div>`).join("")}</div>
+  const STEPS = [[1, "Vorlage"], [2, "Text"], [3, "Look"], [4, "Extras", "only-sign"], [5, "Drucken"]];
+  const head = (h, sub, subTags) => `<p class="gs-h">${h}</p>${sub ? `<p class="gs-s${subTags ? " only-sign" : ""}">${sub}</p>` : ""}${subTags ? `<p class="gs-s only-tags">${subTags}</p>` : ""}`;
+  const shapeName = (SHAPES.find(([k]) => k === (st.shape || "rund")) || [, ""])[1];
+  return `<section class="gen" id="gen" data-kind="${st.kind}" data-fmt="${st.fmt}" data-tone="${tone}" data-ink="${ink}" data-font="${font}" data-shape="${st.shape || "rund"}" data-inkok="${esc(JSON.stringify(INK_OK))}" data-sym="${st.sym || ""}"${pay === "auto" ? ' data-pay="0"' : ""} data-step="1" aria-labelledby="genH">
+<div class="gen-head"><h2 id="genH">${heading}</h2></div>
 <div class="sheet-wrap" id="sheetWrap">${sheetHTML(st)}</div>
 <div class="gen-form js-only">
-<div class="gen-tabs" role="tablist" aria-label="Schild bearbeiten"><button type="button" role="tab" data-tab="look" aria-selected="true">Stil</button><button type="button" role="tab" data-tab="text" aria-selected="false">Text</button><button type="button" role="tab" class="only-sign" data-tab="shape" aria-selected="false">Form</button><button type="button" role="tab" class="only-sign" data-tab="sym" aria-selected="false">Symbol</button><button type="button" role="tab" data-tab="fmt" aria-selected="false">Format</button></div>
-<div class="gen-panel gp-text" data-panel="text" role="tabpanel" hidden>
-${txt("fOrg", "Etikett", "", 40, "optional, z. B. Name deines Markts")}
-${txt("fTop", "Oben", st.top, 40, "optional")}
-${txt("fMain", "Mitte", st.main, 40, "")}
-${txt("fBot", "Unten", st.bot, 60, "optional")}
-${pay ? `<label class="fld only-sign gen-pay"><span>PayPal</span><span class="pfx"><b>paypal.me/</b><input id="fPay" type="text" value="" maxlength="80" autocomplete="off" autocapitalize="none" spellcheck="false" enterkeyhint="done" placeholder="deinname"></span></label><small class="pay-note only-sign" id="payNote" aria-live="polite"></small>` : ""}
-${txt("fPrice", "Preis", st.price, 12, "leer = zum Beschriften", "only-tags")}
+<ol class="gen-steps" aria-label="Schritte">${STEPS.map(([n, l, c], i) => `<li class="${[c, i ? "" : "on"].filter(Boolean).join(" ")}"><button type="button" data-step="${n}"${i ? "" : ' aria-current="step"'}><b>${n}</b><span>${l}</span></button></li>`).join("")}</ol>
+<div class="gen-step gs-1" data-step="1">
+${head("Welches Schild brauchst du?", "Tipp eins an. Text und Farbe änderst du in den nächsten Schritten.")}
+${ideasHTML(themes)}<p class="gen-sub" id="genPickH">Alle Vorlagen nach Kategorie</p>
+<div class="gen-pick"><div class="gen-theme"><label for="genTheme" class="vh">Kategorie</label><select id="genTheme"><option value="" selected disabled>Kategorie wählen</option>${themes.map((g, i) => `<option value="${i}">${esc(g.l)}</option>`).join("")}</select></div>
+${themes.map((g, i) => `<div class="gen-presets" data-grp="${i}" role="group" aria-label="${esc(g.l)}: Spruch wählen"${i === act ? "" : " hidden"}>${g.items.map((p, j) => `<button type="button" class="chip" data-set="${pj(p.set)}" aria-pressed="${i === act && j === 0}">${esc(p.l)}</button>`).join("")}</div>`).join("")}</div>
 </div>
-<div class="gen-panel gp-look" data-panel="look" role="tabpanel">
+<div class="gen-step gs-2" data-step="2" hidden>
+${head("Was soll draufstehen?", "Die Schrift passt sich automatisch an die Länge an. Leere Zeilen bleiben einfach weg.", "Trag einen Preis ein, oder lass das Feld leer und schreib ihn später mit Stift drauf.")}
+${txt("fTop", "Kleine Zeile oben", st.top, 40, "optional")}
+${txt("fMain", "Großer Text", st.main, 40, "")}
+${txt("fBot", "Kleine Zeile unten", st.bot, 60, "optional")}
+${txt("fPrice", "Preis", st.price, 12, "leer = zum Beschriften", "only-tags")}
+${pay ? `<p class="gs-tip gen-pay only-sign">Deinen PayPal-QR-Code fügst du im Schritt <button type="button" data-step="4">Extras</button> hinzu.</p>` : ""}
+<label class="switch only-tags"><input type="checkbox" id="fVb" checked>Kästchen „VB“</label>
+</div>
+<div class="gen-step gs-3 gp-look" data-step="3" hidden>
+${head("Wie soll es aussehen?", "Ein Look setzt Farben, Schrift und Form auf einmal. Danach kannst du alles fein einstellen.", "Wähl die Farbe für deine Preisschilder.")}
 <div class="st-grp only-sign"><span class="st-l" id="stLookH">Look</span><div class="st-row look-set" role="group" aria-labelledby="stLookH">${LOOKS.filter(([, , o]) => fontOk(o.font)).map(([k, l, o]) => `<button type="button" class="look-btn look-${k}" data-look="${esc(JSON.stringify(o))}" aria-pressed="false"><span class="lt lt-${k}" aria-hidden="true"><b>Aa</b></span><span class="lt-l">${l}</span></button>`).join("")}</div></div>
 <div class="st-grp"><span class="st-l" id="stToneH">Fläche</span><div class="st-row" role="group" aria-labelledby="stToneH">${Object.keys(TONES).map(toneBtn).join("")}</div></div>
-<div class="st-grp"><span class="st-l" id="stInkH">Schriftfarbe</span><div class="st-row" role="group" aria-labelledby="stInkH">${Object.keys(INKS).map(inkBtn).join("")}</div></div>
+<div class="st-grp"><span class="st-l" id="stInkH">Schriftfarbe <small>nur gut lesbare Paare</small></span><div class="st-row" role="group" aria-labelledby="stInkH">${Object.keys(INKS).map(inkBtn).join("")}</div></div>
 ${SIGN_FONTS.length > 1 ? `<div class="st-grp only-sign"><span class="st-l" id="stFontH">Schrift</span><div class="st-row seg-font" role="group" aria-labelledby="stFontH">${SIGN_FONTS.map(fontBtn).join("")}</div></div>` : ""}
 </div>
-<div class="gen-panel gp-shape" data-panel="shape" role="tabpanel" hidden><div class="seg hs shape-row" role="group" aria-label="Form der Farbfläche">${SHAPES.map(([k, l]) => `<button type="button" class="chip shp-btn" data-shape="${k}" aria-pressed="${(st.shape || "rund") === k}"><svg viewBox="0 0 44 26" aria-hidden="true"><path fill-rule="evenodd" d="${shapePath(k, 44, 26)}"/></svg>${l}</button>`).join("")}</div></div>
-<div class="gen-panel gp-sym" data-panel="sym" role="tabpanel" hidden><div class="sym-grid" role="group" aria-label="Symbol wählen">${["", ...Object.keys(SYM)].map(symBtn).join("")}</div></div>
-<div class="gen-panel gp-fmt" data-panel="fmt" role="tabpanel" hidden>
-<div class="seg hs only-sign" role="group" aria-label="Format">${fmtBtn("quer", "1 pro Blatt")}${fmtBtn("zwei", "2 pro Blatt")}${fmtBtn("vier", "4 pro Blatt")}${fmtBtn("acht", "8 pro Blatt")}</div>
-<label class="switch only-tags"><input type="checkbox" id="fVb" checked>Kästchen „VB“</label>
+<div class="gen-step gs-4 only-sign" data-step="4" hidden>
+${head("Noch das gewisse Etwas?", "Alles freiwillig. Die meisten springen direkt zum Drucken.")}
+<details class="gx" open><summary>Form <em id="gxShape">${esc(shapeName)}</em></summary><div class="seg hs shape-row" role="group" aria-label="Form der Farbfläche">${SHAPES.map(([k, l]) => `<button type="button" class="chip shp-btn" data-shape="${k}" aria-pressed="${(st.shape || "rund") === k}"><svg viewBox="0 0 44 26" aria-hidden="true"><path fill-rule="evenodd" d="${shapePath(k, 44, 26)}"/></svg>${l}</button>`).join("")}</div></details>
+<details class="gx"><summary>Symbol <em>Aufkleber, z. B. Krone oder Herz</em></summary><div class="sym-grid" role="group" aria-label="Symbol wählen">${["", ...Object.keys(SYM)].map(symBtn).join("")}</div></details>
+${pay ? `<details class="gx gen-pay"${pay === true ? " open" : ""}><summary>PayPal-QR-Code <em>zum Bezahlen per Handy</em></summary><label class="fld only-sign gen-pay"><span>PayPal</span><span class="pfx"><b>paypal.me/</b><input id="fPay" type="text" value="" maxlength="80" autocomplete="off" autocapitalize="none" spellcheck="false" enterkeyhint="done" placeholder="deinname"></span></label><small class="pay-note only-sign" id="payNote" aria-live="polite"></small></details>` : ""}
+<details class="gx"><summary>Etikett <em id="gxOrg">z. B. Name deines Markts</em></summary>${txt("fOrg", "Etikett", "", 40, "optional, z. B. Name deines Markts")}</details>
+</div>
+<div class="gen-step gs-5" data-step="5" hidden>
+${head("Fertig! Wie viele aufs Blatt?", "Gedruckt wird immer auf A4.", "Die Preisschilder kommen zum Ausschneiden auf ein A4-Blatt.")}
+<div class="fmt-row only-sign" role="group" aria-label="Format">${fmtBtn("quer", 1, "groß", 1)}${fmtBtn("zwei", 2, "mittel", 2)}${fmtBtn("vier", 4, "klein", 4)}${fmtBtn("acht", 8, "mini", 8)}</div>
 <label class="switch"><input type="checkbox" id="fSave">Sparmodus: Rahmen statt Farbe</label>
+<p class="gs-ok">${ic("check")}<span><span class="only-sign">Das Schild füllt das Blatt ganz aus.</span><span class="only-tags">Die Schilder liegen schon richtig auf dem Blatt.</span> Im Druckfenster einfach „Hochformat“ lassen.</span></p>
+<p class="gs-s"><b>Kein Drucker?</b> Im Druckfenster „Als PDF speichern“ wählen und im Copyshop oder Drogeriemarkt drucken. Deine Texte bleiben auf deinem Gerät.</p>
 </div>
+<div class="gen-nav"><button type="button" class="gn-back" aria-label="Zurück" hidden>‹</button><button type="button" class="gn-skip" hidden>Überspringen</button><button type="button" class="gn-next">Weiter: Text ›</button><button class="gn-print" id="doPrint" type="button" hidden>${ic("download")}<span>Schild drucken</span></button></div>
 </div>
-<p class="gen-hint js-only">Tipp auf „Speichern“ und wähl im Fenster „Als PDF speichern“, oder gleich deinen Drucker. „Hochformat“ einfach lassen: Die Schilder liegen schon richtig auf dem Blatt und füllen es ganz aus. Deine Texte bleiben auf deinem Gerät.</p>
 <noscript><p class="gen-hint">Der Schilder-Designer braucht JavaScript. Die Vorlagen unten kannst du dir trotzdem ansehen.</p></noscript>
 <template id="tplSign">${SG_UNIT}</template><template id="tplTag">${TG_UNIT}</template>
 </section>`;
@@ -2448,9 +2465,9 @@ const faqHTML = f => `<section class="faq"><h2>Häufige Fragen</h2>${f.map(([q, 
 <p class="lead">Der Schilder-Designer für deinen Stand: Vorlage wählen, Text eintippen, drucken. Ohne Drucker speicherst du das Schild als PDF und druckst es im Copyshop.</p>
 ${genHTML(signState(first), themes, 0, "Schild gestalten und drucken", "auto")}
 <section class="related"><div class="sec-head"><h2>Alle Vorlagen</h2></div>${signGrid(SIGNS.map(signCard))}</section>
-<div class="kb-body"><h2>Welche Schilder lohnen sich am Stand?</h2><p>Ein großes Schild für die Wühlkiste wie <a href="${signUrl(first)}">„Alles 1 €“</a> erspart dir an einem vollen Markttag Dutzende Fragen. Ein <a href="${signUrl(SIGN_BY["bar-und-paypal"])}">Zahlungsschild</a> verhindert peinliche Momente an der Kasse, und <a href="${signUrl(SIGN_BY["handeln-erwuenscht"])}">„Handeln erwünscht“</a> holt Leute ins Gespräch, die sonst nur gucken. Für einzelne Stücke nimmst du <a href="${signUrl(SIGN_BY.preisschilder)}">kleine Preisschilder</a>. Für den Hofflohmarkt gibt es <a href="${signUrl(SIGN_BY.hofflohmarkt)}">Wegweiser mit Pfeil</a>, für die letzte Stunde <a href="${signUrl(SIGN_BY["alles-muss-raus"])}">„Alles muss raus“</a> und für den Stand deiner Kinder ein eigenes <a href="${signUrl(SIGN_BY.kinderflohmarkt)}">Kinderflohmarkt-Schild</a>. Für gute Laune gibt es <a href="${signUrl(SIGN_BY["lustige-sprueche"])}">lustige Sprüche</a>, für den <a href="${signUrl(SIGN_BY.maedelsflohmarkt)}">Mädelsflohmarkt</a> Schilder in Pink. Ordnung schaffen <a href="${signUrl(SIGN_BY.groessenschilder)}">Größenschilder</a> für Kiste und Kleiderstange und <a href="${signUrl(SIGN_BY.kategorien)}">Kategorie-Schilder</a> wie Bücher, Damen oder Haushalt, für Tauschpartys gibt es <a href="${signUrl(SIGN_BY.kleidertausch)}">Kleidertausch-Schilder</a>. Für Retro-Schätze gibt es <a href="${signUrl(SIGN_BY.vintage)}">Vintage-Schilder</a>, für Elektronik <a href="${signUrl(SIGN_BY.getestet)}">„Getestet“</a> und für Kita- und Schulflohmärkte <a href="${signUrl(SIGN_BY["kaffee-und-kuchen"])}">Kaffee &amp; Kuchen</a> und <a href="${signUrl(SIGN_BY["guter-zweck"])}">„Für den guten Zweck“</a>. Jedes Schild kannst du in acht Farben drucken und mit einem Symbol verzieren, von der Krone bis zur Schleife. Unter „Stil“ gibt es außerdem fertige Looks: Poster, Rosa Plakat, Coquette, Tafel, Letterboard, Retro 70er, Kassenbon, Schleife und Natur.</p>
+<div class="kb-body"><h2>Welche Schilder lohnen sich am Stand?</h2><p>Ein großes Schild für die Wühlkiste wie <a href="${signUrl(first)}">„Alles 1 €“</a> erspart dir an einem vollen Markttag Dutzende Fragen. Ein <a href="${signUrl(SIGN_BY["bar-und-paypal"])}">Zahlungsschild</a> verhindert peinliche Momente an der Kasse, und <a href="${signUrl(SIGN_BY["handeln-erwuenscht"])}">„Handeln erwünscht“</a> holt Leute ins Gespräch, die sonst nur gucken. Für einzelne Stücke nimmst du <a href="${signUrl(SIGN_BY.preisschilder)}">kleine Preisschilder</a>. Für den Hofflohmarkt gibt es <a href="${signUrl(SIGN_BY.hofflohmarkt)}">Wegweiser mit Pfeil</a>, für die letzte Stunde <a href="${signUrl(SIGN_BY["alles-muss-raus"])}">„Alles muss raus“</a> und für den Stand deiner Kinder ein eigenes <a href="${signUrl(SIGN_BY.kinderflohmarkt)}">Kinderflohmarkt-Schild</a>. Für gute Laune gibt es <a href="${signUrl(SIGN_BY["lustige-sprueche"])}">lustige Sprüche</a>, für den <a href="${signUrl(SIGN_BY.maedelsflohmarkt)}">Mädelsflohmarkt</a> Schilder in Pink. Ordnung schaffen <a href="${signUrl(SIGN_BY.groessenschilder)}">Größenschilder</a> für Kiste und Kleiderstange und <a href="${signUrl(SIGN_BY.kategorien)}">Kategorie-Schilder</a> wie Bücher, Damen oder Haushalt, für Tauschpartys gibt es <a href="${signUrl(SIGN_BY.kleidertausch)}">Kleidertausch-Schilder</a>. Für Retro-Schätze gibt es <a href="${signUrl(SIGN_BY.vintage)}">Vintage-Schilder</a>, für Elektronik <a href="${signUrl(SIGN_BY.getestet)}">„Getestet“</a> und für Kita- und Schulflohmärkte <a href="${signUrl(SIGN_BY["kaffee-und-kuchen"])}">Kaffee &amp; Kuchen</a> und <a href="${signUrl(SIGN_BY["guter-zweck"])}">„Für den guten Zweck“</a>. Jedes Schild kannst du in acht Farben drucken und mit einem Symbol verzieren, von der Krone bis zur Schleife. Im Schritt „Look“ gibt es außerdem fertige Looks: Poster, Rosa Plakat, Coquette, Tafel, Letterboard, Retro 70er, Kassenbon, Schleife und Natur.</p>
 ${sideImg("seite-schilder", "quer kante")}<h2>So hält dein Schild den ganzen Tag</h2><p>Steck das Blatt in eine Klarsichthülle, dann übersteht es Nieselregen und Kaffeeflecken. Mit Wäscheklammern oder Kreppband hält es an Kisten und Tischkanten, bei Wind hilft ein Stück Pappe dahinter. Was sonst noch in die Tasche gehört, steht in der ${kl("checkliste-flohmarktstand", "Checkliste für deinen Flohmarktstand")}.</p>
-<h2>Drucken ohne eigenen Drucker</h2><p>Tipp im Designer auf „Speichern“ und wähl im Fenster „Als PDF speichern“. Das PDF druckst du im Copyshop oder bei Freunden aus. Für die gelbe Fläche reicht ein normaler Farbdrucker, im Sparmodus genügt Schwarzweiß.</p></div>
+<h2>Drucken ohne eigenen Drucker</h2><p>Tipp im letzten Schritt auf „Schild drucken“ und wähl im Fenster „Als PDF speichern“. Das PDF druckst du im Copyshop oder bei Freunden aus. Für die gelbe Fläche reicht ein normaler Farbdrucker, im Sparmodus genügt Schwarzweiß.</p></div>
 ${faqHTML(faq)}
 <section class="related"><div class="sec-head"><h2>Aus dem Ratgeber</h2>${more("/ratgeber/#verkaufen", "Verkaufen")}</div>${grid(["checkliste-flohmarktstand", "preise-festlegen-flohmarkt", "flohmarktstand-anmelden"].filter(s => KBY[s]).map(kbCard))}</section></article>`;
   layout({ p, title: `Flohmarkt-Schilder & Preisschilder zum Ausdrucken | ${NAME}`, desc: "Kostenlose Vorlagen für deinen Flohmarktstand: Preisschilder, Bar & PayPal mit QR-Code, Alles 1 €, Reserviert und mehr. Drucken oder als PDF speichern.", body, nav: "schilder", ld: signLD(p, cr, faq) });
@@ -2832,6 +2849,35 @@ ${ME_NAME ? `<h2 id="warum">Warum es ${esc(NAME)} gibt</h2>
 </div></article>`;
     layout({ p: ABOUT_P, title: `Über ${NAME}: So entstehen die Termine`, desc: `Wie ${NAME} arbeitet: Termine für Hamburg und Umgebung nach Angaben der Veranstalter, dazu Ratgeber, Schilder und Kauf-Check für jeden Flohmarkt.`,
       body, nav: "", ld: G([crumbLD(cr), { "@type": "AboutPage", name: `Über ${NAME}`, url: SITE + ABOUT_P }]) });
+  }
+  // So funktioniert Flohlotse: kurze Anleitung in vier Schritten für alle, die zum ersten Mal hier sind (Menü und Fußzeile verlinken hierher)
+  {
+    const cr = [[NAME, "/"], [`So funktioniert ${NAME}`]];
+    const btn = (h, l, ext) => `<a class="how-go" href="${h}"${ext ? ' rel="noopener"' : ""}>${l}${ic("chev")}</a>`;
+    const steps = [
+      ["search", "Markt finden", `Auf der Startseite siehst du sofort, was heute, morgen und am Wochenende los ist, mit Uhrzeit. Oben im Suchfeld findest du einen Markt nach Name, Stadtteil oder Datum. Im Menü sortierst du nach Art, zum Beispiel überdacht, für Kinder oder nachts, oder nach Bezirk.`,
+        [["/wochenende/", "Was ist am Wochenende?"], ["/suche/", "Flohmarkt suchen"], ["/termine/#near", "In meiner Nähe"]]],
+      ["heart", "Merken und hinfahren", `Tipp bei einem Markt auf das Herz. Alle gemerkten Märkte findest du oben unter „Gemerkt“. Dafür brauchst du kein Konto, die Liste bleibt auf deinem Gerät. Auf jeder Marktseite stehen Uhrzeit, Adresse, „Route planen“ und „In meinen Kalender“. Merkst du dir mehrere Märkte am selben Tag, kannst du daraus eine Tour planen.`,
+        [["/merkliste/", "Meine Merkliste"], ["/entdecken/", "Märkte durchblättern"]]],
+      ...(WA || INSTA ? [[WA ? "whatsapp" : "insta", "Nichts verpassen", WA ? `Im WhatsApp-Kanal bekommst du die besten Märkte fürs Wochenende und neue Termine direkt aufs Handy. Du bekommst nur Nachrichten von ${esc(NAME)}, niemand sieht deine Nummer, und austreten geht jederzeit.` : `Auf Instagram zeigt ${esc(NAME)} jede Woche die Märkte fürs Wochenende.`,
+        [[WA || INSTA, WA ? `Im ${WA_LABEL} folgen` : `${esc(INSTA_AT)} folgen`, 1]]]] : []),
+      ["printer", "Selbst verkaufen", `Mit dem Schilder-Designer gestaltest du in fünf Schritten Schilder und Preisschilder für deinen Stand und druckst sie aus, kostenlos. Im Ratgeber stehen ${KB.length} kurze Antworten, von der Standgebühr bis zum Wechselgeld.${KC_ON ? " Der Kauf-Check hilft dir beim Kaufen, Fälschungen zu erkennen." : ""}`,
+        [["/flohmarkt-schilder/", "Schild gestalten"], ["/ratgeber/", "Zum Ratgeber"], [FEE_P, "Standgebühren"]]]];
+    const faq = [
+      ["Brauche ich eine App?", `Nein. ${NAME} läuft im Browser, auf dem Handy wie am Computer. Wenn du magst, legst du die Seite über das Browser-Menü als Symbol auf deinen Startbildschirm.`],
+      ["Muss ich mich anmelden?", "Nein. Es gibt kein Konto. Deine Merkliste bleibt nur auf deinem Gerät."],
+      [`Was kostet ${NAME}?`, `Für Besucher ist ${NAME} kostenlos und ohne Werbebanner.`],
+      ["Was passiert mit meinem Standort bei „In meiner Nähe“?", "Dein Browser fragt einmal nach deinem Standort. Er wird nur auf deinem Gerät genutzt, um die Entfernung zu den Märkten zu berechnen, und weder gespeichert noch verschickt. Statt des Standorts kannst du auch deine Postleitzahl eingeben."],
+      ["Woher kommen die Termine?", `Aus öffentlichen Angaben der Veranstalter. Die Seite wird jede Nacht neu erstellt, vergangene Termine verschwinden von selbst. Mehr dazu unter [Über ${NAME}](${ABOUT_P}).`],
+      ["Ein Markt fehlt oder ein Termin stimmt nicht. Was tun?", `Im Menü unter „Termin eintragen“ oder oben bei „Kontakt“ schreibst du uns mit einer vorbereiteten E-Mail. Veranstalter finden alles Weitere unter [Für Veranstalter](/veranstalter/).`]];
+    const body = crumbs(cr) + `<article class="kb how"><h1>So funktioniert ${esc(NAME)}</h1>
+<div class="answer"><span class="kicker">Kurz gesagt</span><p>${esc(NAME)} zeigt dir alle Flohmärkte in Hamburg und bis 30 Kilometer drumherum, mit Uhrzeit, Adresse und Route. Du brauchst keine App und kein Konto: Markt finden, merken, hinfahren. Wer selbst verkauft, gestaltet hier kostenlos Schilder.</p></div>
+${IV ? ivSlide("hl-vid-solo") : ""}
+<ol class="how-steps">${steps.map(([i, h, t, links], n) => `<li><span class="how-ic" aria-hidden="true">${ic(i)}<b>${n + 1}</b></span><div><h2>${h}</h2><p>${t}</p><div class="how-btns">${links.map(([u, l, x]) => btn(u, l, x)).join("")}</div></div></li>`).join("")}</ol>
+${faqBlock(faq, "Gut zu wissen")}
+</article>`;
+    layout({ p: HOW_P, title: `So funktioniert ${NAME}: Flohmärkte finden, merken, hinfahren`, desc: `Kurz erklärt: So findest du mit ${NAME} Flohmärkte in Hamburg und Umgebung, merkst sie dir ohne Konto, planst die Route und gestaltest Schilder für deinen Stand.`,
+      body, nav: "", ld: G([crumbLD(cr), { "@type": "HowTo", name: `So funktioniert ${NAME}`, step: steps.map(([, h, t], n) => ({ "@type": "HowToStep", position: n + 1, name: h, text: plain(t) })) }, faqLD(faq)]) });
   }
   const isGitHub = /github/i.test(f("Datenschutz: Hoster"));
   const formKind = !FORM ? "mail" : /^mailto:/i.test(FORM) ? "mail" : /docs\.google\.com\/forms|forms\.gle/i.test(FORM) ? "google" : "other";

@@ -3175,6 +3175,15 @@ ${INSTA ? `- [Instagram](${INSTA}): jede Woche die Flohmärkte am Wochenende\n` 
 if (!PUBLIC) warn("Google", "Die Website ist noch nicht für Google freigegeben (Einstellung „Für Google freigeben“ = Nein). Das ist richtig, solange ihr testet.", true);
 if (process.env.CNAME) fs.writeFileSync(path.join(OUT, "CNAME"), process.env.CNAME + "\n");
 // Kurzadresse /schilder: Auf Apache leitet die .htaccess weiter, sonst diese kleine Seite (nicht in der Sitemap)
+// Zusammengelegte Märkte: Steht die alte Kennung im Blatt „Märkte“ auf Aktiv = Nein, leitet ihre bisherige Seite
+// auf den verbliebenen Eintrag weiter (Google übernimmt so die bisherigen Signale, Besucher landen nicht auf einer leeren Seite).
+const MERGED = { "flohmarkt-73-haus-73": "flohmarkt-73-schanze", "dobo-flohmarkt-ochsenwerder": "dobo-flohmarkt", "flohmarkt-selfmades-by-sibel": "flohmarkt-selfmades-muemmelmannsberg" };
+for (const [from, to] of Object.entries(MERGED)) {
+  if (MARKETS.some(m => m.slug === from) || !MARKETS.some(m => m.slug === to)) continue;
+  const dest = `/flohmarkt/${to}/`;
+  fs.mkdirSync(path.join(OUT, "flohmarkt", from), { recursive: true });
+  fs.writeFileSync(path.join(OUT, "flohmarkt", from, "index.html"), `<!doctype html><html lang="de"><meta charset="utf-8"><title>${esc(MARKETS.find(m => m.slug === to).name)} | ${esc(NAME)}</title><link rel="canonical" href="${SITE}${dest}"><meta http-equiv="refresh" content="0; url=${dest}"><p><a href="${dest}">Weiter zum Markt</a></p></html>\n`);
+}
 fs.mkdirSync(path.join(OUT, "schilder"), { recursive: true });
 // Kurzlink flohlotse.de/schilder, auch mit ?markt=kennung (gibt den Zusatz an den Designer weiter)
 fs.writeFileSync(path.join(OUT, "schilder/index.html"), `<!doctype html><html lang="de"><meta charset="utf-8"><title>Schilder-Designer | ${esc(NAME)}</title><meta name="robots" content="noindex"><link rel="canonical" href="${SITE}/flohmarkt-schilder/"><script>location.replace("/flohmarkt-schilder/" + location.search)</script><meta http-equiv="refresh" content="0; url=/flohmarkt-schilder/"><p><a href="/flohmarkt-schilder/">Weiter zum Schilder-Designer</a></p></html>\n`);

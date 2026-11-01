@@ -1595,7 +1595,10 @@ const nearCard = ({ x, km, same }) => { const nv = nextEv(x); return `<a class="
 for (const m of MARKETS) {
   const r = RBY[m.bez] || { name: m.bez, im: "", umland: false, k: m.bez };
   const nx = m.events.slice(0, 8), first = m.events.find(e => !e.cancelled);
-  const route = "https://www.google.com/maps/dir/?api=1&amp;travelmode=transit&amp;destination=" + encodeURIComponent(m.name + ", " + m.addr);
+  // Ziel für die Route: Ort und Adresse, nicht der Marktname. Sonst springt Google Maps zu gleichnamigen Firmen
+  // (Beispiel: „Hamburger Brick Börse“ führte zum Laden des Veranstalters in Bramfeld statt ins Sasel-Haus).
+  const routeDest = m.addr ? ((m.place && m.place !== m.name && !m.addr.includes(m.place) ? m.place + ", " : "") + m.addr) : m.name;
+  const route = "https://www.google.com/maps/dir/?api=1&amp;travelmode=transit&amp;destination=" + encodeURIComponent(routeDest);
   const others = MARKETS.filter(x => x.bez === m.bez && x !== m);
   const singleDates = !m.when && m.events.filter(e => !e.cancelled).length === 1;
   const when = whenOf(m);

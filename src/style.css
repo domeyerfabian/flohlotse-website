@@ -1956,6 +1956,9 @@ body:has(.menu-wrap[open]) .fab{display:none}
 .sheet.save[class*="deco-"] .sg{background:#fff!important;box-shadow:none!important}
 .sheet.save.deco-tafel :is(.sg-top,.sg-bot){color:#15211B}
 .sheet.save.deco-tafel .sg-foot b{color:#15211B}
+/* Plakat auf schwarzer Fläche: Adresse neben dem QR-Code hell, sonst ist sie nicht lesbar (im Sparmodus ist die Fläche weiß, dann wieder dunkel) */
+.sheet.deco-plakat.tone-schwarz:not(.save) .sg-foot{color:#C9CFCB}
+.sheet.deco-plakat.tone-schwarz:not(.save) .sg-foot b{color:#fff}
 
 /* Reiter „Stil“: jede Gruppe mit kleiner Überschrift und genau einer Reihe. Am Handy wischt man die Reihe, nichts bricht um. */
 .st-grp{display:grid;gap:6px;min-width:0}

@@ -2306,14 +2306,11 @@ body:has(.toast.on) .fab{opacity:0;pointer-events:none;transition:opacity .2s}
 @media (max-width:1079px) and (max-height:720px){ .gs-note{display:none} .gen-step{gap:8px} }
 
 /* ===== Schilder-Designer im Vollbild (Handy und Tablet) ===== */
-.gen-open,.gen-open-sub,.gen-top{display:none}
+.gen-open,.gen-open-sub,.gen-top,.gen-intro,.gen-mini,.gen-pile{display:none}
 @media (max-width:1079px){
   /* Auf der Seite: nur das Schild als Vorschau und ein großer Knopf */
   .gen:not(.is-full) > .gen-form{display:none!important}
   .gen:not(.is-full) > .sheet-wrap{position:relative;top:auto;cursor:pointer}
-  .gen-open{display:flex;align-items:center;justify-content:center;gap:10px;min-height:54px;border:0;border-radius:999px;background:var(--ink);color:var(--sticker);font:inherit;font-weight:900;font-size:17px;cursor:pointer}
-  .gen-open span{font-size:19px}
-  .gen-open-sub{display:block;margin:-6px 0 0;text-align:center;font-size:13.5px;color:var(--muted)}
   /* Vollbild */
   html.gen-lock,html.gen-lock body{overflow:hidden}
   html.gen-lock .fab,html.gen-lock .toast{display:none!important}
@@ -2337,3 +2334,47 @@ body:has(.toast.on) .fab{opacity:0;pointer-events:none;transition:opacity .2s}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .swb .sw{border-color:rgba(255,255,255,.35)}}
 :root[data-theme="dark"] .swb .sw{border-color:rgba(255,255,255,.35)}
 @media (max-width:1079px){.gen.is-full .gs-h{display:none}.gen.is-full .gs-s{margin-top:0}.gen-top b{font-size:clamp(17px,5.1vw,21px)}}
+
+/* ===== Einstieg auf der Seite (Handy und Tablet): gelbe Bühne mit Schild, Ablauf und Knopf ===== */
+@media (max-width:1079px){
+  .gen:not(.is-full){background:#F6E03A;color:#15211B;border:0;border-radius:28px;padding:22px 18px 20px;gap:0;grid-template-columns:minmax(0,1fr)}
+  .gen:not(.is-full) > .gen-head{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+  .gen:not(.is-full) > .gen-intro{display:block;margin-bottom:16px}
+  .gi-h{margin:0;font-family:var(--f-display);font-weight:800;font-size:clamp(24px,7vw,30px);line-height:1.08;letter-spacing:-.03em}
+  .gi-s{margin:6px 0 0;font-size:15.5px;line-height:1.45;color:#2B2A10}
+  /* Drei USPs als kleine Sticker, leicht schräg aufgeklebt */
+  .gen:not(.is-full) > .sheet-wrap{position:relative;top:auto;z-index:auto;margin:0 6px;border:0;background:#fff;border-radius:10px;transform:rotate(-2deg);box-shadow:0 14px 26px -12px rgba(21,33,27,.5);cursor:pointer}
+  .gen:not(.is-full) > .gen-mini{display:flex;list-style:none;margin:20px 0 16px;padding:0}
+  .gen-mini li{flex:1;position:relative;text-align:center;font-size:13px;font-weight:800;line-height:1.2;color:rgba(21,33,27,.6);transition:color .3s}
+  .gen-mini i{position:relative;z-index:1;display:block;margin:0 auto 5px;width:30px;height:30px;border-radius:50%;border:2px solid #15211B;background:#F6E03A;color:#15211B;font-style:normal;font-size:13px;line-height:26px;transition:background .3s,color .3s}
+  /* Verbindungslinie zum vorherigen Kreis: gestrichelt, bis der Schritt erreicht ist */
+  .gen-mini li+li::before{content:"";position:absolute;top:14px;right:50%;width:100%;height:0;border-top:2px dashed rgba(21,33,27,.45);transition:border-color .3s}
+  .gen-mini li.on{color:#15211B}
+  .gen-mini li.on i{background:#15211B;color:#F6E03A}
+  .gen-mini li.on::before{border-top-style:solid;border-top-color:#15211B}
+  .gen:not(.is-full) > .gen-open{display:flex;align-items:center;justify-content:center;gap:14px;width:100%;min-height:58px;border:0;border-radius:999px;background:#15211B;color:#F6E03A;font:inherit;font-weight:900;font-size:18px;cursor:pointer;box-shadow:0 3px 0 rgba(21,33,27,.25)}
+  .gen-open:active{transform:translateY(2px);box-shadow:none}
+  .gen-open:focus-visible{outline:3px solid #15211B;outline-offset:3px}
+  .go-ic{font-size:19px;line-height:1}
+  .gen:not(.is-full) > .gen-open-sub{display:block;margin:10px 0 0;text-align:center;font-size:13.5px;color:#3D3C18}
+  .gen.is-full > .gen-intro,.gen.is-full > .gen-mini{display:none}
+}
+
+/* Übersicht am Handy: drei ausgedruckte Schilder, mit Klebeband auf die gelbe Fläche geklebt; sie ragen links und rechts über den Rand */
+@media (max-width:1079px){
+  .gen:not(.is-full):not(.used) > .gen-pile{--pw:min(calc(100% + 60px),calc((100svh - 385px) / .84));display:block;position:relative;width:var(--pw);margin:0 0 0 calc((100% - var(--pw)) / 2);aspect-ratio:100/84;cursor:pointer}
+  .gen:not(.is-full):not(.used) > .gen-pile + .sheet-wrap{display:none}
+  .gp{position:absolute;display:block;background:#fff;border-radius:3px;box-shadow:0 1px 1px rgba(21,33,27,.12),0 12px 22px -10px rgba(21,33,27,.45)}
+  .gp img{display:block;width:100%;height:auto;border-radius:3px}
+  .gp-3{background:#FADFE3}
+  .gp-1{left:4%;top:5%;width:52%;transform:rotate(-7deg)}
+  .gp-2{right:4%;top:2%;width:52%;transform:rotate(6deg)}
+  .gp-3{left:20%;top:41%;width:60%;transform:rotate(-1.5deg);z-index:2;box-shadow:0 1px 1px rgba(21,33,27,.15),0 18px 28px -12px rgba(21,33,27,.55)}
+  /* Klebeband: halbtransparent, gezackte Enden, mit eigenem Schatten (der Schatten sitzt am Rahmen, weil clip-path ihn sonst abschneidet) */
+  .tp{position:absolute;z-index:3;top:-6%;width:24%;height:13%;filter:drop-shadow(0 1.5px 1px rgba(21,33,27,.28)) drop-shadow(0 4px 5px rgba(21,33,27,.18))}
+  .tp::before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,252,238,.94),rgba(238,232,210,.9));clip-path:polygon(4% 0,96% 0,100% 18%,96% 36%,100% 54%,96% 72%,100% 90%,96% 100%,4% 100%,0 82%,4% 64%,0 46%,4% 28%,0 10%)}
+  .tp-l{left:-5%;transform:rotate(-32deg)}
+  .tp-r{right:-5%;transform:rotate(32deg)}
+  .tp-m{left:37%;top:-8%;width:26%;transform:rotate(-3deg)}
+  .gen:not(.is-full):not(.used) > .gen-pile ~ .gen-mini{margin-top:18px}
+}

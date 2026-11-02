@@ -645,12 +645,17 @@
     var badMain = function (box, el) { var cs = getComputedStyle(box), ch = box.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom), cw = box.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight); return el.offsetHeight > ch + 1 || el.offsetWidth > cw + 1 || el.scrollWidth > el.clientWidth + 1 || over(box); };
     var sheet;
     // Vorschau einpassen: echte Blattgröße messen, Rahmen-Höhe exakt setzen (Rahmen darf nicht bei jedem Tastendruck schrumpfen)
+    var stW = 0, stH = 0;
     var scale = function () {
       if (!sheet) return;
       sheet.style.transform = "none"; wrap.style.aspectRatio = "auto";
       // Höchstens 42 % der Bildschirmhöhe am Handy (72 % am Computer): Hochformat-Blätter werden kleiner und mittig gesetzt,
       // der Rahmen bleibt volle Breite. So rutscht beim Bearbeiten nichts seitlich an der stehenden Vorschau vorbei.
-      var r = sheet.getBoundingClientRect(), cw = wrap.clientWidth, vvh = window.visualViewport ? window.visualViewport.height : window.innerHeight, maxH = gen.classList.contains("is-full") ? vvh * (vvh < 720 ? 0.27 : 0.34) : window.innerHeight * (window.innerWidth >= 1080 ? 0.72 : window.innerHeight < 720 ? 0.26 : window.innerHeight < 800 ? 0.36 : 0.42);
+      // Feste Bezugshöhe: Beim Scrollen blendet das Handy die Adressleiste ein und aus und ändert so innerHeight.
+      // Damit das Schild dabei nicht wächst und schrumpft, gilt die Höhe nur neu, wenn sich die Breite ändert (Drehen).
+      if (stW !== window.innerWidth) { stW = window.innerWidth; stH = window.innerHeight; }
+      var full = gen.classList.contains("is-full"), H = window.innerWidth >= 1080 ? window.innerHeight : stH;
+      var r = sheet.getBoundingClientRect(), cw = wrap.clientWidth, vvh = window.visualViewport ? window.visualViewport.height : window.innerHeight, maxH = full ? vvh * (vvh < 720 ? 0.27 : 0.34) : H * (window.innerWidth >= 1080 ? 0.72 : H < 720 ? 0.26 : H < 800 ? 0.36 : 0.42);
       var pad = window.matchMedia && matchMedia("(max-width: 699px)").matches ? 32 : 0; // Handy: Band über die volle Breite, das Blatt mit Luft daneben
       var s = Math.min((cw - pad) / r.width, (maxH - pad / 2) / r.height), dx = Math.max(0, (cw - r.width * s) / 2), dy = pad / 4;
       sheet.style.transform = "translate(" + dx.toFixed(1) + "px," + dy + "px) scale(" + s + ")";
@@ -745,14 +750,30 @@
     var isFull = function () { return gen.classList.contains("is-full"); };
     var setFull = function (on) {
       if (on === isFull()) return;
-      gen.classList.toggle("is-full", on); document.documentElement.classList.toggle("gen-lock", on);
+      gen.classList.toggle("is-full", on); document.documentElement.classList.toggle("gen-lock", on); if (on) gen.classList.add("used");
       if (on) { gen.setAttribute("role", "dialog"); gen.setAttribute("aria-modal", "true"); gen.style.setProperty("--vvh", (window.visualViewport ? window.visualViewport.height : window.innerHeight) + "px"); }
       else { gen.removeAttribute("role"); gen.removeAttribute("aria-modal"); gen.style.removeProperty("--vvh"); }
-      scale(); go(cur);
+      render(); scale(); go(cur); // neu zeichnen: Solange auf der Seite die drei Beispielschilder stehen, ist das echte Schild unsichtbar und die Schrift noch nicht eingepasst
       var f = on ? gen.querySelector(".gen-steps li.on button") : openB; if (f) try { f.focus({ preventScroll: true }); } catch (e) {}
     };
     var openFull = function () { if (!narrow.matches || isFull()) return; try { history.pushState({ genFull: 1 }, "", location.pathname + location.search + "#gestalten"); } catch (e) {} setFull(true); };
     var closeFull = function () { if (!isFull()) return; if (history.state && history.state.genFull) history.back(); else setFull(false); };
+    // Auf der Übersicht wechselt das Schild in der Vorschau alle paar Sekunden die Vorlage, damit man sieht, was alles geht.
+    // Sobald jemand den Designer einmal öffnet, steht dort sein eigenes Schild. Bei „Bewegung reduzieren“ bleibt es beim ersten Bild.
+    var demo = gen.querySelector(".gen-demo");
+    if (demo && !(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches)) {
+      var dImgs = demo.querySelectorAll("img"), dI = 0, dT = null;
+      var dTick = function () { if (gen.classList.contains("used") || document.hidden || !narrow.matches) return; var n = dImgs[(dI + 1) % dImgs.length]; if (n.dataset.src) { n.src = n.dataset.src; n.removeAttribute("data-src"); if (!n.complete) return; } dImgs[dI].classList.remove("on"); dI = (dI + 1) % dImgs.length; dImgs[dI].classList.add("on"); };
+      var dStart = function () { for (var i = 1; i < dImgs.length; i++) if (dImgs[i].dataset.src) { dImgs[i].src = dImgs[i].dataset.src; dImgs[i].removeAttribute("data-src"); } dT = setInterval(dTick, 2400); };
+      if (document.readyState === "complete") dStart(); else window.addEventListener("load", dStart);
+    }
+    // Der Ablauf unter dem Schild füllt sich Schritt für Schritt (1, 2, 3, ✓) und beginnt dann von vorn. So sieht man, dass es ein kurzer Weg ist.
+    var mini = gen.querySelectorAll(".gen-mini li");
+    if (mini.length && !(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches)) {
+      var mK = 0;
+      setInterval(function () { if (gen.classList.contains("used") || document.hidden || !narrow.matches) return; mK = (mK + 1) % (mini.length + 1); for (var i = 0; i < mini.length; i++) mini[i].classList.toggle("on", i <= Math.min(mK, mini.length - 1)); }, 1100);
+    }
+    var pileEl = gen.querySelector(".gen-pile"); if (pileEl) pileEl.addEventListener("click", function () { openFull(); });
     if (openB) openB.addEventListener("click", openFull);
     wrap.addEventListener("click", function () { if (!isFull()) openFull(); });
     if (xB) xB.addEventListener("click", closeFull);

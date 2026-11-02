@@ -2381,3 +2381,15 @@ body:has(.toast.on) .fab{opacity:0;pointer-events:none;transition:opacity .2s}
   .tp-m{left:37%;top:-8%;width:26%;transform:rotate(-3deg)}
   .gen:not(.is-full):not(.used) > .gen-pile ~ .gen-mini{margin-top:18px}
 }
+
+/* ===== Vorlagen-Reihen (Schilder): am Computer Raster, am Handy und Tablet seitlich wischen ===== */
+.sg-grp + .sg-grp{margin-top:26px}
+.sg-grp-h{display:flex;align-items:baseline;gap:8px;margin:0 0 10px;font-family:var(--f-display);font-weight:700;font-size:19px;letter-spacing:-.015em}
+.sg-grp-h span{font-family:var(--f-body);font-size:13px;font-weight:700;color:var(--muted)}
+@media (max-width:1079px){
+  .sg-grp .news{display:flex!important;gap:12px;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x mandatory;scroll-padding-inline:16px;margin:0 -16px;padding:2px 16px 14px;scrollbar-width:none}
+  .sg-grp .news::-webkit-scrollbar{display:none}
+  .sg-grp .news > .card{flex:0 0 min(70%,300px);scroll-snap-align:start;padding:12px}
+  .sg-grp .news > .card h3{font-size:16.5px}
+  .sg-grp .news > .card p{font-size:13.5px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+}

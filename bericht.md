@@ -1,12 +1,13 @@
 # Flohlotse: Website gebaut
 
-Stand 02.11.2026 · 331 Seiten (325 für Google) · 156 Märkte · 168 Termine in den nächsten 120 Tagen · 44 Ratgeber-Artikel · 740 Event-Auszeichnungen
+Stand 03.11.2026 · 334 Seiten (328 für Google) · 158 Märkte · 171 Termine in den nächsten 120 Tagen · 44 Ratgeber-Artikel · 755 Event-Auszeichnungen
 
-## Zu erledigen: 8 Hinweise
+## Zu erledigen: 9 Hinweise
 
 | Bereich | Hinweis |
 |---|---|
 | Termin-Wächter | Hamburger Schallplattenbörse: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 08.11.2026. Bitte prüfen: https://www.schallplatten-boersen.de/ |
+| Termin-Wächter | Hallenflohmarkt in der Halle 15: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 05.11.2026. Bitte prüfen: https://www.asb-halle15.de/ |
 | Termin-Wächter | Flohmarkt rund ums Kind in der Philemon-Kirche: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 04.12.2026. Bitte prüfen: https://www.kirche-poppenbuettel.de/ |
 | Termin-Wächter | Nachtflohmarkt in der Burg Seevetal: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 19.11.2026. Bitte prüfen: https://www.burg-seevetal.de/ |
 | Termin-Wächter | Flohmarkt famila Winsen (Luhe): Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 06.12.2026, 13.12.2026. Bitte prüfen: https://flohmaxx.de/flohmarkt/winsen-famila/2026-10-03 |

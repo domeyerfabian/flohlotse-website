@@ -1671,6 +1671,56 @@ ${(() => { const nb = nearOf(m), allLink = more(`/flohmarkt-hamburg/${r.k}/`, `A
   layout({ p: `/flohmarkt/${m.slug}/`, title: `${mTitle} | ${NAME}`, desc: mDesc, body, nav: "maerkte", ld: G([crumbLD([[NAME, "/"], [r.umland ? "Umland" : "Flohmärkte Hamburg", "/flohmaerkte/"], [r.name, `/flohmarkt-hamburg/${r.k}/`], [m.name]]), faqLD(mFaq)].concat(nxAll.map(eventLD))) });
 }
 
+/* ---------------------------------------------------------------- Was der Kalender zeigt */
+// Zitierbare Fakten aus den eigenen Terminen, jede Nacht neu berechnet (für Suchmaschinen und KI-Antworten).
+// Jeder Punkt beginnt mit der Kernaussage in Fett und ergibt allein Sinn. Punkte mit zu wenig Daten fallen weg,
+// unter fünf Terminen oder mit weniger als zwei Punkten erscheint der Block gar nicht. Nichts davon muss jemand pflegen.
+const cfLive = list => list.filter(e => !e.cancelled);
+// Anfangszeit je Markt (jeder Markt zählt einmal, mit seiner häufigsten Zeit), damit Märkte mit vielen Terminen das Bild nicht verzerren
+const cfMktStart = list => { const per = new Map(); for (const e of list) if (e.start) { const t = e.start.slice(0, 5), c = per.get(e.m) || {}; c[t] = (c[t] || 0) + 1; per.set(e.m, c); } return [...per.values()].map(c => Object.entries(c).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))[0][0]); };
+const cfTopStart = list => { const c = {}, ts = cfMktStart(list); for (const t of ts) c[t] = (c[t] || 0) + 1; const top = Object.entries(c).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))[0]; return top ? [top[0], top[1], ts.length] : null; };
+const cfHrs = t => { const [h, mi] = t.slice(0, 5).split(":").map(Number); return h + (mi || 0) / 60; };
+function calFacts(evs, o = {}) {
+  const live = cfLive(evs), n = live.length;
+  if (n < 5) return "";
+  const pts = [], WDA = ["sonntags", "montags", "dienstags", "mittwochs", "donnerstags", "freitags", "samstags"];
+  // 1. Jahreszeit (nur Hallen-Seite): Anteil überdachter Märkte im laufenden Monat
+  if (o.season) {
+    const m0 = TODAY.getUTCMonth(), inM = cfLive(EVENTS).filter(e => e.date.getUTCMonth() === m0), ms = [...new Set(inM.map(e => e.m))], a = ms.filter(m => o.season(m)).length;
+    if (ms.length >= 10 && a >= 3) { const p = Math.round(a / ms.length * 100); pts.push(p > 50 ? `<b>Im ${MON[m0]} ist mehr als jeder zweite Flohmarkt ${o.seasonWord}.</b> ${a} von ${ms.length} Märkten, also viel Auswahl, auch bei Regen.` : `<b>Im ${MON[m0]} sind ${p} % der Flohmärkte ${o.seasonWord}</b> (${a} von ${ms.length}).`); }
+  }
+  // 2. Wochentag
+  const byDay = [0, 1, 2, 3, 4, 5, 6].map(d => ({ d, c: live.filter(e => e.date.getUTCDay() === d).length })).filter(x => x.c).sort((a, b) => b.c - a.c);
+  if (byDay[0] && byDay[0].c / n >= 0.4 && (!byDay[1] || byDay[0].c > byDay[1].c)) pts.push(`<b>Die meisten Termine sind ${WDA[byDay[0].d]}</b> (${byDay[0].c} von ${n})${byDay[1] ? `, ${WDA[byDay[1].d]} sind es ${byDay[1].c}` : ""}.`);
+  // 3. Anfangszeit (je Markt gezählt), verglichen mit allen Flohmärkten
+  const timed = live.filter(e => e.start), ts = cfTopStart(timed), tAll = cfTopStart(cfLive(EVENTS).filter(e => e.start));
+  if (ts && ts[2] >= 5 && ts[1] >= 3 && ts[1] / ts[2] >= 0.3) {
+    const h = cfHrs(ts[0]), d = tAll ? h - cfHrs(tAll[0]) : 0;
+    pts.push(`<b>Meist geht es um ${hmText(ts[0])} Uhr los.</b> ${d > 0 ? "Später als bei vielen anderen Flohmärkten, Ausschlafen ist drin." : d < 0 ? "Früher als bei vielen anderen Flohmärkten. Wer früh kommt, hat die beste Auswahl." : h >= 10 ? "Ausschlafen ist drin." : "Wer früh kommt, hat die beste Auswahl."}`);
+  }
+  // 4. Eintritt frei (laut Veranstalter)
+  const free = live.filter(e => priceOf(e.m.entry) === 0).length;
+  if (free >= 3) pts.push(`<b>Bei ${free} von ${n} Terminen ist der Eintritt frei.</b>`);
+  // 5. Abends
+  if (!o.noEve) { const eve = timed.filter(e => cfHrs(e.start) >= 16).length; if (eve >= 2) pts.push(`<b>Lieber abends?</b> ${eve} Termine starten erst ab 16 Uhr${CAT_BY_S["nachtflohmarkt-hamburg"] ? `: <a href="/nachtflohmarkt-hamburg/">alle Abendtermine</a>` : ""}.`); }
+  // 6. Wo die meisten Märkte liegen
+  if (o.regions) {
+    const ms = [...new Set(live.map(e => e.m))], byR = {}; for (const m of ms) byR[m.bez] = (byR[m.bez] || 0) + 1;
+    const top = Object.entries(byR).sort((a, b) => b[1] - a[1])[0];
+    if (top && top[1] >= 3 && ms.length >= 6 && top[1] / ms.length >= 0.3 && RBY[top[0]]) pts.push(`<b>Die meisten Märkte liegen ${esc(RBY[top[0]].im)}</b> (${top[1]} von ${ms.length}).`);
+  }
+  // 7. Stärkster Tag
+  const dc = {}; for (const e of live) dc[e.k] = (dc[e.k] || 0) + 1;
+  const td = Object.entries(dc).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))[0];
+  if (td && td[1] >= 3) pts.push(`<b>Viel los am ${fmtDate(live.find(e => e.k === td[0]).date)}:</b> ${td[1]} Termine an einem Tag. Gut, um mehrere Märkte zu verbinden.`);
+  // 8. Dauer
+  const dur = timed.filter(e => e.end && !e.start.includes("/") && !e.end.includes("/")).map(e => cfHrs(e.end) - cfHrs(e.start)).filter(x => x > 0).sort((a, b) => a - b);
+  if (dur.length >= 5) { const md = Math.round(dur[Math.floor(dur.length / 2)] * 2) / 2; pts.push(`<b>Ein Termin dauert meist rund ${String(md).replace(".", ",")} Stunden.</b> Genug Zeit zum Stöbern, auch wenn du später kommst.`); }
+  if (pts.length < 2) return "";
+  // Zum Aufklappen: Wer es braucht, tippt drauf. Suchmaschinen und KI lesen den Text trotzdem mit (kein versteckter Inhalt).
+  return `<details class="cal-facts"><summary><span class="cf-i" aria-hidden="true">i</span>Zahlen &amp; Fakten ${esc(o.title || "")}</summary><ul>${pts.slice(0, 5).map(x => `<li>${x}</li>`).join("")}</ul><p class="meta">Aus dem ${esc(NAME)}-Kalender, Stand: ${STAND}.</p></details>`;
+}
+
 /* ---------------------------------------------------------------- Bezirke und Regionen */
 for (const r of REGIONS) {
   const ms = MARKETS.filter(m => m.bez === r.k), ev30 = upcoming(31, e => e.m.bez === r.k);
@@ -1690,6 +1740,7 @@ for (const r of REGIONS) {
 ${r.intro || missing.length ? `<section class="block kb-body"><p>${rich((r.intro || "") + (missing.length ? `${r.intro ? " " : ""}Außerdem ${r.im}: ${listMore(missing.map(m => `[${m.name}](/flohmarkt/${m.slug}/)`), 12)}.` : ""))}</p></section>` : ""}
 <section class="related"><div class="sec-head"><h2>Die Märkte</h2></div>${grid(ms.map(mCard))}</section>
 <section class="related"><div class="sec-head"><h2>Nächste Termine</h2><small>${longList ? "alle bekannten Termine" : "nächste 30 Tage"}</small></div>${groupList(ev, 3) || '<p class="meta">Derzeit sind keine Termine angekündigt.</p>'}</section>
+${calFacts(EVENTS.filter(e => e.m.bez === r.k), { title: r.im })}
 ${near.length ? `<section class="related"><div class="sec-head"><h2>Flohmärkte in der Nähe</h2></div>${grid(near.map(mCard))}</section>` : ""}
 ${CATS_ON.some(c => c.ms.some(m => m.bez === r.k)) ? `<section class="related"><div class="sec-head"><h2>Nach Art des Markts</h2></div>${catChips(null, m => m.bez === r.k)}</section>` : ""}
 <section class="related"><div class="sec-head"><h2>Weitere Bezirke und Zeiträume</h2></div>${regionChips(`/flohmarkt-hamburg/${r.k}/`)}</section>
@@ -1792,6 +1843,7 @@ for (const c of CATS_ON) {
 <div class="byline"><span>${ic("pin")}${c.ms.length} Märkte</span><span>${ic("cal")}${c.evs.filter(e => !e.cancelled).length} Termine</span><span>${ic("update")}Stand: ${STAND}</span></div>
 <div class="answer"><span class="kicker">Kurz gesagt</span><p>${esc(ans)}</p></div>${nearBox()}
 <section class="related"><div class="sec-head"><h2>Nächste Termine</h2><small>nächste 60 Tage</small></div>${groupList(ev60, 3) || '<p class="meta">In den nächsten 60 Tagen keine Termine. Die Märkte unten melden neue Termine meist rechtzeitig vorher.</p>'}</section>
+${calFacts(c.evs, { title: "zu diesen Märkten", regions: true, noEve: c.s === "nachtflohmarkt-hamburg", season: c.s === "hallenflohmarkt-hamburg" ? (m => m.tags.includes("Überdacht")) : null, seasonWord: "drinnen oder überdacht" })}
 <section class="related"><div class="sec-head"><h2>Alle Märkte im Überblick</h2></div>${grid(ms.map(mCard))}</section>
 <div class="kb-body">${sideImg(`seite-${c.s}`, CAT_FORM[c.s] ?? ["", "rund", "links", "rund links"][CATS_ON.indexOf(c) % 4])}<p class="intro">${esc(c.lead)}</p>${c.b().map(([h, x]) => `<h2>${esc(h)}</h2><p>${rich(x)}</p>`).join("")}</div>
 ${faqBlock(faq)}

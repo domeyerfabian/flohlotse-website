@@ -1,8 +1,8 @@
 # Flohlotse: Website gebaut
 
-Stand 03.11.2026 · 338 Seiten (332 für Google) · 161 Märkte · 174 Termine in den nächsten 120 Tagen · 45 Ratgeber-Artikel · 770 Event-Auszeichnungen
+Stand 03.11.2026 · 340 Seiten (334 für Google) · 163 Märkte · 176 Termine in den nächsten 120 Tagen · 45 Ratgeber-Artikel · 782 Event-Auszeichnungen
 
-## Zu erledigen: 10 Hinweise
+## Zu erledigen: 12 Hinweise
 
 | Bereich | Hinweis |
 |---|---|
@@ -13,6 +13,8 @@ Stand 03.11.2026 · 338 Seiten (332 für Google) · 161 Märkte · 174 Termine i
 | Termin-Wächter | Flohmarkt famila Winsen (Luhe): Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 06.12.2026, 13.12.2026. Bitte prüfen: https://flohmaxx.de/flohmarkt/winsen-famila/2026-10-03 |
 | Termin-Wächter | The Market 5.0: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 04.11.2026, 08.11.2026. Bitte prüfen: https://ms-altona.de/the-market |
 | Termin-Wächter | Indoorflohmarkt in der Haspa-Filiale „Fuhle 145“: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 05.11.2026. Achtung: 07.11.2026 steht noch im Kalender, ist auf der Website des Veranstalters aber nicht mehr zu finden. Prüfen, ob der Termin ausfällt. Bitte prüfen: https://www.haspa-veranstaltungen.de/ |
+| Termin-Wächter | Kleidertausch-Party im Frauenladen Veddel: Die Website des Veranstalters möchte nicht automatisch abgerufen werden (robots.txt). Diese Seite bitte weiter von Hand prüfen: https://www.instagram.com/frauenladen.veddel/ |
+| Termin-Wächter | Garage Sale in der Ceviche Bar: Die Website des Veranstalters möchte nicht automatisch abgerufen werden (robots.txt). Diese Seite bitte weiter von Hand prüfen: https://www.instagram.com/ceviche_bar_hamburg/ |
 | Serie endet bald | Flohmarkt Else-Rauch-Platz (Sonntag): Die Serie läuft nur bis Montag, 30. November. Bei Bedarf „Gültig bis“ verlängern, sobald der Veranstalter neue Termine bestätigt. |
 | SEO | /so-funktioniert-flohlotse/: Titel hat 63 Zeichen (Ziel höchstens 60). |
 | SEO | /so-funktioniert-flohlotse/: Beschreibung hat 163 Zeichen (Ziel 120 bis 155). |

@@ -319,6 +319,7 @@ for (const e of EVENTS) e.m.events.push(e);
 const NO_TIME = EVENTS.filter(e => !e.start && !e.cancelled && (e.date - TODAY) / 864e5 < 21);
 for (const m of MARKETS) if (m.later) m.later.sort((a, b) => a.date - b.date);
 const fmtDateY = d => `${fmtDate(d)} ${d.getUTCFullYear()}`;
+const fmtDateNum = d => `${String(d.getUTCDate()).padStart(2, "0")}.${String(d.getUTCMonth() + 1).padStart(2, "0")}.${d.getUTCFullYear()}`;
 // nächster bekannter Termin eines Markts: im Vorschau-Zeitraum oder, falls dort keiner liegt, der nächste spätere
 const nextEv = m => m.events.find(e => !e.cancelled) || (m.later ? m.later[0] : null);
 const fmtShortY = e => fmtShort(e.date) + (e.far ? e.date.getUTCFullYear() : "");
@@ -382,7 +383,13 @@ const kcHubCta = () => KC_ON ? `<a class="cta-box" href="${KC_P}">${ic("search")
 // Werkzeuge auf Marktseiten: Schilder im Kasten „Selbst verkaufen“, Kauf-Check passend zur Art des Markts (sonst allgemein)
 const signBox = () => `<a class="cta-box" href="/flohmarkt-schilder/">${ic("printer")}<span><b>Gratis: Schilder für deinen Stand</b>Preisschilder, „Alles 1 €“ und Bar &amp; PayPal mit QR-Code, direkt drucken.</span>${ic("chev")}</a>`;
 const kcForMarket = m => { if (!KC_ON) return ""; const a = Object.keys(KC_AREAS).find(x => KC_AREAS[x].cat && KC.some(i => i.a === x) && CATS.some(c => c.s === KC_AREAS[x].cat && c.ms.includes(m))); return a ? kcCta(a) : kcHubCta(); };
-const NEWS = data.Neuigkeiten.filter(r => r["Titel"] && (!r["Anzeigen bis"] || (parseDate(r["Anzeigen bis"], "Neuigkeiten") || END) >= TODAY));
+// Neuigkeiten: Zeilen mit Kennung und Beitrag werden Blogbeiträge mit eigener Seite (/neuigkeiten/…/), aber nur mit „Freigegeben: Ja“
+// und ab ihrem Datum. Zeilen ohne Kennung bleiben kurze Meldungen auf der Startseite (wie bisher, mit „Anzeigen bis“).
+const NEWS_P = "/neuigkeiten/", POST_HOME_DAYS = 14;
+const POSTS = data.Neuigkeiten.filter(r => r["Titel"] && r["Kennung"] && r["Beitrag"] && /^ja$/i.test(String(r["Freigegeben"] || "").trim()))
+  .map(r => ({ k: String(r["Kennung"]).trim().toLowerCase().replace(/[^a-z0-9-]+/g, "-"), d: parseDate(r["Datum"], "Neuigkeiten: " + r["Titel"]), kick: r["Kicker"] || "Neuigkeit", t: r["Titel"], tx: r["Text"] || "", b: String(r["Beitrag"]), link: r["Link"] || "", btn: r["Knopf"] || "" }))
+  .filter(x => x.d && x.d <= TODAY).sort((a, b) => b.d - a.d);
+const NEWS = data.Neuigkeiten.filter(r => r["Titel"] && !r["Kennung"] && (!r["Anzeigen bis"] || (parseDate(r["Anzeigen bis"], "Neuigkeiten") || END) >= TODAY));
 
 /* ---------------------------------------------------------------- Text mit Links */
 function rich(text) {
@@ -581,7 +588,7 @@ function menuHTML() {
 <div class="mn-what"><p class="mn-h">Was für ein Markt?</p><div class="mn-chips">${CATS_ON.map(c => a(`/${c.s}/`, `${ic(c.icon)}${esc(MN_SHORT[c.s] || c.chip)}`)).join("")}</div></div>
 <div class="mn-where"><p class="mn-h">Wo?</p><details class="mn-reg"><summary>Hamburg nach Bezirk</summary><div>${reg(false)}</div></details><details class="mn-reg"><summary>Umland bis 30 km</summary><div>${reg(true)}</div></details></div>
 <div class="mn-tools"><p class="mn-h">Für deinen Flohmarkt</p>${TOOLS().map(tool).join("")}${socialHTML("mn-social")}${IV ? `<a class="mn-rec" href="${ABOUT_P}#video" ${ivData()}>${ic("share")}<span>Flohlotse empfehlen</span></a>` : ""}</div>
-<div class="mn-help">${a(HOW_P, `${ic("book")}So funktioniert’s`)}${msLink("", `${ic("mail")}Termin eintragen`, "")}</div>
+<div class="mn-help">${a(HOW_P, `${ic("book")}So funktioniert’s`)}${POSTS.length ? a(NEWS_P, `${ic("update")}Neuigkeiten`) : ""}${msLink("", `${ic("mail")}Termin eintragen`, "")}</div>
 <div class="mn-more">${a(FEE_P, "Standgebühren")}${a(TIPS_P, "Tipps &amp; Vorlagen")}${a(ABOUT_P, "Über Flohlotse")}${a("/impressum/", "Impressum")}${a("/datenschutz/", "Datenschutz")}</div>
 </nav></div></details>`;
 }
@@ -661,7 +668,7 @@ ${shyHeads(body.replace(/<h1>([^<]{3,80}?): ([^<]+)<\/h1>/, '<h1>$1:<span class=
 <details class="foot-grp"><summary>Flohmarkt Hamburg</summary><nav class="foot-links" aria-label="Flohmarkt Hamburg"><a href="/heute/">Heute</a><a href="/morgen/">Morgen</a><a href="/wochenende/">Wochenende</a><a href="/samstag/">Samstag</a><a href="/sonntag/">Sonntag</a><a href="${WEEK_P}">Unter der Woche</a>${REGIONS.map(r => `<a href="/flohmarkt-hamburg/${r.k}/">${esc(r.name)}</a>`).join("")}<a href="${FEE_P}">Standgebühren im Vergleich</a><a href="/flohmarkt-hamburg-statistik/">Flohmärkte in Zahlen</a></nav></details>
 <details class="foot-grp"><summary>Nach Art und Monat</summary><nav class="foot-links" aria-label="Nach Art und Monat">${CATS_ON.map(c => `<a href="/${c.s}/">${esc(c.chip)}</a>`).join("")}${MONTHS.map(x => `<a href="/${x.s}/">${x.name} ${x.y}</a>`).join("")}</nav></details>
 <details class="foot-grp"><summary>Für jeden Flohmarkt</summary><nav class="foot-links" aria-label="Für jeden Flohmarkt"><a href="${TIPS_P}">Tipps &amp; Vorlagen</a><a href="/ratgeber/">Ratgeber</a>${KC_ON ? `<a href="${KC_P}">Kauf-Check</a>` : ""}<a href="/flohmarkt-schilder/">Schilder-Designer</a></nav></details>
-<details class="foot-grp"><summary>${esc(NAME)}</summary><nav class="foot-links" aria-label="${esc(NAME)}"><a href="${HOW_P}">So funktioniert Flohlotse</a><a href="${ABOUT_P}">Über Flohlotse</a><a href="/veranstalter/">Für Veranstalter</a>${INSTA ? instaA("Instagram") : ""}<a href="/impressum/">Impressum</a><a href="/datenschutz/">Datenschutz</a></nav></details>
+<details class="foot-grp"><summary>${esc(NAME)}</summary><nav class="foot-links" aria-label="${esc(NAME)}"><a href="${HOW_P}">So funktioniert Flohlotse</a>${POSTS.length ? `<a href="${NEWS_P}">Neuigkeiten</a>` : ""}<a href="${ABOUT_P}">Über Flohlotse</a><a href="/veranstalter/">Für Veranstalter</a>${INSTA ? instaA("Instagram") : ""}<a href="/impressum/">Impressum</a><a href="/datenschutz/">Datenschutz</a></nav></details>
 ${socialHTML("foot-social")}<p class="foot-stand">Stand der Termine: ${STAND}</p>
 </footer>
 ${msSheet(mkOfPath(p))}${fabHTML(toolK || (p === "/entdecken/" ? "dk" : p === "/termine/" ? "tm" : ""))}
@@ -1472,7 +1479,13 @@ ${ME_NAME ? `<section class="sec hs-me" aria-labelledby="meH"><div class="me">${
 <div class="sec band band-browse"><section class="sec hs-bez"><div class="sec-head"><h2>Flohmärkte nach Bezirk und Region</h2>${more("/flohmaerkte/", "Alle", "Alle Märkte")}</div>${regionChips()}</section>
 ${CATS_ON.length ? `<section class="sec hs-art"><div class="sec-head"><h2>Flohmärkte nach Art</h2></div>${catChips()}</section>` : ""}
 ${MONTHS.length ? `<section class="sec hs-mon"><div class="sec-head"><h2>Termine nach Monat</h2>${more("/termine/", "Alle")}</div>${monthChips()}</section>` : ""}</div>
-${NEWS.length ? `<section class="sec hs-news"><div class="sec-head"><h2>Neuigkeiten</h2></div>${grid(NEWS.map(n => `<a class="card" href="${esc(safeHref(n["Link"], "Neuigkeiten: " + n["Titel"]) || "/")}"><span class="kicker">${esc(n["Kicker"])}</span><h3>${esc(n["Titel"])}</h3><p>${esc(n["Text"])}</p></a>`))}</section>` : ""}
+${(() => {
+  // Startseite: höchstens zwei Meldungen. Zuerst Blogbeiträge der letzten 14 Tage, dann kurze Meldungen aus dem Sheet.
+  const fresh = POSTS.filter(x => (TODAY - x.d) / 864e5 <= POST_HOME_DAYS).map(x => `<a class="card hs-post" href="${NEWS_P}${x.k}/"><span class="kicker">${esc(x.kick)} · ${fmtDateNum(x.d)}</span><h3>${esc(x.t)}</h3><p>${esc(x.tx)}</p></a>`);
+  const short = NEWS.map(n => `<a class="card" href="${esc(safeHref(n["Link"], "Neuigkeiten: " + n["Titel"]) || "/")}"><span class="kicker">${esc(n["Kicker"])}</span><h3>${esc(n["Titel"])}</h3><p>${esc(n["Text"])}</p></a>`);
+  const cards = [...fresh, ...short].slice(0, 2);
+  return cards.length || POSTS.length ? `<section class="sec hs-news"><div class="sec-head"><h2>Neuigkeiten</h2>${POSTS.length ? more(NEWS_P, "Alle") : ""}</div>${cards.length ? grid(cards) : `<p class="meta"><a href="${NEWS_P}">Alle Neuigkeiten von Flohlotse</a></p>`}</section>` : "";
+})()}
 <div class="sec band band-seo"><section class="sec kb-body home-seo"><h2>Flohmarkt in Hamburg: das Wichtigste</h2>${homeText.map(x => `<p>${rich(x)}</p>`).join("")}</section>
 ${faqBlock(homeFaq, "Häufige Fragen zu Flohmärkten in Hamburg")}</div>
 ${WA ? `<section class="sec hs-insta"><div class="follow follow-wa"><span class="follow-at" aria-hidden="true">${ic("whatsapp")}</span><span class="follow-txt"><span class="kicker">Neu auf WhatsApp</span><b>Flohmarkt-Tipps direkt aufs Handy</b><span>Die besten Märkte fürs Wochenende, Tipps fürs Kaufen und Verkaufen und Neues von Flohlotse. Kostenlos und jederzeit abbestellbar.</span></span><span class="follow-btns"><a class="btn" href="${WA}" rel="noopener">Im ${WA_LABEL} folgen${ic("chev")}</a><small class="wa-note">Du bekommst nur Nachrichten von ${esc(NAME)}. Niemand sieht deine Nummer, austreten geht jederzeit.</small>${INSTA ? `<a class="follow-alt" href="${INSTA}" rel="noopener me">oder auf Instagram ${esc(INSTA_AT)}</a>` : ""}</span></div></section>` : INSTA ? `<section class="sec hs-insta"><a class="follow" href="${INSTA}" rel="noopener me"><span class="follow-at" aria-hidden="true">@</span><span class="follow-txt"><span class="kicker">Neu auf Instagram</span><b>Jeden Donnerstag: dein Flohmarkt-Wochenende</b><span>Alle Märkte fürs Wochenende in drei Bildern. Zum Speichern und Weiterschicken.</span></span><span class="btn">${esc(INSTA_AT)} folgen${ic("chev")}</span></a></section>` : ""}
@@ -3054,6 +3067,32 @@ ${faqBlock(faq)}
     desc: pickDesc(stats ? `Was kostet ein Flohmarktstand in Hamburg? Standgebühren von ${nFee} Märkten im Vergleich, meist ${q1} bis ${q3} € pro Meter. Mit Anmeldung und Restplätzen.` : "",
       `Was kostet ein Flohmarktstand in Hamburg? Standgebühren von ${nFee} Märkten im Vergleich, mit Link zur Anmeldung und Märkten mit Restplätzen vor Ort.`),
     body, nav: "maerkte", noindex: rows.length < 5, ld: G([crumbLD(cr), faqLD(faq)]) });
+}
+
+/* ---------------------------------------------------------------- Neuigkeiten (Blog) */
+// Fabians Beiträge zu Updates und Neuigkeiten. Text im Sheet: Absätze mit Leerzeile trennen, Zwischenüberschriften mit „## “.
+if (POSTS.length) {
+  const postBody = b => b.split(/\n(?=## )/).map(block => { let h = ""; if (block.startsWith("## ")) { const i = block.indexOf("\n"); h = (i < 0 ? block : block.slice(0, i)).slice(3).trim(); block = i < 0 ? "" : block.slice(i + 1); }
+    return (h ? `<h2>${esc(h)}</h2>` : "") + block.split(/\n\s*\n/).map(x => x.trim()).filter(Boolean).map(x => `<p>${rich(x.replace(/\n/g, " "))}</p>`).join(""); }).join("");
+  const card = x => `<a class="card blog-card" href="${NEWS_P}${x.k}/"><span class="kicker">${esc(x.kick)} · ${fmtDateNum(x.d)}</span><h3>${esc(x.t)}</h3><p>${esc(x.tx)}</p></a>`;
+  const AUTHOR = { "@type": "Person", name: "Fabian", url: SITE + ABOUT_P };
+  for (const x of POSTS) {
+    const others = POSTS.filter(y => y !== x).slice(0, 3), cr = [[NAME, "/"], ["Neuigkeiten", NEWS_P], [x.t]];
+    const lk = x.link ? safeHref(x.link, "Neuigkeiten: " + x.t) : "";
+    const body = crumbs(cr) + `<article class="kb blog"><h1>${esc(x.t)}</h1>
+<div class="byline"><span>${ic("cal")}${fmtDateNum(x.d)}</span><span>${ic("user")}Von Fabian</span><span>${ic("tag")}${esc(x.kick)}</span></div>
+${x.tx ? `<p class="lead">${esc(x.tx)}</p>` : ""}<div class="kb-body blog-body">${postBody(x.b)}<p class="blog-sig">Euer Fabian</p></div>
+${lk ? `<p class="blog-cta"><a class="btn" href="${esc(lk)}">${esc(x.btn || "Jetzt ansehen")} ›</a></p>` : ""}
+${others.length ? `<section class="related"><div class="sec-head"><h2>Weitere Neuigkeiten</h2>${more(NEWS_P, "Alle")}</div>${grid(others.map(card))}</section>` : ""}</article>`;
+    const desc = (x.tx || plain(x.b)).replace(/\s+/g, " ").slice(0, 155).replace(/\s\S*$/, "") + ((x.tx || plain(x.b)).length > 155 ? " …" : "");
+    layout({ p: `${NEWS_P}${x.k}/`, title: `${x.t} | ${NAME}`, desc, body, ld: G([crumbLD(cr), { "@type": "BlogPosting", headline: x.t, description: x.tx || undefined, datePublished: key(x.d), author: AUTHOR, publisher: { "@type": "Organization", name: NAME, url: SITE + "/" }, mainEntityOfPage: SITE + NEWS_P + x.k + "/", inLanguage: "de" }]) });
+  }
+  const cr = [[NAME, "/"], ["Neuigkeiten"]];
+  const body = crumbs(cr) + `<article class="kb blog-list"><h1>Neuigkeiten von Flohlotse</h1>
+<div class="byline"><span>${ic("user")}Von Fabian</span><span>${ic("update")}Stand: ${STAND}</span></div>
+<p class="lead">Was sich bei ${esc(NAME)} tut: neue Funktionen, Updates und Neuigkeiten von den Hamburger Flohmärkten. Hier erzähle ich, was wir gebaut haben und warum.</p>
+<section class="related">${grid(POSTS.map(card))}</section></article>`;
+  layout({ p: NEWS_P, title: `Neuigkeiten: Updates und News von ${NAME}`, desc: `Neue Funktionen, Updates und Neuigkeiten von ${NAME}, dem Flohmarkt-Kalender für Hamburg. Von Fabian, der den Kalender macht.`, body, ld: G([crumbLD(cr), { "@type": "Blog", name: `Neuigkeiten von ${NAME}`, url: SITE + NEWS_P, author: AUTHOR, inLanguage: "de" }]) });
 }
 
 const STATS_P = "/flohmarkt-hamburg-statistik/";

@@ -2404,3 +2404,11 @@ body:has(.toast.on) .fab{opacity:0;pointer-events:none;transition:opacity .2s}
 .cal-facts ul{list-style:none;margin:0;padding:0 16px;display:grid;gap:10px}
 .cal-facts li{padding-left:12px;border-left:3px solid var(--sticker);line-height:1.5;font-size:15px}
 .cal-facts .meta{margin:12px 16px 14px;font-size:13px}
+
+/* ===== Neuigkeiten (Blog) ===== */
+.blog-body p{margin:0 0 14px}
+.blog-sig{font-family:var(--f-display);font-weight:700;font-size:19px;margin-top:22px!important}
+.blog-cta{margin:20px 0 6px}
+.blog-card .kicker,.hs-post .kicker{font-variant-numeric:tabular-nums}
+.blog .lead{margin:0 0 22px}
+.blog-cta .btn{text-decoration:none}

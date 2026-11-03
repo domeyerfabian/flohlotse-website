@@ -2,7 +2,7 @@
 
 Stand 03.11.2026 · 335 Seiten (329 für Google) · 159 Märkte · 172 Termine in den nächsten 120 Tagen · 44 Ratgeber-Artikel · 760 Event-Auszeichnungen
 
-## Zu erledigen: 9 Hinweise
+## Zu erledigen: 10 Hinweise
 
 | Bereich | Hinweis |
 |---|---|
@@ -12,6 +12,7 @@ Stand 03.11.2026 · 335 Seiten (329 für Google) · 159 Märkte · 172 Termine i
 | Termin-Wächter | Nachtflohmarkt in der Burg Seevetal: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 19.11.2026. Bitte prüfen: https://www.burg-seevetal.de/ |
 | Termin-Wächter | Flohmarkt famila Winsen (Luhe): Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 06.12.2026, 13.12.2026. Bitte prüfen: https://flohmaxx.de/flohmarkt/winsen-famila/2026-10-03 |
 | Termin-Wächter | The Market 5.0: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 04.11.2026, 08.11.2026. Bitte prüfen: https://ms-altona.de/the-market |
+| Termin-Wächter | Indoorflohmarkt in der Haspa-Filiale „Fuhle 145“: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 05.11.2026. Achtung: 07.11.2026 steht noch im Kalender, ist auf der Website des Veranstalters aber nicht mehr zu finden. Prüfen, ob der Termin ausfällt. Bitte prüfen: https://www.haspa-veranstaltungen.de/ |
 | Serie endet bald | Flohmarkt Else-Rauch-Platz (Sonntag): Die Serie läuft nur bis Montag, 30. November. Bei Bedarf „Gültig bis“ verlängern, sobald der Veranstalter neue Termine bestätigt. |
 | SEO | /so-funktioniert-flohlotse/: Titel hat 63 Zeichen (Ziel höchstens 60). |
 | SEO | /so-funktioniert-flohlotse/: Beschreibung hat 163 Zeichen (Ziel 120 bis 155). |

@@ -2256,7 +2256,7 @@ html.iv-lock,html.iv-lock body{overflow:hidden;overscroll-behavior:none}
 body:has(.toast.on) .fab{opacity:0;pointer-events:none;transition:opacity .2s}
 @media (max-width:559px){.menu-btn > span.tlb{width:auto;height:auto;overflow:visible;clip-path:none}}
 :root{--top-h:73px}
-.mn-help{flex-wrap:nowrap;gap:8px}
+.mn-help{flex-wrap:wrap;gap:8px}
 .mn .mn-help a{flex:1 1 auto;justify-content:center;white-space:nowrap;padding:8px 10px;font-size:13.5px;gap:6px}
 /* Beschriftungen unter den Symbolen: genug Luft, damit die Wörter nicht aneinanderstoßen */
 @media (max-width:559px){.top > .wrap{gap:14px}.top .brand{margin-right:auto}.tlb{font-size:10px;letter-spacing:-.01em}}
@@ -2412,3 +2412,7 @@ body:has(.toast.on) .fab{opacity:0;pointer-events:none;transition:opacity .2s}
 .blog-card .kicker,.hs-post .kicker{font-variant-numeric:tabular-nums}
 .blog .lead{margin:0 0 22px}
 .blog-cta .btn{text-decoration:none}
+
+/* Menü: Spalte nie breiter als der Bildschirm (sonst lässt sich das Menü seitlich schieben) */
+.mn{grid-template-columns:minmax(0,1fr)}
+@media (min-width:860px){.mn{grid-template-columns:1.15fr 1fr 1fr}}

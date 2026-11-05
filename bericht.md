@@ -1,20 +1,18 @@
 # Flohlotse: Website gebaut
 
-Stand 04.11.2026 · 348 Seiten (342 für Google) · 166 Märkte · 178 Termine in den nächsten 120 Tagen · 45 Ratgeber-Artikel · 797 Event-Auszeichnungen
+Stand 05.11.2026 · 348 Seiten (342 für Google) · 166 Märkte · 178 Termine in den nächsten 120 Tagen · 45 Ratgeber-Artikel · 801 Event-Auszeichnungen
 
-## Zu erledigen: 12 Hinweise
+## Zu erledigen: 10 Hinweise
 
 | Bereich | Hinweis |
 |---|---|
 | Termin-Wächter | Hamburger Schallplattenbörse: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 08.11.2026. Bitte prüfen: https://www.schallplatten-boersen.de/ |
-| Termin-Wächter | Hallenflohmarkt in der Halle 15: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 05.11.2026. Bitte prüfen: https://www.asb-halle15.de/ |
 | Termin-Wächter | Flohmarkt rund ums Kind in der Philemon-Kirche: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 04.12.2026. Bitte prüfen: https://www.kirche-poppenbuettel.de/ |
 | Termin-Wächter | HNT Flohmarkt: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 14.11.2026. Bitte prüfen: https://www.hntonline.de/flohmarkt |
 | Termin-Wächter | Nachtflohmarkt in der Burg Seevetal: Achtung: 20.03.2027 steht noch im Kalender, ist auf der Website des Veranstalters aber nicht mehr zu finden. Prüfen, ob der Termin ausfällt. Bitte prüfen: https://www.burg-seevetal.de/ |
 | Termin-Wächter | Flohmarkt famila Winsen (Luhe): Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 06.12.2026, 13.12.2026. Bitte prüfen: https://flohmaxx.de/flohmarkt/winsen-famila/2026-10-03 |
 | Termin-Wächter | The Market 5.0: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 08.11.2026. Bitte prüfen: https://ms-altona.de/the-market |
 | Termin-Wächter | Indoorflohmarkt in der Haspa-Filiale „Fuhle 145“: Achtung: 07.11.2026 steht noch im Kalender, ist auf der Website des Veranstalters aber nicht mehr zu finden. Prüfen, ob der Termin ausfällt. Bitte prüfen: https://www.haspa-veranstaltungen.de/ |
-| Termin-Wächter | Kinderflohmarkt beim Adventsmarkt Horner Freiheit: Die Website des Veranstalters möchte nicht automatisch abgerufen werden (robots.txt). Diese Seite bitte weiter von Hand prüfen: https://www.hamburg-tourism.de/sehen-erleben/veranstaltungen/veranstaltungsorte/stadtteilhaus-horner-freiheit/ |
 | Serie endet bald | Flohmarkt Else-Rauch-Platz (Sonntag): Die Serie läuft nur bis Montag, 30. November. Bei Bedarf „Gültig bis“ verlängern, sobald der Veranstalter neue Termine bestätigt. |
 | SEO | /so-funktioniert-flohlotse/: Titel hat 63 Zeichen (Ziel höchstens 60). |
 | SEO | /so-funktioniert-flohlotse/: Beschreibung hat 163 Zeichen (Ziel 120 bis 155). |

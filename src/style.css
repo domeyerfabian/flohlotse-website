@@ -2416,3 +2416,10 @@ body:has(.toast.on) .fab{opacity:0;pointer-events:none;transition:opacity .2s}
 /* Menü: Spalte nie breiter als der Bildschirm (sonst lässt sich das Menü seitlich schieben) */
 .mn{grid-template-columns:minmax(0,1fr)}
 @media (min-width:860px){.mn{grid-template-columns:1.15fr 1fr 1fr}}
+
+/* Startseite: Text „Das Wichtigste“, erster Absatz offen, der Rest zum Aufklappen (steht vollständig im HTML, Google wertet ihn mit) */
+.home-more{margin-top:4px}
+.home-more summary{display:inline-flex;align-items:center;gap:8px;cursor:pointer;list-style:none;font-weight:700;font-size:15px;padding:8px 0;text-decoration:underline;text-underline-offset:3px}
+.home-more summary::-webkit-details-marker{display:none}
+.home-more summary::after{content:"";width:7px;height:7px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg) translateY(-2px);transition:transform .2s}
+.home-more[open] summary{display:none}

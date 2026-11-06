@@ -2965,7 +2965,7 @@ ${IV ? ivSlide("hl-vid-solo") : ""}
 <ol class="how-steps">${steps.map(([i, h, t, links], n) => `<li><span class="how-ic" aria-hidden="true">${ic(i)}<b>${n + 1}</b></span><div><h2>${h}</h2><p>${t}</p><div class="how-btns">${links.map(([u, l, x]) => btn(u, l, x)).join("")}</div></div></li>`).join("")}</ol>
 ${faqBlock(faq, "Gut zu wissen")}
 </article>`;
-    layout({ p: HOW_P, title: `So funktioniert ${NAME}: Flohmärkte finden, merken, hinfahren`, desc: `Kurz erklärt: So findest du mit ${NAME} Flohmärkte in Hamburg und Umgebung, merkst sie dir ohne Konto, planst die Route und gestaltest Schilder für deinen Stand.`,
+    layout({ p: HOW_P, title: `So funktioniert ${NAME}: finden, merken, hinfahren`, desc: `Kurz erklärt: So findest du mit ${NAME} Flohmärkte in Hamburg, merkst sie dir ohne Konto, planst die Route und gestaltest Schilder für deinen Stand.`,
       body, nav: "", ld: G([crumbLD(cr), { "@type": "HowTo", name: `So funktioniert ${NAME}`, step: steps.map(([, h, t], n) => ({ "@type": "HowToStep", position: n + 1, name: h, text: plain(t) })) }, faqLD(faq)]) });
   }
   const isGitHub = /github/i.test(f("Datenschutz: Hoster"));

@@ -1018,13 +1018,14 @@ const listNamesPlain = a => a.length <= 3 ? a.join(", ") : `${a.slice(0, 3).join
    Kommt ein Tag neu dazu, der noch nicht in der Tabelle steht, oder verschwindet ein Tag, der noch im Kalender steht,
    dann steht das im Bericht: „bitte prüfen“. Es wird nichts automatisch übernommen.
    Gespeichert werden nur Adresse und die gefundenen Datumsangaben mit ihrer Anzahl (keine Texte, keine Personen),
+   im Bericht steht zu neuen Tagen ein kurzer Ausschnitt der Seite (ohne E-Mail, Telefon und Links),
    und zwar in /assets/waechter.json der Website selbst. Der nächste Bau liest die Datei von dort wieder ein.
    robots.txt der Veranstalter wird beachtet. Läuft nur im echten Bau (SHEET_ID) oder mit WAECHTER=an; aus mit WAECHTER=aus.
 
    Damit der Bericht ruhig bleibt, zählt nicht mit:
    - was auf den meisten Seiten desselben Veranstalters gleich steht (Liste „nächste Märkte“ in der Randspalte),
    - auf Sammelseiten für mehrere Märkte alles, was erkennbar zu anderen Orten gehört,
-   - auf der Startseite eines Veranstaltungsorts alles ohne Marktwort in der Nähe (Konzerte, Gottesdienste),
+   - auf Seiten mit mehreren Veranstaltungen alles ohne Flohmarkt-Bezug (siehe eventFilter: Konzerte, Lesungen, Weihnachtsmärkte),
    - Randbereiche der Seite (Seitenleiste, Navigation, Fußzeile) mit anderen Veranstaltungen des Hauses,
    - vergangene Tage und das heutige Tagesdatum,
    - Tage, die schon in der Tabelle stehen oder von einer Serie abgedeckt sind. */
@@ -1043,7 +1044,7 @@ const deDate = d => `${String(d.getUTCDate()).padStart(2, "0")}.${String(d.getUT
 // alle Zeilen des Blatts Termine je Markt (auch vergangene und abgesagte), still gelesen: Fehler darin sind oben schon gemeldet
 const ROW_DAYS = {};
 { const n = warnings.length, tm = v => { const m = /^(\d{1,2})[:.](\d{2})/.exec(String(v || "").trim()); return m && +m[1] < 24 ? m[1].padStart(2, "0") + ":" + m[2] : ""; };
-  for (const r of data.Termine) { const d = r["Markt"] && r["Datum"] ? parseDate(r["Datum"], "") : null; if (d) (ROW_DAYS[r["Markt"]] = ROW_DAYS[r["Markt"]] || []).push({ d, k: key(d), start: tm(r["Beginn"]), end: tm(r["Ende"]) }); }
+  for (const r of data.Termine) { const d = r["Markt"] && r["Datum"] ? parseDate(r["Datum"], "") : null; if (d) (ROW_DAYS[r["Markt"]] = ROW_DAYS[r["Markt"]] || []).push({ d, k: key(d), start: tm(r["Beginn"]), end: tm(r["Ende"]), no: /kein\s*(markt)?termin|ignorier/i.test(r["Status"] || "") }); }
   for (const [b, t] of warnings.splice(n)) warnSeen.delete(b + "|" + t); }
 // alle Tage, die für einen Markt schon in der Tabelle stehen (Einzeltermine jeder Zukunft, Serien im Vorschau-Zeitraum)
 const knownDays = m => new Set([...m.events.map(e => e.k), ...(ROW_DAYS[m.slug] || []).map(r => r.k)]);
@@ -1104,7 +1105,9 @@ const knownDays = m => new Set([...m.events.map(e => e.k), ...(ROW_DAYS[m.slug] 
     const seit = addDays(TODAY, -400), when = t => { const d = tokDate(t); return d ? d.getTime() : 0; };
     const dates = Object.keys(all).filter(t => { const d = tokDate(t); return !d || d >= seit; }).sort((a, b) => when(a) - when(b) || (a < b ? -1 : 1)).slice(0, 600), keep = new Set(dates), n = Object.fromEntries(dates.map(t => [t, all[t]]));
     // Text zwischen dieser und der vorigen bzw. nächsten Datumsangabe (höchstens 80 bzw. 100 Zeichen)
-    occ = occ.map((o, k) => ({ t: o.t, b: txt.slice(Math.max(k ? occ[k - 1].j : 0, o.i - 80), o.i).toLowerCase(), a: txt.slice(o.j, Math.min(k + 1 < occ.length ? occ[k + 1].i : txt.length, o.j + 100)).toLowerCase() })).filter(o => keep.has(o.t));
+    // c: kurzer Originaltext rund um die Fundstelle, nur für den Bericht („20.11. Lesung im Saal“), damit man Fehlalarme ohne Klick erkennt
+    occ = occ.map((o, k) => ({ t: o.t, b: txt.slice(Math.max(k ? occ[k - 1].j : 0, o.i - 80), o.i).toLowerCase(), a: txt.slice(o.j, Math.min(k + 1 < occ.length ? occ[k + 1].i : txt.length, o.j + 100)).toLowerCase(),
+      c: (o.i - 25 > (k ? occ[k - 1].j : 0) ? txt.slice(o.i - 25, o.i).replace(/^\S*\s/, "") : txt.slice(k ? occ[k - 1].j : 0, o.i)) + txt.slice(o.i, Math.min(k + 1 < occ.length ? occ[k + 1].i : txt.length, o.j + 60)) })).filter(o => keep.has(o.t));
     return { dates, n, occ, len: txt.length };
   };
   // robots.txt: Regeln für uns oder für alle (*); gesperrt, wenn ein Disallow auf den Pfad passt
@@ -1142,8 +1145,64 @@ const knownDays = m => new Set([...m.events.map(e => e.k), ...(ROW_DAYS[m.slug] 
     return (g.segs = [B, A]); };
   /* Startseite eines Veranstaltungsorts (Kirche, Kulturhaus, Halle): Dort stehen auch Konzerte, Gottesdienste und das Tagesdatum.
      Steht bei mindestens einer Datumsangabe ein Marktwort („Flohmarkt“, „Trödel“, „Börse“ …), zählen nur Angaben mit solchem Wort. */
-  const MARKTW = /floh|tr(?:ö|oe)del|markt|b(?:ö|oe)rse|basar|second/;
-  const marketDates = g => { const [B, A] = segsOf(g), s = new Set(); g.occ.forEach((o, k) => { if (MARKTW.test(B[k]) || MARKTW.test(A[k])) s.add(o.t); }); return s; };
+  /* Seiten mit mehreren Veranstaltungen (Freizeitzentrum, Bank, Kirche, Burg): Welche Tage gehören zum Flohmarkt?
+     Ein Tag zählt als Markttag, wenn direkt davor oder dahinter ein Flohmarkt-Wort steht oder ein eigenes Wort aus dem Namen
+     des Markts („KauFRAUsch“). „Markt“ und „Börse“ allein reichen nicht: Weihnachtsmarkt, Wochenmarkt und Plattenbörse sind etwas anderes.
+     Ob der Veranstalter den Titel vor oder hinter das Datum schreibt, zeigt sich an den Tagen, die wir schon kennen:
+     Der Filter gilt nur, wenn alle bekannten Tage auf der Seite ihn bestehen. Sonst wäre er für diese Seite zu streng,
+     und der Wächter liest sie wie bisher (dann fallen nur Tage weg, bei denen erkennbar etwas anderes steht, etwa „Konzert“). */
+  const FLOHW = /floh|tr(?:ö|oe)del|second|basar|bazar|kleiderb|kleidermarkt|kleidertausch|klamotte|kinderb(?:ö|oe)rse|kinderkram|kinder(?:sachen|kleidung)/;
+  const ANDERSW = /weihnachtsmarkt|adventsmarkt|wochenmarkt|bauernmarkt|kunsthandwerk|handwerkermarkt|konzert|lesung|gottesdienst|andacht|workshop|vortrag|theater|kino|\bparty|disco|yoga|sprechstunde|ausstellung|vernissage|führung|versammlung|sitzung|turnier|\bkurs|tanz|chor\b|kabarett|comedy|plattenb(?:ö|oe)rse|vinyl|schallplatt/;
+  const ownW = m => { const not = new Set(`${m.area} ${m.place} ${m.org}`.toLowerCase().split(/[^a-zäöüß0-9]+/));
+    return `${m.name} ${m.short}`.toLowerCase().split(/[^a-zäöüß0-9]+/).filter(w => w.length >= 4 && !STOPW.has(w) && !not.has(w) && !/^\d+$/.test(w)); };
+  const eventFilter = (g, ms, u, sticky, root) => {
+    let hostU = new URL(u).host.toLowerCase(); try { hostU = domainToUnicode(hostU) || hostU; } catch { /* Adresse bleibt */ }
+    const own = [...new Set(ms.flatMap(ownW))].filter(w => !hostU.includes(w) && !hostU.includes(translit(w)));
+    // Entscheidend ist das Wort, das dem Datum am nächsten steht: „13.12. Adventskonzert … Nachtflohmarkt am 20.03.“ ist ein Konzert.
+    // Weihnachts- und Osterbasare sind meist Neuware und Basteleien, kein Flohmarkt. Eigene Wörter (z. B. „Vinyl“ bei einer Plattenbörse) gelten nie als „etwas anderes“.
+    const blank = (s, re) => s.replace(re, x => " ".repeat(x.length));
+    const prep = s => blank(s, /(?:weihnachts|advents|oster)(?:basar|bazar)/g);
+    const hits = s => { s = prep(s); const out = [];
+      for (const m of s.matchAll(new RegExp(FLOHW.source, "g"))) out.push([m.index, 1]);
+      for (const w of own) for (let i = s.indexOf(w); i >= 0; i = s.indexOf(w, i + 1)) out.push([i, 1]);
+      const sn = own.reduce((t, w) => t.split(w).join(" ".repeat(w.length)), s);
+      for (const m of sn.matchAll(new RegExp(ANDERSW.source, "g"))) out.push([m.index, -1]);
+      return out; };
+    // nächstes Wort hinter dem Datum (A) bzw. davor (B): +1 Flohmarkt, -1 etwas anderes, 0 nichts
+    const near = (b, a, side) => { let best = null;
+      if (side !== 2) for (const [i, v] of hits(a)) if (!best || i < best[0]) best = [i, v];
+      if (side !== 1) for (const [i, v] of hits(b)) { const d = b.length - i; if (!best || d < best[0]) best = [d, v]; }
+      return best ? best[1] : 0; };
+    const [B, A] = segsOf(g);
+    const known = new Set(ms.flatMap(m => [...m.events.map(e => e.k), ...(ROW_DAYS[m.slug] || []).filter(r => !r.no).map(r => r.k)])), isKnown = t => { const d = tokDate(t); return !!d && known.has(key(d)); };
+    const kt = [...new Set(g.occ.map(o => o.t).filter(isKnown))];
+    // erst der Text direkt an der Fundstelle; nur wenn dort nichts steht, der geerbte Text einer Aufzählung („04.10., 01.11. und 03.01. Flohmarkt“)
+    const V = side => g.occ.map((o, k) => near(o.b, o.a, side) || near(B[k], A[k], side));
+    const passSet = side => { const v = V(side), s = new Set(); g.occ.forEach((o, k) => { if (v[k] > 0) s.add(o.t); }); return s; };
+    const ok = s => kt.every(t => s.has(t));
+    // 1. streng: nur Tage mit Flohmarkt-Bezug. 1 = Titel steht hinter dem Datum, 2 = davor, 3 = beides
+    const P = { 1: passSet(1), 2: passSet(2), 3: passSet(3) };
+    let side = 0;
+    if (kt.length) side = ok(P[1]) && ok(P[2]) ? 3 : ok(P[1]) ? 1 : ok(P[2]) ? 2 : ok(P[3]) ? 3 : 0;
+    // Ohne bekannte Tage auf der Seite: nur auf der Startseite eines Hauses streng lesen, oder wenn es dort in der letzten Nacht schon geklappt hat
+    else if ((root || sticky) && P[sticky || 3].size) side = sticky || 3;
+    if (side && P[side].size) {
+      // Bei nur einer Seite (1 oder 2) bleibt ein Tag trotzdem, wenn das nächste Wort auf der anderen Seite ein Flohmarkt-Wort ist:
+      // So geht auf Seiten mit gemischter Schreibweise kein echter Termin verloren.
+      const rescue = new Set(); if (side !== 3) { const vo = V(3 - side), v3 = V(3); g.occ.forEach((o, k) => { if (vo[k] > 0 && v3[k] > 0) rescue.add(o.t); }); }
+      return { side, keep: t => P[side].has(t) || rescue.has(t) };
+    }
+    // 2. mild: nur Tage weglassen, bei denen am nächsten etwas anderes steht („Konzert“, „Lesung“)
+    const drop = new Set(); { const v = V(3), hit = {}; g.occ.forEach((o, k) => { const h = hit[o.t] = hit[o.t] || { n: 0, p: 0 }; if (v[k] < 0) h.n++; else h.p++; });
+      for (const [t, h] of Object.entries(hit)) if (h.n && !h.p) drop.add(t); }
+    if (kt.some(t => drop.has(t))) return null; // ein bekannter Tag fiele weg: auf dieser Seite gar nicht filtern
+    return { side: 0, keep: t => !drop.has(t) };
+  };
+  // Originaltext zur Fundstelle für den Bericht: ohne E-Mail, Telefon und Links, höchstens rund 90 Zeichen
+  const snip = (g, t) => { const occ = g.occ.filter(o => o.t === t); if (!occ.length) return "";
+    let s = occ[0].c.replace(/\S+@\S+/g, " ").replace(/https?:\/\/\S+|www\.\S+/gi, " ").replace(/(?:\+49|\b0)\d[\d\s/()-]{5,}\d/g, m => m.replace(/\D/g, "").length >= 7 ? " " : m).replace(/[|`*_<>]/g, " ").replace(/\s+/g, " ").trim();
+    if (s.length > 95) s = s.slice(0, 95).replace(/\s+\S*$/, "") + " …";
+    return s; };
   const attribute = (g, ms, u, sticky) => {
     let hostU = new URL(u).host.toLowerCase(); try { hostU = domainToUnicode(hostU) || hostU; } catch { /* Adresse bleibt, wie sie ist */ }
     const res = ms.map(m => { const oth = new Set(ms.filter(o => o !== m).flatMap(wordsOf)); return wordsOf(m).filter(w => !oth.has(w) && !hostU.includes(w) && !hostU.includes(translit(w))).map(w => new RegExp("(^|[^a-zäöüß0-9])" + w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))); });
@@ -1209,8 +1268,8 @@ const knownDays = m => new Set([...m.events.map(e => e.k), ...(ROW_DAYS[m.slug] 
       if (g.fehler) { const f = ((prev && prev.fehler) || 0) + 1; WATCH.seiten[u] = { ...(prev || {}), fehler: f }; if (f === 3) warn("Termin-Wächter", `${names}: Die Website des Veranstalters war drei Nächte in Folge nicht erreichbar. Adresse in der Spalte „Veranstalter-Website“ prüfen: ${u}`); continue; }
       // eigene Datumsangaben dieser Seite: ohne seitenweite Listen, auf Sammelseiten nur die unserer Märkte
       const bs = base[hostOf(u)] || {}, attR = ms.length > 1 ? attribute(g, ms, u, prev && prev.s) : null, att = attR && attR.by;
-      const loc = new URL(u), md = !att && /^\/?$/.test(loc.pathname) && !loc.search ? marketDates(g) : null, mdOn = !!md && md.size > 0;
-      const own = g.dates.filter(t => (!(t in bs) || g.n[t] > bs[t]) && (!att || att[t]) && (!mdOn || md.has(t))), ownSet = new Set(own);
+      const loc = new URL(u), ef = !att ? eventFilter(g, ms, u, prev && prev.f, /^\/?$/.test(loc.pathname) && !loc.search) : null;
+      const own = g.dates.filter(t => (!(t in bs) || g.n[t] > bs[t]) && (!att || att[t]) && (!ef || ef.keep(t))), ownSet = new Set(own);
       // verglichen wird der Tag, nicht die Schreibweise: Aus „15.11.2026“ darf „15. November 2026“ werden, ohne dass es eine Meldung gibt
       const dayOf = t => { const d = tokDate(t); return d ? key(d) : t; }, ownDays = new Set(own.map(dayOf));
       // Stand der letzten Nacht; bis Oktober 2026 war das eine einfache Liste ohne Anzahl (höchstens 150 Einträge)
@@ -1229,7 +1288,7 @@ const knownDays = m => new Set([...m.events.map(e => e.k), ...(ROW_DAYS[m.slug] 
         for (const t of prevOwn) if (!expired(t) && !ownDays.has(dayOf(t)) && (!(t in g.n) || (!legacy && !ownSet.has(t) && g.n[t] < prevN[t]))) weg[t] = today;
         for (const [t, s] of Object.entries(pWeg)) if (!(t in weg) && young(s) && !expired(t) && !ownDays.has(dayOf(t))) weg[t] = s;
       }
-      WATCH.seiten[u] = { d: g.n, l: g.len, ...(own.length !== g.dates.length ? { o: own } : {}), ...(attR ? { s: attR.mode } : {}), ...(Object.keys(neu).length ? { neu } : {}), ...(Object.keys(weg).length ? { weg } : {}) };
+      WATCH.seiten[u] = { d: g.n, l: g.len, ...(own.length !== g.dates.length ? { o: own } : {}), ...(attR ? { s: attR.mode } : {}), ...(ef && ef.side ? { f: ef.side } : {}), ...(Object.keys(neu).length ? { neu } : {}), ...(Object.keys(weg).length ? { weg } : {}) };
       if (!Object.keys(neu).length && !Object.keys(weg).length) continue;
       // Was davon ist zu tun? Neu: nur Tage, die für den Markt noch fehlen. Verschwunden: nur Tage, die noch im Kalender stehen.
       const kd = ms.map(knownDays), cov = (mi, d) => kd[mi].has(key(d)) || (d > END && (ms[mi].rules || []).some(r => ruleHits(r, d)));
@@ -1240,7 +1299,7 @@ const knownDays = m => new Set([...m.events.map(e => e.k), ...(ROW_DAYS[m.slug] 
       const wegL = Object.keys(weg).filter(t => { const d = tokDate(t); return d && d > TODAY && live(d); });
       // fertige Zeilen für das Blatt Termine: neue, künftige Tage am üblichen Wochentag des Markts (oder an einem Feiertag)
       // (üblicher Wochentag: aus den bekannten Terminen ohne Feiertage und aus den Serien; ohne solche Angaben gilt jeder Wochentag)
-      const dows = ms.map(m => new Set([...[...m.events, ...(m.later || []), ...(ROW_DAYS[m.slug] || [])].filter(e => !HOLI[e.k]).map(e => (e.date || e.d).getUTCDay()), ...(m.rules || []).map(r => r.wd)]));
+      const dows = ms.map(m => new Set([...[...m.events, ...(m.later || []), ...(ROW_DAYS[m.slug] || []).filter(r => !r.no)].filter(e => !HOLI[e.k]).map(e => (e.date || e.d).getUTCDay()), ...(m.rules || []).map(r => r.wd)]));
       for (const t of neuL) { const d = tokDate(t); if (!d || d <= TODAY || d > addDays(TODAY, 400)) continue; const k = key(d);
         const cand = openFor(t).filter(mi => !dows[mi].size || dows[mi].has(d.getUTCDay()) || HOLI[k]); if (!cand.length) continue;
         const who = cand.length === 1 ? ms[cand[0]].slug : "BITTE WÄHLEN: " + cand.map(mi => ms[mi].slug).join(" oder ");
@@ -1249,9 +1308,12 @@ const knownDays = m => new Set([...m.events.map(e => e.k), ...(ROW_DAYS[m.slug] 
         WATCH_ROWS.push({ k, row: [who, deDate(d), mostOf([...evs.map(x => x.start), ...rows.map(r => r.start)]), mostOf([...evs.map(x => x.end), ...rows.map(r => r.end)]), "Findet statt", ""], src: u }); }
       if (!neuL.length && !wegL.length) continue;
       const at = t => { const d = tokDate(t); return d ? d.getTime() : 0; }, fmtL = l => { const a = [...new Set([...l].sort((x, y) => at(x) - at(y)).map(show))]; return a.slice(0, 12).join(", ") + (a.length > 12 ? " …" : ""); };
+      // neue Tage mit Fundstelle: „20.11.2026 („20.11. Lesung im Saal …“)“, damit Fehlalarme ohne Klick auffallen (höchstens 6 Tage mit Text)
+      const fmtN = l => { const seen = new Set(), a = [...l].sort((x, y) => at(x) - at(y)).filter(t => { const k = show(t); if (seen.has(k)) return false; seen.add(k); return true; });
+        return a.slice(0, 12).map((t, i) => { const c = i < 6 ? snip(g, t) : ""; return show(t) + (c ? ` („${c}“)` : ""); }).join(", ") + (a.length > 12 ? " …" : ""); };
       // auf Sammelseiten nur die Märkte nennen, um die es geht
       const rel = att ? [...new Set([...neuL.flatMap(t => openFor(t) || []), ...wegL.flatMap(t => { const k = key(tokDate(t)); return ms.map((m, mi) => [...m.events, ...(m.later || [])].some(x => x.k === k && !x.cancelled) ? mi : -1).filter(mi => mi >= 0); })])].sort((x, y) => x - y) : [];
-      warn("Termin-Wächter", `${rel.length ? listNamesPlain(rel.map(mi => ms[mi].name)) : names}: ${neuL.length ? `Neu auf der Website des Veranstalters und noch nicht in der Tabelle: ${fmtL(neuL)}. ` : ""}${wegL.length ? `Achtung: ${fmtL(wegL)} ${new Set(wegL.map(show)).size === 1 ? "steht" : "stehen"} noch im Kalender, ${new Set(wegL.map(show)).size === 1 ? "ist" : "sind"} auf der Website des Veranstalters aber nicht mehr zu finden. Prüfen, ob der Termin ausfällt. ` : ""}Bitte prüfen: ${u}`);
+      warn("Termin-Wächter", `${rel.length ? listNamesPlain(rel.map(mi => ms[mi].name)) : names}: ${neuL.length ? `Neu auf der Website des Veranstalters und noch nicht in der Tabelle: ${fmtN(neuL)}. Ist ein Tag kein Markttag, im Blatt „Termine“ mit Status „Kein Termin“ eintragen. ` : ""}${wegL.length ? `Achtung: ${fmtL(wegL)} ${new Set(wegL.map(show)).size === 1 ? "steht" : "stehen"} noch im Kalender, ${new Set(wegL.map(show)).size === 1 ? "ist" : "sind"} auf der Website des Veranstalters aber nicht mehr zu finden. Prüfen, ob der Termin ausfällt. ` : ""}Bitte prüfen: ${u}`);
     } catch (e) { kaputt++; WATCH.seiten[u] = got[u] && got[u].n ? { d: got[u].n, l: got[u].len } : {}; } } // diese eine Seite neu merken, die anderen laufen weiter
     if (kaputt) warn("Termin-Wächter", `Bei ${kaputt === 1 ? "einer Veranstalterseite" : kaputt + " Veranstalterseiten"} konnte der Termin-Wächter den Stand nicht vergleichen und hat ihn neu gemerkt. Das ist einmalig in Ordnung.`, true);
     WATCH.stand = today;

@@ -1,29 +1,13 @@
 # Flohlotse: Website gebaut
 
-Stand 06.11.2026 · 348 Seiten (342 für Google) · 166 Märkte · 182 Termine in den nächsten 120 Tagen · 45 Ratgeber-Artikel · 821 Event-Auszeichnungen
+Stand 06.11.2026 · 349 Seiten (343 für Google) · 167 Märkte · 183 Termine in den nächsten 120 Tagen · 45 Ratgeber-Artikel · 823 Event-Auszeichnungen
 
-## Zu erledigen: 6 Hinweise
+## Zu erledigen: 2 Hinweise
 
 | Bereich | Hinweis |
 |---|---|
 | Termin-Wächter | Nachtflohmarkt in der Burg Seevetal: Achtung: 20.03.2027 steht noch im Kalender, ist auf der Website des Veranstalters aber nicht mehr zu finden. Prüfen, ob der Termin ausfällt. Bitte prüfen: https://www.burg-seevetal.de/ |
-| Termin-Wächter | KauFRAUsch im Freizeitzentrum Schnelsen: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 20.11.2026, 28.11.2026, 29.11.2026. Bitte prüfen: https://www.fz-schnelsen.de/ |
-| Termin-Wächter | Indoorflohmarkt in der Haspa-Filiale „Fuhle 145“: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 09.11.2026, 16.11.2026, 30.11.2026. Bitte prüfen: https://www.haspa-veranstaltungen.de/ |
 | Serie endet bald | Flohmarkt Else-Rauch-Platz (Sonntag): Die Serie läuft nur bis Montag, 30. November. Bei Bedarf „Gültig bis“ verlängern, sobald der Veranstalter neue Termine bestätigt. |
-| SEO | /so-funktioniert-flohlotse/: Titel hat 63 Zeichen (Ziel höchstens 60). |
-| SEO | /so-funktioniert-flohlotse/: Beschreibung hat 163 Zeichen (Ziel 120 bis 155). |
-
-## Termin-Wächter: 2 Vorschläge zum Einfügen
-
-Diese Tage stehen neu auf Veranstalterseiten und fehlen in der Tabelle. **Erst auf der Seite des Veranstalters prüfen**, ob es wirklich ein Markttermin ist und ob die Uhrzeit stimmt (eingesetzt ist die übliche Uhrzeit des Markts; ist sie leer, kennt die Tabelle noch keine). Dann die Zeilen markieren, kopieren und im Blatt „Termine“ in die erste freie Zeile einfügen. Die Spalten sind: Markt, Datum, Beginn, Ende, Status, Hinweis. Ein Vorschlag bleibt sieben Tage stehen und verschwindet, sobald der Tag in der Tabelle steht.
-
-```
-kaufrausch-schnelsen	20.11.2026	18:00	20:30	Findet statt	
-kaufrausch-schnelsen	28.11.2026	18:00	20:30	Findet statt	
-```
-
-Quellen:
-- https://www.fz-schnelsen.de/
 
 ## Zur Kenntnis
 

@@ -569,6 +569,12 @@ const SCOPE_LEAD = "In den Kalender kommen Märkte, auf denen vor allem Gebrauch
 const scopeHTML = () => `<p>${SCOPE_LEAD} Dazu gehören:</p><ul>${SCOPE_IN.map(x => `<li>${x}</li>`).join("")}</ul><p>Nicht in den Kalender kommen:</p><ul>${SCOPE_OUT.map(x => `<li>${x}</li>`).join("")}</ul><p>Gibt es auf einem Flohmarkt auch einzelne Stände mit Neuware oder Selbstgemachtem, ist das kein Problem. Entscheidend ist, dass Gebrauchtes im Mittelpunkt steht, egal ob es so verkauft wird, wie es ist, oder ob daraus etwas Neues entstanden ist.</p>`;
 // Wer hinter den Artikeln steht: Google empfiehlt bei Artikeln einen Link auf eine Seite, die den Autor beschreibt (hier: Über Flohlotse).
 const ORG_AUTHOR = { "@type": "Organization", name: NAME, url: SITE + ABOUT_P }, ORG_PUB = { "@type": "Organization", name: NAME, url: SITE + "/" };
+// Die Person hinter der Seite (Vorname aus „Über mich: Vorname“, steht schon sichtbar auf Startseite und „Über“-Seite).
+// Sie ist Gründer der Organisation und Absender der Neuigkeiten (jeder Beitrag nur mit ihrem OK, unterschrieben mit ihrem Namen).
+// Ratgeber und Kauf-Check sind mit KI-Unterstützung entstanden und nicht von ihr geschrieben: Dort bleibt die Organisation Autor.
+const ORG_REF = { "@type": "Organization", "@id": SITE + "/#org", name: NAME, url: SITE + "/" };
+const ME_LD = ME_NAME ? { "@type": "Person", "@id": SITE + ABOUT_P + "#autor", name: ME_NAME, url: SITE + ABOUT_P, worksFor: ORG_REF } : null;
+const NEWS_AUTHOR_LD = ME_LD || ORG_AUTHOR;
 // Zahl und Einheit bleiben in einer Zeile („4 m“, „12 €“, „7 Uhr“)
 const nbU = t => esc(t).replace(/(\d) (?=€|%|(?:m|Uhr|km)\b)/g, "$1&nbsp;");
 function menuHTML() {
@@ -738,7 +744,10 @@ const kbCard = s => { const r = KBY[s]; if (!r) { warn("Ratgeber", `Verweis auf 
 function short(t, n) { t = String(t || ""); if (t.length <= n) return t; const cut = t.slice(0, n); return (cut.lastIndexOf(" ") > n * 0.6 ? cut.slice(0, cut.lastIndexOf(" ")) : cut).replace(/[\s,.;:–-]+$/, "") + " …"; }
 const mCard = m => { const n = nextEv(m); return `<a class="card" href="/flohmarkt/${m.slug}/"><span class="kicker">${esc(m.area)}${neuPill(m)}</span><h3>${esc(m.name)}</h3><p class="ln">${ic("repeat")}<span>${esc(m.rhythm)}</span></p>${n ? `<p class="ln" data-day="${n.k}">${ic("cal")}<span>Nächster Termin ${fmtShortY(n)}</span></p>` : ""}</a>`; };
 const grid = cards => { cards = cards.filter(Boolean); const n = cards.length; return `<div class="news ${n % 3 === 0 ? "cols3" : n % 2 === 0 ? "cols2" : "fit"}">${cards.join("")}</div>`; };
-const regionChips = skip => `<div class="chips">${[["/heute/", "Heute"], ["/morgen/", "Morgen"], ["/wochenende/", "Wochenende"], ["/samstag/", "Samstag"], ["/sonntag/", "Sonntag"], [WEEK_P, "Unter der Woche"]].filter(x => x[0] !== skip).map(([h, l]) => `<a class="chip" href="${h}">${ic(h === "/heute/" ? "sun" : "cal")}${l}</a>`).join("")}${REGIONS.filter(r => `/flohmarkt-hamburg/${r.k}/` !== skip).map(r => `<a class="chip" href="/flohmarkt-hamburg/${r.k}/">${esc(r.name)}</a>`).join("")}</div>`;
+// Tage als Knöpfe (Heute, Morgen, Wochenende …). Auf der Startseite stehen sie bei den Monaten, sonst vor den Bezirken.
+const DAY_CHIPS = () => [["/heute/", "Heute"], ["/morgen/", "Morgen"], ["/wochenende/", "Wochenende"], ["/samstag/", "Samstag"], ["/sonntag/", "Sonntag"], [WEEK_P, "Unter der Woche"]];
+const dayChipsI = skip => DAY_CHIPS().filter(x => x[0] !== skip).map(([h, l]) => `<a class="chip" href="${h}">${ic(h === "/heute/" ? "sun" : "cal")}${l}</a>`).join("");
+const regionChips = (skip, noDays) => `<div class="chips">${noDays ? "" : dayChipsI(skip)}${REGIONS.filter(r => `/flohmarkt-hamburg/${r.k}/` !== skip).map(r => `<a class="chip" href="/flohmarkt-hamburg/${r.k}/">${esc(r.name)}</a>`).join("")}</div>`;
 const KBMAP = { "Überdacht": ["flohmarkt-bei-regen", "beste-uhrzeit-flohmarkt", "handeln-auf-dem-flohmarkt"], "Umland": ["was-mitnehmen-flohmarkt", "beste-uhrzeit-flohmarkt", "handeln-auf-dem-flohmarkt"], "Kinder & Spielzeug": ["flohmarkt-mit-kindern", "kinderflohmarkt-verkaufen", "handeln-auf-dem-flohmarkt"], "Sammler & Vinyl": ["antiquitaeten-erkennen-flohmarkt", "faelschungen-erkennen-flohmarkt", "handeln-auf-dem-flohmarkt"], "Nachbarschaft": ["flohmarkt-knigge", "flohmarkt-mit-kindern", "handeln-auf-dem-flohmarkt"], "Abends": ["nachtflohmarkt", "bezahlen-auf-dem-flohmarkt", "handeln-auf-dem-flohmarkt"] };
 const kbFor = m => (m.kb.length ? m.kb : KBMAP[m.tags.find(t => KBMAP[t])] || ["beste-uhrzeit-flohmarkt", "handeln-auf-dem-flohmarkt", "was-mitnehmen-flohmarkt"]).filter(s => KBY[s]);
 function whenOf(m) {
@@ -1538,9 +1547,9 @@ ${DK_EVS.length ? `<section class="sec home-deck" id="dkSec"><div class="sec-hea
 ${homeList() || '<div class="empty">Gerade stehen keine Termine im Kalender.</div>'}
 ${all14 > HOME_N ? `<a class="more" href="/termine/">Alle ${all14} Termine der nächsten 14 Tage</a>` : ""}</section>
 ${ME_NAME ? `<section class="sec hs-me" aria-labelledby="meH"><div class="me">${mePic()}<div class="me-txt"><h2 id="meH">Hallo, ich bin ${esc(ME_NAME)}.</h2><p>Abends Kisten packen, morgens im Dunkeln los, in der Kälte beim Aufbau helfen: So habe ich als Kind mit meinen Eltern den Flohmarkt lieben gelernt, und das Feilschen gleich mit. Heute ziehe ich mit meiner eigenen Familie los. ${esc(NAME)} ist meine Hilfe für alle, die kaufen, verkaufen oder einfach stöbern wollen.</p>${more(ABOUT_P + "#warum", "Warum es Flohlotse gibt")}</div></div></section>` : ""}
-<div class="sec band band-browse"><section class="sec hs-bez"><div class="sec-head"><h2>Flohmärkte nach Bezirk und Region</h2>${more("/flohmaerkte/", "Alle", "Alle Märkte")}</div>${regionChips()}</section>
+<div class="sec band band-browse"><section class="sec hs-bez"><div class="sec-head"><h2>Flohmärkte nach Bezirk und Region</h2>${more("/flohmaerkte/", "Alle", "Alle Märkte")}</div>${regionChips("", true)}</section>
 ${CATS_ON.length ? `<section class="sec hs-art"><div class="sec-head"><h2>Flohmärkte nach Art</h2></div>${catChips()}</section>` : ""}
-${MONTHS.length ? `<section class="sec hs-mon"><div class="sec-head"><h2>Termine nach Monat</h2>${more("/termine/", "Alle")}</div>${monthChips()}</section>` : ""}</div>
+<section class="sec hs-mon"><div class="sec-head"><h2>Termine nach Tag und Monat</h2>${more("/termine/", "Alle")}</div><div class="chips">${dayChipsI()}${MONTHS.map(x => `<a class="chip" href="/${x.s}/">${ic("cal")}${x.name} ${x.y}</a>`).join("")}</div></section></div>
 ${(() => {
   // Startseite: höchstens zwei Meldungen. Zuerst Blogbeiträge der letzten 14 Tage, dann kurze Meldungen aus dem Sheet.
   const fresh = POSTS.filter(x => (TODAY - x.d) / 864e5 <= POST_HOME_DAYS).map(x => `<a class="card hs-post" href="${NEWS_P}${x.k}/"><span class="kicker">${esc(x.kick)} · ${fmtDateNum(x.d)}</span><h3>${esc(x.t)}</h3><p>${esc(x.tx)}</p></a>`);
@@ -1548,13 +1557,13 @@ ${(() => {
   const cards = [...fresh, ...short].slice(0, 2);
   return cards.length || POSTS.length ? `<section class="sec hs-news"><div class="sec-head"><h2>Neuigkeiten</h2>${POSTS.length ? more(NEWS_P, "Alle") : ""}</div>${cards.length ? grid(cards) : `<p class="meta"><a href="${NEWS_P}">Alle Neuigkeiten von Flohlotse</a></p>`}</section>` : "";
 })()}
-<div class="sec band band-seo"><section class="sec kb-body home-seo"><h2>Flohmarkt in Hamburg: das Wichtigste</h2>${homeText.map(x => `<p>${rich(x)}</p>`).join("")}</section>
+<div class="sec band band-seo"><section class="sec kb-body home-seo"><h2>Flohmarkt in Hamburg: das Wichtigste</h2><p class="meta">Aktualisiert am <time datetime="${key(TODAY)}">${STAND}</time></p><p>${rich(homeText[0])}</p>${homeText.length > 1 ? `<details class="home-more"><summary>Weiterlesen</summary>${homeText.slice(1).map(x => `<p>${rich(x)}</p>`).join("")}</details>` : ""}</section>
 ${faqBlock(homeFaq, "Häufige Fragen zu Flohmärkten in Hamburg")}</div>
 ${WA ? `<section class="sec hs-insta"><div class="follow follow-wa"><span class="follow-at" aria-hidden="true">${ic("whatsapp")}</span><span class="follow-txt"><span class="kicker">Neu auf WhatsApp</span><b>Flohmarkt-Tipps direkt aufs Handy</b><span>Die besten Märkte fürs Wochenende, Tipps fürs Kaufen und Verkaufen und Neues von Flohlotse. Kostenlos und jederzeit abbestellbar.</span></span><span class="follow-btns"><a class="btn" href="${WA}" rel="noopener">Im ${WA_LABEL} folgen${ic("chev")}</a><small class="wa-note">Du bekommst nur Nachrichten von ${esc(NAME)}. Niemand sieht deine Nummer, austreten geht jederzeit.</small>${INSTA ? `<a class="follow-alt" href="${INSTA}" rel="noopener me">oder auf Instagram ${esc(INSTA_AT)}</a>` : ""}</span></div></section>` : INSTA ? `<section class="sec hs-insta"><a class="follow" href="${INSTA}" rel="noopener me"><span class="follow-at" aria-hidden="true">@</span><span class="follow-txt"><span class="kicker">Neu auf Instagram</span><b>Jeden Donnerstag: dein Flohmarkt-Wochenende</b><span>Alle Märkte fürs Wochenende in drei Bildern. Zum Speichern und Weiterschicken.</span></span><span class="btn">${esc(INSTA_AT)} folgen${ic("chev")}</span></a></section>` : ""}
 <section class="sec hs-org" id="veranstalter"><div class="org"><h2>Du veranstaltest einen Flohmarkt?</h2><p>Trag deinen Termin kostenlos ein. Wir prüfen jeden Eintrag, bevor er erscheint.</p><a class="btn" href="/veranstalter/">Termin eintragen${ic("chev")}</a></div></section>`;
   layout({ p: "/", title: `Flohmarkt Hamburg: Alle Flohmärkte & Termine ${YEAR} | ${NAME}`,
     desc: pickDesc(`Alle ${MARKETS.length} Flohmärkte in Hamburg und Umgebung mit Terminen, Uhrzeiten und Adressen.${weN ? ` ${sunOnly ? "Heute" : "Am Wochenende"}: ${weN} Märkte.` : ""} Täglich aktualisiert, ohne Werbebanner.`, "Alle Flohmärkte in Hamburg und Umgebung, aufgeräumt: Termine, Zeiten, Adressen und ein Ratgeber mit Antworten auf die wichtigsten Flohmarkt-Fragen."),
-    body, nav: "", ld: G([{ "@type": "WebSite", "@id": SITE + "/#website", name: NAME, url: SITE + "/", inLanguage: "de", publisher: { "@id": SITE + "/#org" } }, { "@type": "Organization", "@id": SITE + "/#org", name: NAME, url: SITE + "/", logo: SITE + (HAS_ICONS ? "/assets/icon-512.png" : "/assets/icon.svg"), ...(SOCIAL.length ? { sameAs: SOCIAL.map(x => x[0]) } : {}) }, faqLD(homeFaq)]) });
+    body, nav: "", ld: G([{ "@type": "WebSite", "@id": SITE + "/#website", name: NAME, url: SITE + "/", inLanguage: "de", publisher: { "@id": SITE + "/#org" } }, { "@type": "Organization", "@id": SITE + "/#org", name: NAME, url: SITE + "/", ...(ME_LD ? { founder: { "@type": "Person", "@id": ME_LD["@id"], name: ME_NAME, url: ME_LD.url } } : {}), logo: SITE + (HAS_ICONS ? "/assets/icon-512.png" : "/assets/icon.svg"), ...(SOCIAL.length ? { sameAs: SOCIAL.map(x => x[0]) } : {}) }, faqLD(homeFaq)]) });
   /* Seite für alle außerhalb Hamburgs: /flohmarkt-tipps/ (Kurzadresse für die Instagram-Bio: flohlotse.de/start, leitet hierher).
      Die drei Werkzeuge als Bühne mit ihren Vorteilen, darunter häufige Fragen und ein Abzweig für alle aus Hamburg.
      Für Google gedacht für allgemeine Suchen wie „Flohmarkt Tipps“; die Hamburg-Suchen bleiben bei den Hamburg-Seiten, „Flohmarkt Ratgeber“ beim Ratgeber. */
@@ -2999,7 +3008,7 @@ ${scopeHTML()}
 <p>Sag uns Bescheid, am einfachsten über die Seite <a href="/veranstalter/">Für Veranstalter</a>. Wer hinter ${esc(NAME)} steht, steht im <a href="/impressum/">Impressum</a>.</p>
 </div></article>`;
     layout({ p: ABOUT_P, title: `Über ${NAME}: So entstehen die Termine`, desc: `Wie ${NAME} arbeitet: Termine für Hamburg und Umgebung nach Angaben der Veranstalter, dazu Ratgeber, Schilder und Kauf-Check für jeden Flohmarkt.`,
-      body, nav: "", ld: G([crumbLD(cr), { "@type": "AboutPage", name: `Über ${NAME}`, url: SITE + ABOUT_P }]) });
+      body, nav: "", ld: G([crumbLD(cr), { "@type": "AboutPage", name: `Über ${NAME}`, url: SITE + ABOUT_P, about: ORG_REF }, ...(ME_LD ? [ME_LD] : [])]) });
   }
   // So funktioniert Flohlotse: kurze Anleitung in vier Schritten für alle, die zum ersten Mal hier sind (Menü und Fußzeile verlinken hierher)
   {
@@ -3137,7 +3146,7 @@ if (POSTS.length) {
   const postBody = b => b.split(/\n(?=## )/).map(block => { let h = ""; if (block.startsWith("## ")) { const i = block.indexOf("\n"); h = (i < 0 ? block : block.slice(0, i)).slice(3).trim(); block = i < 0 ? "" : block.slice(i + 1); }
     return (h ? `<h2>${esc(h)}</h2>` : "") + block.split(/\n\s*\n/).map(x => x.trim()).filter(Boolean).map(x => `<p>${rich(x.replace(/\n/g, " "))}</p>`).join(""); }).join("");
   const card = x => `<a class="card blog-card" href="${NEWS_P}${x.k}/"><span class="kicker">${esc(x.kick)} · ${fmtDateNum(x.d)}</span><h3>${esc(x.t)}</h3><p>${esc(x.tx)}</p></a>`;
-  const AUTHOR = { "@type": "Person", name: "Fabian", url: SITE + ABOUT_P };
+  const AUTHOR = NEWS_AUTHOR_LD;
   for (const x of POSTS) {
     const others = POSTS.filter(y => y !== x).slice(0, 3), cr = [[NAME, "/"], ["Neuigkeiten", NEWS_P], [x.t]];
     const lk = x.link ? safeHref(x.link, "Neuigkeiten: " + x.t) : "";
@@ -3358,6 +3367,34 @@ if (fontsFound.length) {
   fs.writeFileSync(path.join(OUT, "fonts/OFL.txt"), [...new Set(fontsFound.map(x => FONT_C[x.fam]).filter(Boolean))].join("\n") + "\n\n" + OFL_TEXT + "\n");
 }
 // Sitemap, bei den Schilder-Seiten mit Vorschaubildern für die Google-Bildersuche. Änderungsdaten: siehe „Änderungsdatum je Seite“ weiter oben.
+/* ---------------------------------------------------------------- IndexNow
+   Meldet Bing (Grundlage von Copilot und großen Teilen der ChatGPT-Suche) sowie Yandex, Seznam und Naver jede Nacht genau die Seiten,
+   die sich wirklich geändert haben (Änderungsdatum = heute, siehe „Änderungsdatum je Seite“). Beim ersten Mal alle Seiten.
+   Google nimmt an IndexNow nicht teil, dort genügt die Sitemap.
+   Der Schlüssel ergibt sich aus der Adresse der Website und liegt als Textdatei im Hauptverzeichnis. Er ist kein Geheimnis, er zeigt nur,
+   dass die Meldung von der eigenen Website kommt. Läuft nur im echten Bau (SHEET_ID) mit Freigabe für Google; aus mit INDEXNOW=aus.
+   Ein Fehler hält den Bau nie auf. Klappt die erste Meldung nicht (die Schlüsseldatei ist beim allerersten Bau noch nicht online),
+   wird sie in der nächsten Nacht wiederholt. */
+{
+  let host = ""; try { host = new URL(SITE).host; } catch { /* keine gültige Adresse */ }
+  const ixKey = hashOf("sha256").update("indexnow|" + host).digest("hex").slice(0, 32), ixMode = (process.env.INDEXNOW || "").toLowerCase();
+  PAGE_STATE._inx = OLD_STATE._inx ? 1 : 0;
+  if (PUBLIC && host && !/(^|\.)example\.(org|com)$/.test(host)) {
+    fs.writeFileSync(path.join(OUT, ixKey + ".txt"), ixKey);
+    if (ixMode !== "aus" && (process.env.SHEET_ID || ixMode === "an")) {
+      const first = !OLD_STATE._inx, today = key(TODAY);
+      const list = indexable.filter(p => first || LASTMOD[p] === today).map(p => SITE + p).slice(0, 10000);
+      if (list.length) {
+        try {
+          const r = await fetch("https://api.indexnow.org/indexnow", { method: "POST", signal: AbortSignal.timeout(15000), headers: { "Content-Type": "application/json; charset=utf-8" },
+            body: JSON.stringify({ host, key: ixKey, keyLocation: `${SITE}/${ixKey}.txt`, urlList: list }) });
+          if (r.status === 200 || r.status === 202) { PAGE_STATE._inx = 1; if (first) warn("IndexNow", `IndexNow ist eingerichtet: Bing hat heute erstmals alle ${list.length} Seiten gemeldet bekommen. Ab jetzt meldet der Bau jede Nacht nur noch die Seiten, die sich geändert haben.`, true); }
+          else warn("IndexNow", `Die Meldung geänderter Seiten an Bing (IndexNow) hat nicht geklappt (HTTP ${r.status}).${first ? " Beim ersten Mal ist das normal, wenn die Schlüsseldatei noch nicht online war. Der Bau versucht es nächste Nacht erneut." : " Tritt das mehrere Nächte in Folge auf, bitte melden."} Die Website selbst ist davon nicht betroffen.`, true);
+        } catch (e) { warn("IndexNow", `Bing (IndexNow) war heute nicht erreichbar. Die Website selbst ist davon nicht betroffen, morgen geht es normal weiter.`, true); }
+      }
+    }
+  }
+}
 PAGE_STATE._neu = NEU_SEIT;
 PAGE_STATE._zahlen = [MARKETS.length, EVENTS.length, MARKETS.length - NO_DATES.length, HORIZON, key(TODAY)]; // Märkte, Termine, Märkte mit Termin, Tage im Voraus, Datum: für die Notbremse im nächsten Bau
 fs.writeFileSync(path.join(OUT, "assets/seiten-stand.json"), JSON.stringify(PAGE_STATE));

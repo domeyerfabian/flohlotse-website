@@ -1,11 +1,12 @@
 # Flohlotse: Website gebaut
 
-Stand 06.11.2026 · 349 Seiten (343 für Google) · 167 Märkte · 183 Termine in den nächsten 120 Tagen · 45 Ratgeber-Artikel · 823 Event-Auszeichnungen
+Stand 07.11.2026 · 349 Seiten (343 für Google) · 167 Märkte · 183 Termine in den nächsten 120 Tagen · 45 Ratgeber-Artikel · 832 Event-Auszeichnungen
 
-## Zu erledigen: 5 Hinweise
+## Zu erledigen: 6 Hinweise
 
 | Bereich | Hinweis |
 |---|---|
+| Termin-Wächter | Hallenflohmarkt in der Halle 15: Neu auf der Website des Veranstalters und noch nicht in der Tabelle: 12.11.2026 („SCHICK Second-Hand am 12.11.2026 um 14:00&mdash;17:00 Uhr Jeden Donnerstag in der Zeit von 1“). Ist ein Tag kein Markttag, im Blatt „Termine“ mit Status „Kein Termin“ eintragen. Bitte prüfen: https://www.asb-halle15.de/ |
 | Termin-Wächter | Nachtflohmarkt in der Burg Seevetal: Achtung: 20.03.2027 steht noch im Kalender, ist auf der Website des Veranstalters aber nicht mehr zu finden. Prüfen, ob der Termin ausfällt. Bitte prüfen: https://www.burg-seevetal.de/ |
 | Serie endet bald | Flohmarkt Else-Rauch-Platz (Sonntag): Die Serie läuft nur bis Montag, 30. November. Bei Bedarf „Gültig bis“ verlängern, sobald der Veranstalter neue Termine bestätigt. |
 | SEO | /ratgeber/standgebuehr-flohmarkt/: Titel hat 194 Zeichen (Ziel höchstens 60). |
